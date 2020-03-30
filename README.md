@@ -1,4 +1,4 @@
-# Yet Another Chrome Extension with React 16.13 and Webpack 4
+# Yet Another Chrome Extension
 
 ## Features
 
