@@ -107,6 +107,6 @@ chrome.runtime.sendMessage(
       });
     }
     console.log(toDisplay);
-    alert(toDisplay);
+    //alert(toDisplay);
   }
 );
