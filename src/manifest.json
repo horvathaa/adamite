@@ -1,5 +1,5 @@
 {
-  "name": "Yet Another Chrome Extension",
+  "name": "Documentation Annotator",
   "options_page": "options.html",
   "background": {
     "page": "background.html"
