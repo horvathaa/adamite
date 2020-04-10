@@ -11,10 +11,13 @@
   "dependencies": {
     "@hot-loader/react-dom": "^16.13.0",
     "@types/react": "^16.9.26",
+    "chrome-sidebar": "^0.1.2",
     "jquery": "^3.4.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "react-hot-loader": "^4.12.20"
+    "react-frame-component": "^4.1.1",
+    "react-hot-loader": "^4.12.20",
+    "yarn": "^1.22.4"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0",
