@@ -147,7 +147,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     request.msg === 'USER_CHANGE_SIDEBAR_LOCATION'
   ) {
     const { toStatus } = request;
-    sidebarOnLeft = toStatus === 'left';
+    sidebarOnLeft = toStatus;
     persistSidebarOnLeftStatus(sidebarOnLeft);
     updateSidebarOnLeftStatus(sidebarOnLeft);
   } else if (

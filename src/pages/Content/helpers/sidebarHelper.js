@@ -145,7 +145,7 @@ const checkSidebarStatus = () => {
 checkSidebarStatus();
 
 window.addEventListener('keydown', (event) => {
-  // use 'Ctrl + Esc' or 'Ctrl + `' to toggle sidebar
+  // use 'Ctrl/Command + Esc' or 'Ctrl + `' to toggle sidebar
   if (
     (event.ctrlKey && event.key === '`') ||
     (event.ctrlKey && event.key === 'Escape') ||
