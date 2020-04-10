@@ -7,14 +7,13 @@ console.log('Put the background scripts here.');
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.msg === 'SAVE_ANNOTATED_TEXT') {
-    const { url, text } = request.payload;
+    const { url, content } = request.payload;
     let annotations = localStorage.getItem('annotations');
     annotations = annotations ? JSON.parse(annotations) : {};
-    console.log(annotations);
     if (annotations[url]) {
-      annotations[url].push(text);
+      annotations[url].push(content);
     } else {
-      annotations[url] = [text];
+      annotations[url] = [content];
     }
     localStorage.setItem('annotations', JSON.stringify(annotations));
   } else if (request.msg === 'REQUEST_ANNOTATED_TEXT_ON_THIS_PAGE') {
