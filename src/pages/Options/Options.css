@@ -1,0 +1,13 @@
+.SettingEntryContainer {
+  display: flex;
+  align-items: center;
+  margin: 10px 0px;
+}
+
+.SettingEntryContainer input[type='radio'] {
+  cursor: pointer;
+}
+
+.SettingEntryContainer label {
+  cursor: pointer;
+}
