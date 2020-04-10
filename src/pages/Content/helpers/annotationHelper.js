@@ -6,15 +6,17 @@ const Popover = ({ selection, removePopover }) => {
 
   useEffect(() => {
     setSelected(selection.toString());
-  }, []);
+  }, [selection]);
 
   const annotateButtonClickedHandler = (event) => {
     event.stopPropagation();
     if (selected) {
+      const annotationContent = prompt('Enter annotation');
+      const annotationPair = JSON.stringify({ [selected]: annotationContent });
       chrome.runtime.sendMessage({
         msg: 'SAVE_ANNOTATED_TEXT',
         payload: {
-          text: selected,
+          content: annotationPair,
           url: window.location.href,
         },
       });
@@ -40,14 +42,10 @@ const Popover = ({ selection, removePopover }) => {
   );
 };
 
-//
-//
-//
-//
 /* Set up popover box anchor */
 const popOverAnchor = document.body.appendChild(document.createElement('div'));
-popOverAnchor.style.zIndex = '33333';
-popOverAnchor.style.position = 'absolute';
+popOverAnchor.style.zIndex = '2147483647';
+popOverAnchor.style.position = 'fixed';
 popOverAnchor.setAttribute('id', 'popover-box');
 
 const removePopover = () => {
@@ -79,7 +77,6 @@ function displayPopoverBasedOnRectPosition(rect, props) {
 document.addEventListener('mouseup', (event) => {
   const selection = window.getSelection();
   if (selection.type === 'Range') {
-    // text selected
     const rect = selection.getRangeAt(0).getBoundingClientRect();
     displayPopoverBasedOnRectPosition(rect, { selection });
   } else {
@@ -103,10 +100,9 @@ chrome.runtime.sendMessage(
     if (annotationsOnPage.length) {
       toDisplay += ' They are:\n';
       annotationsOnPage.forEach((anno) => {
-        toDisplay += '- ' + anno + '\n';
+        toDisplay += anno;
       });
     }
     console.log(toDisplay);
-    //alert(toDisplay);
   }
 );
