@@ -43,19 +43,22 @@ class Sidebar extends React.Component {
       }
     });
   }
-
+  // todo: get rid of o(n2) complexity... it's pretty slow 
+  // possibly change way anchor's and annotations are associated
   render() {
     return (
       <div className="SidebarContainer">
         <Title />
-        sidebar
-        <ul>
-          {this.state.annotations.map((item, idx) => {
-            return <li key={idx}>{item}</li>;
-          })}
-        </ul>
-      </div>
-    );
+      sidebar
+        <ul>{
+          this.state.annotations.map((annotation, idx) => {
+            return Object.entries(annotation).map(([key, value], idx) => {
+              return <li key={idx}>{'Selection: ' + key + '\nAnnotation: ' + value}</li>
+            });
+          })
+        }</ul>
+
+      </div>)
   }
 }
 
