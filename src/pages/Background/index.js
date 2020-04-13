@@ -46,6 +46,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
     let annotations = localStorage.getItem('annotations');
     annotations = annotations ? JSON.parse(annotations) : {};
+    if (annotations[url]) {
+      for (let i = 0; i < annotations[url].length; i++) {
+        annotations[url][i] = JSON.parse(annotations[url][i]);
+      }
+    }
     const annotationsOnPage = annotations[url] ? annotations[url] : [];
     sendResponse({ annotationsOnPage });
   }
