@@ -3,17 +3,6 @@ import Title from './containers/Title/Title';
 
 import './Sidebar.css';
 
-const fakeAnnotations = [
-  {
-    id: 'aaa',
-    name: 'Brad ',
-  },
-  {
-    id: 'bbb',
-    name: 'Jodi ',
-  },
-];
-
 class Sidebar extends React.Component {
   state = {
     url: '',
