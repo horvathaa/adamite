@@ -49,7 +49,7 @@ class Sidebar extends React.Component {
     return (
       <div className="SidebarContainer">
         <Title />
-      sidebar
+        Annotations
         <ul>{
           this.state.annotations.map((annotation, idx) => {
             return Object.entries(annotation).map(([key, value], idx) => {
