@@ -8,6 +8,11 @@ console.log('Put the background scripts here.');
 const broadcastAllAnnotations = (toUrl) => {
   let annotations = localStorage.getItem('annotations');
   annotations = annotations ? JSON.parse(annotations) : {};
+  if (annotations[toUrl]) {
+    for (let i = 0; i < annotations[toUrl].length; i++) {
+      annotations[toUrl][i] = JSON.parse(annotations[toUrl][i]);
+    }
+  }
   const query = { currentWindow: true };
   if (toUrl) {
     query.url = toUrl;
