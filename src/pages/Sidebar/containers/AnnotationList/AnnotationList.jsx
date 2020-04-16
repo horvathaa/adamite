@@ -20,16 +20,14 @@ class AnnotationList extends Component {
         });
 
         return (
-            <ul>{
+            <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>{
                 annotationsCopy.map((annotation) => {
                     return (
-                        <li key={annotation.idx}>
-                            <Annotation
-                                key={annotation.idx}
-                                anchor={annotation.anchor}
-                                content={annotation.content}
-                            />
-                        </li>
+                        <Annotation
+                            key={annotation.idx}
+                            anchor={annotation.anchor}
+                            content={annotation.content}
+                        />
                     );
                 })
             }

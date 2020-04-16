@@ -51,12 +51,11 @@ class Sidebar extends React.Component {
     return (
       <div className="SidebarContainer">
         <Title />
-        Annotations
         <AnnotationList
           annotations={this.state.annotations}
         />
 
-      </div>)
+      </div >)
   }
 }
 

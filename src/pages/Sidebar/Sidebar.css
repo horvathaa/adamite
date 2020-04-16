@@ -1,4 +1,7 @@
 .SidebarContainer {
-  background-color: rgb(235, 235, 235);
+  background-color: whitesmoke;
   height: 100vh;
+}
+.AnnotationTextContainer {
+  text-align: center;
 }
