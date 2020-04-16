@@ -38,5 +38,4 @@ class AnnotationList extends Component {
 }
 
 
-
 export default AnnotationList;

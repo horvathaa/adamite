@@ -11,6 +11,7 @@ const Popover = ({ selection, removePopover }) => {
   const annotateButtonClickedHandler = (event) => {
     event.stopPropagation();
     if (selected) {
+      console.log(selected);
       const annotationContent = prompt('Enter annotation');
       const annotationPair = JSON.stringify({ [selected]: annotationContent });
       chrome.runtime.sendMessage({
@@ -78,6 +79,7 @@ document.addEventListener('mouseup', (event) => {
   const selection = window.getSelection();
   if (selection.type === 'Range') {
     const rect = selection.getRangeAt(0).getBoundingClientRect();
+    // console.log(rect);
     displayPopoverBasedOnRectPosition(rect, { selection });
   } else {
     if (!popOverAnchor.contains(event.target)) {
