@@ -5,7 +5,10 @@ import { node, object, string, number, func } from 'prop-types';
 
 import { Resizable } from 're-resizable';
 
-import { SIDEBAR_CONTAINER_ID } from '../../../../shared/constants';
+import {
+  SIDEBAR_CONTAINER_ID,
+  SIDEBAR_IFRAME_ID,
+} from '../../../../shared/constants';
 
 const iframeClass = css({
   border: 'none',
@@ -323,7 +326,8 @@ export class Frame extends Component {
                 }}
               >
                 <iframe
-                  title={'doc-annotator-sidebar-iframe'}
+                  id={SIDEBAR_IFRAME_ID}
+                  title={SIDEBAR_IFRAME_ID}
                   className={cx({
                     [iframeClass]: true,
                   })}
