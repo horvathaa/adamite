@@ -1,13 +1,15 @@
 import React from 'react';
-import Title from './containers/Title/Title';
-
 import './Sidebar.css';
+
+import Title from './containers/Title/Title';
 import AnnotationList from './containers/AnnotationList/AnnotationList';
+import NewAnnotation from './containers/NewAnnotation/NewAnnotation';
 
 class Sidebar extends React.Component {
   state = {
     url: '',
     annotations: [],
+    newSelection: null,
   };
 
   componentDidMount() {
@@ -41,14 +43,32 @@ class Sidebar extends React.Component {
       ) {
         const { annotations } = request.payload;
         this.setState({ annotations: annotations });
+      } else if (
+        request.from === 'background' &&
+        request.msg === 'CONTENT_SELECTED'
+      ) {
+        console.log(request.payload);
+        const { selection } = request.payload;
+        this.setState({ newSelection: selection });
       }
     });
   }
+
+  resetNewSelection = () => {
+    this.setState({ newSelection: null });
+  };
 
   render() {
     return (
       <div className="SidebarContainer">
         <Title />
+        {this.state.newSelection && (
+          <NewAnnotation
+            url={this.state.url}
+            newSelection={this.state.newSelection}
+            resetNewSelection={this.resetNewSelection}
+          />
+        )}
         <AnnotationList annotations={this.state.annotations} />
       </div>
     );

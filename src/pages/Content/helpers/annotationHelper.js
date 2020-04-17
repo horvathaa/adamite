@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import './anchor-box.css';
+import { SIDEBAR_IFRAME_ID } from '../../../shared/constants';
 
 const AnnotationAnchor = ({ div, idx }) => {
   return (
@@ -19,6 +20,7 @@ const AnnotationAnchor = ({ div, idx }) => {
 }
 
 const Popover = ({ selection, range, removePopover }) => {
+
   const [selected, setSelected] = useState(null);
 
   useEffect(() => {
@@ -89,6 +91,13 @@ popOverAnchor.setAttribute('id', 'popover-box');
 
 const removePopover = () => {
   try {
+    if (window.getSelection().empty) {
+      // Chrome
+      window.getSelection().empty();
+    } else if (window.getSelection().removeAllRanges) {
+      // Firefox
+      window.getSelection().removeAllRanges();
+    }
     ReactDOM.unmountComponentAtNode(popOverAnchor);
   } catch (e) {
     // console.log(e);
@@ -113,6 +122,17 @@ function displayPopoverBasedOnRectPosition(rect, props) {
   popOverAnchor.style.left = `${leftPosition}px`;
 }
 
+const alertBackgroundOfNewSelection = (selection) => {
+  // supporting creation of annotations in sidebar
+  chrome.runtime.sendMessage({
+    msg: 'CONTENT_SELECTED',
+    from: 'content',
+    payload: {
+      selection,
+    },
+  });
+};
+
 document.addEventListener('mouseup', (event) => {
   const selection = window.getSelection();
   if (selection.type === 'Range') {
@@ -121,9 +141,11 @@ document.addEventListener('mouseup', (event) => {
     const rect = range.getBoundingClientRect();
     // console.log(rect);
     displayPopoverBasedOnRectPosition(rect, { selection, range });
+    alertBackgroundOfNewSelection(selection.toString());
   } else {
     if (!popOverAnchor.contains(event.target)) {
       removePopover();
+      alertBackgroundOfNewSelection(null);
     }
   }
 });
@@ -149,3 +171,9 @@ chrome.runtime.sendMessage(
     }
   }
 );
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.msg === 'ANNOTATIONS_UPDATED' && request.from === 'background') {
+    removePopover();
+  }
+});

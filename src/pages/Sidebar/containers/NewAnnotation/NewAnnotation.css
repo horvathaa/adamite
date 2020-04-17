@@ -1,0 +1,34 @@
+.NewAnnotationContainer {
+  padding: 5px 15px 5px 15px;
+  width: 100%;
+}
+
+.SelectedTextContainer {
+  padding: 5px;
+  font-weight: 300;
+  font-size: 1.1rem;
+  font-style: italic;
+  color: #666;
+}
+
+.TextareaContainer {
+  width: 100%;
+  padding: 5px;
+}
+
+.TextareaContainer textarea {
+  resize: none;
+  font-size: 14px;
+  padding: 3px 6px;
+}
+
+.SubmitButtonContainer {
+  padding: 5px;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.SubmitButtonContainer .SubmitButton:disabled {
+  cursor: not-allowed;
+}
