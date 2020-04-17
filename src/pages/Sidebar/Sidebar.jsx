@@ -8,6 +8,7 @@ class Sidebar extends React.Component {
   state = {
     url: '',
     annotations: [],
+    newAnnotation: null,
   };
 
   componentDidMount() {
@@ -41,6 +42,13 @@ class Sidebar extends React.Component {
       ) {
         const { annotations } = request.payload;
         this.setState({ annotations: annotations });
+      } else if (
+        request.from === 'background' &&
+        request.msg === 'CONTENT_SELECTED'
+      ) {
+        console.log(request.payload);
+        const { selection } = request.payload;
+        this.setState({ newAnnotation: selection });
       }
     });
   }

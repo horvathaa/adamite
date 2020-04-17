@@ -35,8 +35,7 @@ const broadcastAllAnnotations = (toUrl) => {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.msg === 'REQUEST_TAB_URL') {
     sendResponse({ url: sender.tab.url });
-  }
-  if (request.msg === 'SAVE_ANNOTATED_TEXT') {
+  } else if (request.msg === 'SAVE_ANNOTATED_TEXT') {
     const { url, content } = request.payload;
     let annotations = localStorage.getItem('annotations');
     annotations = annotations ? JSON.parse(annotations) : {};
@@ -61,5 +60,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
     const annotationsOnPage = annotations[url] ? annotations[url] : [];
     sendResponse({ annotationsOnPage });
+  } else if (request.from === 'content' && request.msg === 'CONTENT_SELECTED') {
+    chrome.tabs.sendMessage(sender.tab.id, {
+      msg: 'CONTENT_SELECTED',
+      from: 'background',
+      payload: request.payload,
+    });
   }
 });
