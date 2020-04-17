@@ -1,14 +1,15 @@
 import React from 'react';
-import Title from './containers/Title/Title';
-
 import './Sidebar.css';
+
+import Title from './containers/Title/Title';
 import AnnotationList from './containers/AnnotationList/AnnotationList';
+import NewAnnotation from './containers/NewAnnotation/NewAnnotation';
 
 class Sidebar extends React.Component {
   state = {
     url: '',
     annotations: [],
-    newAnnotation: null,
+    newSelection: null,
   };
 
   componentDidMount() {
@@ -48,7 +49,7 @@ class Sidebar extends React.Component {
       ) {
         console.log(request.payload);
         const { selection } = request.payload;
-        this.setState({ newAnnotation: selection });
+        this.setState({ newSelection: selection });
       }
     });
   }
@@ -59,6 +60,7 @@ class Sidebar extends React.Component {
     return (
       <div className="SidebarContainer">
         <Title />
+        <NewAnnotation newAnnotation={this.state.newSelection} />
         <AnnotationList annotations={this.state.annotations} />
       </div>
     );
