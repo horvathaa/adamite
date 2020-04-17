@@ -44,8 +44,6 @@ class Sidebar extends React.Component {
       }
     });
   }
-  // todo: get rid of o(n2) complexity... it's pretty slow
-  // possibly change way anchor's and annotations are associated
 
   render() {
     return (
