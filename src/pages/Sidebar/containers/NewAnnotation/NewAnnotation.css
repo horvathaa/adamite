@@ -32,3 +32,8 @@
 .SubmitButtonContainer .SubmitButton:disabled {
   cursor: not-allowed;
 }
+
+.anchor-box {
+  background: gold;
+  opacity: 50%;
+}

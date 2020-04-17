@@ -28,15 +28,24 @@ class NewAnnotation extends React.Component {
   submitButtonHandler = (event) => {
     this.setState({ submitted: true });
 
-    const { url, newSelection } = this.props;
-    const annotationPair = JSON.stringify({
-      [newSelection]: this.state.annotationContent,
+    const { url, newSelection, rect } = this.props;
+    const divProps = {
+      top: rect.top,
+      left: rect.left,
+      width: rect.width,
+      height: rect.height
+    };
+    const annotationInfo = JSON.stringify({
+      anchor: newSelection,
+      annotation: this.state.annotationContent,
+      div: divProps
     });
+
     chrome.runtime.sendMessage(
       {
         msg: 'SAVE_ANNOTATED_TEXT',
         payload: {
-          content: annotationPair,
+          content: annotationInfo,
           url,
         },
       },
@@ -80,10 +89,10 @@ class NewAnnotation extends React.Component {
               Save
             </button>
           ) : (
-            <div className="spinner-border text-secondary" role="status">
-              <span className="sr-only">...</span>
-            </div>
-          )}
+              <div className="spinner-border text-secondary" role="status">
+                <span className="sr-only">...</span>
+              </div>
+            )}
         </div>
       </div>
     );

@@ -10,6 +10,7 @@ class Sidebar extends React.Component {
     url: '',
     annotations: [],
     newSelection: null,
+    rect: null,
   };
 
   componentDidMount() {
@@ -47,9 +48,8 @@ class Sidebar extends React.Component {
         request.from === 'background' &&
         request.msg === 'CONTENT_SELECTED'
       ) {
-        console.log(request.payload);
-        const { selection } = request.payload;
-        this.setState({ newSelection: selection });
+        const { selection, rect } = request.payload;
+        this.setState({ newSelection: selection, rect: rect });
       }
     });
   }
@@ -67,6 +67,7 @@ class Sidebar extends React.Component {
             url={this.state.url}
             newSelection={this.state.newSelection}
             resetNewSelection={this.resetNewSelection}
+            rect={this.state.rect}
           />
         )}
         <AnnotationList annotations={this.state.annotations} />
