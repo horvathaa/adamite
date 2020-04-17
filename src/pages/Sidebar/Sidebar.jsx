@@ -56,11 +56,19 @@ class Sidebar extends React.Component {
   // todo: get rid of o(n2) complexity... it's pretty slow
   // possibly change way anchor's and annotations are associated
 
+  resetNewSelection = () => {
+    this.setState({ newSelection: null });
+  };
+
   render() {
     return (
       <div className="SidebarContainer">
         <Title />
-        <NewAnnotation newAnnotation={this.state.newSelection} />
+        <NewAnnotation
+          url={this.state.url}
+          newSelection={this.state.newSelection}
+          resetNewSelection={this.resetNewSelection}
+        />
         <AnnotationList annotations={this.state.annotations} />
       </div>
     );

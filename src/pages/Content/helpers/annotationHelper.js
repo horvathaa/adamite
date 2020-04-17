@@ -53,6 +53,13 @@ popOverAnchor.setAttribute('id', 'popover-box');
 
 const removePopover = () => {
   try {
+    if (window.getSelection().empty) {
+      // Chrome
+      window.getSelection().empty();
+    } else if (window.getSelection().removeAllRanges) {
+      // Firefox
+      window.getSelection().removeAllRanges();
+    }
     ReactDOM.unmountComponentAtNode(popOverAnchor);
   } catch (e) {
     // console.log(e);
@@ -123,3 +130,9 @@ chrome.runtime.sendMessage(
     console.log(toDisplay);
   }
 );
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.msg === 'ANNOTATIONS_UPDATED' && request.from === 'background') {
+    removePopover();
+  }
+});

@@ -45,6 +45,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       annotations[url] = [content];
     }
     localStorage.setItem('annotations', JSON.stringify(annotations));
+    sendResponse({
+      msg: 'DONE',
+    });
     broadcastAllAnnotations(url);
   } else if (request.msg === 'REQUEST_ANNOTATED_TEXT_ON_THIS_PAGE') {
     let { url } = request.payload;

@@ -4,7 +4,9 @@
 }
 
 .SelectedTextContainer {
+  padding: 5px;
   font-weight: 300;
+  font-size: 1.1rem;
   font-style: italic;
   color: #666;
 }
@@ -25,4 +27,8 @@
   width: 100%;
   display: flex;
   justify-content: flex-end;
+}
+
+.SubmitButtonContainer .SubmitButton:disabled {
+  cursor: not-allowed;
 }
