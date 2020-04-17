@@ -7,6 +7,20 @@ class NewAnnotation extends React.Component {
     annotationContent: '',
   };
 
+  componentDidMount() {
+    document.addEventListener('keydown', this.keydown, false);
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener('keydown', this.keydown, false);
+  }
+
+  keydown = (event) => {
+    if (event.key === 'Enter') {
+      this.submitButtonHandler();
+    }
+  };
+
   annotationChangeHandler = (event) => {
     this.setState({ annotationContent: event.target.value });
   };
@@ -37,6 +51,7 @@ class NewAnnotation extends React.Component {
 
   render() {
     const { newSelection } = this.props;
+
     if (!newSelection) {
       return null;
     }

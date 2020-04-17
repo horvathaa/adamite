@@ -64,11 +64,13 @@ class Sidebar extends React.Component {
     return (
       <div className="SidebarContainer">
         <Title />
-        <NewAnnotation
-          url={this.state.url}
-          newSelection={this.state.newSelection}
-          resetNewSelection={this.resetNewSelection}
-        />
+        {this.state.newSelection && (
+          <NewAnnotation
+            url={this.state.url}
+            newSelection={this.state.newSelection}
+            resetNewSelection={this.resetNewSelection}
+          />
+        )}
         <AnnotationList annotations={this.state.annotations} />
       </div>
     );
