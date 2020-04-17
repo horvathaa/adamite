@@ -1,9 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
-
+import './anchor-box.css';
 import { SIDEBAR_IFRAME_ID } from '../../../shared/constants';
 
-const Popover = ({ selection, removePopover }) => {
+const AnnotationAnchor = ({ div, idx }) => {
+  return (
+    <div
+      className='anchor-box'
+      id={idx}
+      style={{
+        top: div.top,
+        left: div.left,
+        width: div.width,
+        height: div.height,
+        zIndex: 100,
+        position: 'absolute'
+      }}></div>
+  );
+}
+
+const Popover = ({ selection, range, removePopover }) => {
+
   const [selected, setSelected] = useState(null);
 
   useEffect(() => {
@@ -13,13 +30,32 @@ const Popover = ({ selection, removePopover }) => {
   const annotateButtonClickedHandler = (event) => {
     event.stopPropagation();
     if (selected) {
-      console.log(selected);
       const annotationContent = prompt('Enter annotation');
-      const annotationPair = JSON.stringify({ [selected]: annotationContent });
+      if (annotationContent === null) {
+        return;
+      }
+      let rect = range.getBoundingClientRect();
+      const selectionAnchor = document.body.appendChild(document.createElement('div'));
+      selectionAnchor.style.zIndex = '100';
+      selectionAnchor.style.position = 'absolute';
+      selectionAnchor.setAttribute('class', 'anchor-box');
+      selectionAnchor.style.top = `${rect.top}px`;
+      selectionAnchor.style.left = `${rect.left}px`;
+      selectionAnchor.style.width = `${rect.width}px`;
+      selectionAnchor.style.height = `${rect.height}px`;
+      const divProps = {
+        top: selectionAnchor.style.top,
+        left: selectionAnchor.style.left,
+        width: selectionAnchor.style.width,
+        height: selectionAnchor.style.height
+      };
+      const annotationInfo = JSON.stringify({ anchor: selected, annotation: annotationContent, div: divProps });
+      console.log(annotationInfo);
+
       chrome.runtime.sendMessage({
         msg: 'SAVE_ANNOTATED_TEXT',
         payload: {
-          content: annotationPair,
+          content: annotationInfo,
           url: window.location.href,
         },
       });
@@ -44,6 +80,8 @@ const Popover = ({ selection, removePopover }) => {
     </div>
   );
 };
+
+
 
 /* Set up popover box anchor */
 const popOverAnchor = document.body.appendChild(document.createElement('div'));
@@ -98,9 +136,11 @@ const alertBackgroundOfNewSelection = (selection) => {
 document.addEventListener('mouseup', (event) => {
   const selection = window.getSelection();
   if (selection.type === 'Range') {
-    const rect = selection.getRangeAt(0).getBoundingClientRect();
+    const range = selection.getRangeAt(0);
+    console.log(range);
+    const rect = range.getBoundingClientRect();
     // console.log(rect);
-    displayPopoverBasedOnRectPosition(rect, { selection });
+    displayPopoverBasedOnRectPosition(rect, { selection, range });
     alertBackgroundOfNewSelection(selection.toString());
   } else {
     if (!popOverAnchor.contains(event.target)) {
@@ -109,6 +149,11 @@ document.addEventListener('mouseup', (event) => {
     }
   }
 });
+
+function displayAnnotationAnchor(div, idx) {
+  const annotationAnchor = document.body.appendChild(document.createElement('div'));
+  ReactDOM.render(<AnnotationAnchor div={div} id={idx} />, annotationAnchor);
+}
 
 chrome.runtime.sendMessage(
   {
@@ -119,15 +164,11 @@ chrome.runtime.sendMessage(
   },
   (data) => {
     const { annotationsOnPage } = data;
-    let toDisplay = '';
-    toDisplay += `There are ${annotationsOnPage.length} annotated text on this page.`;
     if (annotationsOnPage.length) {
-      toDisplay += ' They are:\n';
       annotationsOnPage.forEach((anno) => {
-        toDisplay += anno;
+        displayAnnotationAnchor(anno.div, anno.idx);
       });
     }
-    console.log(toDisplay);
   }
 );
 
