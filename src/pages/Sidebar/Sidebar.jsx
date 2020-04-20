@@ -18,7 +18,7 @@ class Sidebar extends React.Component {
       {
         msg: 'REQUEST_TAB_URL',
       },
-      (data) => {
+      data => {
         this.setState({ url: data.url });
       }
     );
@@ -29,7 +29,7 @@ class Sidebar extends React.Component {
         payload: {},
         // url: window.location.href
       },
-      (data) => {
+      data => {
         console.log(data);
         this.setState({ annotations: data.annotationsOnPage });
         console.log(this.state.annotations);

@@ -15,17 +15,17 @@ class NewAnnotation extends React.Component {
     document.removeEventListener('keydown', this.keydown, false);
   }
 
-  keydown = (event) => {
+  keydown = event => {
     if (event.key === 'Enter') {
       this.submitButtonHandler();
     }
   };
 
-  annotationChangeHandler = (event) => {
+  annotationChangeHandler = event => {
     this.setState({ annotationContent: event.target.value });
   };
 
-  submitButtonHandler = (event) => {
+  submitButtonHandler = event => {
     this.setState({ submitted: true });
 
     const { url, newSelection, rect } = this.props;
@@ -49,7 +49,7 @@ class NewAnnotation extends React.Component {
           url,
         },
       },
-      (response) => {
+      response => {
         if (response.msg === 'DONE') {
           this.setState({ submitted: false });
           this.props.resetNewSelection();
@@ -76,18 +76,27 @@ class NewAnnotation extends React.Component {
             rows="2"
             placeholder={'Put your annotations here'}
             value={annotationContent}
-            onChange={(e) => this.annotationChangeHandler(e)}
+            onChange={e => this.annotationChangeHandler(e)}
           />
         </div>
         <div className="SubmitButtonContainer">
           {!submitted ? (
-            <button
-              className="btn btn-sm btn-outline-secondary SubmitButton"
-              onClick={(e) => this.submitButtonHandler(e)}
-              disabled={annotationContent.length === 0}
-            >
-              Save
-            </button>
+            <React.Fragment>
+              <button
+                className="btn btn-sm btn-outline-danger"
+                onClick={_ => this.props.resetNewSelection()}
+              >
+                Cancel
+              </button>
+              &nbsp; &nbsp;
+              <button
+                className="btn btn-sm btn-outline-secondary SubmitButton"
+                onClick={e => this.submitButtonHandler(e)}
+                disabled={annotationContent.length === 0}
+              >
+                Save
+              </button>
+            </React.Fragment>
           ) : (
             <div className="spinner-border text-secondary" role="status">
               <span className="sr-only">...</span>

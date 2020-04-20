@@ -124,7 +124,7 @@ export class Frame extends Component {
     }, delay);
 
     try {
-      chrome.storage.sync.get(['doc-annotator-sidebar-width'], (result) => {
+      chrome.storage.sync.get(['doc-annotator-sidebar-width'], result => {
         let widthObj = result['doc-annotator-sidebar-width'];
         if (widthObj !== undefined) {
           let width = JSON.parse(widthObj).width;
@@ -176,7 +176,7 @@ export class Frame extends Component {
     });
   };
 
-  toggleMinimizedStatus = (e) => {
+  toggleMinimizedStatus = e => {
     // e.stopPropagation();
     window[FRAME_TOGGLE_FUNCTION]();
   };
@@ -187,7 +187,7 @@ export class Frame extends Component {
 
   toggleFrame = (to = undefined) => {
     if (to === undefined) {
-      this.setState((prevState) => {
+      this.setState(prevState => {
         this.props.shrinkBody(prevState.isMinimized);
         return { isMinimized: !prevState.isMinimized };
       });
@@ -285,7 +285,7 @@ export class Frame extends Component {
               this.props.setSidebarWidth(width);
               this.props.shrinkBody(true);
             }}
-            onResizeStart={(e) => {
+            onResizeStart={e => {
               this.setState({ isDragging: true });
             }}
             onResizeStop={(e, direction, ref, d) => {
@@ -342,7 +342,7 @@ export class Frame extends Component {
                     height: '100vh',
                   }}
                   src={url}
-                  ref={(frame) => (this.frame = frame)}
+                  ref={frame => (this.frame = frame)}
                   onLoad={this.onLoad}
                 ></iframe>
               </div>

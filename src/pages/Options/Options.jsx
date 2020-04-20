@@ -6,14 +6,14 @@ const Options = () => {
   const [sidebarShouldShrinkBody, setSidebarShouldShrinkBody] = useState(true);
 
   useEffect(() => {
-    chrome.storage.sync.get(['sidebarOnLeft'], (result) => {
+    chrome.storage.sync.get(['sidebarOnLeft'], result => {
       if (result.sidebarOnLeft !== undefined) {
         console.log(result.sidebarOnLeft);
         setSidebarOnLeft(result.sidebarOnLeft);
       }
     });
 
-    chrome.storage.sync.get(['shouldShrinkBody'], (result) => {
+    chrome.storage.sync.get(['shouldShrinkBody'], result => {
       if (result.shouldShrinkBody !== undefined) {
         setSidebarShouldShrinkBody(result.shouldShrinkBody);
       }
@@ -37,7 +37,7 @@ const Options = () => {
     // });
   }, []);
 
-  const setSettingSidebarOnLeft = (toStatus) => {
+  const setSettingSidebarOnLeft = toStatus => {
     if (toStatus === sidebarOnLeft) {
       return;
     }
@@ -51,7 +51,7 @@ const Options = () => {
     });
   };
 
-  const setSettingSidebarShouldShrinkBody = (toStatus) => {
+  const setSettingSidebarShouldShrinkBody = toStatus => {
     if (toStatus === sidebarShouldShrinkBody) {
       return;
     }
