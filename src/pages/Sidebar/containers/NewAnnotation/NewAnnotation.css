@@ -4,11 +4,15 @@
 }
 
 .SelectedTextContainer {
-  padding: 5px;
-  font-weight: 300;
-  font-size: 1.1rem;
+  border-left: 3px solid lightgray;
+  padding: 5px 5px 5px 10px;
+  font-weight: lighter;
+  font-size: 0.9rem;
+  line-height: 1rem;
   font-style: italic;
   color: #666;
+  max-height: 200px;
+  overflow: auto;
 }
 
 .TextareaContainer {

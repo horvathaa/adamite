@@ -33,12 +33,12 @@ class NewAnnotation extends React.Component {
       top: rect.top,
       left: rect.left,
       width: rect.width,
-      height: rect.height
+      height: rect.height,
     };
     const annotationInfo = JSON.stringify({
       anchor: newSelection,
       annotation: this.state.annotationContent,
-      div: divProps
+      div: divProps,
     });
 
     chrome.runtime.sendMessage(
@@ -69,7 +69,7 @@ class NewAnnotation extends React.Component {
 
     return (
       <div className="NewAnnotationContainer">
-        <div className="SelectedTextContainer">"{newSelection}"</div>
+        <div className="SelectedTextContainer">{newSelection}</div>
         <div className="TextareaContainer">
           <textarea
             className="form-control"
@@ -89,10 +89,10 @@ class NewAnnotation extends React.Component {
               Save
             </button>
           ) : (
-              <div className="spinner-border text-secondary" role="status">
-                <span className="sr-only">...</span>
-              </div>
-            )}
+            <div className="spinner-border text-secondary" role="status">
+              <span className="sr-only">...</span>
+            </div>
+          )}
         </div>
       </div>
     );
