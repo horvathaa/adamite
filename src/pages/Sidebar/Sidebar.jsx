@@ -50,6 +50,16 @@ class Sidebar extends React.Component {
       ) {
         const { selection, rect } = request.payload;
         this.setState({ newSelection: selection, rect: rect });
+      } else if (
+        request.from === 'background' &&
+        request.msg === 'TOGGLE_SIDEBAR'
+      ) {
+        if (request.toStatus === false) {
+          setTimeout(() => {
+            // use timeout to make smooth UI transition
+            this.resetNewSelection();
+          }, 500);
+        }
       }
     });
   }
