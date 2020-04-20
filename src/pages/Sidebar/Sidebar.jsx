@@ -62,14 +62,15 @@ class Sidebar extends React.Component {
     return (
       <div className="SidebarContainer">
         <Title />
-        {this.state.newSelection && (
-          <NewAnnotation
-            url={this.state.url}
-            newSelection={this.state.newSelection}
-            resetNewSelection={this.resetNewSelection}
-            rect={this.state.rect}
-          />
-        )}
+        {this.state.newSelection !== null &&
+          this.state.newSelection.trim().length > 0 && (
+            <NewAnnotation
+              url={this.state.url}
+              newSelection={this.state.newSelection}
+              resetNewSelection={this.resetNewSelection}
+              rect={this.state.rect}
+            />
+          )}
         <AnnotationList annotations={this.state.annotations} />
       </div>
     );
