@@ -11,6 +11,7 @@ class Sidebar extends React.Component {
     annotations: [],
     newSelection: null,
     rect: null,
+    offset: 0,
   };
 
   componentDidMount() {
@@ -48,8 +49,8 @@ class Sidebar extends React.Component {
         request.from === 'background' &&
         request.msg === 'CONTENT_SELECTED'
       ) {
-        const { selection, rect } = request.payload;
-        this.setState({ newSelection: selection, rect: rect });
+        const { selection, rect, offset } = request.payload;
+        this.setState({ newSelection: selection, rect: rect, offset: offset });
       } else if (
         request.from === 'background' &&
         request.msg === 'TOGGLE_SIDEBAR'
@@ -79,6 +80,7 @@ class Sidebar extends React.Component {
               newSelection={this.state.newSelection}
               resetNewSelection={this.resetNewSelection}
               rect={this.state.rect}
+              offset={this.state.offset}
             />
           )}
         <AnnotationList annotations={this.state.annotations} />
