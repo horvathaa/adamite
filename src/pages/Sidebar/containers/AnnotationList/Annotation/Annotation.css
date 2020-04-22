@@ -43,6 +43,7 @@
   border-top-right-radius: 8px;
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
+  
 
   transition: all 0.1s ease-in;
 
@@ -91,6 +92,8 @@
   border-top-right-radius: 8px;
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
+  max-height: 200px;
+  overflow: auto;
 
   transition: all 0.1s ease-in;
 
@@ -110,6 +113,8 @@
   border-top-right-radius: 8px;
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
+  max-height: 200px;
+  overflow: auto;
 
   transition: all 0.1s ease-in;
 

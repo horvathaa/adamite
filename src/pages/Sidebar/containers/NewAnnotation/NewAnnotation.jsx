@@ -28,9 +28,9 @@ class NewAnnotation extends React.Component {
   submitButtonHandler = event => {
     this.setState({ submitted: true });
 
-    const { url, newSelection, rect } = this.props;
+    const { url, newSelection, rect, offset } = this.props;
     const divProps = {
-      top: rect.top,
+      top: rect.top + offset,
       left: rect.left,
       width: rect.width,
       height: rect.height,
@@ -98,10 +98,10 @@ class NewAnnotation extends React.Component {
               </button>
             </React.Fragment>
           ) : (
-            <div className="spinner-border text-secondary" role="status">
-              <span className="sr-only">...</span>
-            </div>
-          )}
+              <div className="spinner-border text-secondary" role="status">
+                <span className="sr-only">...</span>
+              </div>
+            )}
         </div>
       </div>
     );

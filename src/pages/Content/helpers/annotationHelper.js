@@ -20,7 +20,7 @@ const AnnotationAnchor = ({ div, idx }) => {
   );
 };
 
-const alertBackgroundOfNewSelection = (selection, rect) => {
+const alertBackgroundOfNewSelection = (selection, rect, offset) => {
   // supporting creation of annotations in sidebar
   chrome.runtime.sendMessage({
     msg: 'CONTENT_SELECTED',
@@ -28,6 +28,7 @@ const alertBackgroundOfNewSelection = (selection, rect) => {
     payload: {
       selection,
       rect,
+      offset,
     },
   });
 };
@@ -36,7 +37,8 @@ document.addEventListener('mouseup', event => {
   const selection = window.getSelection();
   if (selection.type === 'Range') {
     const rect = selection.getRangeAt(0).getBoundingClientRect();
-    alertBackgroundOfNewSelection(selection.toString(), rect);
+    const offset = window.scrollY;
+    alertBackgroundOfNewSelection(selection.toString(), rect, offset);
   }
 
   if (selection.toString().trim().length === 0) {
