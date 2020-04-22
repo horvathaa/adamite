@@ -6,7 +6,7 @@ import { SIDEBAR_IFRAME_ID } from '../../../shared/constants';
 const AnnotationAnchor = ({ div, idx }) => {
   return (
     <div
-      className='anchor-box'
+      className="anchor-box"
       id={idx}
       style={{
         top: div.top,
@@ -14,10 +14,11 @@ const AnnotationAnchor = ({ div, idx }) => {
         width: div.width,
         height: div.height,
         zIndex: 100,
-        position: 'absolute'
-      }}></div>
+        position: 'absolute',
+      }}
+    ></div>
   );
-}
+};
 
 const alertBackgroundOfNewSelection = (selection, rect) => {
   // supporting creation of annotations in sidebar
@@ -31,16 +32,22 @@ const alertBackgroundOfNewSelection = (selection, rect) => {
   });
 };
 
-document.addEventListener('mouseup', (event) => {
+document.addEventListener('mouseup', event => {
   const selection = window.getSelection();
   if (selection.type === 'Range') {
     const rect = selection.getRangeAt(0).getBoundingClientRect();
     alertBackgroundOfNewSelection(selection.toString(), rect);
   }
+
+  if (selection.toString().trim().length === 0) {
+    alertBackgroundOfNewSelection(null, null);
+  }
 });
 
 function displayAnnotationAnchor(div, idx) {
-  const annotationAnchor = document.body.appendChild(document.createElement('div'));
+  const annotationAnchor = document.body.appendChild(
+    document.createElement('div')
+  );
   ReactDOM.render(<AnnotationAnchor div={div} id={idx} />, annotationAnchor);
 }
 
@@ -51,10 +58,10 @@ chrome.runtime.sendMessage(
       url: window.location.href,
     },
   },
-  (data) => {
+  data => {
     const { annotationsOnPage } = data;
     if (annotationsOnPage.length) {
-      annotationsOnPage.forEach((anno) => {
+      annotationsOnPage.forEach(anno => {
         displayAnnotationAnchor(anno.div, anno.idx);
       });
     }
@@ -70,10 +77,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           url: window.location.href,
         },
       },
-      (data) => {
+      data => {
         const { annotationsOnPage } = data;
         const mostRecentAnno = annotationsOnPage[annotationsOnPage.length - 1];
-        displayAnnotationAnchor(mostRecentAnno.div, mostRecentAnno.idx)
+        displayAnnotationAnchor(mostRecentAnno.div, mostRecentAnno.idx);
       }
     );
   }
