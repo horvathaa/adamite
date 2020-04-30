@@ -4,9 +4,10 @@ import './Annotation.css';
 
 class Annotation extends Component {
   render() {
-    const { anchor, content, idx } = this.props;
+    const { anchor, content, idx, id, active } = this.props;
+    //console.log(idx);
     return (
-      <li key={idx} className={classNames({ AnnotationItem: true })}>
+      <li key={idx} id={id} className={classNames({ AnnotationItem: true })}>
         <div
           className={classNames({
             AnnotationContainerPad: true,
@@ -17,10 +18,10 @@ class Annotation extends Component {
             className={classNames({ AnnotationContainerLeftPad: true })}
           ></div>
         </div>
-        <div
+        <div id={id}
           className={classNames({
             AnnotationContainer: true,
-            ActiveAnnotationContainer: true,
+            ActiveAnnotationContainer: active,
           })}
         >
           <div

@@ -39,6 +39,7 @@ class NewAnnotation extends React.Component {
       anchor: newSelection,
       annotation: this.state.annotationContent,
       div: divProps,
+      id: newSelection + this.state.annotationContent + Math.floor(Math.random() * 1000)
     });
 
     chrome.runtime.sendMessage(

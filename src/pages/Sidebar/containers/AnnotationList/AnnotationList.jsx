@@ -13,7 +13,9 @@ class AnnotationList extends Component {
         anchor: annotation.anchor,
         content: annotation.annotation,
         idx: idx,
+        id: annotation.id,
         div: annotation.div,
+        active: annotation.active
       });
       idx += 1;
     });
@@ -24,9 +26,11 @@ class AnnotationList extends Component {
           return (
             <Annotation
               key={annotation.idx}
+              id={annotation.id}
               anchor={annotation.anchor}
               content={annotation.content}
               div={annotation.div}
+              active={annotation.active}
             />
           );
         })}

@@ -3,11 +3,24 @@ import ReactDOM from 'react-dom';
 import './anchor-box.css';
 import { SIDEBAR_IFRAME_ID } from '../../../shared/constants';
 
-const AnnotationAnchor = ({ div, idx }) => {
+function click(e) {
+  const target = e.target.id;
+  chrome.runtime.sendMessage(
+    {
+      msg: 'ANCHOR_CLICKED',
+      from: 'content',
+      payload: {
+        url: window.location.href,
+        target: target
+      },
+    });
+}
+
+const AnnotationAnchor = ({ div, id }) => {
   return (
     <div
       className="anchor-box"
-      id={idx}
+      id={id}
       style={{
         top: div.top,
         left: div.left,
@@ -16,6 +29,7 @@ const AnnotationAnchor = ({ div, idx }) => {
         zIndex: 100,
         position: 'absolute',
       }}
+      onClick={(e) => click(e)}
     ></div>
   );
 };
@@ -46,11 +60,11 @@ document.addEventListener('mouseup', event => {
   }
 });
 
-function displayAnnotationAnchor(div, idx) {
+function displayAnnotationAnchor(div, id) {
   const annotationAnchor = document.body.appendChild(
     document.createElement('div')
   );
-  ReactDOM.render(<AnnotationAnchor div={div} id={idx} />, annotationAnchor);
+  ReactDOM.render(<AnnotationAnchor div={div} id={id} />, annotationAnchor);
 }
 
 chrome.runtime.sendMessage(
@@ -62,9 +76,10 @@ chrome.runtime.sendMessage(
   },
   data => {
     const { annotationsOnPage } = data;
+    console.log(annotationsOnPage);
     if (annotationsOnPage.length) {
       annotationsOnPage.forEach(anno => {
-        displayAnnotationAnchor(anno.div, anno.idx);
+        displayAnnotationAnchor(anno.div, anno.id);
       });
     }
   }
@@ -82,7 +97,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       data => {
         const { annotationsOnPage } = data;
         const mostRecentAnno = annotationsOnPage[annotationsOnPage.length - 1];
-        displayAnnotationAnchor(mostRecentAnno.div, mostRecentAnno.idx);
+        displayAnnotationAnchor(mostRecentAnno.div, mostRecentAnno.id);
       }
     );
   }

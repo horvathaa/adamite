@@ -52,6 +52,19 @@ class Sidebar extends React.Component {
         const { selection, rect, offset } = request.payload;
         this.setState({ newSelection: selection, rect: rect, offset: offset });
       } else if (
+        request.from === 'content' && request.msg === 'ANCHOR_CLICKED'
+      ) {
+        const { target } = request.payload;
+        this.state.annotations.forEach(anno => {
+          if (anno.id === target) {
+            anno.active = true;
+          }
+          else {
+            anno.active = false;
+          }
+        });
+      }
+      else if (
         request.from === 'background' &&
         request.msg === 'TOGGLE_SIDEBAR'
       ) {

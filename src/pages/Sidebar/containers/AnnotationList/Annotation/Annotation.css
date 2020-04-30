@@ -43,21 +43,19 @@
   border-top-right-radius: 8px;
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
-  
-
+  background-color: rgba(255, 255, 255, 0.5);
   transition: all 0.1s ease-in;
-
   position: relative;
 }
 
 .ActiveAnnotationContainer {
-  background-color: rgb(255, 255, 255);
-  outline-style: solid;
+  background-color: rgb(255,255,255);
+  outline-style: bold;
   outline: burlywood;
 }
 
 .InactiveAnnotationContainerHovering {
-  background-color: rgb(244, 245, 247);
+  background-color: rgb(255, 248, 155);
 }
 
 .AnnotationTitleContainer {
@@ -92,6 +90,8 @@
   border-top-right-radius: 8px;
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
+  border-color: rgb(0, 0, 0);
+  border-width: 2px;
   max-height: 200px;
   overflow: auto;
 
