@@ -29,17 +29,20 @@ class NewAnnotation extends React.Component {
     this.setState({ submitted: true });
 
     const { url, newSelection, rect, offset } = this.props;
+
     const divProps = {
       top: rect.top + offset,
       left: rect.left,
       width: rect.width,
       height: rect.height,
     };
+    let todo = this.state.annotationContent.includes("todo");
     const annotationInfo = JSON.stringify({
       anchor: newSelection,
       annotation: this.state.annotationContent,
       div: divProps,
-      id: newSelection + this.state.annotationContent + Math.floor(Math.random() * 1000)
+      id: newSelection + this.state.annotationContent + Math.floor(Math.random() * 1000),
+      todo: todo
     });
 
     chrome.runtime.sendMessage(

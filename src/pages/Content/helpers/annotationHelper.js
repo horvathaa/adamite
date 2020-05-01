@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import './anchor-box.css';
 import { SIDEBAR_IFRAME_ID } from '../../../shared/constants';
 
-function click(e) {
+function anchorClick(e) {
   const target = e.target.id;
   chrome.runtime.sendMessage(
     {
@@ -29,7 +29,7 @@ const AnnotationAnchor = ({ div, id }) => {
         zIndex: 100,
         position: 'absolute',
       }}
-      onClick={(e) => click(e)}
+      onClick={(e) => anchorClick(e)}
     ></div>
   );
 };
