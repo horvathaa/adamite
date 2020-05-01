@@ -1,0 +1,19 @@
+.AuthContainer {
+  width: 100%;
+  margin: 20px 0px;
+}
+
+.InputFieldContainer {
+  margin: 5px 0px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.InputFieldContainer input {
+  margin-left: 5px;
+}
+.InputFieldContainer button {
+  margin: 5px;
+}

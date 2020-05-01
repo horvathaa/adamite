@@ -8,11 +8,15 @@ import {
 
 // https://firebase.google.com/docs/auth/web/password-auth
 export const signUpWithEmailAndPassword = (email, password) => {
-  auth.createUserWithEmailAndPassword(email, password);
+  return auth.createUserWithEmailAndPassword(email, password);
 };
 
 export const signInWithEmailAndPassword = (email, password) => {
-  auth.signInWithEmailAndPassword(email, password);
+  return auth.signInWithEmailAndPassword(email, password);
+};
+
+export const signOut = () => {
+  return auth.signOut();
 };
 
 export const updateUserProfile = () => {
