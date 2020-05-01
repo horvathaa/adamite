@@ -14,6 +14,7 @@
     "@types/react": "^16.9.26",
     "bootstrap": "^4.4.1",
     "classnames": "^2.2.6",
+    "firebase": "^7.14.2",
     "glamor": "^2.20.40",
     "jquery": "^3.4.1",
     "prop-types": "^15.7.2",
