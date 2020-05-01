@@ -64,6 +64,31 @@ const Authentication = props => {
     );
   };
 
+  const forgetPwdClickedHandler = e => {
+    e.preventDefault();
+    if (!EmailValidator.validate(email)) {
+      // invalid email;
+      alert('Invalid email!');
+      return;
+    }
+    chrome.runtime.sendMessage(
+      {
+        msg: 'USER_FORGET_PWD',
+        payload: {
+          email,
+        },
+      },
+      response => {
+        console.log(response);
+        if (response.error) {
+          alert(response.message);
+        } else {
+          alert('Password reset email sent!');
+        }
+      }
+    );
+  };
+
   return (
     <div className="AuthContainer">
       <div className="InputFieldContainer">
@@ -90,6 +115,7 @@ const Authentication = props => {
       <div className="InputFieldContainer">
         <button onClick={signUpClickedHandler}>Sign up</button>
         <button onClick={signInClickedHandler}>Sign in</button>
+        <button onClick={forgetPwdClickedHandler}>Forget pwd</button>
       </div>
     </div>
   );

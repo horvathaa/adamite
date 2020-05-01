@@ -48,8 +48,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       });
   } else if (request.msg === 'USER_SIGNOUT') {
     signOut();
+  } else if (request.msg === 'USER_FORGET_PWD') {
+    const { email } = request.payload;
+    auth
+      .sendPasswordResetEmail(email)
+      .then(result => {
+        console.log(result);
+        sendResponse({ error: false });
+      })
+      .catch(err => {
+        console.log(err);
+        sendResponse({ ...err, error: true });
+      });
   }
-
   return true;
 });
 
