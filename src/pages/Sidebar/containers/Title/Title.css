@@ -1,6 +1,29 @@
 .TitleContainer {
-  font-weight: 600;
-  font-size: large;
-  text-align: center;
+  padding: 5px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.TitleContainer .Title {
+  font-weight: 500;
   color: dimgray;
+  font-size: 1.3rem;
+}
+
+.TitleContainer .UserContainer {
+  font-size: 0.7rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.TitleContainer .UserEmail {
+  font-weight: 300;
+}
+
+.TitleContainer .UserSignOutButton {
+  margin-top: 4px;
+  font-size: 0.6rem;
 }

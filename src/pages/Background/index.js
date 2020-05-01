@@ -1,11 +1,12 @@
 import '../../assets/img/icon-34.png';
 import '../../assets/img/icon-128.png';
+import './helpers/authHelper';
 import './helpers/sidebarHelper';
 
 console.log('This is the background page.');
 console.log('Put the background scripts here.');
 
-const broadcastAllAnnotations = (toUrl) => {
+const broadcastAllAnnotations = toUrl => {
   let annotations = localStorage.getItem('annotations');
   annotations = annotations ? JSON.parse(annotations) : {};
   if (annotations[toUrl]) {
@@ -19,7 +20,7 @@ const broadcastAllAnnotations = (toUrl) => {
     annotations = annotations[toUrl] ? annotations[toUrl] : [];
   }
   chrome.tabs.query(query, function (tabs) {
-    tabs.forEach((tab) => {
+    tabs.forEach(tab => {
       chrome.tabs.sendMessage(tab.id, {
         from: 'background',
         msg: 'ANNOTATIONS_UPDATED',
