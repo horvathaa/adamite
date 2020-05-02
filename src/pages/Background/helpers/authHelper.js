@@ -1,5 +1,6 @@
 import {
   auth,
+  updateUserProfile,
   signUpWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
@@ -8,9 +9,12 @@ import {
 let currentUser = null;
 
 auth.onAuthStateChanged(user => {
-  // console.log(user);
+  console.log(user);
   currentUser = user === null ? null : { uid: user.uid, email: user.email };
   broadcastAuthStatus(currentUser);
+  if (user !== null) {
+    updateUserProfile();
+  }
 });
 
 const broadcastAuthStatus = user => {
@@ -63,7 +67,3 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
   return true;
 });
-
-setTimeout(() => {
-  signOut();
-}, 3000);

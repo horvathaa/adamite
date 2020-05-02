@@ -3,6 +3,8 @@ import '../../assets/img/icon-128.png';
 import './helpers/authHelper';
 import './helpers/sidebarHelper';
 
+import { createAnnotation } from '../../firebase/index';
+
 console.log('This is the background page.');
 console.log('Put the background scripts here.');
 
@@ -37,19 +39,40 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.msg === 'REQUEST_TAB_URL') {
     sendResponse({ url: sender.tab.url });
   } else if (request.msg === 'SAVE_ANNOTATED_TEXT') {
-    const { url, content } = request.payload;
-    let annotations = localStorage.getItem('annotations');
-    annotations = annotations ? JSON.parse(annotations) : {};
-    if (annotations[url]) {
-      annotations[url].push(content);
-    } else {
-      annotations[url] = [content];
-    }
-    localStorage.setItem('annotations', JSON.stringify(annotations));
-    sendResponse({
-      msg: 'DONE',
+    let { url, content } = request.payload;
+
+    // localstorage: no longer in action
+    // let annotations = localStorage.getItem('annotations');
+    // annotations = annotations ? JSON.parse(annotations) : {};
+    // if (annotations[url]) {
+    //   annotations[url].push(content);
+    // } else {
+    //   annotations[url] = [content];
+    // }
+    // localStorage.setItem('annotations', JSON.stringify(annotations));
+    // sendResponse({
+    //   msg: 'DONE',
+    // });
+    // broadcastAllAnnotations(url);
+
+    // firebase: in action
+    content = JSON.parse(content);
+    createAnnotation({
+      taskId: null,
+      AnnotationContent: content.annotation,
+      AnnotationAnchorContent: content.anchor,
+      AnnotationAnchorPath: null,
+      AnnotationType: 'default', // could be other types (string)
+      url,
+      AnnotationTags: [],
+      div: content.div,
+      todo: content.todo,
+    }).then(value => {
+      console.log(value);
+      sendResponse({
+        msg: 'DONE',
+      });
     });
-    broadcastAllAnnotations(url);
   } else if (request.msg === 'REQUEST_ANNOTATED_TEXT_ON_THIS_PAGE') {
     let { url } = request.payload;
     if (!url) {
@@ -71,4 +94,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       payload: request.payload,
     });
   }
+
+  return true;
 });

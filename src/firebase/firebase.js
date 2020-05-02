@@ -5,4 +5,6 @@ import 'firebase/auth';
 
 firebase.initializeApp(config);
 
+firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
 export default firebase;

@@ -7,26 +7,23 @@ class AnnotationList extends Component {
   render() {
     const { annotations } = this.props;
     let annotationsCopy = [];
-    let idx = 0;
     annotations.forEach(annotation => {
       annotationsCopy.push({
-        anchor: annotation.anchor,
-        content: annotation.annotation,
-        idx: idx,
+        anchor: annotation.anchorContent,
+        content: annotation.content,
         id: annotation.id,
         div: annotation.div,
-        active: annotation.active,
-        todo: annotation.todo
+        active: false, // annotation.active,
+        todo: annotation.todo,
       });
-      idx += 1;
     });
 
     return (
       <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
-        {annotationsCopy.map(annotation => {
+        {annotationsCopy.map((annotation, idx) => {
           return (
             <Annotation
-              key={annotation.idx}
+              key={idx}
               id={annotation.id}
               anchor={annotation.anchor}
               content={annotation.content}

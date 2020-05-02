@@ -19,11 +19,13 @@ export const signOut = () => {
   return auth.signOut();
 };
 
-export const updateUserProfile = () => {
-  let user = getCurrentUser();
+export const updateUserProfile = (user = getCurrentUser()) => {
   db.collection(DB_COLLECTIONS.USERS)
-    .doc(getCurrentUserId())
-    .set({ ...user }, { merge: true });
+    .doc(user.uid)
+    .set(
+      { uid: user.uid, email: user.email, githubProfileLink: '' },
+      { merge: true }
+    );
 };
 
 export const getUserProfileById = uid => {

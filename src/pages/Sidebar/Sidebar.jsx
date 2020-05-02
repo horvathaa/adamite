@@ -6,6 +6,8 @@ import Authentication from './containers//Authentication//Authentication';
 import AnnotationList from './containers/AnnotationList/AnnotationList';
 import NewAnnotation from './containers/NewAnnotation/NewAnnotation';
 
+import { getAllAnnotationsByUserIdAndUrl } from '../../firebase/index';
+
 class Sidebar extends React.Component {
   state = {
     url: '',
@@ -16,34 +18,54 @@ class Sidebar extends React.Component {
     currentUser: undefined,
   };
 
+  setUpAnnotationsListener = (uid, url) => {
+    if (this.unsubscribeAnnotations) {
+      this.unsubscribeAnnotations();
+    }
+    getAllAnnotationsByUserIdAndUrl(uid, url).onSnapshot(querySnapshot => {
+      let annotations = [];
+      querySnapshot.forEach(snapshot => {
+        annotations.push({
+          id: snapshot.id,
+          ...snapshot.data(),
+        });
+      });
+      this.setState({ annotations });
+    });
+  };
+
+  componentWillMount() {
+    if (this.unsubscribeAnnotations) {
+      this.unsubscribeAnnotations();
+    }
+  }
+
   componentDidMount() {
     chrome.runtime.sendMessage(
       {
         msg: 'GET_CURRENT_USER',
       },
-      data => {
-        this.setState({ currentUser: data.payload.currentUser });
-      }
-    );
+      currentUserData => {
+        this.setState({ currentUser: currentUserData.payload.currentUser });
 
-    chrome.runtime.sendMessage(
-      {
-        msg: 'REQUEST_TAB_URL',
-      },
-      data => {
-        this.setState({ url: data.url });
-      }
-    );
-
-    chrome.runtime.sendMessage(
-      {
-        msg: 'REQUEST_ANNOTATED_TEXT_ON_THIS_PAGE',
-        payload: {},
-      },
-      data => {
-        console.log(data);
-        this.setState({ annotations: data.annotationsOnPage });
-        console.log(this.state.annotations);
+        chrome.runtime.sendMessage(
+          {
+            msg: 'REQUEST_TAB_URL',
+          },
+          urlData => {
+            this.setState({ url: urlData.url });
+            if (currentUserData.payload.currentUser) {
+              this.setUpAnnotationsListener(
+                currentUserData.payload.currentUser.uid,
+                urlData.url
+              );
+            } else {
+              if (this.unsubscribeAnnotations) {
+                this.unsubscribeAnnotations();
+              }
+            }
+          }
+        );
       }
     );
 
@@ -53,6 +75,16 @@ class Sidebar extends React.Component {
         request.msg === 'USER_AUTH_STATUS_CHANGED'
       ) {
         this.setState({ currentUser: request.payload.currentUser });
+        if (request.payload.currentUser) {
+          this.setUpAnnotationsListener(
+            request.payload.currentUser.uid,
+            this.state.url
+          );
+        } else {
+          if (this.unsubscribeAnnotations) {
+            this.unsubscribeAnnotations();
+          }
+        }
       } else if (
         request.from === 'background' &&
         request.msg === 'ANNOTATIONS_UPDATED' &&
@@ -101,7 +133,7 @@ class Sidebar extends React.Component {
   };
 
   render() {
-    const { currentUser } = this.state;
+    const { currentUser, annotations } = this.state;
 
     if (currentUser === undefined) {
       // loading currentUser
@@ -125,7 +157,7 @@ class Sidebar extends React.Component {
                   offset={this.state.offset}
                 />
               )}
-            <AnnotationList annotations={this.state.annotations} />
+            <AnnotationList annotations={annotations} />
           </React.Fragment>
         )}
       </div>
