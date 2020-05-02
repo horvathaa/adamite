@@ -87,13 +87,6 @@ class Sidebar extends React.Component {
         }
       } else if (
         request.from === 'background' &&
-        request.msg === 'ANNOTATIONS_UPDATED' &&
-        request.payload.specific === true
-      ) {
-        const { annotations } = request.payload;
-        this.setState({ annotations: annotations });
-      } else if (
-        request.from === 'background' &&
         request.msg === 'CONTENT_SELECTED'
       ) {
         const { selection, rect, offset } = request.payload;

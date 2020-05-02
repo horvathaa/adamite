@@ -5,15 +5,14 @@ import { SIDEBAR_IFRAME_ID } from '../../../shared/constants';
 
 function anchorClick(e) {
   const target = e.target.id;
-  chrome.runtime.sendMessage(
-    {
-      msg: 'ANCHOR_CLICKED',
-      from: 'content',
-      payload: {
-        url: window.location.href,
-        target: target
-      },
-    });
+  chrome.runtime.sendMessage({
+    msg: 'ANCHOR_CLICKED',
+    from: 'content',
+    payload: {
+      url: window.location.href,
+      target: target,
+    },
+  });
 }
 
 const AnnotationAnchor = ({ div, id }) => {
@@ -29,7 +28,7 @@ const AnnotationAnchor = ({ div, id }) => {
         zIndex: 100,
         position: 'absolute',
       }}
-      onClick={(e) => anchorClick(e)}
+      onClick={e => anchorClick(e)}
     ></div>
   );
 };
@@ -96,7 +95,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       },
       data => {
         const { annotationsOnPage } = data;
-        const mostRecentAnno = annotationsOnPage[annotationsOnPage.length - 1];
+        const mostRecentAnno = annotationsOnPage[0]; // annotationsOnPage already sorted by createdTimestamp (desc)
         displayAnnotationAnchor(mostRecentAnno.div, mostRecentAnno.id);
       }
     );
