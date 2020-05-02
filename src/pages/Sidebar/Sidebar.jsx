@@ -39,7 +39,6 @@ class Sidebar extends React.Component {
       {
         msg: 'REQUEST_ANNOTATED_TEXT_ON_THIS_PAGE',
         payload: {},
-        // url: window.location.href
       },
       data => {
         console.log(data);

@@ -48,6 +48,23 @@
   position: relative;
 }
 
+.ToDoAnnotationContainer {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 8px 8px 10px;
+  cursor: default;
+  outline-style: solid;
+  outline: burlywood;
+  color: rgb(44, 44, 44);
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  background-color: rgba(128, 24, 24, 0.5);
+  transition: all 0.1s ease-in;
+  position: relative;
+}
+
 .ActiveAnnotationContainer {
   background-color: rgb(255,255,255);
   outline-style: bold;
