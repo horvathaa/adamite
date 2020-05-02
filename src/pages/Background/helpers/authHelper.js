@@ -63,7 +63,3 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
   return true;
 });
-
-setTimeout(() => {
-  signOut();
-}, 3000);
