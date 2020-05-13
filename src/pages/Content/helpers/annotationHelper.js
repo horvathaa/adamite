@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import './anchor-box.css';
+import xpath from 'xpath';
 import { SIDEBAR_IFRAME_ID } from '../../../shared/constants';
+
 
 function anchorClick(e) {
   const target = e.target.id;
@@ -50,6 +52,9 @@ document.addEventListener('mouseup', event => {
   const selection = window.getSelection();
   if (selection.type === 'Range') {
     const rect = selection.getRangeAt(0).getBoundingClientRect();
+    console.log(rect);
+    //let test = getPathTo(rect.startContainer);
+    //console.log(test);
     const offset = window.scrollY;
     alertBackgroundOfNewSelection(selection.toString(), rect, offset);
   }

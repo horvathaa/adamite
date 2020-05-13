@@ -12,6 +12,7 @@
   "dependencies": {
     "@hot-loader/react-dom": "^16.13.0",
     "@types/react": "^16.9.26",
+    "annotator": "^2.0.0-alpha.3",
     "bootstrap": "^4.4.1",
     "classnames": "^2.2.6",
     "email-validator": "^2.0.4",
@@ -22,7 +23,10 @@
     "re-resizable": "^6.3.2",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "react-hot-loader": "^4.12.20"
+    "react-hot-loader": "^4.12.20",
+    "react-icons": "^3.10.0",
+    "xmldom": "^0.3.0",
+    "xpath": "0.0.27"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0",

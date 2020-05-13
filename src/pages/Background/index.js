@@ -56,16 +56,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     // firebase: in action
     content = JSON.parse(content); // consider just pass content as an object
+    console.log(content);
     createAnnotation({
       taskId: null,
       AnnotationContent: content.annotation,
       AnnotationAnchorContent: content.anchor,
       AnnotationAnchorPath: null,
-      AnnotationType: 'default', // could be other types (string)
+      AnnotationType: content.annotationType, // could be other types (string)
       url,
       AnnotationTags: [],
       div: content.div,
-      todo: content.todo,
     }).then(value => {
       console.log(value);
       sendResponse({
@@ -80,7 +80,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
   } else if (request.msg === 'REQUEST_ANNOTATED_TEXT_ON_THIS_PAGE') {
     const { url } = request.payload;
-    const annotationsOnPage = annotations.filter(a => a.url === url);
+    const annotationsOnPage = annotations.filter(a => a.url === url); // can use this later so we get all annotations that match our filter criterias
     sendResponse({ annotationsOnPage });
   }
   return true;

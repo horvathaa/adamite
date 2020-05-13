@@ -45,7 +45,6 @@ export const createAnnotation = async ({
   url,
   AnnotationTags,
   div,
-  todo,
 }) => {
   authorId = authorId ? authorId : getCurrentUserId();
   if (!authorId) {
@@ -64,7 +63,6 @@ export const createAnnotation = async ({
     url,
     tags: AnnotationTags,
     div,
-    todo,
   };
 
   return getAllAnnotations().doc().set(newAnnotation);

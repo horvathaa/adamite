@@ -14,7 +14,7 @@ class AnnotationList extends Component {
         id: annotation.id,
         div: annotation.div,
         active: false, // annotation.active,
-        todo: annotation.todo,
+        type: annotation.type,
       });
     });
 
@@ -29,7 +29,7 @@ class AnnotationList extends Component {
               content={annotation.content}
               div={annotation.div}
               active={annotation.active}
-              todo={annotation.todo}
+              type={annotation.type}
             />
           );
         })}
