@@ -6,7 +6,7 @@ import Authentication from './containers//Authentication//Authentication';
 import AnnotationList from './containers/AnnotationList/AnnotationList';
 import NewAnnotation from './containers/NewAnnotation/NewAnnotation';
 
-import { getAllAnnotationsByUserIdAndUrl, getAllAnnotationsByUrl, getAllAnnotations } from '../../firebase/index';
+import { getAllAnnotationsByUserIdAndUrl, getAllAnnotationsByUrl, getAllAnnotations, trashAnnotationById } from '../../firebase/index';
 
 class Sidebar extends React.Component {
   state = {
@@ -31,7 +31,6 @@ class Sidebar extends React.Component {
           ...snapshot.data(),
         });
       });
-      console.log(annotations);
       this.setState({ annotations });
     });
   };

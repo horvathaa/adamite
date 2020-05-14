@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
-import { FaCaretDown, FaCaretUp, FaTrash } from 'react-icons/fa';
+import { FaCaretDown, FaCaretUp, FaTrash, FaEdit } from 'react-icons/fa';
 import './Annotation.css';
 import { checkPropTypes, string } from 'prop-types';
 import { deleteAnnotationForeverById } from '../../../../../firebase';
@@ -16,7 +16,12 @@ class Annotation extends Component {
   }
 
   handleTrashClick(id) {
-    deleteAnnotationForeverById(id);
+    // eslint-disable-next-line no-restricted-globals
+    if (confirm("Are you sure? This action cannot be reversed")) {
+      deleteAnnotationForeverById(id);
+    } else {
+      return;
+    }
   }
 
   handleExpandCollapse = (request) => {
@@ -29,8 +34,8 @@ class Annotation extends Component {
   }
 
   render() {
-    const { anchor, content, idx, id, active, type, authorId, currentUser } = this.props;
-    if (type === 'default') {
+    const { anchor, content, idx, id, active, type, authorId, currentUser, trashed } = this.props;
+    if (type === 'default' && !trashed) {
       return (
         <li key={idx} id={id} className={classNames({ AnnotationItem: true })}>
           <div
@@ -72,7 +77,10 @@ class Annotation extends Component {
               )
             }
             {currentUser.uid === authorId ? (
-              <FaTrash onClick={_ => this.handleTrashClick(id)} />
+              <React.Fragment>
+                <FaTrash onClick={_ => this.handleTrashClick(id)} />
+                <FaEdit onClick={_ => this.handleEditClick(id)} />
+              </React.Fragment>
             ) : (null)}
           </div>
           <div
@@ -89,7 +97,7 @@ class Annotation extends Component {
         </li>
       );
     }
-    else if (type === 'to-do') {
+    else if (type === 'to-do' && !trashed) {
       return (
         <li key={idx} id={id} className={classNames({ AnnotationItem: true })}>
           <div

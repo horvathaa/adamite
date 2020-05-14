@@ -33,6 +33,7 @@ class AnnotationList extends Component {
               type={annotation.type}
               authorId={annotation.authorId}
               currentUser={currentUser}
+              trashed={annotation.trashed}
             />
           );
         })}
