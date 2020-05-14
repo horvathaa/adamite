@@ -3,11 +3,13 @@ import classNames from 'classnames';
 import { FaCaretDown, FaCaretUp, FaTrash, FaEdit } from 'react-icons/fa';
 import './Annotation.css';
 import { checkPropTypes, string } from 'prop-types';
-import { deleteAnnotationForeverById } from '../../../../../firebase';
+import { deleteAnnotationForeverById, updateAnnotationById } from '../../../../../firebase';
 
 class Annotation extends Component {
   state = {
-    collapsed: false
+    collapsed: false,
+    editing: false,
+    editedAnnotationContent: null,
   }
 
   handleDoneToDo() {
@@ -22,6 +24,23 @@ class Annotation extends Component {
     } else {
       return;
     }
+  }
+
+  annotationChangeHandler = event => {
+    this.setState({ editedAnnotationContent: event.target.value });
+  };
+
+  submitButtonHandler = (event, id) => {
+    updateAnnotationById(id, { content: this.state.editedAnnotationContent });
+    this.setState({ editing: false });
+  }
+
+  handleEditClick(id) {
+    this.setState({ editing: true })
+  }
+
+  handleEditCancel() {
+    this.setState({ editing: false });
   }
 
   handleExpandCollapse = (request) => {
@@ -65,10 +84,41 @@ class Annotation extends Component {
             <div
               className={classNames({
                 ContentContainer: true,
-                Truncated: this.state.collapsed
+                Truncated: this.state.collapsed,
               })}
             >
-              {content}
+              {this.state.editing ? (
+                <React.Fragment>
+                  <div className="TextareaContainer">
+                    <textarea
+                      className="form-control"
+                      rows="2"
+                      placeholder={content}
+                      //value={content} -to-do make this work better
+                      onChange={e => this.annotationChangeHandler(e)}
+                    />
+                  </div>
+                  <div className="SubmitButtonContainer">
+                    <button
+                      className="btn btn-sm btn-outline-danger"
+                      onClick={_ => this.handleEditCancel()}
+                    >
+                      Cancel
+                      </button>
+                      &nbsp; &nbsp;
+                    <button
+                      className="btn btn-sm btn-outline-secondary SubmitButton"
+                      onClick={e => this.submitButtonHandler(e, id)}
+                      disabled={content.length === 0}
+                    >
+                      Save
+                    </button>
+                  </div>
+                </React.Fragment>
+              ) : (<div>
+                {content}
+              </div>
+                )}
             </div>
             {this.state.collapsed ? (
               <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} />
