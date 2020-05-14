@@ -1,16 +1,22 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
-import { FaCaretDown, FaCaretUp } from 'react-icons/fa';
+import { FaCaretDown, FaCaretUp, FaTrash } from 'react-icons/fa';
 import './Annotation.css';
+import { checkPropTypes, string } from 'prop-types';
+import { deleteAnnotationForeverById } from '../../../../../firebase';
 
 class Annotation extends Component {
   state = {
     collapsed: false
-  };
+  }
 
   handleDoneToDo() {
     console.log('handled');
     return;
+  }
+
+  handleTrashClick(id) {
+    deleteAnnotationForeverById(id);
   }
 
   handleExpandCollapse = (request) => {
@@ -23,10 +29,10 @@ class Annotation extends Component {
   }
 
   render() {
-    const { anchor, content, idx, id, active, type } = this.props;
+    const { anchor, content, idx, id, active, type, authorId, currentUser } = this.props;
     if (type === 'default') {
       return (
-        <li key={idx} id={id} className={classNames({ AnnotationItem: true, Truncated: this.state.collapsed })}>
+        <li key={idx} id={id} className={classNames({ AnnotationItem: true })}>
           <div
             className={classNames({
               AnnotationContainerPad: true,
@@ -65,7 +71,9 @@ class Annotation extends Component {
                 <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} />
               )
             }
-
+            {currentUser.uid === authorId ? (
+              <FaTrash onClick={_ => this.handleTrashClick(id)} />
+            ) : (null)}
           </div>
           <div
             className={classNames({
@@ -121,6 +129,9 @@ class Annotation extends Component {
             ) : (
                 <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} />
               )}
+            {currentUser.uid === authorId ? (
+              <FaTrash onClick={_ => this.handleTrashClick(id)} />
+            ) : (null)}
             <React.Fragment>
               <button className="btn btn-sm"
                 onClick={_ => this.handleDoneToDo()}>Done?</button>

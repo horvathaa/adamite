@@ -5,7 +5,7 @@ import './AnnotationList.css';
 
 class AnnotationList extends Component {
   render() {
-    const { annotations } = this.props;
+    const { annotations, currentUser } = this.props;
     let annotationsCopy = [];
     annotations.forEach(annotation => {
       annotationsCopy.push({
@@ -15,6 +15,7 @@ class AnnotationList extends Component {
         div: annotation.div,
         active: false, // annotation.active,
         type: annotation.type,
+        authorId: annotation.authorId,
       });
     });
 
@@ -30,6 +31,8 @@ class AnnotationList extends Component {
               div={annotation.div}
               active={annotation.active}
               type={annotation.type}
+              authorId={annotation.authorId}
+              currentUser={currentUser}
             />
           );
         })}

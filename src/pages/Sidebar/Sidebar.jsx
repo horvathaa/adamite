@@ -1,12 +1,12 @@
 import React from 'react';
 import './Sidebar.css';
-
+import { FaFilter } from 'react-icons/fa';
 import Title from './containers/Title/Title';
 import Authentication from './containers//Authentication//Authentication';
 import AnnotationList from './containers/AnnotationList/AnnotationList';
 import NewAnnotation from './containers/NewAnnotation/NewAnnotation';
 
-import { getAllAnnotationsByUserIdAndUrl } from '../../firebase/index';
+import { getAllAnnotationsByUserIdAndUrl, getAllAnnotationsByUrl, getAllAnnotations } from '../../firebase/index';
 
 class Sidebar extends React.Component {
   state = {
@@ -22,7 +22,8 @@ class Sidebar extends React.Component {
     if (this.unsubscribeAnnotations) {
       this.unsubscribeAnnotations();
     }
-    getAllAnnotationsByUserIdAndUrl(uid, url).onSnapshot(querySnapshot => {
+    // getAllAnnotationsByUserIdAndUrl(uid, url).onSnapshot(querySnapshot => {
+    getAllAnnotations().onSnapshot(querySnapshot => {
       let annotations = [];
       querySnapshot.forEach(snapshot => {
         annotations.push({
@@ -30,6 +31,7 @@ class Sidebar extends React.Component {
           ...snapshot.data(),
         });
       });
+      console.log(annotations);
       this.setState({ annotations });
     });
   };
@@ -121,12 +123,14 @@ class Sidebar extends React.Component {
     });
   }
 
+
   resetNewSelection = () => {
     this.setState({ newSelection: null });
   };
 
   render() {
     const { currentUser, annotations } = this.state;
+    console.log(annotations);
 
     if (currentUser === undefined) {
       // loading currentUser
@@ -137,6 +141,7 @@ class Sidebar extends React.Component {
       <div className="SidebarContainer">
         <Title currentUser={currentUser} />
         {currentUser === null && <Authentication />}
+        <FaFilter />
         {currentUser !== null && (
           <React.Fragment>
             {' '}
@@ -150,7 +155,7 @@ class Sidebar extends React.Component {
                   offset={this.state.offset}
                 />
               )}
-            <AnnotationList annotations={annotations} />
+            <AnnotationList annotations={annotations} currentUser={currentUser} />
           </React.Fragment>
         )}
       </div>
