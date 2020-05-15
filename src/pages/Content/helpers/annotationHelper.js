@@ -49,20 +49,103 @@ const alertBackgroundOfNewSelection = (selection, rect, offset) => {
   });
 };
 
+function getNextNode(node) {
+  if (node.firstChild) {
+    return node.firstChild;
+  }
+  while (node) {
+    if (node.nextSibling)
+      return node.nextSibling;
+    node = node.parentNode;
+  }
+}
+
+function getNodesInRange(range) {
+  var start = range.startContainer;
+  var end = range.endContainer;
+  var commonAncestor = range.commonAncestorContainer;
+  var nodes = [];
+  var node;
+
+  // walk parent nodes from start to common ancestor
+  for (node = start.parentNode; node; node = node.parentNode) {
+    nodes.push(node);
+    if (node == commonAncestor)
+      break;
+  }
+  nodes.reverse();
+
+  // walk children and siblings from start until end is found
+  for (node = start; node; node = getNextNode(node)) {
+    nodes.push(node);
+    if (node == end)
+      break;
+  }
+
+  return nodes;
+}
+
+var splitReinsertText = function (node, substring, callback) {
+  node.data.replace(substring, function (all) {
+    var args = [].slice.call(arguments),
+      offset = args[args.length - 2],
+      newTextNode = node.splitText(offset);
+
+    newTextNode.data = newTextNode.data.substr(all.length);
+
+    callback.apply(window, [node].concat(args));
+    return newTextNode;
+
+  });
+}
+
+/*
+ * Finds highlighted text and creates highlight for annotation
+ */
+var matchText = function (nodes, range, callback, excludeElements) {
+
+  excludeElements || (excludeElements = ['script', 'style', 'iframe', 'canvas']);
+
+  for (var i = 0; i < nodes.length; i++) {
+    if (nodes[i].isEqualNode(range.startContainer)) {
+      var substring = nodes[i].data.substring(range.startOffset, range.endOffset < range.startOffset ? nodes[i].data.length : range.endOffset);
+      splitReinsertText(nodes[i], substring, callback);
+    }
+    else if (nodes[i].isEqualNode(range.endContainer) && !range.startContainer.isEqualNode(range.endContainer)) {
+      var substring = nodes[i].data.substring(0, range.endOffset);
+      splitReinsertText(nodes[i], substring, callback);
+    }
+    else if (nodes[i].nodeType === 3) {
+      if (nodes[i].data.trim() === "")
+        continue;
+      splitReinsertText(nodes[i], nodes[i].data, callback);
+    }
+  }
+  return nodes;
+}
+
+
 document.addEventListener('mouseup', event => {
   var selection = window.getSelection();
-  console.log("AHHHHHHHH");
-  console.log(selection);
 
   if (selection.type === 'Range') {
     const rect = selection.getRangeAt(0);
-    console.log(rect);
-    var span = document.createElement('span');
-    span.style.backgroundColor = "red";
-    rect.surroundContents(span);
 
+    //Text nodes that were highlighted by user
+    var textNodes = getNodesInRange(rect).filter(function (element) {
+      return element.nodeType === 3 && element.data.trim() !== "";
+    });
+
+    //TODO Custom Span colors
+    matchText(textNodes, rect, function (node, match, offset) {
+      var span = document.createElement("span");
+      span.style.backgroundColor = "yellow";
+      span.textContent = match;
+      node.parentNode.insertBefore(span, node.nextSibling);
+    });
     const offset = window.scrollY;
     alertBackgroundOfNewSelection(selection.toString(), rect, offset);
+    // alertBackgroundOfNewSelection(selection.toString(), rect, offset);
   }
 
   if (selection.toString().trim().length === 0) {
