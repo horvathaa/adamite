@@ -17,6 +17,10 @@ function anchorClick(e) {
   });
 }
 
+/*function recursiveXpath(child) {
+  for ()
+}*/
+
 const AnnotationAnchor = ({ div, id }) => {
   return (
     <div
@@ -49,12 +53,17 @@ const alertBackgroundOfNewSelection = (selection, rect, offset) => {
 };
 
 document.addEventListener('mouseup', event => {
-  const selection = window.getSelection();
+  var selection = window.getSelection();
+  console.log("AHHHHHHHH");
+  console.log(selection);
+  //console.log(selection.startContainer.parentElement);
   if (selection.type === 'Range') {
-    const rect = selection.getRangeAt(0).getBoundingClientRect();
+    const rect = selection.getRangeAt(0);
     console.log(rect);
-    //let test = getPathTo(rect.startContainer);
-    //console.log(test);
+    var span = document.createElement('span');
+    span.style.backgroundColor = "red";
+    rect.surroundContents(span);
+
     const offset = window.scrollY;
     alertBackgroundOfNewSelection(selection.toString(), rect, offset);
   }
@@ -62,6 +71,7 @@ document.addEventListener('mouseup', event => {
   if (selection.toString().trim().length === 0) {
     alertBackgroundOfNewSelection(null, null);
   }
+
 });
 
 function displayAnnotationAnchor(div, id) {
