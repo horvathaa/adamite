@@ -51,6 +51,7 @@ const alertBackgroundOfNewSelection = (selection, rect, offset) => {
 document.addEventListener('mouseup', event => {
   const selection = window.getSelection();
   if (selection.type === 'Range') {
+    console.log(window.getSelection());
     const rect = selection.getRangeAt(0).getBoundingClientRect();
     console.log(rect);
     //let test = getPathTo(rect.startContainer);

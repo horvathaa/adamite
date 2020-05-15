@@ -120,19 +120,26 @@ class Annotation extends Component {
               </div>
                 )}
             </div>
-            {this.state.collapsed ? (
-              <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} />
-            ) : (
-                <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} />
-              )
-            }
-            {currentUser.uid === authorId ? (
-              <React.Fragment>
-                <FaTrash onClick={_ => this.handleTrashClick(id)} />
-                <FaEdit onClick={_ => this.handleEditClick(id)} />
-              </React.Fragment>
-            ) : (null)}
+            <div className="IconRow">
+              {currentUser.uid === authorId ? (
+                <React.Fragment>
+                  <div className="IconContainer">
+                    <FaTrash className="Icon" id="Trash" onClick={_ => this.handleTrashClick(id)} />
+                  </div>
+                  <div className="IconContainer">
+                    <FaEdit className="Icon" id="Edit" onClick={_ => this.handleEditClick(id)} />
+                  </div>
+                </React.Fragment>
+              ) : (null)}
+              {this.state.collapsed ? (
+                <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} />
+              ) : (
+                  <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} />
+                )
+              }
+            </div>
           </div>
+
           <div
             className={classNames({
               AnnotationContainerPad: true,
@@ -144,6 +151,12 @@ class Annotation extends Component {
               className={classNames({ AnnotationContainerRightPad: true })}
             ></div>
           </div>
+          <div
+            className={classNames({
+              AnnotationContainerPad: true,
+              AnnotationPadActive: true,
+            })}
+          ></div>
         </li>
       );
     }
@@ -180,7 +193,38 @@ class Annotation extends Component {
                 Truncated: this.state.collapsed
               })}
             >
-              {content}
+              {this.state.editing ? (
+                <React.Fragment>
+                  <div className="TextareaContainer">
+                    <textarea
+                      className="form-control"
+                      rows="2"
+                      placeholder={content}
+                      //value={content} -to-do make this work better
+                      onChange={e => this.annotationChangeHandler(e)}
+                    />
+                  </div>
+                  <div className="SubmitButtonContainer">
+                    <button
+                      className="btn btn-sm btn-outline-danger"
+                      onClick={_ => this.handleEditCancel()}
+                    >
+                      Cancel
+                      </button>
+                      &nbsp; &nbsp;
+                    <button
+                      className="btn btn-sm btn-outline-secondary SubmitButton"
+                      onClick={e => this.submitButtonHandler(e, id)}
+                      disabled={content.length === 0}
+                    >
+                      Save
+                    </button>
+                  </div>
+                </React.Fragment>
+              ) : (<div>
+                {content}
+              </div>
+                )}
             </div>
             {this.state.collapsed ? (
               <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} />
@@ -188,12 +232,17 @@ class Annotation extends Component {
                 <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} />
               )}
             {currentUser.uid === authorId ? (
-              <FaTrash onClick={_ => this.handleTrashClick(id)} />
-            ) : (null)}
-            <React.Fragment>
-              <button className="btn btn-sm"
-                onClick={_ => this.handleDoneToDo()}>Done?</button>
-            </React.Fragment>
+              <React.Fragment>
+                <div className="IconContainer">
+                  <FaTrash className="Icon" id="Trash" onClick={_ => this.handleTrashClick(id)} />
+                </div>
+                <div className="IconContainer">
+                  <FaEdit className="Icon" id="Edit" onClick={_ => this.handleEditClick(id)} />
+                </div>
+                <button className="btn btn-sm"
+                  onClick={_ => this.handleDoneToDo()}>Done?</button>
+              </React.Fragment>)
+              : (null)}
           </div>
           <div
             className={classNames({

@@ -23,18 +23,21 @@ class AnnotationList extends Component {
       <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
         {annotationsCopy.map((annotation, idx) => {
           return (
-            <Annotation
-              key={idx}
-              id={annotation.id}
-              anchor={annotation.anchor}
-              content={annotation.content}
-              div={annotation.div}
-              active={annotation.active}
-              type={annotation.type}
-              authorId={annotation.authorId}
-              currentUser={currentUser}
-              trashed={annotation.trashed}
-            />
+            <React.Fragment>
+              <Annotation
+                key={idx}
+                id={annotation.id}
+                anchor={annotation.anchor}
+                content={annotation.content}
+                div={annotation.div}
+                active={annotation.active}
+                type={annotation.type}
+                authorId={annotation.authorId}
+                currentUser={currentUser}
+                trashed={annotation.trashed}
+              />
+              <div className="AnnotationListPadding" key={1000 + idx}></div>
+            </React.Fragment>
           );
         })}
       </ul>

@@ -5,17 +5,29 @@ import Title from './containers/Title/Title';
 import Authentication from './containers//Authentication//Authentication';
 import AnnotationList from './containers/AnnotationList/AnnotationList';
 import NewAnnotation from './containers/NewAnnotation/NewAnnotation';
-
+import Filter from './containers/Filter/Filter';
 import { getAllAnnotationsByUserIdAndUrl, getAllAnnotationsByUrl, getAllAnnotations, trashAnnotationById } from '../../firebase/index';
+import { style } from 'glamor';
 
 class Sidebar extends React.Component {
   state = {
     url: '',
     annotations: [],
+    filteredAnnotations: [],
     newSelection: null,
     rect: null,
     offset: 0,
     currentUser: undefined,
+    showFilter: false,
+    selected: undefined
+    // selected: { - need to get default filter working
+    //   siteScope: "onPage",
+    //   userScope: "public",
+    //   annoType: "all",
+    //   timeRange: "all",
+    //   archive: "no",
+    //   tag: "all"
+    // }
   };
 
   setUpAnnotationsListener = (uid, url) => {
@@ -122,6 +134,63 @@ class Sidebar extends React.Component {
     });
   }
 
+  displayFilter() {
+    this.setState({ showFilter: !this.state.showFilter });
+  }
+
+  applyFilter = (filterSelection) => {
+    console.log(filterSelection);
+    // this.setState(prevState => { - need to get filter working as a state variable
+    //   let selected = Object.assign({}, prevState.selected);
+    //   selected.siteScope = filterSelection.siteScope;
+    //   selected.userScope = filterSelection.userScope;
+    //   selected.annoType = filterSelection.annoType;
+    //   selected.timeRange = filterSelection.timeRange;
+    //   selected.archive = filterSelection.archive;
+    //   selected.tags = filterSelection.tags;
+    //   console.log(selected);
+    //   return { selected };
+    // });
+    //console.log(this.state.selected);
+    // if (this.state.selected !== undefined) {
+    // switch to filteredAnnotations - set default filter and then pass those filtered
+    // annotations to annotationlist
+    this.setState({
+      annotations:
+        this.state.annotations.filter(annotation => {
+          if (filterSelection.siteScope !== null) {
+            if (filterSelection.siteScope === 'onPage') {
+              console.log('in onpage');
+              if (filterSelection.userScope.includes('onlyMe')) {
+                return annotation.url === this.state.url && annotation.authorId === this.state.currentUser.uid;
+              }
+              else if (filterSelection.userScope.includes('public') || !filterSelection.userScope.length) {
+                return annotation.url === this.state.url;
+              }
+            }
+            else if (filterSelection.siteScope === 'acrossWholeSite') {
+              let url = new URL(this.state.url);
+              if (filterSelection.userScope.includes('onlyMe')) {
+                return annotation.url.includes(url.hostname) && annotation.authorId === this.state.currentUser.uid;
+              }
+              else if (filterSelection.userScope.includes('public') || !filterSelection.userScope.length) {
+                return annotation.url.includes(url.hostname);
+              }
+            }
+          }
+          else if (filterSelection.userScope.length) {
+            if (filterSelection.userScope.includes('onlyMe')) {
+              return annotation.authorId === this.state.currentUser.uid;
+            }
+            else if (filterSelection.userScope.includes('public')) {
+              return true;
+            }
+          }
+        })
+    });
+
+  }
+
 
   resetNewSelection = () => {
     this.setState({ newSelection: null });
@@ -140,9 +209,10 @@ class Sidebar extends React.Component {
       <div className="SidebarContainer">
         <Title currentUser={currentUser} />
         {currentUser === null && <Authentication />}
-        <FaFilter />
         {currentUser !== null && (
           <React.Fragment>
+            <FaFilter className="Filter" onClick={_ => this.displayFilter()} />
+            {this.state.showFilter && <Filter applyFilter={this.applyFilter} />}
             {' '}
             {this.state.newSelection !== null &&
               this.state.newSelection.trim().length > 0 && (
@@ -154,6 +224,7 @@ class Sidebar extends React.Component {
                   offset={this.state.offset}
                 />
               )}
+            <div className="AnnotationListPadding"></div>
             <AnnotationList annotations={annotations} currentUser={currentUser} />
           </React.Fragment>
         )}
