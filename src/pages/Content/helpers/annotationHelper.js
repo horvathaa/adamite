@@ -17,9 +17,6 @@ function anchorClick(e) {
   });
 }
 
-/*function recursiveXpath(child) {
-  for ()
-}*/
 
 const AnnotationAnchor = ({ div, id }) => {
   return (
@@ -56,7 +53,7 @@ document.addEventListener('mouseup', event => {
   var selection = window.getSelection();
   console.log("AHHHHHHHH");
   console.log(selection);
-  //console.log(selection.startContainer.parentElement);
+
   if (selection.type === 'Range') {
     const rect = selection.getRangeAt(0);
     console.log(rect);
