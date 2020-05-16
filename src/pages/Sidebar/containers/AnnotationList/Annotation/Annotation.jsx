@@ -12,6 +12,21 @@ class Annotation extends Component {
     editedAnnotationContent: null,
   }
 
+  formatTimestamp = (timeStamp) => {
+    console.log(timeStamp);
+    let date = new Date(timeStamp);
+    let dateString = date.toString();
+    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    var year = date.getFullYear();
+    var month = months[date.getMonth()];
+    var day = date.getDate();
+    var hour = date.getHours();
+    var min = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
+    var sec = date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
+    var time = day + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec;
+    return time;
+  }
+
   handleDoneToDo() {
     console.log('handled');
     return;
@@ -53,7 +68,7 @@ class Annotation extends Component {
   }
 
   render() {
-    const { anchor, content, idx, id, active, type, authorId, currentUser, trashed } = this.props;
+    const { anchor, content, idx, id, active, type, authorId, currentUser, trashed, timeStamp } = this.props;
     if (type === 'default' && !trashed) {
       return (
         <li key={idx} id={id} className={classNames({ AnnotationItem: true })}>
@@ -73,6 +88,14 @@ class Annotation extends Component {
               ActiveAnnotationContainer: active,
             })}
           >
+            {!this.state.collapsed ? (
+              <div className={classNames({
+                Header: true,
+                Truncated: this.state.collapsed,
+              })}>
+                {this.formatTimestamp(timeStamp)}
+              </div>
+            ) : (null)}
             <div
               className={classNames({
                 AnchorContainer: true,
@@ -120,19 +143,26 @@ class Annotation extends Component {
               </div>
                 )}
             </div>
-            {this.state.collapsed ? (
-              <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} />
-            ) : (
-                <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} />
-              )
-            }
-            {currentUser.uid === authorId ? (
-              <React.Fragment>
-                <FaTrash onClick={_ => this.handleTrashClick(id)} />
-                <FaEdit onClick={_ => this.handleEditClick(id)} />
-              </React.Fragment>
-            ) : (null)}
+            <div className="IconRow">
+              {currentUser.uid === authorId ? (
+                <React.Fragment>
+                  <div className="IconContainer">
+                    <FaTrash className="Icon" id="Trash" onClick={_ => this.handleTrashClick(id)} />
+                  </div>
+                  <div className="IconContainer">
+                    <FaEdit className="Icon" id="Edit" onClick={_ => this.handleEditClick(id)} />
+                  </div>
+                </React.Fragment>
+              ) : (null)}
+              {this.state.collapsed ? (
+                <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} />
+              ) : (
+                  <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} />
+                )
+              }
+            </div>
           </div>
+
           <div
             className={classNames({
               AnnotationContainerPad: true,
@@ -144,6 +174,12 @@ class Annotation extends Component {
               className={classNames({ AnnotationContainerRightPad: true })}
             ></div>
           </div>
+          <div
+            className={classNames({
+              AnnotationContainerPad: true,
+              AnnotationPadActive: true,
+            })}
+          ></div>
         </li>
       );
     }
@@ -180,7 +216,38 @@ class Annotation extends Component {
                 Truncated: this.state.collapsed
               })}
             >
-              {content}
+              {this.state.editing ? (
+                <React.Fragment>
+                  <div className="TextareaContainer">
+                    <textarea
+                      className="form-control"
+                      rows="2"
+                      placeholder={content}
+                      //value={content} -to-do make this work better
+                      onChange={e => this.annotationChangeHandler(e)}
+                    />
+                  </div>
+                  <div className="SubmitButtonContainer">
+                    <button
+                      className="btn btn-sm btn-outline-danger"
+                      onClick={_ => this.handleEditCancel()}
+                    >
+                      Cancel
+                      </button>
+                      &nbsp; &nbsp;
+                    <button
+                      className="btn btn-sm btn-outline-secondary SubmitButton"
+                      onClick={e => this.submitButtonHandler(e, id)}
+                      disabled={content.length === 0}
+                    >
+                      Save
+                    </button>
+                  </div>
+                </React.Fragment>
+              ) : (<div>
+                {content}
+              </div>
+                )}
             </div>
             {this.state.collapsed ? (
               <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} />
@@ -188,12 +255,17 @@ class Annotation extends Component {
                 <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} />
               )}
             {currentUser.uid === authorId ? (
-              <FaTrash onClick={_ => this.handleTrashClick(id)} />
-            ) : (null)}
-            <React.Fragment>
-              <button className="btn btn-sm"
-                onClick={_ => this.handleDoneToDo()}>Done?</button>
-            </React.Fragment>
+              <React.Fragment>
+                <div className="IconContainer">
+                  <FaTrash className="Icon" id="Trash" onClick={_ => this.handleTrashClick(id)} />
+                </div>
+                <div className="IconContainer">
+                  <FaEdit className="Icon" id="Edit" onClick={_ => this.handleEditClick(id)} />
+                </div>
+                <button className="btn btn-sm"
+                  onClick={_ => this.handleDoneToDo()}>Done?</button>
+              </React.Fragment>)
+              : (null)}
           </div>
           <div
             className={classNames({

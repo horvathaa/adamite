@@ -20,24 +20,6 @@ function anchorClick(e) {
 }
 
 
-const AnnotationAnchor = ({ div, id }) => {
-  return (
-    <div
-      className="anchor-box"
-      id={id}
-      style={{
-        top: div.top,
-        left: div.left,
-        width: div.width,
-        height: div.height,
-        zIndex: 100,
-        position: 'absolute',
-      }}
-      onClick={e => anchorClick(e)}
-    ></div>
-  );
-};
-
 const alertBackgroundOfNewSelection = (selection, offsets, xpath) => {
   // supporting creation of annotations in sidebar
   chrome.runtime.sendMessage({
@@ -211,14 +193,12 @@ document.addEventListener('mouseup', event => {
 });
 
 function highlightpage(anno) {
-  for (let anno of annotationsOnPage) {
-    matchText(anno.xpath, anno.offsets.startOff, anno.offsets.endOffset, function (node, match, offset) {
-      var span = document.createElement("span");
-      span.style.backgroundColor = "yellow";
-      span.textContent = match;
-      node.parentNode.insertBefore(span, node.nextSibling);
-    });
-  }
+  matchText(anno.xpath, anno.offsets.startOff, anno.offsets.endOffset, function (node, match, offset) {
+    var span = document.createElement("span");
+    span.style.backgroundColor = "yellow";
+    span.textContent = match;
+    node.parentNode.insertBefore(span, node.nextSibling);
+  });
 }
 
 chrome.runtime.sendMessage(
@@ -250,7 +230,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       },
       data => {
         const { annotationsOnPage } = data;
-        highlightpage(anno);
+        annotationsOnPage.forEach(anno => {
+          highlightpage(anno);
+        });
       }
     );
   }

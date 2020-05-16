@@ -5,3 +5,18 @@
 .AnnotationTextContainer {
   text-align: center;
 }
+
+.Filter {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.Header {
+  text-align: center;
+}
+
+.AnnotationListPadding {
+  padding: 8px 8px 8px 8px;
+}

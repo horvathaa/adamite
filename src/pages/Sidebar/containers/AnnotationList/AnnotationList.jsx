@@ -18,6 +18,7 @@ class AnnotationList extends Component {
         active: false, // annotation.active,
         type: annotation.type,
         authorId: annotation.authorId,
+        timeStamp: annotation.createdTimestamp,
       });
     });
 
@@ -25,20 +26,24 @@ class AnnotationList extends Component {
       <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
         {annotationsCopy.map((annotation, idx) => {
           return (
-            <Annotation
-              key={idx}
-              id={annotation.id}
-              anchor={annotation.anchor}
-              content={annotation.content}
-              offsets={annotation.offsets}
-              xpath={annotation.xpath}
-              // div={annotation.div}
-              active={annotation.active}
-              type={annotation.type}
-              authorId={annotation.authorId}
-              currentUser={currentUser}
-              trashed={annotation.trashed}
-            />
+            <React.Fragment>
+              <Annotation
+                key={idx}
+                id={annotation.id}
+                anchor={annotation.anchor}
+                content={annotation.content}
+                div={annotation.div}
+                active={annotation.active}
+                type={annotation.type}
+                authorId={annotation.authorId}
+                currentUser={currentUser}
+                trashed={annotation.trashed}
+                timeStamp={annotation.timeStamp}
+                offsets={annotation.offsets}
+                xpath={annotation.xpath}
+              />
+              <div className="AnnotationListPadding" key={1000 + idx}></div>
+            </React.Fragment>
           );
         })}
       </ul>
