@@ -210,6 +210,17 @@ document.addEventListener('mouseup', event => {
 
 });
 
+function highlightpage(anno) {
+  for (let anno of annotationsOnPage) {
+    matchText(anno.xpath, anno.offsets.startOff, anno.offsets.endOffset, function (node, match, offset) {
+      var span = document.createElement("span");
+      span.style.backgroundColor = "yellow";
+      span.textContent = match;
+      node.parentNode.insertBefore(span, node.nextSibling);
+    });
+  }
+}
+
 chrome.runtime.sendMessage(
   {
     msg: 'REQUEST_ANNOTATED_TEXT_ON_THIS_PAGE',
@@ -222,14 +233,7 @@ chrome.runtime.sendMessage(
     console.log(annotationsOnPage);
     if (annotationsOnPage.length) {
       annotationsOnPage.forEach(anno => {
-        for (let anno of annotationsOnPage) {
-          matchText(anno.xpath, anno.offsets.startOff, anno.offsets.endOffset, function (node, match, offset) {
-            var span = document.createElement("span");
-            span.style.backgroundColor = "yellow";
-            span.textContent = match;
-            node.parentNode.insertBefore(span, node.nextSibling);
-          });
-        }
+        highlightpage(anno);
       });
     }
   }
@@ -246,14 +250,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       },
       data => {
         const { annotationsOnPage } = data;
-        for (let anno of annotationsOnPage) {
-          matchText(anno.xpath, anno.offsets.startOff, anno.offsets.endOffset, function (node, match, offset) {
-            var span = document.createElement("span");
-            span.style.backgroundColor = "yellow";
-            span.textContent = match;
-            node.parentNode.insertBefore(span, node.nextSibling);
-          });
-        }
+        highlightpage(anno);
       }
     );
   }
