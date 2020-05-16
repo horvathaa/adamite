@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom';
 import './anchor-box.css';
 import xpath from 'xpath';
 import { SIDEBAR_IFRAME_ID } from '../../../shared/constants';
+import { node } from 'prop-types';
+import { compose } from 'glamor';
 
 
 function anchorClick(e) {
@@ -17,59 +19,186 @@ function anchorClick(e) {
   });
 }
 
-const AnnotationAnchor = ({ div, id }) => {
-  return (
-    <div
-      className="anchor-box"
-      id={id}
-      style={{
-        top: div.top,
-        left: div.left,
-        width: div.width,
-        height: div.height,
-        zIndex: 100,
-        position: 'absolute',
-      }}
-      onClick={e => anchorClick(e)}
-    ></div>
-  );
-};
 
-const alertBackgroundOfNewSelection = (selection, rect, offset) => {
+const alertBackgroundOfNewSelection = (selection, offsets, xpath) => {
   // supporting creation of annotations in sidebar
   chrome.runtime.sendMessage({
     msg: 'CONTENT_SELECTED',
     from: 'content',
     payload: {
       selection,
-      rect,
-      offset,
+      offsets,
+      xpath,
     },
   });
 };
 
-document.addEventListener('mouseup', event => {
-  const selection = window.getSelection();
-  if (selection.type === 'Range') {
-    console.log(window.getSelection());
-    const rect = selection.getRangeAt(0).getBoundingClientRect();
-    console.log(rect);
-    //let test = getPathTo(rect.startContainer);
-    //console.log(test);
-    const offset = window.scrollY;
-    alertBackgroundOfNewSelection(selection.toString(), rect, offset);
+function getNextNode(node) {
+  if (node.firstChild) {
+    return node.firstChild;
+  }
+  while (node) {
+    if (node.nextSibling)
+      return node.nextSibling;
+    node = node.parentNode;
+  }
+}
+
+function getNodesInRange(range) {
+  var start = range.startContainer;
+  var end = range.endContainer;
+  var commonAncestor = range.commonAncestorContainer;
+  var nodes = [];
+  var node;
+
+  // walk parent nodes from start to common ancestor
+  for (node = start.parentNode; node; node = node.parentNode) {
+    nodes.push(node);
+    if (node == commonAncestor)
+      break;
+  }
+  nodes.reverse();
+
+  // walk children and siblings from start until end is found
+  for (node = start; node; node = getNextNode(node)) {
+    nodes.push(node);
+    if (node == end)
+      break;
   }
 
-  if (selection.toString().trim().length === 0) {
-    alertBackgroundOfNewSelection(null, null);
+  return nodes;
+}
+
+var splitReinsertText = function (node, substring, callback) {
+  node.data.replace(substring, function (all) {
+    var args = [].slice.call(arguments),
+      offset = args[args.length - 2],
+      newTextNode = node.splitText(offset);
+
+    newTextNode.data = newTextNode.data.substr(all.length);
+
+    callback.apply(window, [node].concat(args));
+    return newTextNode;
+
+  });
+}
+
+function xpathToNodez(path) {
+  return document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+}
+
+function wordmatch(element, word) {
+  if (element === null) {
+    return;
   }
+  do {
+    if (element.nodeType !== 3) {
+      element = element.nextSibling;
+    }
+    else if (element.data.trim() === word.trim()) {
+      return element;
+    }
+    else {
+      element = element.nextSibling;
+    }
+  } while (element !== null)
+  return null;
+}
+
+/*
+ * Finds highlighted text and creates highlight for annotation
+ */
+var matchText = function (nodes, startOffset, endOffset, callback, excludeElements) {
+  var i = 0;
+  excludeElements || (excludeElements = ['script', 'style', 'iframe', 'canvas']);
+
+  if (nodes.length === 0) {
+    return;
+  }
+  var node;
+  nodes = nodes.sort((x, y) => x.xpath.length - y.xpath.length).reverse();
+
+  for (i = 0; i < nodes.length; i++) {
+    if ((node = wordmatch(xpathToNodez(nodes[i].xpath), nodes[i].text)) === null) {
+      continue;
+    }
+
+    var substring = node.data;
+
+    if (nodes[i].offsets.startOffset !== 0 && nodes[i].offsets.endOffset !== 0) {
+      substring = node.data.substring(nodes[i].offsets.startOffset, nodes[i].offsets.endOffset);
+    }
+    else if (nodes[i].offsets.startOffset !== 0) {
+      substring = node.data.substring(nodes[i].offsets.startOffset, node.data.length - 1);
+    }
+    else if (nodes[i].offsets.endOffset !== 0) {
+      substring = node.data.substring(0, endOffset);
+    }
+    splitReinsertText(node, substring, callback);
+  }
+
+  return nodes;
+}
+
+function XpathConversion(element) {
+  if (element.tagName == 'HTML')
+    return '/HTML[1]';
+  if (element === document.body)
+    return '/HTML[1]/BODY[1]';
+
+  var ix = 0;
+  var siblings = element.parentNode.childNodes;
+  for (var i = 0; i < siblings.length; i++) {
+    var sibling = siblings[i];
+    if (sibling === element)
+      return XpathConversion(element.parentNode) + '/' + element.tagName + '[' + (ix + 1) + ']';
+    if (sibling.nodeType === 1 && sibling.tagName === element.tagName)
+      ix++;
+  }
+}
+
+document.addEventListener('mouseup', event => {
+  var selection = window.getSelection();
+
+  if (selection.type === 'Range') {
+    const rect = selection.getRangeAt(0);
+
+    //Text nodes that were highlighted by user
+    var textNodes = getNodesInRange(rect).filter(function (element) {
+      return element.nodeType === 3 && element.data.trim() !== "";
+    });
+
+    const offsets = {
+      startOffset: rect.startOffset,
+      endOffset: rect.endOffset,
+    };
+
+    var xpathToNode = [];
+
+    for (var i = 0; i < textNodes.length; i++) {
+      xpathToNode.push(
+        {
+          xpath: XpathConversion(textNodes[i].parentNode) + "/text()",
+          text: textNodes[i].data,
+          offsets: {
+            startOffset: i === 0 ? rect.startOffset : 0,
+            endOffset: i === textNodes.length - 1 ? rect.endOffset : 0
+          }
+        }
+      );
+    }
+    alertBackgroundOfNewSelection(selection.toString(), offsets, xpathToNode);
+  }
+
 });
 
-function displayAnnotationAnchor(div, id) {
-  const annotationAnchor = document.body.appendChild(
-    document.createElement('div')
-  );
-  ReactDOM.render(<AnnotationAnchor div={div} id={id} />, annotationAnchor);
+function highlightpage(anno) {
+  matchText(anno.xpath, anno.offsets.startOff, anno.offsets.endOffset, function (node, match, offset) {
+    var span = document.createElement("span");
+    span.style.backgroundColor = "yellow";
+    span.textContent = match;
+    node.parentNode.insertBefore(span, node.nextSibling);
+  });
 }
 
 chrome.runtime.sendMessage(
@@ -84,7 +213,7 @@ chrome.runtime.sendMessage(
     console.log(annotationsOnPage);
     if (annotationsOnPage.length) {
       annotationsOnPage.forEach(anno => {
-        displayAnnotationAnchor(anno.div, anno.id);
+        highlightpage(anno);
       });
     }
   }
@@ -101,8 +230,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       },
       data => {
         const { annotationsOnPage } = data;
-        const mostRecentAnno = annotationsOnPage[0]; // annotationsOnPage already sorted by createdTimestamp (desc)
-        displayAnnotationAnchor(mostRecentAnno.div, mostRecentAnno.id);
+        annotationsOnPage.forEach(anno => {
+          highlightpage(anno);
+        });
       }
     );
   }

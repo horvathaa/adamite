@@ -16,7 +16,8 @@ class Sidebar extends React.Component {
     filteredAnnotations: [],
     newSelection: null,
     rect: null,
-    offset: 0,
+    offsets: null,
+    xpath: null,
     currentUser: undefined,
     showFilter: false,
     selected: undefined
@@ -102,11 +103,13 @@ class Sidebar extends React.Component {
         request.from === 'background' &&
         request.msg === 'CONTENT_SELECTED'
       ) {
-        const { selection, rect, offset } = request.payload;
+        const { selection, offsets, xpath } = request.payload;
+        console.log("hsssssssss");
+        console.log(xpath);
         this.setState({
           newSelection: selection,
-          rect: rect,
-          offset: offset,
+          offsets: offsets,
+          xpath: xpath,
         });
       } else if (
         request.from === 'content' &&
@@ -220,8 +223,8 @@ class Sidebar extends React.Component {
                   url={this.state.url}
                   newSelection={this.state.newSelection}
                   resetNewSelection={this.resetNewSelection}
-                  rect={this.state.rect}
-                  offset={this.state.offset}
+                  offsets={this.state.offsets}
+                  xpath={this.state.xpath}
                 />
               )}
             <div className="AnnotationListPadding"></div>

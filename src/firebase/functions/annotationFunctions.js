@@ -40,11 +40,12 @@ export const createAnnotation = async ({
   taskId,
   AnnotationContent,
   AnnotationAnchorContent,
-  AnnotationAnchorPath,
+  // AnnotationAnchorPath,
   AnnotationType,
   url,
   AnnotationTags,
-  div,
+  offsets,
+  xpath
 }) => {
   authorId = authorId ? authorId : getCurrentUserId();
   if (!authorId) {
@@ -58,11 +59,13 @@ export const createAnnotation = async ({
     createdTimestamp: new Date().getTime(),
     content: AnnotationContent,
     anchorContent: AnnotationAnchorContent,
-    anchorPath: AnnotationAnchorPath,
+    // anchorPath: AnnotationAnchorPath,
+    anchorPath: null,
     type: AnnotationType,
     url,
     tags: AnnotationTags,
-    div,
+    offsets,
+    xpath
   };
 
   return getAllAnnotations().doc().set(newAnnotation);

@@ -12,7 +12,9 @@ class AnnotationList extends Component {
         anchor: annotation.anchorContent,
         content: annotation.content,
         id: annotation.id,
-        div: annotation.div,
+        offsets: annotation.offsets,
+        xpath: annotation.xpath,
+        // div: annotation.div,
         active: false, // annotation.active,
         type: annotation.type,
         authorId: annotation.authorId,
@@ -37,6 +39,8 @@ class AnnotationList extends Component {
                 currentUser={currentUser}
                 trashed={annotation.trashed}
                 timeStamp={annotation.timeStamp}
+                offsets={annotation.offsets}
+                xpath={annotation.xpath}
               />
               <div className="AnnotationListPadding" key={1000 + idx}></div>
             </React.Fragment>
