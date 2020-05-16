@@ -137,6 +137,11 @@
   left: 32;
 }
 
+.Header {
+  position: relative;
+  padding: 10px;
+}
+
 #Trash {
   left: 0;
 }

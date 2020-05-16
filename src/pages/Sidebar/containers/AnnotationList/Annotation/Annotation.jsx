@@ -12,6 +12,21 @@ class Annotation extends Component {
     editedAnnotationContent: null,
   }
 
+  formatTimestamp = (timeStamp) => {
+    console.log(timeStamp);
+    let date = new Date(timeStamp);
+    let dateString = date.toString();
+    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    var year = date.getFullYear();
+    var month = months[date.getMonth()];
+    var day = date.getDate();
+    var hour = date.getHours();
+    var min = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
+    var sec = date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
+    var time = day + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec;
+    return time;
+  }
+
   handleDoneToDo() {
     console.log('handled');
     return;
@@ -53,7 +68,7 @@ class Annotation extends Component {
   }
 
   render() {
-    const { anchor, content, idx, id, active, type, authorId, currentUser, trashed } = this.props;
+    const { anchor, content, idx, id, active, type, authorId, currentUser, trashed, timeStamp } = this.props;
     if (type === 'default' && !trashed) {
       return (
         <li key={idx} id={id} className={classNames({ AnnotationItem: true })}>
@@ -73,6 +88,14 @@ class Annotation extends Component {
               ActiveAnnotationContainer: active,
             })}
           >
+            {!this.state.collapsed ? (
+              <div className={classNames({
+                Header: true,
+                Truncated: this.state.collapsed,
+              })}>
+                {this.formatTimestamp(timeStamp)}
+              </div>
+            ) : (null)}
             <div
               className={classNames({
                 AnchorContainer: true,

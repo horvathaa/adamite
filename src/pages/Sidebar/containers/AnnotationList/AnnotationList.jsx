@@ -16,6 +16,7 @@ class AnnotationList extends Component {
         active: false, // annotation.active,
         type: annotation.type,
         authorId: annotation.authorId,
+        timeStamp: annotation.createdTimestamp,
       });
     });
 
@@ -35,6 +36,7 @@ class AnnotationList extends Component {
                 authorId={annotation.authorId}
                 currentUser={currentUser}
                 trashed={annotation.trashed}
+                timeStamp={annotation.timeStamp}
               />
               <div className="AnnotationListPadding" key={1000 + idx}></div>
             </React.Fragment>
