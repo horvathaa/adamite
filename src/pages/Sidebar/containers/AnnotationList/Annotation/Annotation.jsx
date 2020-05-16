@@ -13,9 +13,7 @@ class Annotation extends Component {
   }
 
   formatTimestamp = (timeStamp) => {
-    console.log(timeStamp);
     let date = new Date(timeStamp);
-    let dateString = date.toString();
     var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     var year = date.getFullYear();
     var month = months[date.getMonth()];
