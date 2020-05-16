@@ -2,3 +2,7 @@
     background: gold;
     opacity: 50%;
 }
+
+.highlight {
+    background: linear-gradient(180deg, rgba(255,255,255,0) 65%, #FFD0AE 65%);
+}

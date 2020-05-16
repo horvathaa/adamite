@@ -12,7 +12,9 @@ class AnnotationList extends Component {
         anchor: annotation.anchorContent,
         content: annotation.content,
         id: annotation.id,
-        div: annotation.div,
+        offsets: annotation.offsets,
+        xpath: annotation.xpath,
+        // div: annotation.div,
         active: false, // annotation.active,
         type: annotation.type,
         authorId: annotation.authorId,
@@ -28,7 +30,9 @@ class AnnotationList extends Component {
               id={annotation.id}
               anchor={annotation.anchor}
               content={annotation.content}
-              div={annotation.div}
+              offsets={annotation.offsets}
+              xpath={annotation.xpath}
+              // div={annotation.div}
               active={annotation.active}
               type={annotation.type}
               authorId={annotation.authorId}

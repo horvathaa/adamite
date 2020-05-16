@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom';
 import './anchor-box.css';
 import xpath from 'xpath';
 import { SIDEBAR_IFRAME_ID } from '../../../shared/constants';
+import { node } from 'prop-types';
+import { compose } from 'glamor';
 
 
 function anchorClick(e) {
@@ -36,15 +38,15 @@ const AnnotationAnchor = ({ div, id }) => {
   );
 };
 
-const alertBackgroundOfNewSelection = (selection, rect, offset) => {
+const alertBackgroundOfNewSelection = (selection, offsets, xpath) => {
   // supporting creation of annotations in sidebar
   chrome.runtime.sendMessage({
     msg: 'CONTENT_SELECTED',
     from: 'content',
     payload: {
       selection,
-      rect,
-      offset,
+      offsets,
+      xpath,
     },
   });
 };
@@ -99,31 +101,79 @@ var splitReinsertText = function (node, substring, callback) {
   });
 }
 
+function xpathToNodez(path) {
+  return document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+}
+
+function wordmatch(element, word) {
+  if (element === null) {
+    return;
+  }
+  do {
+    if (element.nodeType !== 3) {
+      element = element.nextSibling;
+    }
+    else if (element.data.trim() === word.trim()) {
+      return element;
+    }
+    else {
+      element = element.nextSibling;
+    }
+  } while (element !== null)
+  return null;
+}
+
 /*
  * Finds highlighted text and creates highlight for annotation
  */
-var matchText = function (nodes, range, callback, excludeElements) {
-
+var matchText = function (nodes, startOffset, endOffset, callback, excludeElements) {
+  var i = 0;
   excludeElements || (excludeElements = ['script', 'style', 'iframe', 'canvas']);
 
-  for (var i = 0; i < nodes.length; i++) {
-    if (nodes[i].isEqualNode(range.startContainer)) {
-      var substring = nodes[i].data.substring(range.startOffset, range.endOffset < range.startOffset ? nodes[i].data.length : range.endOffset);
-      splitReinsertText(nodes[i], substring, callback);
-    }
-    else if (nodes[i].isEqualNode(range.endContainer) && !range.startContainer.isEqualNode(range.endContainer)) {
-      var substring = nodes[i].data.substring(0, range.endOffset);
-      splitReinsertText(nodes[i], substring, callback);
-    }
-    else if (nodes[i].nodeType === 3) {
-      if (nodes[i].data.trim() === "")
-        continue;
-      splitReinsertText(nodes[i], nodes[i].data, callback);
-    }
+  if (nodes.length === 0) {
+    return;
   }
+  var node;
+  nodes = nodes.sort((x, y) => x.xpath.length - y.xpath.length).reverse();
+
+  for (i = 0; i < nodes.length; i++) {
+    if ((node = wordmatch(xpathToNodez(nodes[i].xpath), nodes[i].text)) === null) {
+      continue;
+    }
+
+    var substring = node.data;
+
+    if (nodes[i].offsets.startOffset !== 0 && nodes[i].offsets.endOffset !== 0) {
+      substring = node.data.substring(nodes[i].offsets.startOffset, nodes[i].offsets.endOffset);
+    }
+    else if (nodes[i].offsets.startOffset !== 0) {
+      substring = node.data.substring(nodes[i].offsets.startOffset, node.data.length - 1);
+    }
+    else if (nodes[i].offsets.endOffset !== 0) {
+      substring = node.data.substring(0, endOffset);
+    }
+    splitReinsertText(node, substring, callback);
+  }
+
   return nodes;
 }
 
+function XpathConversion(element) {
+  if (element.tagName == 'HTML')
+    return '/HTML[1]';
+  if (element === document.body)
+    return '/HTML[1]/BODY[1]';
+
+  var ix = 0;
+  var siblings = element.parentNode.childNodes;
+  for (var i = 0; i < siblings.length; i++) {
+    var sibling = siblings[i];
+    if (sibling === element)
+      return XpathConversion(element.parentNode) + '/' + element.tagName + '[' + (ix + 1) + ']';
+    if (sibling.nodeType === 1 && sibling.tagName === element.tagName)
+      ix++;
+  }
+}
 
 document.addEventListener('mouseup', event => {
   var selection = window.getSelection();
@@ -136,30 +186,29 @@ document.addEventListener('mouseup', event => {
       return element.nodeType === 3 && element.data.trim() !== "";
     });
 
-    //TODO Custom Span colors
-    matchText(textNodes, rect, function (node, match, offset) {
-      var span = document.createElement("span");
-      span.style.backgroundColor = "yellow";
-      span.textContent = match;
-      node.parentNode.insertBefore(span, node.nextSibling);
-    });
-    const offset = window.scrollY;
-    alertBackgroundOfNewSelection(selection.toString(), rect, offset);
-    // alertBackgroundOfNewSelection(selection.toString(), rect, offset);
-  }
+    const offsets = {
+      startOffset: rect.startOffset,
+      endOffset: rect.endOffset,
+    };
 
-  if (selection.toString().trim().length === 0) {
-    alertBackgroundOfNewSelection(null, null);
+    var xpathToNode = [];
+
+    for (var i = 0; i < textNodes.length; i++) {
+      xpathToNode.push(
+        {
+          xpath: XpathConversion(textNodes[i].parentNode) + "/text()",
+          text: textNodes[i].data,
+          offsets: {
+            startOffset: i === 0 ? rect.startOffset : 0,
+            endOffset: i === textNodes.length - 1 ? rect.endOffset : 0
+          }
+        }
+      );
+    }
+    alertBackgroundOfNewSelection(selection.toString(), offsets, xpathToNode);
   }
 
 });
-
-function displayAnnotationAnchor(div, id) {
-  const annotationAnchor = document.body.appendChild(
-    document.createElement('div')
-  );
-  ReactDOM.render(<AnnotationAnchor div={div} id={id} />, annotationAnchor);
-}
 
 chrome.runtime.sendMessage(
   {
@@ -173,7 +222,14 @@ chrome.runtime.sendMessage(
     console.log(annotationsOnPage);
     if (annotationsOnPage.length) {
       annotationsOnPage.forEach(anno => {
-        displayAnnotationAnchor(anno.div, anno.id);
+        for (let anno of annotationsOnPage) {
+          matchText(anno.xpath, anno.offsets.startOff, anno.offsets.endOffset, function (node, match, offset) {
+            var span = document.createElement("span");
+            span.style.backgroundColor = "yellow";
+            span.textContent = match;
+            node.parentNode.insertBefore(span, node.nextSibling);
+          });
+        }
       });
     }
   }
@@ -190,8 +246,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       },
       data => {
         const { annotationsOnPage } = data;
-        const mostRecentAnno = annotationsOnPage[0]; // annotationsOnPage already sorted by createdTimestamp (desc)
-        displayAnnotationAnchor(mostRecentAnno.div, mostRecentAnno.id);
+        for (let anno of annotationsOnPage) {
+          matchText(anno.xpath, anno.offsets.startOff, anno.offsets.endOffset, function (node, match, offset) {
+            var span = document.createElement("span");
+            span.style.backgroundColor = "yellow";
+            span.textContent = match;
+            node.parentNode.insertBefore(span, node.nextSibling);
+          });
+        }
       }
     );
   }

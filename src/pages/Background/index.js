@@ -55,17 +55,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     let { url, content } = request.payload;
 
     // firebase: in action
-    content = JSON.parse(content); // consider just pass content as an object
+    //content = JSON.parse(content); // consider just pass content as an object
     console.log(content);
     createAnnotation({
       taskId: null,
       AnnotationContent: content.annotation,
       AnnotationAnchorContent: content.anchor,
+      // AnnotationAnchorPath: content.textNodes,
       AnnotationAnchorPath: null,
+      offsets: content.offsets,
+      xpath: content.xpath,
       AnnotationType: content.annotationType, // could be other types (string)
       url,
       AnnotationTags: [],
-      div: content.div,
+      //div: content.div,
     }).then(value => {
       console.log(value);
       sendResponse({
