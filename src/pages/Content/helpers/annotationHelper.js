@@ -33,6 +33,16 @@ const alertBackgroundOfNewSelection = (selection, offsets, xpath) => {
   });
 };
 
+function highlightColorHover() {
+  var style = document.createElement('style');
+  style.type = 'text/css';
+  style.innerHTML = '.annoHover:hover { color: red; }';
+  document.getElementsByTagName('head')[0].appendChild(style);
+
+  document.getElementById('someElementId').className = 'cssClass';
+}
+
+
 function getNextNode(node) {
   if (node.firstChild) {
     return node.firstChild;
@@ -109,6 +119,7 @@ function wordmatch(element, word) {
  * Finds highlighted text and creates highlight for annotation
  */
 var matchText = function (nodes, startOffset, endOffset, callback, excludeElements) {
+
   var i = 0;
   excludeElements || (excludeElements = ['script', 'style', 'iframe', 'canvas']);
 
@@ -196,14 +207,20 @@ document.addEventListener('mouseup', event => {
 
 function highlightpage(anno) {
   matchText(anno.xpath, anno.offsets.startOff, anno.offsets.endOffset, function (node, match, offset) {
+
     var span = document.createElement("span");
-    span.style.backgroundColor = "yellow";
+    //var spanToolTip = document.createElement("span");
+    span.setAttribute("id", anno.id.toString());
     span.textContent = match;
-    span.onclick = function (span) {
-      console.log("help me");
-      span.style.backgroundColor = "red";
-    };
+    span.setAttribute('data-tooltip', anno.content);
+    span.setAttribute('data-tooltip-position', "bottom");
+    //spanToolTip.textContent = "blurp";
+    //spanToolTip.className = "tooltiptext";
+    span.className = "highlight tooltip";
     node.parentNode.insertBefore(span, node.nextSibling);
+    //span.parentNode.insertBefore(spanToolTip, span.nextSibling);
+    //document.getElementById(span.id).classList.add("highlight");
+    document.getElementById(span.id).onclick = anchorClick;
   });
 }
 
@@ -217,32 +234,15 @@ chrome.runtime.sendMessage(
   data => {
     const { annotationsOnPage } = data;
     if (annotationsOnPage.length) {
-      window.onload = function () {
-        //alert("It's loaded!")
-
-        annotationsOnPage.forEach(anno => {
-
-          for (let anno of annotationsOnPage) {
-            matchText(anno.xpath, anno.offsets.startOff, anno.offsets.endOffset, function (node, match, offset) {
-              var span = document.createElement("span");
-              span.style.backgroundColor = "yellow";
-              span.style.display = "inline";
-              span.style.cursor = "help";
-              span.setAttribute("id", anno.id.toString());
-              span.textContent = match;
-              node.parentNode.insertBefore(span, node.nextSibling);
-              document.getElementById(span.id).onclick = anchorClick;
-            });
-          }
-        });
-      }
+      //window.onload = function () {
+      annotationsOnPage.forEach(anno => {
+        console.log(anno);
+        highlightpage(anno);
+      });
+      //}
     }
   }
 );
-
-function teesst(span) {
-  span.style.backgroundColor = "green";
-}
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.msg === 'ANNOTATIONS_UPDATED' && request.from === 'background') {
@@ -256,6 +256,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       data => {
         const { annotationsOnPage } = data;
         annotationsOnPage.forEach(anno => {
+          console.log(anno);
           highlightpage(anno);
         });
 

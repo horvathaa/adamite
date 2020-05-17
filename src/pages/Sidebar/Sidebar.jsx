@@ -106,8 +106,25 @@ class Sidebar extends React.Component {
         request.from === 'content' &&
         request.msg === 'ANCHOR_CLICKED'
       ) {
-        console.log(request.payload);
         const { target } = request.payload;
+
+        chrome.runtime.sendMessage(
+          {
+            from: 'content',
+            msg: 'REQUEST_SIDEBAR_STATUS',
+          },
+          (response) => {
+            let sidebarOpen = response.sidebarOpen;
+            console.log(sidebarOpen);
+            if (!sidebarOpen) {
+              chrome.runtime.sendMessage({
+                from: 'content',
+                msg: 'REQUEST_TOGGLE_SIDEBAR',
+              });
+            }
+          }
+        );
+
 
         this.setState({
           filteredAnnotations: this.state.annotations.filter(function (element) { return element.id === target; })
