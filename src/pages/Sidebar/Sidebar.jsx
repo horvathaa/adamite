@@ -10,6 +10,7 @@ import { getAllAnnotationsByUserIdAndUrl, getAllAnnotationsByUrl, getAllAnnotati
 import { style } from 'glamor';
 
 class Sidebar extends React.Component {
+
   state = {
     url: '',
     annotations: [],
@@ -20,7 +21,9 @@ class Sidebar extends React.Component {
     xpath: null,
     currentUser: undefined,
     showFilter: false,
-    selected: undefined
+    selected: undefined,
+    dropdownOpen: false
+
     // selected: { - need to get default filter working
     //   siteScope: "onPage",
     //   userScope: "public",
@@ -200,7 +203,7 @@ class Sidebar extends React.Component {
   };
 
   render() {
-    const { currentUser, annotations } = this.state;
+    const { currentUser, annotations, dropdownOpen } = this.state;
     console.log(annotations);
 
     if (currentUser === undefined) {

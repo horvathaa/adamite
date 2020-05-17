@@ -78,6 +78,7 @@ var splitReinsertText = function (node, substring, callback) {
     newTextNode.data = newTextNode.data.substr(all.length);
 
     callback.apply(window, [node].concat(args));
+    console.log("here");
     return newTextNode;
 
   });
@@ -119,6 +120,7 @@ var matchText = function (nodes, startOffset, endOffset, callback, excludeElemen
   nodes = nodes.sort((x, y) => x.xpath.length - y.xpath.length).reverse();
 
   for (i = 0; i < nodes.length; i++) {
+
     if ((node = wordmatch(xpathToNodez(nodes[i].xpath), nodes[i].text)) === null) {
       continue;
     }
@@ -127,6 +129,7 @@ var matchText = function (nodes, startOffset, endOffset, callback, excludeElemen
 
     if (nodes[i].offsets.startOffset !== 0 && nodes[i].offsets.endOffset !== 0) {
       substring = node.data.substring(nodes[i].offsets.startOffset, nodes[i].offsets.endOffset);
+
     }
     else if (nodes[i].offsets.startOffset !== 0) {
       substring = node.data.substring(nodes[i].offsets.startOffset, node.data.length - 1);
@@ -197,6 +200,17 @@ function highlightpage(anno) {
     var span = document.createElement("span");
     span.style.backgroundColor = "yellow";
     span.textContent = match;
+    span.onclick = function anchorClick(e) {
+      const target = e.target.id;
+      chrome.runtime.sendMessage({
+        msg: 'ANCHOR_CLICKED',
+        from: 'content',
+        payload: {
+          url: window.location.href,
+          target: target,
+        },
+      });
+    }
     node.parentNode.insertBefore(span, node.nextSibling);
   });
 }
@@ -210,11 +224,26 @@ chrome.runtime.sendMessage(
   },
   data => {
     const { annotationsOnPage } = data;
+    console.log("annotationsOnPage");
     console.log(annotationsOnPage);
     if (annotationsOnPage.length) {
-      annotationsOnPage.forEach(anno => {
-        highlightpage(anno);
-      });
+      console.log("true");
+      window.onload = function () {
+        //alert("It's loaded!")
+
+        annotationsOnPage.forEach(anno => {
+
+          for (let anno of annotationsOnPage) {
+            console.log(anno);
+            matchText(anno.xpath, anno.offsets.startOff, anno.offsets.endOffset, function (node, match, offset) {
+              var span = document.createElement("span");
+              span.style.backgroundColor = "yellow";
+              span.textContent = match;
+              node.parentNode.insertBefore(span, node.nextSibling);
+            });
+          }
+        });
+      }
     }
   }
 );
