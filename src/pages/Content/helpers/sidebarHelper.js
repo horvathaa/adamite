@@ -63,7 +63,6 @@ document.body.appendChild(sidebarRoot);
 sidebarRoot.setAttribute('id', 'doc-annotator-sidebar-root');
 
 function mountSidebar() {
-  // console.log('Mounting sidebar on the', sidebarLocation);
   const App = (
     <Frame
       url={chrome.extension.getURL('sidebar.html')}

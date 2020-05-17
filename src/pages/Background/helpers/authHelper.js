@@ -9,7 +9,6 @@ import {
 let currentUser = null;
 
 auth.onAuthStateChanged(user => {
-  console.log(user);
   currentUser = user === null ? null : { uid: user.uid, email: user.email };
   broadcastAuthStatus(currentUser);
   if (user !== null) {

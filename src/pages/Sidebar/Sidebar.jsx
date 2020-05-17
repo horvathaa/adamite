@@ -10,6 +10,7 @@ import { getAllAnnotationsByUserIdAndUrl, getAllAnnotationsByUrl, getAllAnnotati
 import { style } from 'glamor';
 
 class Sidebar extends React.Component {
+
   state = {
     url: '',
     annotations: [],
@@ -19,7 +20,8 @@ class Sidebar extends React.Component {
     offsets: null,
     xpath: null,
     currentUser: undefined,
-    selected: undefined
+    selected: undefined,
+    dropdownOpen: false
   };
 
   selection = {
@@ -132,13 +134,29 @@ class Sidebar extends React.Component {
         request.msg === 'ANCHOR_CLICKED'
       ) {
         const { target } = request.payload;
-        this.state.annotations.forEach(anno => {
-          if (anno.id === target) {
-            anno.active = true;
-          } else {
-            anno.active = false;
+
+        chrome.runtime.sendMessage(
+          {
+            from: 'content',
+            msg: 'REQUEST_SIDEBAR_STATUS',
+          },
+          (response) => {
+            let sidebarOpen = response.sidebarOpen;
+            console.log(sidebarOpen);
+            if (!sidebarOpen) {
+              chrome.runtime.sendMessage({
+                from: 'content',
+                msg: 'REQUEST_TOGGLE_SIDEBAR',
+              });
+            }
           }
+        );
+
+
+        this.setState({
+          filteredAnnotations: this.state.annotations.filter(function (element) { return element.id === target; })
         });
+
       } else if (
         request.from === 'background' &&
         request.msg === 'TOGGLE_SIDEBAR'
@@ -241,8 +259,7 @@ class Sidebar extends React.Component {
   };
 
   render() {
-    const { currentUser, annotations, filteredAnnotations } = this.state;
-    console.log(annotations);
+    const { currentUser, annotations, dropdownOpen, filteredAnnotations } = this.state;
 
     if (currentUser === undefined) {
       // loading currentUser
@@ -250,6 +267,7 @@ class Sidebar extends React.Component {
     }
 
     return (
+
       <div className="SidebarContainer">
         <Title currentUser={currentUser} />
         {currentUser === null && <Authentication />}

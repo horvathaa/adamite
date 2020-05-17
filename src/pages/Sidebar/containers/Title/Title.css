@@ -1,14 +1,70 @@
 .TitleContainer {
-  padding: 5px;
+  padding: 1px;
   width: 100%;
   display: flex;
-  align-items: center;
+  background-color: white;
+  align-items: flex-start;
+}
+
+.TitleIcon {
+  vertical-align: middle;
+  border-style: none;
+  height: 2em;
+  padding: 4px 2px 1px 1px;
+}
+
+.TitleContainer .container .row .col .Header {
+  display: flex;
+  padding: 5px;
+}
+
+.TitleContainer .row {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: auto;
+  flex-wrap: inherit;
+  margin-right: -15px;
+  margin-left: -15px;
+}
+
+.TitleContainer .row2 {
+  display: -ms-flexbox;
+  display: table-cell;
+  -ms-flex-wrap: auto;
+  flex-wrap: inherit;
+  float: right;
+  margin-right: -15px;
+  margin-left: -15px;
+}
+
+.TitleContainer .col2 {
+  position: relative;
+  display:inline-table;
+  width: 100%;
+  padding-right: 15px;
+  padding-left: 0px;
+}
+
+.TitleContainer .container {
+  width: 100%;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.TitleContainer .col {
+  position: relative;
+  width: 100%;
+  padding-right: 15px;
+  padding-left: 0px;
+  margin: auto;
 }
 
 .TitleContainer .Title {
+  font-family: serif;
   font-weight: 500;
-  color: dimgray;
+  color: #000000bf;
   font-size: 1.3rem;
+  padding-top: 3px;
 }
 
 .TitleContainer .UserContainer {
@@ -27,3 +83,75 @@
   margin-top: 4px;
   font-size: 0.6rem;
 }
+
+.userIcon {
+  position: inherit;
+
+  left: 0px;
+  right: 0px;
+  width: 2em;
+  color: darkslategrey;
+  height: 1.5em;
+}
+
+.userIcon:focus {
+  color: transparent !important;
+  background-color: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  outline-color: none;
+}
+
+
+#dropdown-menu {
+  background-color: transparent;
+}
+
+.caret {
+  border-width: 500px;
+  border-bottom-width: 0; 
+}
+
+.dropdown-toggle::after {
+  display:none !important;
+}
+
+.TitleContainer .container .row .btn {
+  padding: 0px;
+  border-color: transparent;
+  background-color: transparent;
+}
+
+.TitleContainer .container .row .nav-item:hover .dropdown-menu{
+  display:block!important
+}
+
+.TitleContainer .container .row .btn-primary:focus, .btn:active {
+  color:transparent;
+  background-color: transparent;
+  border-color: transparent;
+  box-shadow: 0 0 0 0 transparent;
+
+}
+
+.TitleContainer .container .row .btn-primary:focus, .btn-primary:active {
+  outline: none !important;
+  box-shadow: none;
+  outline-color: none;
+}
+
+.TitleContainer .container .row .dropdown-toggle:focus,.dropdown-toggle:active {
+  outline: none !important;
+  box-shadow: none;
+  outline-color: none;
+}
+
+.TitleContainer .container .row .btn-primary:not(:disabled):not(.disabled):active, .TitleContainer .container .row .btn-primary:not(:disabled):not(.disabled).active, .TitleContainer .container .row .show > .TitleContainer .container .row .btn-primary.dropdown-toggle {
+  color: transparent;
+  background-color: transparent;
+  border-color: transparent;
+  outline-color: none;
+}
+
+
+

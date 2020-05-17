@@ -8,7 +8,6 @@ const Options = () => {
   useEffect(() => {
     chrome.storage.sync.get(['sidebarOnLeft'], result => {
       if (result.sidebarOnLeft !== undefined) {
-        console.log(result.sidebarOnLeft);
         setSidebarOnLeft(result.sidebarOnLeft);
       }
     });

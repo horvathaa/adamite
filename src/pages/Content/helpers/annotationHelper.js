@@ -33,6 +33,16 @@ const alertBackgroundOfNewSelection = (selection, offsets, xpath) => {
   });
 };
 
+function highlightColorHover() {
+  var style = document.createElement('style');
+  style.type = 'text/css';
+  style.innerHTML = '.annoHover:hover { color: red; }';
+  document.getElementsByTagName('head')[0].appendChild(style);
+
+  document.getElementById('someElementId').className = 'cssClass';
+}
+
+
 function getNextNode(node) {
   if (node.firstChild) {
     return node.firstChild;
@@ -109,6 +119,7 @@ function wordmatch(element, word) {
  * Finds highlighted text and creates highlight for annotation
  */
 var matchText = function (nodes, startOffset, endOffset, callback, excludeElements) {
+
   var i = 0;
   excludeElements || (excludeElements = ['script', 'style', 'iframe', 'canvas']);
 
@@ -119,6 +130,7 @@ var matchText = function (nodes, startOffset, endOffset, callback, excludeElemen
   nodes = nodes.sort((x, y) => x.xpath.length - y.xpath.length).reverse();
 
   for (i = 0; i < nodes.length; i++) {
+
     if ((node = wordmatch(xpathToNodez(nodes[i].xpath), nodes[i].text)) === null) {
       continue;
     }
@@ -127,6 +139,7 @@ var matchText = function (nodes, startOffset, endOffset, callback, excludeElemen
 
     if (nodes[i].offsets.startOffset !== 0 && nodes[i].offsets.endOffset !== 0) {
       substring = node.data.substring(nodes[i].offsets.startOffset, nodes[i].offsets.endOffset);
+
     }
     else if (nodes[i].offsets.startOffset !== 0) {
       substring = node.data.substring(nodes[i].offsets.startOffset, node.data.length - 1);
@@ -194,10 +207,15 @@ document.addEventListener('mouseup', event => {
 
 function highlightpage(anno) {
   matchText(anno.xpath, anno.offsets.startOff, anno.offsets.endOffset, function (node, match, offset) {
+
     var span = document.createElement("span");
-    span.style.backgroundColor = "yellow";
+    span.setAttribute("id", anno.id.toString());
     span.textContent = match;
+    span.setAttribute('data-tooltip', anno.content.length > 500 ? anno.content.substring(0, 500) + "..." : anno.content);
+    span.setAttribute('data-tooltip-position', "bottom");
+    span.className = "highlight tooltip";
     node.parentNode.insertBefore(span, node.nextSibling);
+    document.getElementById(span.id).onclick = anchorClick;
   });
 }
 
@@ -210,11 +228,13 @@ chrome.runtime.sendMessage(
   },
   data => {
     const { annotationsOnPage } = data;
-    console.log(annotationsOnPage);
     if (annotationsOnPage.length) {
+      //window.onload = function () {
       annotationsOnPage.forEach(anno => {
+        console.log(anno);
         highlightpage(anno);
       });
+      //}
     }
   }
 );
@@ -231,8 +251,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       data => {
         const { annotationsOnPage } = data;
         annotationsOnPage.forEach(anno => {
+          console.log(anno);
           highlightpage(anno);
         });
+
       }
     );
   }
