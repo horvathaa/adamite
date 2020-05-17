@@ -224,18 +224,6 @@ class Sidebar extends React.Component {
 
   applyFilter = (filterSelection) => {
     this.selection = filterSelection;
-    // if (filterSelection === 'setDefault') {
-    //   this.setState({
-    //     filteredAnnotations:
-    //       this.state.annotations.filter(annotation => {
-    //         return this.checkSiteScope(annotation, 'onPage') &&
-    //           this.checkUserScope(annotation, ['public']) &&
-    //           this.checkAnnoType(annotation, 'all') &&
-    //           this.checkTimeRange(annotation, 'all')
-    //       })
-    //   });
-    // }
-    // else {
     this.setState({
       filteredAnnotations:
         this.state.annotations.filter(annotation => {
@@ -245,7 +233,6 @@ class Sidebar extends React.Component {
             this.checkTimeRange(annotation, filterSelection.timeRange);
         })
     });
-    // }
   }
 
 
