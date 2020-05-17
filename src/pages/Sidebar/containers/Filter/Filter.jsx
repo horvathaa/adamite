@@ -4,7 +4,7 @@ import { Dropdown } from 'react-bootstrap';
 import { FaCheck, FaFilter } from 'react-icons/fa';
 import { trashAnnotationById } from '../../../../firebase';
 
-const customToggle = React.forwardRef(({ children, onClick }, ref) => (
+const filterToggle = React.forwardRef(({ children, onClick }, ref) => (
     <a ref={ref}
         onClick={(e) => {
             e.preventDefault();
@@ -16,17 +16,22 @@ const customToggle = React.forwardRef(({ children, onClick }, ref) => (
 
 class Filter extends React.Component {
     selection = {
-        siteScope: null,
-        userScope: [],
-        annoType: [],
-        timeRange: null,
+        siteScope: 'onPage',
+        userScope: ['public'],
+        annoType: ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'],
+        timeRange: 'all',
         archive: null,
         tags: []
     }
 
     async updateSelected(eventKey) {
         if (eventKey === 'setDefault') {
-            this.props.applyFilter('setDefault');
+            this.selection.siteScope = 'onPage';
+            this.selection.userScope = ['public'];
+            this.selection.annoType = ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'];
+            this.selection.timeRange = 'all';
+            this.props.applyFilter(this.selection);
+            return;
         }
         if (eventKey.includes('siteScope')) {
             this.selection.siteScope = eventKey.substring(eventKey.indexOf(':') + 1, eventKey.length);
@@ -41,11 +46,14 @@ class Filter extends React.Component {
         }
         else if (eventKey.includes('annoType')) {
             let choice = eventKey.substring(eventKey.indexOf(':') + 1, eventKey.length)
-            if (this.selection.annoType.includes(choice)) {
+            if (this.selection.annoType.includes(choice) || this.selection.annoType.includes('all')) {
                 this.selection.annoType = this.selection.annoType.filter(e => e !== choice);
             } else {
                 this.selection.annoType.push(choice);
             }
+        }
+        else if (eventKey.includes('timeRange')) {
+            this.selection.timeRange = eventKey.substring(eventKey.indexOf(':') + 1, eventKey.length)
         }
         this.props.applyFilter(this.selection);
 
@@ -54,10 +62,12 @@ class Filter extends React.Component {
     render() {
         return (
             <Dropdown className="Filter">
-                <Dropdown.Toggle as={customToggle} id="dropdown-basic">
+                <Dropdown.Toggle as={filterToggle} id="dropdown-basic">
 
                 </Dropdown.Toggle>
                 <Dropdown.Menu >
+                    &nbsp;{this.props.filterAnnotationLength()} annotations
+                    <Dropdown.Divider />
                     &nbsp;Site scope
                     <Dropdown.Item as="button" eventKey="siteScope:onPage" onSelect={eventKey => this.updateSelected(eventKey)}>
                         On page {this.selection.siteScope === 'onPage' ? ("•") : (null)}
@@ -100,8 +110,28 @@ class Filter extends React.Component {
                         Issue {this.selection.annoType.includes('issue') ? ("✓") : (null)}
                     </Dropdown.Item>
                     <Dropdown.Divider />
+                    &nbsp;Time Range
+                    <Dropdown.Item as="button" eventKey="timeRange:day" onSelect={eventKey => this.updateSelected(eventKey)}>
+                        Past Day {this.selection.timeRange === 'day' ? ("•") : (null)}
+                    </Dropdown.Item>
+                    <Dropdown.Item as="button" eventKey="timeRange:week" onSelect={eventKey => this.updateSelected(eventKey)}>
+                        Past Week {this.selection.timeRange === 'week' ? ("•") : (null)}
+                    </Dropdown.Item>
+                    <Dropdown.Item as="button" eventKey="timeRange:month" onSelect={eventKey => this.updateSelected(eventKey)}>
+                        Past Month {this.selection.timeRange === 'month' ? ("•") : (null)}
+                    </Dropdown.Item>
+                    <Dropdown.Item as="button" eventKey="timeRange:6months" onSelect={eventKey => this.updateSelected(eventKey)}>
+                        Past 6 Months {this.selection.timeRange === '6months' ? ("•") : (null)}
+                    </Dropdown.Item>
+                    <Dropdown.Item as="button" eventKey="timeRange:year" onSelect={eventKey => this.updateSelected(eventKey)}>
+                        Past Year {this.selection.timeRange === 'year' ? ("•") : (null)}
+                    </Dropdown.Item>
+                    <Dropdown.Item as="button" eventKey="timeRange:all" onSelect={eventKey => this.updateSelected(eventKey)}>
+                        All Time {this.selection.timeRange === 'all' ? ("•") : (null)}
+                    </Dropdown.Item>
+                    <Dropdown.Divider />
                     <Dropdown.Item as="button" eventKey="setDefault" onSelect={eventKey => this.updateSelected(eventKey)}>
-                        Apply Default Filter
+                        Revert to Default
                     </Dropdown.Item>
                 </Dropdown.Menu>
 

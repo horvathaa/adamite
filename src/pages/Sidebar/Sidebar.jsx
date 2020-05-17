@@ -19,17 +19,17 @@ class Sidebar extends React.Component {
     offsets: null,
     xpath: null,
     currentUser: undefined,
-    // showFilter: false,
     selected: undefined
-    // selected: { - need to get default filter working
-    //   siteScope: "onPage",
-    //   userScope: "public",
-    //   annoType: "all",
-    //   timeRange: "all",
-    //   archive: "no",
-    //   tag: "all"
-    // }
   };
+
+  selection = {
+    siteScope: 'onPage',
+    userScope: ['public'],
+    annoType: ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'],
+    timeRange: 'all',
+    archive: null,
+    tags: []
+  }
 
   setUpAnnotationsListener = (uid, url) => {
     if (this.unsubscribeAnnotations) {
@@ -45,13 +45,31 @@ class Sidebar extends React.Component {
         });
       });
       this.setState({ annotations });
+      this.requestFilterUpdate();
     });
+
+
   };
+
+  requestFilterUpdate() {
+    this.setState({
+      filteredAnnotations:
+        this.state.annotations.filter(annotation => {
+          return this.checkSiteScope(annotation, this.selection.siteScope) &&
+            this.checkUserScope(annotation, this.selection.userScope) &&
+            this.checkAnnoType(annotation, this.selection.annoType) &&
+            this.checkTimeRange(annotation, this.selection.timeRange)
+        })
+    });
+  }
+
+
 
   componentWillMount() {
     if (this.unsubscribeAnnotations) {
       this.unsubscribeAnnotations();
     }
+
   }
 
   componentDidMount() {
@@ -135,10 +153,6 @@ class Sidebar extends React.Component {
     });
   }
 
-  // displayFilter() {
-  //   this.setState({ showFilter: !this.state.showFilter });
-  // }
-
   // helper method from 
   // https://stackoverflow.com/questions/4587061/how-to-determine-if-object-is-in-array
   containsObject(obj, list) {
@@ -163,13 +177,32 @@ class Sidebar extends React.Component {
       return true;
     }
     if (siteScope === 'onPage') {
-      console.log('onpage sitescope');
-      console.log(annotation.url === this.state.url);
       return annotation.url === this.state.url;
     }
     else if (siteScope === 'acrossWholeSite') {
       let url = new URL(this.state.url);
       return annotation.url.includes(url.hostname)
+    }
+  }
+
+  checkTimeRange(annotation, timeRange) {
+    if (timeRange === null || timeRange === 'all') {
+      return true;
+    }
+    if (timeRange === 'day') {
+      return (new Date().getTime() - annotation.createdTimestamp) < 86400000;
+    }
+    else if (timeRange === 'week') {
+      return (new Date().getTime() - annotation.createdTimestamp) < 604800000;
+    }
+    else if (timeRange === 'month') {
+      return (new Date().getTime() - annotation.createdTimestamp) < 2629746000;
+    }
+    else if (timeRange === '6months') {
+      return (new Date().getTime() - annotation.createdTimestamp) < 15778476000;
+    }
+    else if (timeRange === 'year') {
+      return (new Date().getTime() - annotation.createdTimestamp) < 31556952000;
     }
   }
 
@@ -185,31 +218,21 @@ class Sidebar extends React.Component {
     }
   }
 
+  getFilteredAnnotationListLength = () => {
+    return this.state.filteredAnnotations.length;
+  }
+
   applyFilter = (filterSelection) => {
-    if (filterSelection === 'setDefault') {
-      console.log('setting default');
-      this.setState({
-        filteredAnnotations:
-          this.state.annotations.filter(annotation => {
-            return this.checkSiteScope(annotation, 'onPage') &&
-              this.checkUserScope(annotation, ['public']) &&
-              this.checkAnnoType(annotation, 'all')
-          })
-      });
-    }
-    else {
-      this.setState({
-        filteredAnnotations:
-          this.state.annotations.filter(annotation => {
-            return this.checkSiteScope(annotation, filterSelection.siteScope) &&
-              this.checkUserScope(annotation, filterSelection.userScope) &&
-              this.checkAnnoType(annotation, filterSelection.annoType);
-          })
-      });
-    }
-
-    console.log(this.state.filteredAnnotations);
-
+    this.selection = filterSelection;
+    this.setState({
+      filteredAnnotations:
+        this.state.annotations.filter(annotation => {
+          return this.checkSiteScope(annotation, filterSelection.siteScope) &&
+            this.checkUserScope(annotation, filterSelection.userScope) &&
+            this.checkAnnoType(annotation, filterSelection.annoType) &&
+            this.checkTimeRange(annotation, filterSelection.timeRange);
+        })
+    });
   }
 
 
@@ -232,9 +255,9 @@ class Sidebar extends React.Component {
         {currentUser === null && <Authentication />}
         {currentUser !== null && (
           <React.Fragment>
-            {/* <FaFilter className="Filter" onClick={_ => this.displayFilter()} />
-            {this.state.showFilter &&  }*/}
-            <Filter applyFilter={this.applyFilter} />
+            <Filter applyFilter={this.applyFilter}
+              filterAnnotationLength={this.getFilteredAnnotationListLength}
+            />
             {' '}
             {this.state.newSelection !== null &&
               this.state.newSelection.trim().length > 0 && (
@@ -247,13 +270,7 @@ class Sidebar extends React.Component {
                 />
               )}
             <div className="AnnotationListPadding"></div>
-            {this.state.filteredAnnotations.length === 0 ? (
-              <AnnotationList annotations={annotations} currentUser={currentUser} />
-            ) :
-              (
-                <AnnotationList annotations={filteredAnnotations} currentUser={currentUser} />
-              )
-            }
+            <AnnotationList annotations={filteredAnnotations} currentUser={currentUser} />
           </React.Fragment>
         )}
       </div>
