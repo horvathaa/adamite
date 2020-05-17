@@ -123,7 +123,7 @@
   border-top-right-radius: 8px;
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px; */
-  max-height: 200px;
+  /* max-height: 200px; */
   word-break: break-all;
 
 
@@ -167,9 +167,15 @@
   position: absolute;
 }
 
+.ContentContainer .editAreaContainer {
+  padding: 5px 5px 5px 5px;
+  width: 100%;
+  /* max-height: 400px; */
+}
+
 .TextareaContainer {
   width: 100%;
-  padding: 5px;
+  /* padding: 5px; */
 }
 
 .TextareaContainer textarea {
@@ -179,6 +185,13 @@
 }
 
 .SubmitButtonContainer {
+  padding: 5px;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.AnnotationType {
   padding: 5px;
   width: 100%;
   display: flex;

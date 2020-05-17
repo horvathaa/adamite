@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './Options.css';
 
 const Options = () => {
-  const [sidebarOnLeft, setSidebarOnLeft] = useState(true);
+  const [sidebarOnLeft, setSidebarOnLeft, sidebarShouldLoad] = useState(true);
   const [sidebarShouldShrinkBody, setSidebarShouldShrinkBody] = useState(true);
 
   useEffect(() => {
@@ -18,6 +18,8 @@ const Options = () => {
         setSidebarShouldShrinkBody(result.shouldShrinkBody);
       }
     });
+
+    chrome.storage.sync.get([])
 
     // // sync settings across tabs
     // chrome.runtime.onMessage.addListener((request, sender, response) => {
@@ -37,11 +39,16 @@ const Options = () => {
     // });
   }, []);
 
+  const setSettingSidebarShouldLoad = status => {
+    if (status === sidebarShouldLoad) {
+      return;
+    }
+  }
+
   const setSettingSidebarOnLeft = toStatus => {
     if (toStatus === sidebarOnLeft) {
       return;
     }
-    console.log(toStatus);
 
     setSidebarOnLeft(toStatus);
     chrome.runtime.sendMessage({
@@ -105,6 +112,27 @@ const Options = () => {
           onChange={() => setSettingSidebarShouldShrinkBody(false)}
         />{' '}
         <label htmlFor="sidebarShouldNotShrinkBody">No</label>
+      </div>
+
+      <div className="SettingEntryContainer">
+        When navigating to a new page, should the sidebar load automatically:&nbsp;
+        {/*to-do - actualy implement this*/}
+        <input
+          type="radio"
+          id="sidebarShouldLoadOnNewTab"
+          name="sidebarShouldLoadOnNewTab"
+          checked={sidebarShouldLoad}
+          onChange={() => setSettingSidebarShouldLoad(true)}
+        />{' '}
+        <label htmlFor="sidebarShouldLoadOnNewTab">Yes</label> &nbsp;&nbsp;
+        <input
+          type="radio"
+          id="sidebarShouldLoadOnNewTab"
+          name="sidebarShouldLoadOnNewTab"
+          checked={!sidebarShouldLoad}
+          onChange={() => setSettingSidebarShouldLoad(false)}
+        />{' '}
+        <label htmlFor="sidebarShouldLoadOnNewTab">No</label>
       </div>
     </div>
   );
