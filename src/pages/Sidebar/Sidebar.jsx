@@ -26,7 +26,7 @@ class Sidebar extends React.Component {
     siteScope: 'onPage',
     userScope: ['public'],
     annoType: ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'],
-    timeRange: null,
+    timeRange: 'all',
     archive: null,
     tags: []
   }
@@ -57,7 +57,8 @@ class Sidebar extends React.Component {
         this.state.annotations.filter(annotation => {
           return this.checkSiteScope(annotation, this.selection.siteScope) &&
             this.checkUserScope(annotation, this.selection.userScope) &&
-            this.checkAnnoType(annotation, this.selection.annoType)
+            this.checkAnnoType(annotation, this.selection.annoType) &&
+            this.checkTimeRange(annotation, this.selection.timeRange)
         })
     });
   }
@@ -184,6 +185,27 @@ class Sidebar extends React.Component {
     }
   }
 
+  checkTimeRange(annotation, timeRange) {
+    if (timeRange === null || timeRange === 'all') {
+      return true;
+    }
+    if (timeRange === 'day') {
+      return (new Date().getTime() - annotation.createdTimestamp) < 86400000;
+    }
+    else if (timeRange === 'week') {
+      return (new Date().getTime() - annotation.createdTimestamp) < 604800000;
+    }
+    else if (timeRange === 'month') {
+      return (new Date().getTime() - annotation.createdTimestamp) < 2629746000;
+    }
+    else if (timeRange === '6months') {
+      return (new Date().getTime() - annotation.createdTimestamp) < 15778476000;
+    }
+    else if (timeRange === 'year') {
+      return (new Date().getTime() - annotation.createdTimestamp) < 31556952000;
+    }
+  }
+
   checkUserScope(annotation, userScope) {
     if (!userScope.length) {
       return true;
@@ -201,28 +223,29 @@ class Sidebar extends React.Component {
   }
 
   applyFilter = (filterSelection) => {
-    if (filterSelection === 'setDefault') {
-      this.setState({
-        filteredAnnotations:
-          this.state.annotations.filter(annotation => {
-            return this.checkSiteScope(annotation, 'onPage') &&
-              this.checkUserScope(annotation, ['public']) &&
-              this.checkAnnoType(annotation, 'all')
-          })
-      });
-    }
-    else {
-      this.selection = filterSelection;
-      console.log(this.selection);
-      this.setState({
-        filteredAnnotations:
-          this.state.annotations.filter(annotation => {
-            return this.checkSiteScope(annotation, filterSelection.siteScope) &&
-              this.checkUserScope(annotation, filterSelection.userScope) &&
-              this.checkAnnoType(annotation, filterSelection.annoType);
-          })
-      });
-    }
+    this.selection = filterSelection;
+    // if (filterSelection === 'setDefault') {
+    //   this.setState({
+    //     filteredAnnotations:
+    //       this.state.annotations.filter(annotation => {
+    //         return this.checkSiteScope(annotation, 'onPage') &&
+    //           this.checkUserScope(annotation, ['public']) &&
+    //           this.checkAnnoType(annotation, 'all') &&
+    //           this.checkTimeRange(annotation, 'all')
+    //       })
+    //   });
+    // }
+    // else {
+    this.setState({
+      filteredAnnotations:
+        this.state.annotations.filter(annotation => {
+          return this.checkSiteScope(annotation, filterSelection.siteScope) &&
+            this.checkUserScope(annotation, filterSelection.userScope) &&
+            this.checkAnnoType(annotation, filterSelection.annoType) &&
+            this.checkTimeRange(annotation, filterSelection.timeRange);
+        })
+    });
+    // }
   }
 
 
