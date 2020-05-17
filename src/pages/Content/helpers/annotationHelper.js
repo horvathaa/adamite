@@ -209,17 +209,12 @@ function highlightpage(anno) {
   matchText(anno.xpath, anno.offsets.startOff, anno.offsets.endOffset, function (node, match, offset) {
 
     var span = document.createElement("span");
-    //var spanToolTip = document.createElement("span");
     span.setAttribute("id", anno.id.toString());
     span.textContent = match;
-    span.setAttribute('data-tooltip', anno.content);
+    span.setAttribute('data-tooltip', anno.content.length > 500 ? anno.content.substring(0, 500) + "..." : anno.content);
     span.setAttribute('data-tooltip-position', "bottom");
-    //spanToolTip.textContent = "blurp";
-    //spanToolTip.className = "tooltiptext";
     span.className = "highlight tooltip";
     node.parentNode.insertBefore(span, node.nextSibling);
-    //span.parentNode.insertBefore(spanToolTip, span.nextSibling);
-    //document.getElementById(span.id).classList.add("highlight");
     document.getElementById(span.id).onclick = anchorClick;
   });
 }
