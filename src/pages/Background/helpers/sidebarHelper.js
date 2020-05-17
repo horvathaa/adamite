@@ -39,7 +39,7 @@ const persistSidebarOnLeftStatus = (status) => {
 /**
  * Should Shrink Body
  */
-let shouldShrinkBody = true;
+let shouldShrinkBody = false;
 
 chrome.storage.sync.get(['shouldShrinkBody'], (result) => {
   if (result.shouldShrinkBody !== undefined) {
@@ -66,15 +66,17 @@ const toggleSidebar = (toStatus = null) => {
   chrome.tabs.query(
     {
       currentWindow: true,
+      active: true
     },
-    function (tabs) {
-      tabs.forEach((tab) => {
-        chrome.tabs.sendMessage(tab.id, {
-          from: 'background',
-          msg: 'TOGGLE_SIDEBAR',
-          toStatus: sidebarOpenCopy,
-        });
+    function (tab) {
+      console.log(tab);
+      // tab[0].forEach((tab) => {
+      chrome.tabs.sendMessage(tab[0].id, {
+        from: 'background',
+        msg: 'TOGGLE_SIDEBAR',
+        toStatus: sidebarOpenCopy,
       });
+      // });
     }
   );
 };

@@ -104,8 +104,6 @@ class Sidebar extends React.Component {
         request.msg === 'CONTENT_SELECTED'
       ) {
         const { selection, offsets, xpath } = request.payload;
-        console.log("hsssssssss");
-        console.log(xpath);
         this.setState({
           newSelection: selection,
           offsets: offsets,
@@ -141,54 +139,57 @@ class Sidebar extends React.Component {
     this.setState({ showFilter: !this.state.showFilter });
   }
 
+  // helper method from 
+  // https://stackoverflow.com/questions/4587061/how-to-determine-if-object-is-in-array
+  containsObject(obj, list) {
+    var i;
+    for (i = 0; i < list.length; i++) {
+      if (list[i] === obj) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  checkAnnoType(annotation, annoType) {
+    if (!annoType.length) {
+      return true;
+    }
+    return this.containsObject(annotation.type, annoType);
+  }
+
+  checkSiteScope(annotation, siteScope) {
+    if (siteScope === null) {
+      return true;
+    }
+    if (siteScope === 'onPage') {
+      return annotation.url === this.state.url;
+    }
+    else if (siteScope === 'acrossWholeSite') {
+      let url = new URL(this.state.url);
+      return annotation.url.includes(url.hostname)
+    }
+  }
+
+  checkUserScope(annotation, userScope) {
+    if (!userScope.length) {
+      return true;
+    }
+    if (userScope.includes('onlyMe')) {
+      return annotation.authorId === this.state.currentUser.uid;
+    }
+    else if (userScope.includes('public') || !userScope.length) {
+      return true;
+    }
+  }
+
   applyFilter = (filterSelection) => {
-    console.log(filterSelection);
-    // this.setState(prevState => { - need to get filter working as a state variable
-    //   let selected = Object.assign({}, prevState.selected);
-    //   selected.siteScope = filterSelection.siteScope;
-    //   selected.userScope = filterSelection.userScope;
-    //   selected.annoType = filterSelection.annoType;
-    //   selected.timeRange = filterSelection.timeRange;
-    //   selected.archive = filterSelection.archive;
-    //   selected.tags = filterSelection.tags;
-    //   console.log(selected);
-    //   return { selected };
-    // });
-    //console.log(this.state.selected);
-    // if (this.state.selected !== undefined) {
-    // switch to filteredAnnotations - set default filter and then pass those filtered
-    // annotations to annotationlist
     this.setState({
-      annotations:
+      filteredAnnotations:
         this.state.annotations.filter(annotation => {
-          if (filterSelection.siteScope !== null) {
-            if (filterSelection.siteScope === 'onPage') {
-              console.log('in onpage');
-              if (filterSelection.userScope.includes('onlyMe')) {
-                return annotation.url === this.state.url && annotation.authorId === this.state.currentUser.uid;
-              }
-              else if (filterSelection.userScope.includes('public') || !filterSelection.userScope.length) {
-                return annotation.url === this.state.url;
-              }
-            }
-            else if (filterSelection.siteScope === 'acrossWholeSite') {
-              let url = new URL(this.state.url);
-              if (filterSelection.userScope.includes('onlyMe')) {
-                return annotation.url.includes(url.hostname) && annotation.authorId === this.state.currentUser.uid;
-              }
-              else if (filterSelection.userScope.includes('public') || !filterSelection.userScope.length) {
-                return annotation.url.includes(url.hostname);
-              }
-            }
-          }
-          else if (filterSelection.userScope.length) {
-            if (filterSelection.userScope.includes('onlyMe')) {
-              return annotation.authorId === this.state.currentUser.uid;
-            }
-            else if (filterSelection.userScope.includes('public')) {
-              return true;
-            }
-          }
+          return this.checkSiteScope(annotation, filterSelection.siteScope) &&
+            this.checkUserScope(annotation, filterSelection.userScope) &&
+            this.checkAnnoType(annotation, filterSelection.annoType)
         })
     });
 
@@ -200,7 +201,7 @@ class Sidebar extends React.Component {
   };
 
   render() {
-    const { currentUser, annotations } = this.state;
+    const { currentUser, annotations, filteredAnnotations } = this.state;
     console.log(annotations);
 
     if (currentUser === undefined) {
@@ -214,8 +215,9 @@ class Sidebar extends React.Component {
         {currentUser === null && <Authentication />}
         {currentUser !== null && (
           <React.Fragment>
-            <FaFilter className="Filter" onClick={_ => this.displayFilter()} />
-            {this.state.showFilter && <Filter applyFilter={this.applyFilter} />}
+            {/* <FaFilter className="Filter" onClick={_ => this.displayFilter()} />
+            {this.state.showFilter &&  }*/}
+            <Filter applyFilter={this.applyFilter} />
             {' '}
             {this.state.newSelection !== null &&
               this.state.newSelection.trim().length > 0 && (
@@ -228,7 +230,13 @@ class Sidebar extends React.Component {
                 />
               )}
             <div className="AnnotationListPadding"></div>
-            <AnnotationList annotations={annotations} currentUser={currentUser} />
+            {this.state.filteredAnnotations.length === 0 ? (
+              <AnnotationList annotations={annotations} currentUser={currentUser} />
+            ) :
+              (
+                <AnnotationList annotations={filteredAnnotations} currentUser={currentUser} />
+              )
+            }
           </React.Fragment>
         )}
       </div>

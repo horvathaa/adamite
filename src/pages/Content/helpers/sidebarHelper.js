@@ -105,6 +105,7 @@ chrome.storage.sync.get(['sidebarOnLeft'], (result) => {
  */
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.from === 'background' && request.msg === 'TOGGLE_SIDEBAR') {
+    console.log('mounting');
     if (Frame.isReady()) {
       Frame.toggle(request.toStatus);
     }
@@ -135,9 +136,10 @@ const checkSidebarStatus = () => {
     },
     (response) => {
       let sidebarOpen = response.sidebarOpen;
-      if (Frame.isReady()) {
-        Frame.toggle(sidebarOpen);
-      }
+      console.log('request');
+      // if (Frame.isReady()) {
+      //   Frame.toggle(sidebarOpen);
+      // }
     }
   );
 };
