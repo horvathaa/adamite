@@ -4,7 +4,7 @@ import { Dropdown } from 'react-bootstrap';
 import { FaCheck, FaFilter } from 'react-icons/fa';
 import { trashAnnotationById } from '../../../../firebase';
 
-const customToggle = React.forwardRef(({ children, onClick }, ref) => (
+const filterToggle = React.forwardRef(({ children, onClick }, ref) => (
     <a ref={ref}
         onClick={(e) => {
             e.preventDefault();
@@ -16,9 +16,9 @@ const customToggle = React.forwardRef(({ children, onClick }, ref) => (
 
 class Filter extends React.Component {
     selection = {
-        siteScope: null,
-        userScope: [],
-        annoType: [],
+        siteScope: 'onPage',
+        userScope: ['public'],
+        annoType: ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'],
         timeRange: null,
         archive: null,
         tags: []
@@ -26,7 +26,11 @@ class Filter extends React.Component {
 
     async updateSelected(eventKey) {
         if (eventKey === 'setDefault') {
+            this.selection.siteScope = 'onPage';
+            this.selection.userScope = ['public'];
+            this.selection.annoType = ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'];
             this.props.applyFilter('setDefault');
+            return;
         }
         if (eventKey.includes('siteScope')) {
             this.selection.siteScope = eventKey.substring(eventKey.indexOf(':') + 1, eventKey.length);
@@ -41,7 +45,7 @@ class Filter extends React.Component {
         }
         else if (eventKey.includes('annoType')) {
             let choice = eventKey.substring(eventKey.indexOf(':') + 1, eventKey.length)
-            if (this.selection.annoType.includes(choice)) {
+            if (this.selection.annoType.includes(choice) || this.selection.annoType.includes('all')) {
                 this.selection.annoType = this.selection.annoType.filter(e => e !== choice);
             } else {
                 this.selection.annoType.push(choice);
@@ -54,10 +58,12 @@ class Filter extends React.Component {
     render() {
         return (
             <Dropdown className="Filter">
-                <Dropdown.Toggle as={customToggle} id="dropdown-basic">
+                <Dropdown.Toggle as={filterToggle} id="dropdown-basic">
 
                 </Dropdown.Toggle>
                 <Dropdown.Menu >
+                    &nbsp;{this.props.filterAnnotationLength()} annotations
+                    <Dropdown.Divider />
                     &nbsp;Site scope
                     <Dropdown.Item as="button" eventKey="siteScope:onPage" onSelect={eventKey => this.updateSelected(eventKey)}>
                         On page {this.selection.siteScope === 'onPage' ? ("•") : (null)}
@@ -101,7 +107,7 @@ class Filter extends React.Component {
                     </Dropdown.Item>
                     <Dropdown.Divider />
                     <Dropdown.Item as="button" eventKey="setDefault" onSelect={eventKey => this.updateSelected(eventKey)}>
-                        Apply Default Filter
+                        Revert to Default
                     </Dropdown.Item>
                 </Dropdown.Menu>
 
