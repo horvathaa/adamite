@@ -78,7 +78,6 @@ var splitReinsertText = function (node, substring, callback) {
     newTextNode.data = newTextNode.data.substr(all.length);
 
     callback.apply(window, [node].concat(args));
-    console.log("here");
     return newTextNode;
 
   });
@@ -200,17 +199,10 @@ function highlightpage(anno) {
     var span = document.createElement("span");
     span.style.backgroundColor = "yellow";
     span.textContent = match;
-    span.onclick = function anchorClick(e) {
-      const target = e.target.id;
-      chrome.runtime.sendMessage({
-        msg: 'ANCHOR_CLICKED',
-        from: 'content',
-        payload: {
-          url: window.location.href,
-          target: target,
-        },
-      });
-    }
+    span.onclick = function (span) {
+      console.log("help me");
+      span.style.backgroundColor = "red";
+    };
     node.parentNode.insertBefore(span, node.nextSibling);
   });
 }
@@ -224,22 +216,22 @@ chrome.runtime.sendMessage(
   },
   data => {
     const { annotationsOnPage } = data;
-    console.log("annotationsOnPage");
-    console.log(annotationsOnPage);
     if (annotationsOnPage.length) {
-      console.log("true");
       window.onload = function () {
         //alert("It's loaded!")
 
         annotationsOnPage.forEach(anno => {
 
           for (let anno of annotationsOnPage) {
-            console.log(anno);
             matchText(anno.xpath, anno.offsets.startOff, anno.offsets.endOffset, function (node, match, offset) {
               var span = document.createElement("span");
               span.style.backgroundColor = "yellow";
+              span.style.display = "inline";
+              span.style.cursor = "help";
+              span.setAttribute("id", anno.id.toString());
               span.textContent = match;
               node.parentNode.insertBefore(span, node.nextSibling);
+              document.getElementById(span.id).onclick = anchorClick;
             });
           }
         });
@@ -247,6 +239,10 @@ chrome.runtime.sendMessage(
     }
   }
 );
+
+function teesst(span) {
+  span.style.backgroundColor = "green";
+}
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.msg === 'ANNOTATIONS_UPDATED' && request.from === 'background') {
@@ -262,6 +258,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         annotationsOnPage.forEach(anno => {
           highlightpage(anno);
         });
+
       }
     );
   }

@@ -107,8 +107,6 @@ class Sidebar extends React.Component {
         request.msg === 'CONTENT_SELECTED'
       ) {
         const { selection, offsets, xpath } = request.payload;
-        console.log("hsssssssss");
-        console.log(xpath);
         this.setState({
           newSelection: selection,
           offsets: offsets,
@@ -118,14 +116,13 @@ class Sidebar extends React.Component {
         request.from === 'content' &&
         request.msg === 'ANCHOR_CLICKED'
       ) {
+        console.log(request.payload);
         const { target } = request.payload;
-        this.state.annotations.forEach(anno => {
-          if (anno.id === target) {
-            anno.active = true;
-          } else {
-            anno.active = false;
-          }
+
+        this.setState({
+          filteredAnnotations: this.state.annotations.filter(function (element) { return element.id === target; })
         });
+
       } else if (
         request.from === 'background' &&
         request.msg === 'TOGGLE_SIDEBAR'
@@ -204,7 +201,6 @@ class Sidebar extends React.Component {
 
   render() {
     const { currentUser, annotations, dropdownOpen } = this.state;
-    console.log(annotations);
 
     if (currentUser === undefined) {
       // loading currentUser
@@ -212,6 +208,7 @@ class Sidebar extends React.Component {
     }
 
     return (
+
       <div className="SidebarContainer">
         <Title currentUser={currentUser} />
         {currentUser === null && <Authentication />}

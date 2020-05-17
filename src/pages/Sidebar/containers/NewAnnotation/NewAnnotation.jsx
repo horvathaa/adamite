@@ -29,25 +29,17 @@ class NewAnnotation extends React.Component {
     this.setState({ submitted: true });
 
     const { url, newSelection, xpath, offsets } = this.props;
-    // todo - switch to xpath
-    // const divProps = {
-    //   top: rect.top + offset,
-    //   left: rect.left,
-    //   width: rect.width,
-    //   height: rect.height,
-    // };
+
     let annotationType = this.state.annotationContent.includes("todo") || this.state.annotationContent.includes("to-do") ? "to-do" : "default";
     const annotationInfo = /*JSON.stringify(*/{
       anchor: newSelection,
       annotation: this.state.annotationContent,
       xpath: xpath,
       offsets: offsets,
-      //div: divProps,
       id: newSelection + this.state.annotationContent + Math.floor(Math.random() * 1000),
       annotationType: annotationType,
     }/*)*/;
-    console.log("hsdckhjdsf");
-    console.log(annotationInfo);
+
     chrome.runtime.sendMessage(
       {
         msg: 'SAVE_ANNOTATED_TEXT',
