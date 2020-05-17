@@ -885,7 +885,6 @@ class Annotation extends Component {
         </li>
       );
     }
-
   }
 }
 

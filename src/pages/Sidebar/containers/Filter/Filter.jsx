@@ -25,6 +25,9 @@ class Filter extends React.Component {
     }
 
     async updateSelected(eventKey) {
+        if (eventKey === 'setDefault') {
+            this.props.applyFilter('setDefault');
+        }
         if (eventKey.includes('siteScope')) {
             this.selection.siteScope = eventKey.substring(eventKey.indexOf(':') + 1, eventKey.length);
         }
@@ -95,6 +98,10 @@ class Filter extends React.Component {
                     </Dropdown.Item>
                     <Dropdown.Item as="button" eventKey="annoType:issue" onSelect={eventKey => this.updateSelected(eventKey)}>
                         Issue {this.selection.annoType.includes('issue') ? ("✓") : (null)}
+                    </Dropdown.Item>
+                    <Dropdown.Divider />
+                    <Dropdown.Item as="button" eventKey="setDefault" onSelect={eventKey => this.updateSelected(eventKey)}>
+                        Apply Default Filter
                     </Dropdown.Item>
                 </Dropdown.Menu>
 

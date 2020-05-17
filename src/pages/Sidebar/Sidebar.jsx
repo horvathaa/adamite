@@ -19,7 +19,7 @@ class Sidebar extends React.Component {
     offsets: null,
     xpath: null,
     currentUser: undefined,
-    showFilter: false,
+    // showFilter: false,
     selected: undefined
     // selected: { - need to get default filter working
     //   siteScope: "onPage",
@@ -135,9 +135,9 @@ class Sidebar extends React.Component {
     });
   }
 
-  displayFilter() {
-    this.setState({ showFilter: !this.state.showFilter });
-  }
+  // displayFilter() {
+  //   this.setState({ showFilter: !this.state.showFilter });
+  // }
 
   // helper method from 
   // https://stackoverflow.com/questions/4587061/how-to-determine-if-object-is-in-array
@@ -152,7 +152,7 @@ class Sidebar extends React.Component {
   }
 
   checkAnnoType(annotation, annoType) {
-    if (!annoType.length) {
+    if (!annoType.length || annoType === 'all') {
       return true;
     }
     return this.containsObject(annotation.type, annoType);
@@ -163,6 +163,8 @@ class Sidebar extends React.Component {
       return true;
     }
     if (siteScope === 'onPage') {
+      console.log('onpage sitescope');
+      console.log(annotation.url === this.state.url);
       return annotation.url === this.state.url;
     }
     else if (siteScope === 'acrossWholeSite') {
@@ -184,14 +186,29 @@ class Sidebar extends React.Component {
   }
 
   applyFilter = (filterSelection) => {
-    this.setState({
-      filteredAnnotations:
-        this.state.annotations.filter(annotation => {
-          return this.checkSiteScope(annotation, filterSelection.siteScope) &&
-            this.checkUserScope(annotation, filterSelection.userScope) &&
-            this.checkAnnoType(annotation, filterSelection.annoType)
-        })
-    });
+    if (filterSelection === 'setDefault') {
+      console.log('setting default');
+      this.setState({
+        filteredAnnotations:
+          this.state.annotations.filter(annotation => {
+            return this.checkSiteScope(annotation, 'onPage') &&
+              this.checkUserScope(annotation, ['public']) &&
+              this.checkAnnoType(annotation, 'all')
+          })
+      });
+    }
+    else {
+      this.setState({
+        filteredAnnotations:
+          this.state.annotations.filter(annotation => {
+            return this.checkSiteScope(annotation, filterSelection.siteScope) &&
+              this.checkUserScope(annotation, filterSelection.userScope) &&
+              this.checkAnnoType(annotation, filterSelection.annoType);
+          })
+      });
+    }
+
+    console.log(this.state.filteredAnnotations);
 
   }
 
