@@ -1,9 +1,32 @@
 import React from 'react';
 import { Dropdown } from 'react-bootstrap';
 import './NewAnnotation.css';
+import ReactDOM from 'react-dom';
+import { Editor, EditorState } from 'draft-js';
+import RichEditorExample from '../RichTextEditor/RichTextEditor'
 import CustomTag from '../CustomTag/CustomTag';
+function MyEditor() {
+  const [editorState, setEditorState] = React.useState(
+    EditorState.createEmpty(),
+  );
+  return <Editor editorState={editorState} onChange={setEditorState} />;
+}
+
 
 class NewAnnotation extends React.Component {
+
+  constructor(props) {
+    super(props);
+    this.annotationChangeHandler = this.annotationChangeHandler.bind(this)
+  }
+
+  saveAnnotationContent(w) {
+    console.log(w)
+    this.setState({
+      annotationContent: w
+    })
+  }
+
   state = {
     submitted: false,
     addedTag: false,
@@ -37,8 +60,8 @@ class NewAnnotation extends React.Component {
     this.setState({ annotationType: eventKey });
   }
 
-  annotationChangeHandler = event => {
-    this.setState({ annotationContent: event.target.value });
+  annotationChangeHandler = (value) => {
+    this.setState({ annotationContent: value });
   };
 
   annotationTagHandler = event => {
@@ -91,88 +114,85 @@ class NewAnnotation extends React.Component {
     const { annotationContent, submitted, tags } = this.state;
 
     return (
+
       <div className="NewAnnotationContainer">
-        <div className="SelectedTextContainer">{newSelection}</div>
-        <div className="TextareaContainer">
-          <textarea
-            className="form-control"
-            rows="2"
-            placeholder={'Put your annotations here'}
-            value={annotationContent}
-            onChange={e => this.annotationChangeHandler(e)}
-          // onChange={defaultValue}
-          />
-        </div>
-        {!submitted ? (
-          <React.Fragment>
-            <div className="TagContainer">
-              {tags.length ? (
-                <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
-                  {tags.map((tagContent, idx) => {
-                    return (
-                      <CustomTag idx={idx} content={tagContent} deleteTag={this.deleteTag} editing={true} />
-                    )
-                  }
-                  )}
-                </ul>
-              ) : (null)}
+        <div className="InnerNewAnnotation">
+          <div className="SelectedTextContainer">{newSelection}</div>
+          <div className="TextareaContainer">
+
+            <RichEditorExample annotationChangeHandler={this.annotationChangeHandler} />
+          </div>
+          {!submitted ? (
+            <React.Fragment>
+              <div className="TagContainer">
+                {tags.length ? (
+                  <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
+                    {tags.map((tagContent, idx) => {
+                      return (
+                        <CustomTag idx={idx} content={tagContent} deleteTag={this.deleteTag} editing={true} />
+                      )
+                    }
+                    )}
+                  </ul>
+                ) : (null)}
                 Add Tag:
               <textarea
-                className="tag-control"
-                rows="1"
-                placeholder={'add tag here'}
-                // value={annotationContent}
-                onChange={e => this.annotationTagHandler(e)}
-              />
-            </div>
-            <div className="SubmitButtonContainer">
-              <Dropdown className="AnnotationType">
-                <Dropdown.Toggle variant="success" id="dropdown-basic">
-                  Annotation Type
+                  className="tag-control"
+                  rows="1"
+                  placeholder={'add tag here'}
+                  // value={annotationContent}
+                  onChange={e => this.annotationTagHandler(e)}
+                />
+              </div>
+              <div className="SubmitButtonContainer">
+                <Dropdown className="AnnotationType">
+                  <Dropdown.Toggle variant="success" id="dropdown-basic">
+                    Annotation Type
               </Dropdown.Toggle>
-                <Dropdown.Menu >
-                  <Dropdown.Item as="button" eventKey="default" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                    Default
+                  <Dropdown.Menu >
+                    <Dropdown.Item as="button" eventKey="default" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
+                      Default
                   </Dropdown.Item>
-                  <Dropdown.Item as="button" eventKey="to-do" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                    To-do
+                    <Dropdown.Item as="button" eventKey="to-do" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
+                      To-do
                   </Dropdown.Item>
-                  <Dropdown.Item as="button" eventKey="question" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                    Question
+                    <Dropdown.Item as="button" eventKey="question" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
+                      Question
                   </Dropdown.Item>
-                  <Dropdown.Item as="button" eventKey="highlight" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                    Highlight
+                    <Dropdown.Item as="button" eventKey="highlight" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
+                      Highlight
                   </Dropdown.Item>
-                  <Dropdown.Item as="button" eventKey="navigation" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                    Navigation
+                    <Dropdown.Item as="button" eventKey="navigation" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
+                      Navigation
                   </Dropdown.Item>
-                  <Dropdown.Item as="button" eventKey="issue" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                    Issue
+                    <Dropdown.Item as="button" eventKey="issue" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
+                      Issue
                   </Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
+                  </Dropdown.Menu>
+                </Dropdown>
               &nbsp; &nbsp;
-              <button
-                className="btn btn-sm btn-outline-danger"
-                onClick={_ => this.props.resetNewSelection()}
-              >
-                Cancel
+                <button
+                  className="btn btn-sm btn-outline-danger"
+                  onClick={_ => this.props.resetNewSelection()}
+                >
+                  Cancel
               </button>
               &nbsp; &nbsp;
-              <button
-                className="btn btn-sm btn-outline-secondary SubmitButton"
-                onClick={e => this.submitButtonHandler(e)}
-                disabled={annotationContent.length === 0}
-              >
-                Save
+                <button
+                  className="btn btn-sm btn-outline-secondary SubmitButton"
+                  onClick={e => this.submitButtonHandler(e)}
+                  disabled={annotationContent.length === 0}
+                >
+                  Save
               </button>
-            </div>
-          </React.Fragment>
-        ) : (
-            <div className="spinner-border text-secondary" role="status">
-              <span className="sr-only">...</span>
-            </div>
-          )}
+              </div>
+            </React.Fragment>
+          ) : (
+              <div className="spinner-border text-secondary" role="status">
+                <span className="sr-only">...</span>
+              </div>
+            )}
+        </div>
       </div>
     );
   }

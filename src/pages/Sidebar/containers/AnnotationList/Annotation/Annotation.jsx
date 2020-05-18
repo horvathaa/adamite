@@ -151,11 +151,17 @@ class Annotation extends Component {
             })}
           >
             {!this.state.collapsed ? (
-              <div className={classNames({
+              <div className={" container " + classNames({
                 Header: true,
                 Truncated: collapsed,
               })}>
-                {this.formatTimestamp(timeStamp)}
+                <div className="row">
+                  <div className="col">
+                    {this.formatTimestamp(timeStamp)}
+                  </div>
+                  <div className="col">
+                  </div>
+                </div>
               </div>
             ) : (null)}
             <div
@@ -261,22 +267,37 @@ class Annotation extends Component {
               </div>
             ) : (null)}
             <div className="IconRow">
-              {currentUser.uid === authorId && !collapsed ? (
-                <React.Fragment>
-                  <div className="IconContainer">
-                    <FaTrash className="Icon" id="Trash" onClick={_ => this.handleTrashClick(id)} />
-                  </div>
-                  <div className="IconContainer">
-                    <FaEdit className="Icon" id="Edit" onClick={_ => this.handleEditClick(id)} />
-                  </div>
-                </React.Fragment>
-              ) : (null)}
-              {collapsed ? (
-                <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} />
-              ) : (
-                  <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} />
-                )
-              }
+              <div className="container">
+                <div className="row">
+                  {currentUser.uid === authorId && !collapsed ? (
+                    <React.Fragment>
+                      <div className="col">
+                        <div className="row">
+                          <div className="IconContainer">
+                            <FaTrash className="Icon" id="Trash" onClick={_ => this.handleTrashClick(id)} />
+                          </div>
+                          <div className="IconContainer">
+                            <FaEdit className="Icon" id="Edit" onClick={_ => this.handleEditClick(id)} />
+                          </div>
+                        </div>
+                      </div>
+                    </React.Fragment>
+                  ) : (null)}
+                  {collapsed ? (
+                    <div className=" FaCaretUp-Col ">
+                      <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} className="Icon" />
+                    </div>
+                  ) : (
+                      <React.Fragment>
+                        <div className="col">
+                          <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} className="Icon" />
+                        </div>
+
+                      </React.Fragment>
+                    )
+                  }
+                </div>
+              </div>
             </div>
           </div>
 
@@ -367,9 +388,9 @@ class Annotation extends Component {
                 )}
             </div>
             {this.state.collapsed ? (
-              <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} />
+              <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} className="Icon" />
             ) : (
-                <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} />
+                <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} className="Icon" />
               )}
             {currentUser.uid === authorId ? (
               <React.Fragment>
@@ -512,9 +533,9 @@ class Annotation extends Component {
                 </React.Fragment>
               ) : (null)}
               {this.state.collapsed ? (
-                <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} />
+                <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} className="Icon" />
               ) : (
-                  <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} />
+                  <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} className="Icon" />
                 )
               }
             </div>
@@ -655,9 +676,9 @@ class Annotation extends Component {
                 </React.Fragment>
               ) : (null)}
               {this.state.collapsed ? (
-                <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} />
+                <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} className="Icon" />
               ) : (
-                  <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} />
+                  <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} className="Icon" />
                 )
               }
             </div>
@@ -798,9 +819,9 @@ class Annotation extends Component {
                 </React.Fragment>
               ) : (null)}
               {this.state.collapsed ? (
-                <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} />
+                <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} className="Icon" />
               ) : (
-                  <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} />
+                  <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} className="Icon" />
                 )
               }
             </div>
@@ -941,9 +962,9 @@ class Annotation extends Component {
                 </React.Fragment>
               ) : (null)}
               {this.state.collapsed ? (
-                <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} />
+                <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} className="Icon" />
               ) : (
-                  <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} />
+                  <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} className="Icon" />
                 )
               }
             </div>

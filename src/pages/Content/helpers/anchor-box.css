@@ -3,18 +3,18 @@
     opacity: 50%;
 }
 
-.highlight:hover {
+.highlight-adamite-annotation:hover {
     filter: brightness(1);
     background-color: #dede0a;
 }
-.highlight {
+.highlight-adamite-annotation {
     background-color: yellow;
     cursor: help;
     display: inline;
 }
 
 [data-tooltip] {
-    display: inline-block;
+
     position: inherit;
     cursor: help;
     /* padding: 4px; */
@@ -39,6 +39,7 @@
     max-width: 500px;
     width: max-content;
     border-color: coral;
+    opacity: inherit;
     
 }
 /* Dynamic horizontal centering */

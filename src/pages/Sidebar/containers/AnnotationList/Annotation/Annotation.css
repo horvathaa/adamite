@@ -2,7 +2,16 @@
   width: 100%;
   display: flex;
   position: relative;
+  padding: 5px 15px 5px 15px;
 }
+
+.InnerNewAnnotation {
+  padding: 5px;
+  background: white;
+  border: 1px solid #bfbebe;
+  box-shadow: 5px 5px 5px #88888887;
+}
+
 
 .CollapseIconPad {
   height: 8px;
@@ -37,20 +46,25 @@
 }
 
 .AnnotationContainer {
+  padding: 5px;
+  background: white;
+  border: 1px solid #bfbebe;
+  box-shadow: 5px 5px 5px #88888887;
+
   flex: 1;
   min-width: 0;
-  padding: 4px 4px 4px 4px;
+  /* padding: 4px 4px 4px 4px;
   cursor: default;
   outline-style: solid;
-  color: rgb(44, 44, 44);
+  color: rgb(44, 44, 44); */
   /* border-top-left-radius: 8px;
   border-top-right-radius: 8px;
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px; */
-  background-color: rgba(255, 255, 255, 0.5);
+  /* background-color: rgba(255, 255, 255, 0.5); */
   transition: all 0.1s ease-in;
   position: relative;
-  box-shadow: gray;
+  /* box-shadow: gray; */
 }
 
 
@@ -89,17 +103,32 @@
 .AnchorContainer {
   flex: 1;
   min-width: 0;
+
+
+  border-left: 3px solid #658167;
+  padding: 11px 5px 11px 5px;
+  font-weight: lighter;
+  font-size: 1rem;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  line-height: 1rem;
+  margin-left: 5px;
+  font-style: italic;
+  color: #666;
+  max-height: 200px;
+  overflow: auto;
+
   display: flex;
-  align-items: center;
+  /* align-items: center;
   padding: 8px 8px 8px 8px;
   cursor: default;
   background-color: rgb(177, 189, 185);
-  color: rgb(85, 83, 83);
+  color: rgb(85, 83, 83); */
   /* border-top-left-radius: 8px;
   border-top-right-radius: 8px;
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px; */
-  border-color: rgb(0, 0, 0);
+  /* border-color: rgb(0, 0, 0);
   border-width: 2px;
   max-height: 200px;
   word-break: break-all;
@@ -107,7 +136,7 @@
 
   transition: all 0.1s ease-in;
 
-  margin: 5px 0px;
+  margin: 5px 0px; */
 }
 
 .ContentContainer {
@@ -117,7 +146,6 @@
   align-items: center;
   padding: 8px 8px 8px 8px;
   cursor: default;
-  background-color: rgb(250, 238, 224);
   color: rgb(85, 83, 83);
   /* border-top-left-radius: 8px;
   border-top-right-radius: 8px;
@@ -139,7 +167,9 @@
 
 .Header {
   position: relative;
-  padding: 10px;
+  padding-top: 5px;
+  padding-left: 5px;
+  text-align: left;
 }
 
 .TagRow {
@@ -156,8 +186,21 @@
 }
 
 .Icon {
-  width: 16px;
-  height: 16px;
+  width: 1.4em;
+  color: #7f8080;
+  height: 1.5em;
+}
+
+.FaCaretUp-Col {
+  align-items: center;
+  -ms-flex-preferred-size: 0;
+  flex-basis: 0;
+  -ms-flex-positive: 1;
+  /* flex-grow: 1; */
+  min-width: 0;
+  max-width: 100%;
+  /* margin-left: 50%; */
+
 }
 
 .IconContainer {
