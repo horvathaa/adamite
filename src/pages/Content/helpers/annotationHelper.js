@@ -228,6 +228,8 @@ chrome.runtime.sendMessage(
   },
   data => {
     const { annotationsOnPage } = data;
+    console.log("new anno")
+    console.log(annotationsOnPage)
     if (annotationsOnPage.length) {
       //window.onload = function () {
       annotationsOnPage.forEach(anno => {

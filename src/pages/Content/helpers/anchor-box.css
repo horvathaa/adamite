@@ -14,7 +14,7 @@
 }
 
 [data-tooltip] {
-    display: inline-block;
+
     position: inherit;
     cursor: help;
     /* padding: 4px; */

@@ -136,9 +136,9 @@ const checkSidebarStatus = () => {
     (response) => {
       let sidebarOpen = response.sidebarOpen;
       // console.log('request');
-      // if (Frame.isReady()) {
-      //   Frame.toggle(sidebarOpen);
-      // }
+      if (Frame.isReady()) {
+        Frame.toggle(sidebarOpen);
+      }
     }
   );
 };

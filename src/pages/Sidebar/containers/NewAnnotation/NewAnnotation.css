@@ -4,15 +4,19 @@
 }
 
 .SelectedTextContainer {
-  border-left: 3px solid lightgray;
+  border-left: 3px solid #658167;
   padding: 5px 5px 5px 10px;
   font-weight: lighter;
-  font-size: 0.9rem;
+  font-size: 1rem;
+  margin-top: 5px;
+  margin-bottom: 5px;
   line-height: 1rem;
+  margin-left: 5px;
   font-style: italic;
   color: #666;
   max-height: 200px;
   overflow: auto;
+  
 }
 
 .TextareaContainer {
@@ -35,4 +39,18 @@
 
 .SubmitButtonContainer .SubmitButton:disabled {
   cursor: not-allowed;
+}
+
+.InnerNewAnnotation {
+  padding: 5px;
+  background: white;
+  border: 1px solid #bfbebe;
+  box-shadow: 5px 5px 5px #88888887;
+}
+
+.AnnoatationButton{
+  color: black !important; 
+  background-color: transparent !important;
+  border-color: gray !important;
+  border-radius: 0px !important;
 }
