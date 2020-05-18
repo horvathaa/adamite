@@ -1,16 +1,16 @@
 .RichEditor-root {
     background: #fff;
-    border: 1px solid #ddd;
+    border: 1px solid #9f9e9e;
     font-family: 'Georgia', serif;
     font-size: 14px;
-    padding: 15px;
+    padding: 10px 15px 15px 15px;
   }
   
   .RichEditor-editor {
     border-top: 1px solid #ddd;
     cursor: text;
     font-size: 16px;
-    margin-top: 10px;
+    /* margin-top: 10px; */
   }
   
   .RichEditor-editor .public-DraftEditorPlaceholder-root,
@@ -51,11 +51,26 @@
   }
   
   .RichEditor-styleButton {
-    color: #999;
+    color: darkslategrey;
     cursor: pointer;
-    margin-right: 16px;
+    margin-right: 8px;
     padding: 2px 0;
+
     display: inline-block;
+  }
+
+  .RichEditor-styleSvg{
+    width: 1.4em;
+    color: #7f8080;
+    height: 1.5em;
+
+  }
+  .RichEditor-styleSvg:hover{
+    color: #5d5f5f;
+  }
+  
+ .RichEditor-styleSvg:active{
+    color: #5d5f5f;
   }
   
   .RichEditor-activeButton {

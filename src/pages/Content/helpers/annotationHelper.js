@@ -5,6 +5,7 @@ import xpath from 'xpath';
 import { SIDEBAR_IFRAME_ID } from '../../../shared/constants';
 import { node } from 'prop-types';
 import { compose } from 'glamor';
+import $ from 'jquery';
 
 
 function anchorClick(e) {
@@ -213,7 +214,7 @@ function highlightpage(anno) {
     span.textContent = match;
     span.setAttribute('data-tooltip', anno.content.length > 500 ? anno.content.substring(0, 500) + "..." : anno.content);
     span.setAttribute('data-tooltip-position', "bottom");
-    span.className = "highlight tooltip";
+    span.className = "highlight-adamite-annotation";
     node.parentNode.insertBefore(span, node.nextSibling);
     document.getElementById(span.id).onclick = anchorClick;
   });
@@ -231,9 +232,9 @@ chrome.runtime.sendMessage(
     console.log("new anno")
     console.log(annotationsOnPage)
     if (annotationsOnPage.length) {
+      console.log(annotationsOnPage);
       //window.onload = function () {
       annotationsOnPage.forEach(anno => {
-        console.log(anno);
         highlightpage(anno);
       });
       //}
@@ -242,7 +243,11 @@ chrome.runtime.sendMessage(
 );
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.msg === 'ANNOTATIONS_UPDATED' && request.from === 'background') {
+  if (request.msg === 'ANNOTATION_DELETED_ON_PAGE') {
+    let element = document.getElementById(request.id);
+    $(element).contents().unwrap();
+  }
+  else if (request.msg === 'ANNOTATIONS_UPDATED' && request.from === 'background') {
     chrome.runtime.sendMessage(
       {
         msg: 'REQUEST_ANNOTATED_TEXT_ON_THIS_PAGE',
@@ -253,11 +258,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       data => {
         const { annotationsOnPage } = data;
         annotationsOnPage.forEach(anno => {
-          console.log(anno);
           highlightpage(anno);
         });
 
       }
     );
   }
+
 });

@@ -16,7 +16,7 @@ const filterToggle = React.forwardRef(({ children, onClick }, ref) => (
 
 class Filter extends React.Component {
     selection = {
-        siteScope: 'onPage',
+        siteScope: ['onPage'],
         userScope: ['public'],
         annoType: ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'],
         timeRange: 'all',
@@ -26,7 +26,7 @@ class Filter extends React.Component {
 
     async updateSelected(eventKey) {
         if (eventKey === 'setDefault') {
-            this.selection.siteScope = 'onPage';
+            this.selection.siteScope = ['onPage'];
             this.selection.userScope = ['public'];
             this.selection.annoType = ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'];
             this.selection.timeRange = 'all';
@@ -34,7 +34,13 @@ class Filter extends React.Component {
             return;
         }
         if (eventKey.includes('siteScope')) {
-            this.selection.siteScope = eventKey.substring(eventKey.indexOf(':') + 1, eventKey.length);
+            let choice = eventKey.substring(eventKey.indexOf(':') + 1, eventKey.length)
+            if (this.selection.siteScope.includes(choice)) {
+                this.selection.siteScope = this.selection.siteScope.filter(e => e !== choice);
+            } else {
+                this.selection.siteScope.push(choice);
+            }
+            // this.selection.siteScope = eventKey.substring(eventKey.indexOf(':') + 1, eventKey.length);
         }
         else if (eventKey.includes('userScope')) {
             let choice = eventKey.substring(eventKey.indexOf(':') + 1, eventKey.length)
@@ -70,16 +76,16 @@ class Filter extends React.Component {
                     <Dropdown.Divider />
                     &nbsp;Site scope
                     <Dropdown.Item as="button" eventKey="siteScope:onPage" onSelect={eventKey => this.updateSelected(eventKey)}>
-                        On page {this.selection.siteScope === 'onPage' ? ("•") : (null)}
+                        On page {this.selection.siteScope.includes('onPage') ? ("✓") : (null)}
                     </Dropdown.Item>
                     <Dropdown.Item as="button" eventKey="siteScope:anchorToPage" onSelect={eventKey => this.updateSelected(eventKey)}>
-                        Anchored to Page {this.selection.siteScope === 'anchorToPage' ? ("•") : (null)}
+                        Anchored to Page {this.selection.siteScope.includes('anchorToPage') ? ("✓") : (null)}
                     </Dropdown.Item>
                     <Dropdown.Item as="button" eventKey="siteScope:acrossWholeSite" onSelect={eventKey => this.updateSelected(eventKey)}>
-                        Across whole site {this.selection.siteScope === 'acrossWholeSite' ? ("•") : (null)}
+                        Across whole site {this.selection.siteScope.includes('acrossWholeSite') ? ("✓") : (null)}
                     </Dropdown.Item>
                     <Dropdown.Item as="button" eventKey="siteScope:anchorToAllSitePages" onSelect={eventKey => this.updateSelected(eventKey)}>
-                        Anchored to All Site Pages {this.selection.siteScope === 'anchorToAllSitePages' ? ("•") : (null)}
+                        Anchored to All Site Pages {this.selection.siteScope.includes('anchorToAllSitePages') ? ("✓") : (null)}
                     </Dropdown.Item>
                     <Dropdown.Divider />
                      &nbsp; User view

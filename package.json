@@ -21,7 +21,7 @@
     "firebase": "^7.14.2",
     "glamor": "^2.20.40",
     "immutable": "^4.0.0-rc.12",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.1",
     "prop-types": "^15.7.2",
     "re-resizable": "^6.3.2",
     "react": "^16.13.1",

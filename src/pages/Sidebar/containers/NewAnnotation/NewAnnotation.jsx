@@ -4,6 +4,7 @@ import './NewAnnotation.css';
 import ReactDOM from 'react-dom';
 import { Editor, EditorState } from 'draft-js';
 import RichEditorExample from '../RichTextEditor/RichTextEditor'
+import CustomTag from '../CustomTag/CustomTag';
 function MyEditor() {
   const [editorState, setEditorState] = React.useState(
     EditorState.createEmpty(),
@@ -12,22 +13,26 @@ function MyEditor() {
 }
 
 
-
-
 class NewAnnotation extends React.Component {
 
-  // constructor(props) {
-  //   super(props);
-  //   this.state = { editorState: EditorState.createEmpty() };
-  //   this.onChange = editorState => this.setState({ editorState });
-  // }
+  constructor(props) {
+    super(props);
+    this.annotationChangeHandler = this.annotationChangeHandler.bind(this)
+  }
 
-
+  saveAnnotationContent(w) {
+    console.log(w)
+    this.setState({
+      annotationContent: w
+    })
+  }
 
   state = {
     submitted: false,
+    addedTag: false,
     annotationContent: '',
     annotationType: "default",
+    tags: [],
   };
 
   componentDidMount() {
@@ -38,9 +43,16 @@ class NewAnnotation extends React.Component {
     document.removeEventListener('keydown', this.keydown, false);
   }
 
-  keydown = event => {
-    if (event.key === 'Enter') {
+  keydown = e => {
+    if (e.key === 'Enter' && e.target.className === 'form-control' && this.state.annotationContent !== '') {
       this.submitButtonHandler();
+    }
+    else if (e.key === 'Enter' && e.target.className === 'tag-control' && e.target.value !== '') {
+      e.preventDefault();
+      this.state.tags.push(e.target.value);
+      this.setState({ addedTag: true });
+      e.target.value = '';
+      console.log(this.state.tags);
     }
   };
 
@@ -48,20 +60,31 @@ class NewAnnotation extends React.Component {
     this.setState({ annotationType: eventKey });
   }
 
-  annotationChangeHandler = event => {
-    this.setState({ annotationContent: event.target.value });
+  annotationChangeHandler = (value) => {
+    this.setState({ annotationContent: value });
   };
+
+  annotationTagHandler = event => {
+
+  }
+
+  deleteTag = (tagName) => {
+    this.setState({ tags: this.state.tags.filter(tag => tag !== tagName) });
+
+  }
 
   submitButtonHandler = event => {
     this.setState({ submitted: true });
 
     const { url, newSelection, xpath, offsets } = this.props;
+    console.log('saving tags');
+    console.log(this.state.tags);
     const annotationInfo = {
       anchor: newSelection,
       annotation: this.state.annotationContent,
       xpath: xpath,
       offsets: offsets,
-      id: newSelection + this.state.annotationContent + Math.floor(Math.random() * 1000),
+      tags: this.state.tags,
       annotationType: this.state.annotationType,
     };
     chrome.runtime.sendMessage(
@@ -88,7 +111,7 @@ class NewAnnotation extends React.Component {
       return null;
     }
 
-    const { annotationContent, submitted } = this.state;
+    const { annotationContent, submitted, tags } = this.state;
 
     return (
 
@@ -97,23 +120,35 @@ class NewAnnotation extends React.Component {
           <div className="SelectedTextContainer">{newSelection}</div>
           <div className="TextareaContainer">
 
-            <RichEditorExample />
-            {/* <textarea
-            className="form-control"
-            rows="2"
-            placeholder={'Put your annotations here'}
-            value={annotationContent}
-            onChange={e => this.annotationChangeHandler(e)}
-          /> */}
-
+            <RichEditorExample annotationChangeHandler={this.annotationChangeHandler} />
           </div>
-          <div className="SubmitButtonContainer">
-            {!submitted ? (
-              <React.Fragment>
+          {!submitted ? (
+            <React.Fragment>
+              <div className="TagContainer">
+                {tags.length ? (
+                  <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
+                    {tags.map((tagContent, idx) => {
+                      return (
+                        <CustomTag idx={idx} content={tagContent} deleteTag={this.deleteTag} editing={true} />
+                      )
+                    }
+                    )}
+                  </ul>
+                ) : (null)}
+                Add Tag:
+              <textarea
+                  className="tag-control"
+                  rows="1"
+                  placeholder={'add tag here'}
+                  // value={annotationContent}
+                  onChange={e => this.annotationTagHandler(e)}
+                />
+              </div>
+              <div className="SubmitButtonContainer">
                 <Dropdown className="AnnotationType">
-                  <Dropdown.Toggle className="AnnoatationButton dropdown-toggle" id="dropdown-basic">
+                  <Dropdown.Toggle variant="success" id="dropdown-basic">
                     Annotation Type
-                </Dropdown.Toggle>
+              </Dropdown.Toggle>
                   <Dropdown.Menu >
                     <Dropdown.Item as="button" eventKey="default" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
                       Default
@@ -150,14 +185,13 @@ class NewAnnotation extends React.Component {
                 >
                   Save
               </button>
-
-              </React.Fragment>
-            ) : (
-                <div className="spinner-border text-secondary" role="status">
-                  <span className="sr-only">...</span>
-                </div>
-              )}
-          </div>
+              </div>
+            </React.Fragment>
+          ) : (
+              <div className="spinner-border text-secondary" role="status">
+                <span className="sr-only">...</span>
+              </div>
+            )}
         </div>
       </div>
     );

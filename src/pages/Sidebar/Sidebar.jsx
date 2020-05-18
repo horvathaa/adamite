@@ -142,7 +142,6 @@ class Sidebar extends React.Component {
           },
           (response) => {
             let sidebarOpen = response.sidebarOpen;
-            console.log(sidebarOpen);
             if (!sidebarOpen) {
               chrome.runtime.sendMessage({
                 from: 'content',
@@ -191,13 +190,13 @@ class Sidebar extends React.Component {
   }
 
   checkSiteScope(annotation, siteScope) {
-    if (siteScope === null) {
+    if (!siteScope.length) {
       return true;
     }
-    if (siteScope === 'onPage') {
+    if (siteScope.includes('onPage') && !siteScope.includes('acrossWholeSite')) {
       return annotation.url === this.state.url;
     }
-    else if (siteScope === 'acrossWholeSite') {
+    else if (siteScope.includes('acrossWholeSite')) {
       let url = new URL(this.state.url);
       return annotation.url.includes(url.hostname)
     }

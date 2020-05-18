@@ -1,0 +1,13 @@
+.Tag {
+    border: 1px solid;
+    padding: 4px;
+    box-shadow: 1px 2px;
+    font-family: Arial;
+    background-color: white;
+    display: inline-block;
+}
+
+.TagContainer {
+    padding: 4px;
+    display: inline-block;
+}

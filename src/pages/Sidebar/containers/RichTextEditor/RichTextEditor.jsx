@@ -1,21 +1,36 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import "./RichTextEditor.css"
-import { Editor, EditorState, RichUtils } from 'draft-js';
+import { Editor, EditorState, RichUtils, convertToRaw } from 'draft-js';
+import { GrBlockQuote } from "react-icons/gr";
+import { MdFormatBold, MdFormatItalic, MdFormatUnderlined, MdCode, MdFormatListBulleted, MdFormatListNumbered } from 'react-icons/md';
 
 
 export default class RichEditorExample extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { editorState: EditorState.createEmpty() };
+        this.state = {
+            editorState: EditorState.createEmpty()
+        };
 
         this.focus = () => this.refs.editor.focus();
-        this.onChange = (editorState) => this.setState({ editorState });
+        this.onChange = (editorState) => {
+            const blocks = convertToRaw(editorState.getCurrentContent()).blocks;
+            const value = blocks.map(block => (!block.text.trim() && '\n') || block.text).join('\n');
+            //console.log(blocks);
+            this.props.annotationChangeHandler(value);
+            this.setState({ editorState: editorState });
 
+        }  //this.setState({ editorState, annotationContent: editorState });
         this.handleKeyCommand = (command) => this._handleKeyCommand(command);
         this.onTab = (e) => this._onTab(e);
         this.toggleBlockType = (type) => this._toggleBlockType(type);
-        this.toggleInlineStyle = (style) => this._toggleInlineStyle(style);
+        this.toggleInlineStyle = (style) => {
+            console.log("style");
+            console.log(style);
+            this._toggleInlineStyle(style);
+        }
+
     }
 
     _handleKeyCommand(command) {
@@ -43,6 +58,7 @@ export default class RichEditorExample extends React.Component {
     }
 
     _toggleInlineStyle(inlineStyle) {
+        console.log(this.onChange);
         this.onChange(
             RichUtils.toggleInlineStyle(
                 this.state.editorState,
@@ -63,17 +79,21 @@ export default class RichEditorExample extends React.Component {
                 className += ' RichEditor-hidePlaceholder';
             }
         }
+        EditorState.moveSelectionToEnd(this.state.editorState)
+        var selectionState = this.state.editorState.getSelection();
 
         return (
             <div className="RichEditor-root">
-                <BlockStyleControls
-                    editorState={editorState}
-                    onToggle={this.toggleBlockType}
-                />
-                <InlineStyleControls
-                    editorState={editorState}
-                    onToggle={this.toggleInlineStyle}
-                />
+                <div className="RichEditor-controls">
+                    <InlineStyleControls
+                        editorState={editorState}
+                        onToggle={this.toggleInlineStyle}
+                    />
+                    <BlockStyleControls
+                        editorState={editorState}
+                        onToggle={this.toggleBlockType}
+                    />
+                </div>
                 <div className={className} onClick={this.focus}>
                     <Editor
                         blockStyleFn={getBlockStyle}
@@ -82,7 +102,7 @@ export default class RichEditorExample extends React.Component {
                         handleKeyCommand={this.handleKeyCommand}
                         onChange={this.onChange}
                         onTab={this.onTab}
-                        placeholder="Tell a story..."
+                        placeholder=""
                         ref="editor"
                         spellCheck={true}
                     />
@@ -123,25 +143,25 @@ class StyleButton extends React.Component {
         if (this.props.active) {
             className += ' RichEditor-activeButton';
         }
-
+        console.log(this.props.icon);
         return (
             <span className={className} onMouseDown={this.onToggle}>
-                {this.props.label}
+                {this.props.icon === undefined ? this.props.label : this.props.icon}
             </span>
         );
     }
 }
 
 const BLOCK_TYPES = [
-    { label: 'H1', style: 'header-one' },
-    { label: 'H2', style: 'header-two' },
-    { label: 'H3', style: 'header-three' },
-    { label: 'H4', style: 'header-four' },
-    { label: 'H5', style: 'header-five' },
-    { label: 'H6', style: 'header-six' },
-    { label: 'Blockquote', style: 'blockquote' },
-    { label: 'UL', style: 'unordered-list-item' },
-    { label: 'OL', style: 'ordered-list-item' },
+    // { label: 'H1', style: 'header-one' },
+    // { label: 'H2', style: 'header-two' },
+    // { label: 'H3', style: 'header-three' },
+    // { label: 'H4', style: 'header-four' },
+    // { label: 'H5', style: 'header-five' },
+    // { label: 'H6', style: 'header-six' },
+    { label: 'Blockquote', style: 'blockquote', icon: <GrBlockQuote className="RichEditor-styleSvg" /> },
+    { label: 'UL', style: 'unordered-list-item', icon: <MdFormatListBulleted className="RichEditor-styleSvg" /> },
+    { label: 'OL', style: 'ordered-list-item', icon: <MdFormatListNumbered className="RichEditor-styleSvg" /> },
     { label: 'Code Block', style: 'code-block' },
 ];
 
@@ -154,41 +174,43 @@ const BlockStyleControls = (props) => {
         .getType();
 
     return (
-        <div className="RichEditor-controls">
+        <React.Fragment>
             {BLOCK_TYPES.map((type) =>
                 <StyleButton
                     key={type.label}
                     active={type.style === blockType}
                     label={type.label}
+                    icon={type.icon}
                     onToggle={props.onToggle}
                     style={type.style}
                 />
             )}
-        </div>
+        </React.Fragment>
     );
 };
 
 var INLINE_STYLES = [
-    { label: 'Bold', style: 'BOLD' },
-    { label: 'Italic', style: 'ITALIC' },
-    { label: 'Underline', style: 'UNDERLINE' },
-    { label: 'Monospace', style: 'CODE' },
+    { label: 'Bold', style: 'BOLD', icon: <MdFormatBold className="RichEditor-styleSvg" />, styleClass: "RichEditor-styleSvg" },
+    { label: 'Italic', style: 'ITALIC', icon: <MdFormatItalic className="RichEditor-styleSvg" /> },
+    { label: 'Underline', style: 'UNDERLINE', icon: <MdFormatUnderlined className="RichEditor-styleSvg" /> },
+    { label: 'Monospace', style: 'CODE', icon: <MdCode className="RichEditor-styleSvg" /> },
 ];
 
 const InlineStyleControls = (props) => {
     var currentStyle = props.editorState.getCurrentInlineStyle();
     return (
-        <div className="RichEditor-controls">
+        <React.Fragment>
             {INLINE_STYLES.map(type =>
                 <StyleButton
                     key={type.label}
                     active={currentStyle.has(type.style)}
                     label={type.label}
+                    icon={type.icon}
                     onToggle={props.onToggle}
                     style={type.style}
                 />
             )}
-        </div>
+        </React.Fragment>
     );
 };
 
