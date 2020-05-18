@@ -4,14 +4,40 @@ import { FaCaretDown, FaCaretUp, FaTrash, FaEdit } from 'react-icons/fa';
 import './Annotation.css';
 import { Dropdown } from 'react-bootstrap';
 import { checkPropTypes, string } from 'prop-types';
+import CustomTag from '../../CustomTag/CustomTag';
 import { deleteAnnotationForeverById, updateAnnotationById } from '../../../../../firebase';
 
 class Annotation extends Component {
+
   state = {
+    tags: this.props.tags,
+    content: this.props.content,
     collapsed: false,
-    editing: false,
-    editedAnnotationContent: null,
-    newAnnotationType: null,
+    annotationType: this.props.type,
+    editing: false
+  };
+
+  updateData = () => {
+    let { tags, content, type } = this.props;
+
+    this.setState({
+      tags, content, annotationType: type
+    })
+  }
+
+  componentDidMount() {
+    document.addEventListener('keydown', this.keydown, false);
+    this.updateData();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.tags !== this.props.tags || prevProps.content !== this.props.content || prevProps.type !== this.props.type) {
+      this.updateData();
+    }
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener('keydown', this.keydown, false);
   }
 
   formatTimestamp = (timeStamp) => {
@@ -35,23 +61,51 @@ class Annotation extends Component {
   handleTrashClick(id) {
     // eslint-disable-next-line no-restricted-globals
     if (confirm("Are you sure? This action cannot be reversed")) {
-      deleteAnnotationForeverById(id);
+      chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+        let url = tabs[0].url;
+        if (this.props.url === url) {
+          chrome.tabs.sendMessage(
+            tabs[0].id,
+            {
+              msg: 'ANNOTATION_DELETED_ON_PAGE',
+              id: id,
+            }
+          );
+        }
+        deleteAnnotationForeverById(id);
+      });
+
     } else {
       return;
     }
   }
 
+  keydown = e => {
+    if (e.key === 'Enter' && e.target.className === 'tag-control-editAnnotation' && e.target.value !== '') {
+      e.preventDefault();
+      this.state.tags.push(e.target.value);
+    }
+  }
+
+  annotationTagHandler = event => {
+
+  }
+
   annotationChangeHandler = event => {
-    this.setState({ editedAnnotationContent: event.target.value });
+    this.setState({ content: event.target.value });
   };
 
   submitButtonHandler = (event, id) => {
-    updateAnnotationById(id, { content: this.state.editedAnnotationContent, annotationType: this.state.newAnnotationType });
+    updateAnnotationById(id, {
+      content: this.state.content,
+      annotationType: this.state.annotationType,
+      tags: this.state.tags
+    });
     this.setState({ editing: false });
   }
 
   updateAnnotationType(eventKey) {
-    this.setState({ newAnnotationType: eventKey });
+    this.setState({ annotationType: eventKey });
   }
 
   handleEditClick(id) {
@@ -60,6 +114,10 @@ class Annotation extends Component {
 
   handleEditCancel() {
     this.setState({ editing: false });
+  }
+
+  deleteTag = (tagName) => {
+    this.setState({ tags: this.state.tags.filter(tag => tag !== tagName) });
   }
 
   handleExpandCollapse = (request) => {
@@ -72,8 +130,9 @@ class Annotation extends Component {
   }
 
   render() {
-    const { anchor, content, idx, id, active, type, authorId, currentUser, trashed, timeStamp } = this.props;
-    if (type === 'default' && !trashed) {
+    const { anchor, idx, id, active, authorId, currentUser, trashed, timeStamp } = this.props;
+    const { editing, collapsed, tags, content, annotationType } = this.state;
+    if (annotationType === 'default' && !trashed) {
       return (
         <li key={idx} id={id} className={classNames({ AnnotationItem: true })}>
           <div
@@ -95,7 +154,7 @@ class Annotation extends Component {
             {!this.state.collapsed ? (
               <div className={classNames({
                 Header: true,
-                Truncated: this.state.collapsed,
+                Truncated: collapsed,
               })}>
                 {this.formatTimestamp(timeStamp)}
               </div>
@@ -103,7 +162,7 @@ class Annotation extends Component {
             <div
               className={classNames({
                 AnchorContainer: true,
-                Truncated: this.state.collapsed
+                Truncated: collapsed
               })}
             >
               {anchor}
@@ -111,11 +170,11 @@ class Annotation extends Component {
             <div
               className={classNames({
                 ContentContainer: true,
-                Truncated: this.state.collapsed,
-                editAreaContainer: this.state.editing,
+                Truncated: collapsed,
+                editAreaContainer: editing,
               })}
             >
-              {this.state.editing ? (
+              {editing ? (
                 <React.Fragment>
                   <div className="editAreaContainer">
                     <div className="TextareaContainer">
@@ -123,7 +182,7 @@ class Annotation extends Component {
                         className="form-control"
                         rows="2"
                         placeholder={content}
-                        //value={content} -to-do make this work better
+                        value={content} //-to-do make this work better
                         onChange={e => this.annotationChangeHandler(e)}
                       />
                     </div>
@@ -176,8 +235,34 @@ class Annotation extends Component {
               </div>
                 )}
             </div>
+            {editing ? (
+              <div className="editTag">
+                Add Tag:
+                <textarea
+                  className="tag-control-editAnnotation"
+                  rows="1"
+                  placeholder={'add tag here'}
+                  // value={annotationContent}
+                  onChange={e => this.annotationTagHandler(e)}
+                />
+              </div>) : (null)}
+            {tags.length && !collapsed ? (
+              <div className={classNames({
+                TagRow: true
+              })}>
+                <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
+                  {tags.map((tagContent, idx) => {
+                    return (
+                      <CustomTag idx={idx} content={tagContent} deleteTag={this.deleteTag} editing={editing} />
+                    )
+                  }
+                  )}
+                </ul>
+
+              </div>
+            ) : (null)}
             <div className="IconRow">
-              {currentUser.uid === authorId ? (
+              {currentUser.uid === authorId && !collapsed ? (
                 <React.Fragment>
                   <div className="IconContainer">
                     <FaTrash className="Icon" id="Trash" onClick={_ => this.handleTrashClick(id)} />
@@ -187,7 +272,7 @@ class Annotation extends Component {
                   </div>
                 </React.Fragment>
               ) : (null)}
-              {this.state.collapsed ? (
+              {collapsed ? (
                 <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} />
               ) : (
                   <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} />
@@ -216,7 +301,7 @@ class Annotation extends Component {
         </li>
       );
     }
-    else if (type === 'to-do' && !trashed) {
+    else if (annotationType === 'to-do' && !trashed) {
       return (
         <li key={idx} id={id} className={classNames({ AnnotationItem: true })}>
           <div
@@ -238,7 +323,7 @@ class Annotation extends Component {
             <div
               className={classNames({
                 AnchorContainer: true,
-                Truncated: this.state.collapsed
+                Truncated: collapsed
               })}
             >
               {anchor}
@@ -313,7 +398,7 @@ class Annotation extends Component {
         </li>
       );
     }
-    else if (type === 'navigation') {
+    else if (annotationType === 'navigation') {
       return (
         <li key={idx} id={id} className={classNames({ AnnotationItem: true })}>
           <div
@@ -456,7 +541,7 @@ class Annotation extends Component {
         </li>
       );
     }
-    else if (type === 'highlight') {
+    else if (annotationType === 'highlight') {
       return (
         <li key={idx} id={id} className={classNames({ AnnotationItem: true })}>
           <div
@@ -599,7 +684,7 @@ class Annotation extends Component {
         </li>
       );
     }
-    else if (type === 'question') {
+    else if (annotationType === 'question') {
       return (
         <li key={idx} id={id} className={classNames({ AnnotationItem: true })}>
           <div
@@ -742,7 +827,7 @@ class Annotation extends Component {
         </li>
       );
     }
-    else if (type === 'issue') {
+    else if (annotationType === 'issue') {
       return (
         <li key={idx} id={id} className={classNames({ AnnotationItem: true })}>
           <div

@@ -5,6 +5,7 @@ import xpath from 'xpath';
 import { SIDEBAR_IFRAME_ID } from '../../../shared/constants';
 import { node } from 'prop-types';
 import { compose } from 'glamor';
+import $ from 'jquery';
 
 
 function anchorClick(e) {
@@ -229,9 +230,9 @@ chrome.runtime.sendMessage(
   data => {
     const { annotationsOnPage } = data;
     if (annotationsOnPage.length) {
+      console.log(annotationsOnPage);
       //window.onload = function () {
       annotationsOnPage.forEach(anno => {
-        console.log(anno);
         highlightpage(anno);
       });
       //}
@@ -240,7 +241,11 @@ chrome.runtime.sendMessage(
 );
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.msg === 'ANNOTATIONS_UPDATED' && request.from === 'background') {
+  if (request.msg === 'ANNOTATION_DELETED_ON_PAGE') {
+    let element = document.getElementById(request.id);
+    $(element).contents().unwrap();
+  }
+  else if (request.msg === 'ANNOTATIONS_UPDATED' && request.from === 'background') {
     chrome.runtime.sendMessage(
       {
         msg: 'REQUEST_ANNOTATED_TEXT_ON_THIS_PAGE',
@@ -251,11 +256,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       data => {
         const { annotationsOnPage } = data;
         annotationsOnPage.forEach(anno => {
-          console.log(anno);
           highlightpage(anno);
         });
 
       }
     );
   }
+
 });

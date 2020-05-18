@@ -16,8 +16,10 @@
 }
 
 .TextareaContainer {
-  width: 100%;
   padding: 5px;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .TextareaContainer textarea {
