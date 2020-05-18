@@ -1,12 +1,15 @@
 import React from 'react';
 import { Dropdown } from 'react-bootstrap';
 import './NewAnnotation.css';
+import CustomTag from '../CustomTag/CustomTag';
 
 class NewAnnotation extends React.Component {
   state = {
     submitted: false,
+    addedTag: false,
     annotationContent: '',
     annotationType: "default",
+    tags: [],
   };
 
   componentDidMount() {
@@ -17,9 +20,16 @@ class NewAnnotation extends React.Component {
     document.removeEventListener('keydown', this.keydown, false);
   }
 
-  keydown = event => {
-    if (event.key === 'Enter') {
+  keydown = e => {
+    if (e.key === 'Enter' && e.target.className === 'form-control' && this.state.annotationContent !== '') {
       this.submitButtonHandler();
+    }
+    else if (e.key === 'Enter' && e.target.className === 'tag-control' && e.target.value !== '') {
+      e.preventDefault();
+      this.state.tags.push(e.target.value);
+      this.setState({ addedTag: true });
+      e.target.value = '';
+      console.log(this.state.tags);
     }
   };
 
@@ -31,16 +41,27 @@ class NewAnnotation extends React.Component {
     this.setState({ annotationContent: event.target.value });
   };
 
+  annotationTagHandler = event => {
+
+  }
+
+  deleteTag = (tagName) => {
+    this.setState({ tags: this.state.tags.filter(tag => tag !== tagName) });
+
+  }
+
   submitButtonHandler = event => {
     this.setState({ submitted: true });
 
     const { url, newSelection, xpath, offsets } = this.props;
+    console.log('saving tags');
+    console.log(this.state.tags);
     const annotationInfo = {
       anchor: newSelection,
       annotation: this.state.annotationContent,
       xpath: xpath,
       offsets: offsets,
-      id: newSelection + this.state.annotationContent + Math.floor(Math.random() * 1000),
+      tags: this.state.tags,
       annotationType: this.state.annotationType,
     };
     chrome.runtime.sendMessage(
@@ -67,7 +88,7 @@ class NewAnnotation extends React.Component {
       return null;
     }
 
-    const { annotationContent, submitted } = this.state;
+    const { annotationContent, submitted, tags } = this.state;
 
     return (
       <div className="NewAnnotationContainer">
@@ -79,11 +100,32 @@ class NewAnnotation extends React.Component {
             placeholder={'Put your annotations here'}
             value={annotationContent}
             onChange={e => this.annotationChangeHandler(e)}
+          // onChange={defaultValue}
           />
         </div>
-        <div className="SubmitButtonContainer">
-          {!submitted ? (
-            <React.Fragment>
+        {!submitted ? (
+          <React.Fragment>
+            <div className="TagContainer">
+              {tags.length ? (
+                <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
+                  {tags.map((tagContent, idx) => {
+                    return (
+                      <CustomTag idx={idx} content={tagContent} deleteTag={this.deleteTag} editing={true} />
+                    )
+                  }
+                  )}
+                </ul>
+              ) : (null)}
+                Add Tag:
+              <textarea
+                className="tag-control"
+                rows="1"
+                placeholder={'add tag here'}
+                // value={annotationContent}
+                onChange={e => this.annotationTagHandler(e)}
+              />
+            </div>
+            <div className="SubmitButtonContainer">
               <Dropdown className="AnnotationType">
                 <Dropdown.Toggle variant="success" id="dropdown-basic">
                   Annotation Type
@@ -124,14 +166,13 @@ class NewAnnotation extends React.Component {
               >
                 Save
               </button>
-
-            </React.Fragment>
-          ) : (
-              <div className="spinner-border text-secondary" role="status">
-                <span className="sr-only">...</span>
-              </div>
-            )}
-        </div>
+            </div>
+          </React.Fragment>
+        ) : (
+            <div className="spinner-border text-secondary" role="status">
+              <span className="sr-only">...</span>
+            </div>
+          )}
       </div>
     );
   }

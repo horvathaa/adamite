@@ -7,13 +7,17 @@ import {
   auth,
   createAnnotation,
   getAllAnnotationsByUserId,
+  getAllAnnotations,
 } from '../../firebase/index';
 
 let unsubscribeAnnotations = null;
 let annotations = [];
 auth.onAuthStateChanged(user => {
   if (user) {
-    unsubscribeAnnotations = getAllAnnotationsByUserId(user.uid)
+    // unsubscribeAnnotations = getAllAnnotationsByUserId(user.uid)
+    //   .orderBy('createdTimestamp', 'desc')
+    //   .onSnapshot(querySnapshot => {
+    unsubscribeAnnotations = getAllAnnotations()
       .orderBy('createdTimestamp', 'desc')
       .onSnapshot(querySnapshot => {
         let annArray = [];
@@ -53,21 +57,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     // firebase: in action
     //content = JSON.parse(content); // consider just pass content as an object
-    console.log(content);
     createAnnotation({
       taskId: null,
       AnnotationContent: content.annotation,
       AnnotationAnchorContent: content.anchor,
-      // AnnotationAnchorPath: content.textNodes,
       AnnotationAnchorPath: null,
       offsets: content.offsets,
       xpath: content.xpath,
       AnnotationType: content.annotationType, // could be other types (string)
       url,
-      AnnotationTags: [],
-      //div: content.div,
+      AnnotationTags: content.tags,
     }).then(value => {
-      console.log(value);
       sendResponse({
         msg: 'DONE',
       });
