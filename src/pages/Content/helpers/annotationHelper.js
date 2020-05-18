@@ -214,7 +214,7 @@ function highlightpage(anno) {
     span.textContent = match;
     span.setAttribute('data-tooltip', anno.content.length > 500 ? anno.content.substring(0, 500) + "..." : anno.content);
     span.setAttribute('data-tooltip-position', "bottom");
-    span.className = "highlight tooltip";
+    span.className = "highlight-adamite-annotation";
     node.parentNode.insertBefore(span, node.nextSibling);
     document.getElementById(span.id).onclick = anchorClick;
   });
@@ -229,6 +229,8 @@ chrome.runtime.sendMessage(
   },
   data => {
     const { annotationsOnPage } = data;
+    console.log("new anno")
+    console.log(annotationsOnPage)
     if (annotationsOnPage.length) {
       console.log(annotationsOnPage);
       //window.onload = function () {
