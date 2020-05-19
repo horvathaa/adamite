@@ -5,6 +5,7 @@ import { Dropdown } from 'react-bootstrap';
 import { APP_NAME_FULL } from '../../../../shared/constants';
 import { AiOutlineUser } from 'react-icons/ai';
 import '../../../../assets/img/Adamite.png';
+// import '../../../Background/test.html';
 import { useState } from 'react';
 
 import './Title.css';
@@ -89,69 +90,3 @@ export default class Title extends React.Component {
   }
 }
 
-// const Title = ({ currentUser, dropdownOpen, toggle, onMouseEnter, onMouseLeave }) => {
-//   const signOutClickedHandler = e => {
-//     e.preventDefault();
-//     chrome.runtime.sendMessage({ msg: 'USER_SIGNOUT' });
-//   };
-//   const [isOpen, updateIsOpen] = useState(false);
-//   // const [state, setState] = React.useState({
-//   //   dropdownOpen: False,
-//   //   cal: 1
-//   // })
-
-
-//   return (
-
-
-
-//     <div className="TitleContainer">
-//       <div className="container">
-//         <div className="row">
-//           <div className="col">
-//             <div className="Header">
-//               <img className="TitleIcon" src={chrome.extension.getURL('Adamite.png')}></img>
-//               <div className="Title">{APP_NAME_FULL}</div>
-//             </div>
-//           </div>
-
-
-//           {/* <div style={{ flexGrow: 1 }}></div> */}
-//           {currentUser !== null && (
-//             <div className="col">
-//               <div className="row2">
-//                 <div className="col2 ">
-//                   <Dropdown onMouseOver={() => updateIsOpen(true)}
-//                     onFocus={() => updateIsOpen(true)}
-//                     onMouseLeave={() => updateIsOpen(false)}
-//                     onBlur={() => updateIsOpen(false)}
-//                     toggle={() => updateIsOpen(!dropdownOpen)}
-//                     dropdownOpen={dropdownOpen}>
-//                     <Dropdown.Toggle id="dropdown-menu" >
-//                       <AiOutlineUser className="userIcon" />
-//                     </Dropdown.Toggle>
-//                     <Dropdown.Menu >
-//                       <Dropdown.Item onClick={signOutClickedHandler}>
-//                         On page
-//                           </Dropdown.Item>
-//                     </Dropdown.Menu>
-
-//                   </Dropdown>
-
-//                   {/* <AiOutlineUser className="userIcon" /> */}
-//                 </div>
-//                 {/* <div className="UserEmail">{currentUser.email}</div> */}
-//                 {/* <button className="UserSignOutButton" onClick={signOutClickedHandler}>
-//                   Sign Out
-//                     </button> */}
-//               </div>
-//             </div>
-//           )}
-
-//         </div>
-//       </div>
-//     </div >
-//   );
-// };
-
-//export default Title;

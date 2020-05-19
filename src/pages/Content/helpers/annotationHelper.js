@@ -238,6 +238,7 @@ chrome.runtime.sendMessage(
 );
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  console.log(request);
   if (request.msg === 'ANNOTATION_DELETED_ON_PAGE') {
     let element = document.getElementById(request.id);
     $(element).contents().unwrap();
@@ -258,6 +259,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
       }
     );
+  }
+  else if (request.msg === 'DELIVER_FILTERED_ANNOTATION_TAG' && request.from === 'background') {
+    console.log('got message from background');
+    window.postMessage({ type: 'FROM_CONTENT', value: request.payload.response }, "*");
   }
 
 });
