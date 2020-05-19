@@ -151,7 +151,6 @@ class Sidebar extends React.Component {
           }
         );
 
-
         this.setState({
           filteredAnnotations: this.state.annotations.filter(function (element) { return element.id === target; })
         });
@@ -166,6 +165,9 @@ class Sidebar extends React.Component {
             this.resetNewSelection();
           }, 500);
         }
+      }
+      else if (request.from === 'background' && request.msg === 'REQUEST_FILTERED_ANNOTATIONS') {
+        sendResponse(this.state.filteredAnnotations);
       }
     });
   }

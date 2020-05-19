@@ -2,6 +2,8 @@ import '../../assets/img/icon-34.png';
 import '../../assets/img/icon-128.png';
 import './helpers/authHelper';
 import './helpers/sidebarHelper';
+import './helpers/filterHelper';
+import './test.html';
 
 import {
   auth,
@@ -50,6 +52,7 @@ const broadcastAnnotationsUpdated = () => {
 };
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  console.log(request.msg);
   if (request.msg === 'REQUEST_TAB_URL') {
     sendResponse({ url: sender.tab.url });
   } else if (request.msg === 'SAVE_ANNOTATED_TEXT') {
@@ -82,6 +85,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     const { url } = request.payload;
     const annotationsOnPage = annotations.filter(a => a.url === url); // can use this later so we get all annotations that match our filter criterias
     sendResponse({ annotationsOnPage });
+  } else if (request.msg === 'FILTER_BY_TAG') {
+    console.log(request.payload);
+    chrome.runtime.sendMessage({ msg: 'REQUEST_FILTERED_ANNOTATIONS', from: 'background' }, (response) => {
+      // response.forEach()
+      let createData = { type: "popup" };
+      console.log(chrome.runtime.getURL('test.html'));
+      chrome.windows.create({ url: chrome.runtime.getURL('test.html') });
+    });
+
   }
   return true;
 });

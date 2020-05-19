@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import './Filter.css';
 import { Dropdown } from 'react-bootstrap';
 import { FaCheck, FaFilter } from 'react-icons/fa';
@@ -13,6 +14,8 @@ const filterToggle = React.forwardRef(({ children, onClick }, ref) => (
         {children}
     </a>
 ));
+
+
 
 class Filter extends React.Component {
     selection = {
@@ -32,6 +35,18 @@ class Filter extends React.Component {
             this.selection.timeRange = 'all';
             this.props.applyFilter(this.selection);
             return;
+        }
+        if (eventKey === 'filterByTag') {
+            chrome.runtime.sendMessage({
+                msg: 'FILTER_BY_TAG',
+                payload: this.selection,
+            });
+            console.log('sent message?');
+            // , (selectedTags) => {
+            // this.selection.tags = selectedTags;
+            // this.props.applyFilter(this.selection);
+            // return;
+            // }
         }
         if (eventKey.includes('siteScope')) {
             let choice = eventKey.substring(eventKey.indexOf(':') + 1, eventKey.length)
@@ -134,6 +149,10 @@ class Filter extends React.Component {
                     </Dropdown.Item>
                     <Dropdown.Item as="button" eventKey="timeRange:all" onSelect={eventKey => this.updateSelected(eventKey)}>
                         All Time {this.selection.timeRange === 'all' ? ("•") : (null)}
+                    </Dropdown.Item>
+                    <Dropdown.Divider />
+                    <Dropdown.Item as="button" eventKey="filterByTag" onSelect={eventKey => this.updateSelected(eventKey)}>
+                        Filter by Tag...
                     </Dropdown.Item>
                     <Dropdown.Divider />
                     <Dropdown.Item as="button" eventKey="setDefault" onSelect={eventKey => this.updateSelected(eventKey)}>
