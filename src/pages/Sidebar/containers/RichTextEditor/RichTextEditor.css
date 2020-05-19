@@ -1,9 +1,13 @@
 .RichEditor-root {
-    background: #fff;
+    background: #dad9d926;
     border: 1px solid #9f9e9e;
     font-family: 'Georgia', serif;
     font-size: 14px;
     padding: 10px 15px 15px 15px;
+  }
+
+  .RichEditor-root--focused {
+    border-color: darkslategray;
   }
   
   .RichEditor-editor {
@@ -68,7 +72,7 @@
   .RichEditor-styleSvg:hover{
     color: #5d5f5f;
   }
-  
+
  .RichEditor-styleSvg:active{
     color: #5d5f5f;
   }

@@ -1,4 +1,5 @@
 .TitleContainer {
+  border-bottom: 1px solid #65816773;
   padding: 1px;
   width: 100%;
   display: flex;
