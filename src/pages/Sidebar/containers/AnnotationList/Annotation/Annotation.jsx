@@ -19,7 +19,6 @@ class Annotation extends Component {
 
   updateData = () => {
     let { tags, content, type } = this.props;
-
     this.setState({
       tags, content, annotationType: type
     })
