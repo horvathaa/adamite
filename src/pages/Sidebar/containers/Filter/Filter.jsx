@@ -27,12 +27,23 @@ class Filter extends React.Component {
         tags: []
     }
 
+    componentDidMount() {
+        chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+            if (request.msg === 'TAGS_SELECTED' && request.from === 'background') {
+                this.selection.tags = request.payload.tags;
+                this.props.applyFilter(this.selection);
+                return;
+            }
+        });
+    }
+
     async updateSelected(eventKey) {
         if (eventKey === 'setDefault') {
             this.selection.siteScope = ['onPage'];
             this.selection.userScope = ['public'];
             this.selection.annoType = ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'];
             this.selection.timeRange = 'all';
+            this.selection.tags = [];
             this.props.applyFilter(this.selection);
             return;
         }
@@ -41,12 +52,6 @@ class Filter extends React.Component {
                 msg: 'FILTER_BY_TAG',
                 payload: this.selection,
             });
-            console.log('sent message?');
-            // , (selectedTags) => {
-            // this.selection.tags = selectedTags;
-            // this.props.applyFilter(this.selection);
-            // return;
-            // }
         }
         if (eventKey.includes('siteScope')) {
             let choice = eventKey.substring(eventKey.indexOf(':') + 1, eventKey.length)

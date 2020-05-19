@@ -123,6 +123,32 @@ var options = {
         copyUnmodified: true,
       }
     ),
+    new CopyWebpackPlugin(
+      [
+        {
+          from: 'src/pages/Background/filterWindow.html',
+          to: path.join(__dirname, 'build'),
+          force: true,
+        },
+      ],
+      {
+        logLevel: 'info',
+        copyUnmodified: true,
+      }
+    ),
+    new CopyWebpackPlugin(
+      [
+        {
+          from: 'src/pages/Background/filterWindow.js',
+          to: path.join(__dirname, 'build'),
+          force: true,
+        },
+      ],
+      {
+        logLevel: 'info',
+        copyUnmodified: true,
+      }
+    ),
     new HtmlWebpackPlugin({
       template: path.join(__dirname, 'src', 'pages', 'Newtab', 'index.html'),
       filename: 'newtab.html',
@@ -154,6 +180,17 @@ var options = {
       filename: 'background.html',
       chunks: ['background'],
     }),
+    // new HtmlWebpackPlugin({
+    //   template: path.join(
+    //     __dirname,
+    //     'src',
+    //     'pages',
+    //     'Background',
+    //     'filterWindow.html'
+    //   ),
+    //   filename: 'filterWindow.html',
+    //   chunks: ['filterWindow'],
+    // }),
     new WriteFilePlugin(),
   ],
 };

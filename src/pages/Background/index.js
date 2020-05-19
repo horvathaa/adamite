@@ -3,7 +3,7 @@ import '../../assets/img/icon-128.png';
 import './helpers/authHelper';
 import './helpers/sidebarHelper';
 import './helpers/filterHelper';
-import './test.html';
+import './filterWindow.html';
 
 import {
   auth,
@@ -51,6 +51,8 @@ const broadcastAnnotationsUpdated = () => {
   });
 };
 
+let createdWindow = null;
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log(request.msg);
   if (request.msg === 'REQUEST_TAB_URL') {
@@ -86,14 +88,22 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     const annotationsOnPage = annotations.filter(a => a.url === url); // can use this later so we get all annotations that match our filter criterias
     sendResponse({ annotationsOnPage });
   } else if (request.msg === 'FILTER_BY_TAG') {
-    console.log(request.payload);
-    chrome.runtime.sendMessage({ msg: 'REQUEST_FILTERED_ANNOTATIONS', from: 'background' }, (response) => {
-      // response.forEach()
-      let createData = { type: "popup" };
-      console.log(chrome.runtime.getURL('test.html'));
-      chrome.windows.create({ url: chrome.runtime.getURL('test.html') });
+    // chrome.runtime.sendMessage({ msg: 'REQUEST_FILTERED_ANNOTATIONS', from: 'background' }, (response) => {
+    chrome.windows.create({
+      url: chrome.runtime.getURL('filterWindow.html'),
+      width: 600,
+      height: 400,
+      type: 'popup'
+    }, (window) => {
+      createdWindow = window;
     });
+    // chrome.runtime.sendMessage({ msg: 'DELIVER_FILTERED_ANNOTATION_TAG', from: 'background', payload: response })
 
+    // });
+
+  } else if (request.msg === 'TAGS_SELECTED' && request.from === 'background') {
+    chrome.runtime.sendMessage({ msg: 'FILTER_TAGS', from: 'background', payload: request.payload.tags });
+    chrome.windows.remove(createdWindow.id);
   }
   return true;
 });

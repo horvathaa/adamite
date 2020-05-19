@@ -53,20 +53,6 @@ class Sidebar extends React.Component {
 
   };
 
-  requestFilterUpdate() {
-    this.setState({
-      filteredAnnotations:
-        this.state.annotations.filter(annotation => {
-          return this.checkSiteScope(annotation, this.selection.siteScope) &&
-            this.checkUserScope(annotation, this.selection.userScope) &&
-            this.checkAnnoType(annotation, this.selection.annoType) &&
-            this.checkTimeRange(annotation, this.selection.timeRange)
-        })
-    });
-  }
-
-
-
   componentWillMount() {
     if (this.unsubscribeAnnotations) {
       this.unsubscribeAnnotations();
@@ -237,6 +223,13 @@ class Sidebar extends React.Component {
     }
   }
 
+  checkTags(annotation, tags) {
+    if (!tags.length) {
+      return true;
+    }
+    return tags.some(tag => annotation.tags.includes(tag));
+  }
+
   getFilteredAnnotationListLength = () => {
     return this.state.filteredAnnotations.length;
   }
@@ -249,7 +242,21 @@ class Sidebar extends React.Component {
           return this.checkSiteScope(annotation, filterSelection.siteScope) &&
             this.checkUserScope(annotation, filterSelection.userScope) &&
             this.checkAnnoType(annotation, filterSelection.annoType) &&
-            this.checkTimeRange(annotation, filterSelection.timeRange);
+            this.checkTimeRange(annotation, filterSelection.timeRange) &&
+            this.checkTags(annotation, filterSelection.tags);
+        })
+    });
+  }
+
+  requestFilterUpdate() {
+    this.setState({
+      filteredAnnotations:
+        this.state.annotations.filter(annotation => {
+          return this.checkSiteScope(annotation, this.selection.siteScope) &&
+            this.checkUserScope(annotation, this.selection.userScope) &&
+            this.checkAnnoType(annotation, this.selection.annoType) &&
+            this.checkTimeRange(annotation, this.selection.timeRange) &&
+            this.checkTags(annotation, this.selection.tags);
         })
     });
   }
