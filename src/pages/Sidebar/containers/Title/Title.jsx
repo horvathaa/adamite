@@ -21,7 +21,6 @@ export default class Title extends React.Component {
       dropdownOpen: false
     };
     this.currentUser = this.props.currentUser;
-    console.log(this.props.currentUser);
   }
 
   toggle() {

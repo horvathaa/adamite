@@ -230,12 +230,9 @@ chrome.runtime.sendMessage(
   data => {
     const { annotationsOnPage } = data;
     if (annotationsOnPage.length) {
-      console.log(annotationsOnPage);
-      //window.onload = function () {
       annotationsOnPage.forEach(anno => {
         highlightpage(anno);
       });
-      //}
     }
   }
 );
