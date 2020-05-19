@@ -69,7 +69,7 @@ const toggleSidebar = (toStatus = null) => {
       active: true
     },
     function (tab) {
-      console.log(tab);
+
       // tab[0].forEach((tab) => {
       chrome.tabs.sendMessage(tab[0].id, {
         from: 'background',

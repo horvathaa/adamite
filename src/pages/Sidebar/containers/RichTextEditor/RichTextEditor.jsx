@@ -26,8 +26,6 @@ export default class RichEditorExample extends React.Component {
         this.onTab = (e) => this._onTab(e);
         this.toggleBlockType = (type) => this._toggleBlockType(type);
         this.toggleInlineStyle = (style) => {
-            console.log("style");
-            console.log(style);
             this._toggleInlineStyle(style);
         }
 
@@ -58,7 +56,6 @@ export default class RichEditorExample extends React.Component {
     }
 
     _toggleInlineStyle(inlineStyle) {
-        console.log(this.onChange);
         this.onChange(
             RichUtils.toggleInlineStyle(
                 this.state.editorState,
@@ -143,7 +140,6 @@ class StyleButton extends React.Component {
         if (this.props.active) {
             className += ' RichEditor-activeButton';
         }
-        console.log(this.props.icon);
         return (
             <span className={className} onMouseDown={this.onToggle}>
                 {this.props.icon === undefined ? this.props.label : this.props.icon}

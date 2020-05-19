@@ -1,10 +1,18 @@
 .Tag {
-    border: 1px solid;
-    padding: 4px;
-    box-shadow: 1px 2px;
-    font-family: Arial;
-    background-color: white;
+    background-color: #dad9d9;
+    border-radius: 2px;
+    color: #666;
     display: inline-block;
+    font-family: sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    margin-bottom: 5px;
+    margin-right: 5px;
+    padding: 5px;
+}
+
+.Tag.hover, .Tag:hover {
+    filter: brightness(1.1);
 }
 
 .TagContainer {

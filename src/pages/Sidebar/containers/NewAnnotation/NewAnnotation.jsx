@@ -1,10 +1,13 @@
 import React from 'react';
-import { Dropdown } from 'react-bootstrap';
+// import { Dropdown } from 'react-bootstrap';
 import './NewAnnotation.css';
 import ReactDOM from 'react-dom';
 import { Editor, EditorState } from 'draft-js';
+import { GiCancel } from 'react-icons/gi';
 import RichEditorExample from '../RichTextEditor/RichTextEditor'
 import CustomTag from '../CustomTag/CustomTag';
+import TagsInput from 'react-tagsinput'
+import Dropdown from 'react-dropdown';
 function MyEditor() {
   const [editorState, setEditorState] = React.useState(
     EditorState.createEmpty(),
@@ -21,7 +24,6 @@ class NewAnnotation extends React.Component {
   }
 
   saveAnnotationContent(w) {
-    console.log(w)
     this.setState({
       annotationContent: w
     })
@@ -43,18 +45,18 @@ class NewAnnotation extends React.Component {
     document.removeEventListener('keydown', this.keydown, false);
   }
 
-  keydown = e => {
-    if (e.key === 'Enter' && e.target.className === 'form-control' && this.state.annotationContent !== '') {
-      this.submitButtonHandler();
-    }
-    else if (e.key === 'Enter' && e.target.className === 'tag-control' && e.target.value !== '') {
-      e.preventDefault();
-      this.state.tags.push(e.target.value);
-      this.setState({ addedTag: true });
-      e.target.value = '';
-      console.log(this.state.tags);
-    }
-  };
+  // keydown = e => {
+  //   if (e.key === 'Enter' && e.target.className === 'form-control' && this.state.annotationContent !== '') {
+  //     this.submitButtonHandler();
+  //   }
+  //   else if (e.key === 'Enter' && e.target.className === 'tag-control' && e.target.value !== '') {
+  //     e.preventDefault();
+  //     this.state.tags.push(e.target.value);
+  //     this.setState({ addedTag: true });
+  //     e.target.value = '';
+  //     console.log(this.state.tags);
+  //   }
+  // };
 
   updateAnnotationType(eventKey) {
     this.setState({ annotationType: eventKey });
@@ -71,6 +73,10 @@ class NewAnnotation extends React.Component {
   deleteTag = (tagName) => {
     this.setState({ tags: this.state.tags.filter(tag => tag !== tagName) });
 
+  }
+
+  tagsHandleChange = (newTag) => {
+    this.setState({ tags: newTag })
   }
 
   submitButtonHandler = event => {
@@ -107,6 +113,11 @@ class NewAnnotation extends React.Component {
   render() {
     const { newSelection } = this.props;
 
+    const options = [
+      'Default', 'To-do', 'Highlight', 'Navigation', 'Issue'
+    ];
+    const defaultOption = options[0];
+
     if (!newSelection) {
       return null;
     }
@@ -119,36 +130,29 @@ class NewAnnotation extends React.Component {
         <div className="InnerNewAnnotation">
           <div className="SelectedTextContainer">{newSelection}</div>
           <div className="TextareaContainer">
-
             <RichEditorExample annotationChangeHandler={this.annotationChangeHandler} />
           </div>
           {!submitted ? (
             <React.Fragment>
-              <div className="TagContainer">
-                {tags.length ? (
-                  <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
-                    {tags.map((tagContent, idx) => {
-                      return (
-                        <CustomTag idx={idx} content={tagContent} deleteTag={this.deleteTag} editing={true} />
-                      )
-                    }
-                    )}
-                  </ul>
-                ) : (null)}
-                Add Tag:
-              <textarea
-                  className="tag-control"
-                  rows="1"
-                  placeholder={'add tag here'}
-                  // value={annotationContent}
-                  onChange={e => this.annotationTagHandler(e)}
-                />
+              <div className="Tag-Container">
+                <div className="row">
+                  <div className="TextareaContainer">
+                    <TagsInput value={tags} onChange={this.tagsHandleChange} onlyUnique={true} />
+                  </div>
+                </div>
               </div>
               <div className="SubmitButtonContainer">
-                <Dropdown className="AnnotationType">
+                <div className="Tag-Container">
+                  <div className="row">
+                    <div className="Dropdown-Col">
+                      <Dropdown options={options} onChange={this._onSelect} value={defaultOption} placeholder="Select an option" />
+                    </div>
+
+
+                    {/* <Dropdown className="AnnotationType">
                   <Dropdown.Toggle variant="success" id="dropdown-basic">
                     Annotation Type
-              </Dropdown.Toggle>
+                  </Dropdown.Toggle>
                   <Dropdown.Menu >
                     <Dropdown.Item as="button" eventKey="default" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
                       Default
@@ -169,22 +173,25 @@ class NewAnnotation extends React.Component {
                       Issue
                   </Dropdown.Item>
                   </Dropdown.Menu>
-                </Dropdown>
+                </Dropdown> */}
               &nbsp; &nbsp;
                 <button
-                  className="btn btn-sm btn-outline-danger"
-                  onClick={_ => this.props.resetNewSelection()}
-                >
-                  Cancel
+                      className="btn Cancel-Button"
+                      onClick={_ => this.props.resetNewSelection()}
+                    >
+                      <GiCancel /> Cancel
               </button>
               &nbsp; &nbsp;
                 <button
-                  className="btn btn-sm btn-outline-secondary SubmitButton"
-                  onClick={e => this.submitButtonHandler(e)}
-                  disabled={annotationContent.length === 0}
-                >
-                  Save
+                      id="NewAnnotation"
+                      className="Publish-Button SubmitButton "
+                      onClick={e => this.submitButtonHandler(e)}
+                      disabled={annotationContent.length === 0}
+                    >
+                      Publish
               </button>
+                  </div>
+                </div>
               </div>
             </React.Fragment>
           ) : (
@@ -193,7 +200,7 @@ class NewAnnotation extends React.Component {
               </div>
             )}
         </div>
-      </div>
+      </div >
     );
   }
 }
