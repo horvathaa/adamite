@@ -6,6 +6,7 @@ import Authentication from './containers//Authentication//Authentication';
 import AnnotationList from './containers/AnnotationList/AnnotationList';
 import NewAnnotation from './containers/NewAnnotation/NewAnnotation';
 import Filter from './containers/Filter/Filter';
+import SearchBar from './containers/SearchBar/SearchBar';
 import { getAllAnnotationsByUserIdAndUrl, getAllAnnotationsByUrl, getAllAnnotations, trashAnnotationById } from '../../firebase/index';
 import { style } from 'glamor';
 
@@ -21,7 +22,8 @@ class Sidebar extends React.Component {
     xpath: null,
     currentUser: undefined,
     selected: undefined,
-    dropdownOpen: false
+    dropdownOpen: false,
+    searchBarInputText: ''
   };
 
   selection = {
@@ -173,6 +175,17 @@ class Sidebar extends React.Component {
     return false;
   }
 
+  handleSearchBarInputText = (event) => {
+    let inputText = event.target.value;
+    this.setState({
+      searchBarInputText: inputText,
+    });
+  };
+
+  clearSearchBoxInputText = () => {
+    this.setState({ searchBarInputText: '' });
+  };
+
   checkAnnoType(annotation, annoType) {
     if (!annoType.length || annoType === 'all') {
       return true;
@@ -270,12 +283,20 @@ class Sidebar extends React.Component {
   };
 
   render() {
-    const { currentUser, annotations, dropdownOpen, filteredAnnotations } = this.state;
+    const { currentUser, annotations, dropdownOpen, filteredAnnotations, searchBarInputText } = this.state;
 
     if (currentUser === undefined) {
-      // loading currentUser
       return null;
     }
+
+    const inputText = searchBarInputText.toLowerCase();
+    const filteredAnnotationsCopy = [];
+    filteredAnnotations.forEach((anno) => {
+      const { content } = anno;
+      if (content.includes(inputText)) {
+        filteredAnnotationsCopy.push(anno);
+      }
+    });
 
     return (
 
@@ -283,23 +304,37 @@ class Sidebar extends React.Component {
         <Title currentUser={currentUser} />
         {currentUser === null && <Authentication />}
         {currentUser !== null && (
-          <React.Fragment>
-            <Filter applyFilter={this.applyFilter}
-              filterAnnotationLength={this.getFilteredAnnotationListLength}
-            />
-            {' '}
-            {this.state.newSelection !== null &&
-              this.state.newSelection.trim().length > 0 && (
-                <NewAnnotation
-                  url={this.state.url}
-                  newSelection={this.state.newSelection}
-                  resetNewSelection={this.resetNewSelection}
-                  offsets={this.state.offsets}
-                  xpath={this.state.xpath}
-                />
-              )}
-            <AnnotationList annotations={filteredAnnotations} currentUser={currentUser} url={this.state.url} />
-          </React.Fragment>
+          <div>
+            <div className='TopRow'>
+              <Filter applyFilter={this.applyFilter}
+                filterAnnotationLength={this.getFilteredAnnotationListLength}
+              />
+              <SearchBar
+                searchBarInputText={searchBarInputText}
+                handleSearchBarInputText={this.handleSearchBarInputText}
+                searchCount={filteredAnnotationsCopy.length}
+              />
+            </div>
+            <div>
+              {this.state.newSelection !== null &&
+                this.state.newSelection.trim().length > 0 && (
+                  <NewAnnotation
+                    url={this.state.url}
+                    newSelection={this.state.newSelection}
+                    resetNewSelection={this.resetNewSelection}
+                    offsets={this.state.offsets}
+                    xpath={this.state.xpath}
+                  />
+                )}
+            </div>
+            <div>
+              {/* {inputText !== '' ? ( */}
+              <AnnotationList annotations={filteredAnnotationsCopy} currentUser={currentUser} url={this.state.url} />
+              {/* ) : ( */}
+              {/* <AnnotationList annotations={filteredAnnotations} currentUser={currentUser} url={this.state.url} /> */}
+              {/* )} */}
+            </div>
+          </div>
         )}
       </div>
     );

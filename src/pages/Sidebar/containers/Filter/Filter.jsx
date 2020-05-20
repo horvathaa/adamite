@@ -87,7 +87,7 @@ class Filter extends React.Component {
 
     render() {
         return (
-            <div className="col2">
+            <React.Fragment>
                 <Dropdown className="Filter">
                     <Dropdown.Toggle as={filterToggle} id="dropdown-basic">
 
@@ -167,7 +167,7 @@ class Filter extends React.Component {
                     </Dropdown.Menu>
 
                 </Dropdown>
-            </div>
+            </React.Fragment>
         )
     }
 }

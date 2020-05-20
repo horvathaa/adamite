@@ -83,8 +83,6 @@ class NewAnnotation extends React.Component {
     this.setState({ submitted: true });
 
     const { url, newSelection, xpath, offsets } = this.props;
-    console.log('saving tags');
-    console.log(this.state.tags);
     const annotationInfo = {
       anchor: newSelection,
       annotation: this.state.annotationContent,

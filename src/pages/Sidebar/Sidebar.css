@@ -24,6 +24,9 @@
   filter: brightness(.5);
 }
 
+.TopRow {
+  display: flex;
+}
 
 .Header {
   text-align: center;
