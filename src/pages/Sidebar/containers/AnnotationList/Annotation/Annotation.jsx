@@ -6,6 +6,7 @@ import { Dropdown } from 'react-bootstrap';
 import { checkPropTypes, string } from 'prop-types';
 import CustomTag from '../../CustomTag/CustomTag';
 import { deleteAnnotationForeverById, updateAnnotationById } from '../../../../../firebase';
+import CardWrapper from '../../CardWrapper/CardWrapper'
 
 class Annotation extends Component {
 
@@ -19,6 +20,7 @@ class Annotation extends Component {
 
   updateData = () => {
     let { tags, content, type } = this.props;
+
     this.setState({
       tags, content, annotationType: type
     })
@@ -53,7 +55,6 @@ class Annotation extends Component {
   }
 
   handleDoneToDo() {
-    console.log('handled');
     return;
   }
 
@@ -94,11 +95,11 @@ class Annotation extends Component {
     this.setState({ content: event.target.value });
   };
 
-  submitButtonHandler = (event, id) => {
-    updateAnnotationById(id, {
-      content: this.state.content,
-      annotationType: this.state.annotationType,
-      tags: this.state.tags
+  submitButtonHandler = (CardWrapperState, id) => {
+    updateAnnotationById(CardWrapperState.id, {
+      content: CardWrapperState.annotationContent,
+      annotationType: CardWrapperState.annotationType,
+      tags: CardWrapperState.tags
     });
     this.setState({ editing: false });
   }
@@ -174,12 +175,13 @@ class Annotation extends Component {
             </div>
             <div
               className={classNames({
-                ContentContainer: true,
                 Truncated: collapsed,
-                editAreaContainer: editing,
               })}
             >
-              {editing ? (
+              <React.Fragment>
+                <CardWrapper tags={tags} annotationContent={content} edit={editing} pageAnnotation={anchor} id={id} submitButtonHandler={this.submitButtonHandler} elseContent={content} />
+              </React.Fragment>
+              {/* {editing ? (
                 <React.Fragment>
                   <div className="editAreaContainer">
                     <div className="TextareaContainer">
@@ -234,13 +236,13 @@ class Annotation extends Component {
                       </button>
                     </div>
                   </div>
-                </React.Fragment>
-              ) : (<div>
+                </React.Fragment> */}
+              {/* ) : (<div>
                 {content}
               </div>
-                )}
+                )} */}
             </div>
-            {editing ? (
+            {/* {editing ? (
               <div className="editTag">
                 Add Tag:
                 <textarea
@@ -250,7 +252,7 @@ class Annotation extends Component {
                   // value={annotationContent}
                   onChange={e => this.annotationTagHandler(e)}
                 />
-              </div>) : (null)}
+              </div>) : (null)} */}
             {tags.length && !collapsed ? (
               <div className={classNames({
                 TagRow: true
