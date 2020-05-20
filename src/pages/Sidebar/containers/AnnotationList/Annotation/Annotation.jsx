@@ -5,7 +5,7 @@ import './Annotation.css';
 import { Dropdown } from 'react-bootstrap';
 import { checkPropTypes, string } from 'prop-types';
 import CustomTag from '../../CustomTag/CustomTag';
-import { deleteAnnotationForeverById, updateAnnotationById } from '../../../../../firebase';
+import { deleteAnnotationForeverById, updateAnnotationById, getUserProfileById } from '../../../../../firebase';
 
 class Annotation extends Component {
 
@@ -14,19 +14,35 @@ class Annotation extends Component {
     content: this.props.content,
     collapsed: false,
     annotationType: this.props.type,
-    editing: false
+    editing: false,
+
   };
 
   updateData = () => {
     let { tags, content, type } = this.props;
     this.setState({
       tags, content, annotationType: type
-    })
+    });
+
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     document.addEventListener('keydown', this.keydown, false);
     this.updateData();
+    let authorDoc = getUserProfileById(this.props.authorId);
+    let user = "";
+    await authorDoc.get().then(function (doc) {
+      if (doc.exists) {
+        user = doc.data().email.substring(0, doc.data().email.indexOf('@'));
+      }
+      else {
+        user = "anonymous";
+      }
+    }).catch(function (error) {
+      console.log('could not get doc:', error);
+    });
+
+    this.setState({ author: user });
   }
 
   componentDidUpdate(prevProps) {
@@ -134,7 +150,7 @@ class Annotation extends Component {
 
   render() {
     const { anchor, idx, id, active, authorId, currentUser, trashed, timeStamp, url, currentUrl } = this.props;
-    const { editing, collapsed, tags, content, annotationType } = this.state;
+    const { editing, collapsed, tags, content, annotationType, author } = this.state;
     if (annotationType === 'default' && !trashed) {
       return (
         <li key={idx} id={id} className={classNames({ AnnotationItem: true })}>
@@ -163,7 +179,8 @@ class Annotation extends Component {
                   <div className="col">
                     {this.formatTimestamp(timeStamp)}
                   </div>
-                  <div className="col">
+                  <div className="col2">
+                    {author}
                   </div>
                 </div>
               </div>

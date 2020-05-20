@@ -119,24 +119,7 @@
   overflow: auto;
 
   display: flex;
-  /* align-items: center;
-  padding: 8px 8px 8px 8px;
-  cursor: default;
-  background-color: rgb(177, 189, 185);
-  color: rgb(85, 83, 83); */
-  /* border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-  border-bottom-left-radius: 8px;
-  border-bottom-right-radius: 8px; */
-  /* border-color: rgb(0, 0, 0);
-  border-width: 2px;
-  max-height: 200px;
-  word-break: break-all;
 
-
-  transition: all 0.1s ease-in;
-
-  margin: 5px 0px; */
 }
 
 .ContentContainer {
@@ -147,11 +130,7 @@
   padding: 8px 8px 8px 8px;
   cursor: default;
   color: rgb(85, 83, 83);
-  /* border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-  border-bottom-left-radius: 8px;
-  border-bottom-right-radius: 8px; */
-  /* max-height: 200px; */
+
   word-break: break-all;
 
 
@@ -172,9 +151,6 @@
   text-align: left;
 }
 
-.TagRow {
-  
-}
 
 #Trash {
   left: 0;
@@ -182,13 +158,12 @@
 
 .IconRow {
   position: relative;
-  /* padding: 10px; */
 }
 
 .AnchorIcon {
-  width: 1.0em;
+  width: 8px;
   color: #7f8080;
-  height: 1.0em;
+  height: 8px;
   cursor: pointer;
 }
 
