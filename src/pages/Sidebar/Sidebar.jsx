@@ -296,7 +296,7 @@ class Sidebar extends React.Component {
                 />
               )}
             <div className="AnnotationListPadding"></div>
-            <AnnotationList annotations={filteredAnnotations} currentUser={currentUser} />
+            <AnnotationList annotations={filteredAnnotations} currentUser={currentUser} url={this.state.url} />
           </React.Fragment>
         )}
       </div>

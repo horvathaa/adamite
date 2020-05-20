@@ -43,6 +43,7 @@ class AnnotationList extends Component {
                 offsets={annotation.offsets}
                 xpath={annotation.xpath}
                 url={annotation.url}
+                currentUrl={this.props.url}
                 tags={annotation.tags}
               />
               <div className="AnnotationListPadding" key={1000 + idx}></div>

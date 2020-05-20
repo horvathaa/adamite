@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
-import { FaCaretDown, FaCaretUp, FaTrash, FaEdit } from 'react-icons/fa';
+import { FaCaretDown, FaCaretUp, FaTrash, FaEdit, FaFont, FaExternalLinkAlt } from 'react-icons/fa';
 import './Annotation.css';
 import { Dropdown } from 'react-bootstrap';
 import { checkPropTypes, string } from 'prop-types';
@@ -50,6 +50,10 @@ class Annotation extends Component {
     var sec = date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
     var time = day + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec;
     return time;
+  }
+
+  handleExternalAnchor(url) {
+    chrome.runtime.sendMessage({ msg: "LOAD_EXTERNAL_ANCHOR", from: 'content', payload: url });
   }
 
   handleDoneToDo() {
@@ -129,7 +133,7 @@ class Annotation extends Component {
   }
 
   render() {
-    const { anchor, idx, id, active, authorId, currentUser, trashed, timeStamp } = this.props;
+    const { anchor, idx, id, active, authorId, currentUser, trashed, timeStamp, url, currentUrl } = this.props;
     const { editing, collapsed, tags, content, annotationType } = this.state;
     if (annotationType === 'default' && !trashed) {
       return (
@@ -170,6 +174,10 @@ class Annotation extends Component {
                 Truncated: collapsed
               })}
             >
+              {currentUrl === url ? (
+                <FaFont className="AnchorIcon" />
+              ) : (<FaExternalLinkAlt className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />)}
+              &nbsp;&nbsp;
               {anchor}
             </div>
             <div

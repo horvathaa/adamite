@@ -97,13 +97,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }, (window) => {
       createdWindow = window;
     });
-    // chrome.runtime.sendMessage({ msg: 'DELIVER_FILTERED_ANNOTATION_TAG', from: 'background', payload: response })
-
-    // });
-
   } else if (request.msg === 'TAGS_SELECTED' && request.from === 'background') {
     chrome.runtime.sendMessage({ msg: 'FILTER_TAGS', from: 'background', payload: request.payload.tags });
     chrome.windows.remove(createdWindow.id);
+  } else if (request.msg === 'LOAD_EXTERNAL_ANCHOR' && request.from === 'content') {
+    chrome.tabs.create({ url: request.payload });
   }
   return true;
 });

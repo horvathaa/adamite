@@ -185,10 +185,27 @@
   /* padding: 10px; */
 }
 
+.AnchorIcon {
+  width: 1.0em;
+  color: #7f8080;
+  height: 1.0em;
+  cursor: pointer;
+}
+
+.AnchorIcon.hover, .AnchorIcon:hover {
+  filter: brightness(.5);
+}
+
+
 .Icon {
   width: 1.4em;
   color: #7f8080;
   height: 1.5em;
+  cursor: pointer;
+}
+
+.Icon.hover, .Icon:hover {
+  filter: brightness(.5);
 }
 
 .FaCaretUp-Col {
