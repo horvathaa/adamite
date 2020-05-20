@@ -15,13 +15,13 @@ class Annotation extends Component {
     collapsed: false,
     annotationType: this.props.type,
     editing: false,
-
+    authorId: this.props.authorId
   };
 
   updateData = () => {
-    let { tags, content, type } = this.props;
+    let { tags, content, type, authorId } = this.props;
     this.setState({
-      tags, content, annotationType: type
+      tags, content, annotationType: type, authorId
     });
 
   }
@@ -29,7 +29,7 @@ class Annotation extends Component {
   async componentDidMount() {
     document.addEventListener('keydown', this.keydown, false);
     this.updateData();
-    let authorDoc = getUserProfileById(this.props.authorId);
+    let authorDoc = getUserProfileById(this.state.authorId);
     let user = "";
     await authorDoc.get().then(function (doc) {
       if (doc.exists) {
@@ -46,7 +46,10 @@ class Annotation extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.tags !== this.props.tags || prevProps.content !== this.props.content || prevProps.type !== this.props.type) {
+    if (prevProps.tags !== this.props.tags ||
+      prevProps.content !== this.props.content ||
+      prevProps.type !== this.props.type ||
+      prevProps.authorId !== this.props.authorId) {
       this.updateData();
     }
   }
@@ -191,11 +194,14 @@ class Annotation extends Component {
                 Truncated: collapsed
               })}
             >
-              {currentUrl === url ? (
-                <FaFont className="AnchorIcon" />
-              ) : (<FaExternalLinkAlt className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />)}
-              &nbsp;&nbsp;
-              {anchor}
+              <div className="AnchorIconContainer">
+                {currentUrl === url ? (
+                  <FaFont className="AnchorIcon" />
+                ) : (<FaExternalLinkAlt className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />)}
+              </div>
+              <div className="AnchorTextContainer">
+                {anchor}
+              </div>
             </div>
             <div
               className={classNames({
