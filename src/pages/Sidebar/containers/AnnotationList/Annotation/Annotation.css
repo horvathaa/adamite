@@ -119,24 +119,7 @@
   overflow: auto;
 
   display: flex;
-  /* align-items: center;
-  padding: 8px 8px 8px 8px;
-  cursor: default;
-  background-color: rgb(177, 189, 185);
-  color: rgb(85, 83, 83); */
-  /* border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-  border-bottom-left-radius: 8px;
-  border-bottom-right-radius: 8px; */
-  /* border-color: rgb(0, 0, 0);
-  border-width: 2px;
-  max-height: 200px;
-  word-break: break-all;
 
-
-  transition: all 0.1s ease-in;
-
-  margin: 5px 0px; */
 }
 
 .ContentContainer {
@@ -144,14 +127,10 @@
   min-width: 0;
   display: flex;
   align-items: center;
-  padding: 8px 8px 8px 8px;
+  padding: 4px 4px 4px 4px;
   cursor: default;
   color: rgb(85, 83, 83);
-  /* border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-  border-bottom-left-radius: 8px;
-  border-bottom-right-radius: 8px; */
-  /* max-height: 200px; */
+  font-size: 1rem;
   word-break: break-all;
 
 
@@ -170,11 +149,9 @@
   padding-top: 5px;
   padding-left: 5px;
   text-align: left;
+  color: #555353;
 }
 
-.TagRow {
-  
-}
 
 #Trash {
   left: 0;
@@ -182,13 +159,40 @@
 
 .IconRow {
   position: relative;
-  /* padding: 10px; */
 }
+
+.AnchorIconContainer {
+  width:14px;
+  height:14px;
+  padding: 2px;
+}
+
+.AnchorTextContainer {
+  display: inline-block;
+  padding: 0px 0px 0px 8px;
+}
+
+.AnchorIcon {
+  width: 14px;
+  color: #7f8080;
+  height: 14px;
+  cursor: pointer;
+}
+
+.AnchorIcon.hover, .AnchorIcon:hover {
+  filter: brightness(.5);
+}
+
 
 .Icon {
   width: 1.4em;
   color: #7f8080;
   height: 1.5em;
+  cursor: pointer;
+}
+
+.Icon.hover, .Icon:hover {
+  filter: brightness(.5);
 }
 
 .FaCaretUp-Col {

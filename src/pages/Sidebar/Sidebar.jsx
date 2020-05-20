@@ -153,7 +153,10 @@ class Sidebar extends React.Component {
         }
       }
       else if (request.from === 'background' && request.msg === 'REQUEST_FILTERED_ANNOTATIONS') {
-        sendResponse(this.state.filteredAnnotations);
+        console.log(this.state);
+        // sendResponse(this.state.filteredAnnotations);
+        chrome.storage.local.set({ annotations: this.state.filteredAnnotations });
+        sendResponse({ done: true });
       }
     });
   }
@@ -295,8 +298,7 @@ class Sidebar extends React.Component {
                   xpath={this.state.xpath}
                 />
               )}
-            <div className="AnnotationListPadding"></div>
-            <AnnotationList annotations={filteredAnnotations} currentUser={currentUser} />
+            <AnnotationList annotations={filteredAnnotations} currentUser={currentUser} url={this.state.url} />
           </React.Fragment>
         )}
       </div>

@@ -5,7 +5,6 @@ let selectedTags = [];
 function modifySelectedTags(event) {
     console.log(event.target);
     if (selectedTags.includes(event.target.innerHTML)) {
-        console.log('includes is true');
         selectedTags = selectedTags.filter(tag => tag !== event.target.innerHTML);
         event.target.style = 'background-color: white';
     }
@@ -13,7 +12,6 @@ function modifySelectedTags(event) {
         selectedTags.push(event.target.innerHTML);
         event.target.style = 'background-color: darkcyan';
     }
-    console.log(selectedTags);
 }
 
 function transmitSelectedTags(event) {
@@ -24,11 +22,10 @@ function transmitSelectedTags(event) {
     });
 }
 
-chrome.runtime.sendMessage({ msg: 'REQUEST_FILTERED_ANNOTATIONS', from: 'background' }, (response) => {
-    // filteredAnnotations = response;
+chrome.storage.local.get(annotations => {
     let tagSet = new Set();
-    console.log(response);
-    response.forEach(annotation => {
+    console.log(annotations);
+    annotations.annotations.forEach(annotation => {
         annotation.tags.forEach(tag => {
             tagSet.add(tag);
         });
@@ -37,7 +34,7 @@ chrome.runtime.sendMessage({ msg: 'REQUEST_FILTERED_ANNOTATIONS', from: 'backgro
     tagSet.forEach(tag => {
         let tagButton = document.createElement('button');
         tagButton.innerHTML = tag;
-        tagButton.style = 'padding: 5px';
+        // tagButton.style = 'padding: 5px';
         tagButton.onclick = modifySelectedTags;
         document.body.appendChild(tagButton);
     });
@@ -47,5 +44,30 @@ chrome.runtime.sendMessage({ msg: 'REQUEST_FILTERED_ANNOTATIONS', from: 'backgro
     submitButton.innerHTML = 'Save';
     submitButton.onclick = transmitSelectedTags;
     document.body.appendChild(submitButton);
+})
 
-});
+// chrome.runtime.sendMessage({ msg: 'REQUEST_FILTERED_ANNOTATIONS', from: 'background' }, (response) => {
+//     // filteredAnnotations = response;
+//     let tagSet = new Set();
+//     console.log(response);
+//     response.forEach(annotation => {
+//         annotation.tags.forEach(tag => {
+//             tagSet.add(tag);
+//         });
+//     })
+//     console.log(tagSet);
+//     tagSet.forEach(tag => {
+//         let tagButton = document.createElement('button');
+//         tagButton.innerHTML = tag;
+//         // tagButton.style = 'padding: 5px';
+//         tagButton.onclick = modifySelectedTags;
+//         document.body.appendChild(tagButton);
+//     });
+
+//     document.body.appendChild(document.createElement('br'));
+//     let submitButton = document.createElement('button');
+//     submitButton.innerHTML = 'Save';
+//     submitButton.onclick = transmitSelectedTags;
+//     document.body.appendChild(submitButton);
+
+// });

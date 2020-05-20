@@ -13,6 +13,18 @@
   align-items: flex-end;
 }
 
+.Icon {
+  width: 1.4em;
+  color: #7f8080;
+  height: 1.5em;
+  cursor: pointer;
+}
+
+.Icon.hover, .Icon:hover {
+  filter: brightness(.5);
+}
+
+
 .Header {
   text-align: center;
 }
