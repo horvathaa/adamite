@@ -53,6 +53,14 @@ class Filter extends React.Component {
                 payload: this.selection,
             });
         }
+        if (eventKey === 'annoType:selectAll') {
+            if (this.selection.annoType.length !== 6) {
+                this.selection.annoType = ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'];
+            }
+            else {
+                this.selection.annoType = [];
+            }
+        }
         if (eventKey.includes('siteScope')) {
             let choice = eventKey.substring(eventKey.indexOf(':') + 1, eventKey.length)
             if (this.selection.siteScope.includes(choice)) {
@@ -93,8 +101,8 @@ class Filter extends React.Component {
 
                     </Dropdown.Toggle>
                     <Dropdown.Menu >
-                        &nbsp;{this.props.filterAnnotationLength()} annotations
-                    <Dropdown.Divider />
+                        {/* &nbsp;{this.props.filterAnnotationLength()} annotations
+                    <Dropdown.Divider /> */}
                     &nbsp;Site scope
                     <Dropdown.Item as="button" eventKey="siteScope:onPage" onSelect={eventKey => this.updateSelected(eventKey)}>
                             On page {this.selection.siteScope.includes('onPage') ? ("✓") : (null)}
@@ -136,6 +144,10 @@ class Filter extends React.Component {
                         <Dropdown.Item as="button" eventKey="annoType:issue" onSelect={eventKey => this.updateSelected(eventKey)}>
                             Issue {this.selection.annoType.includes('issue') ? ("✓") : (null)}
                         </Dropdown.Item>
+                        <Dropdown.Item as="button" eventKey="annoType:selectAll" onSelect={eventKey => this.updateSelected(eventKey)}>
+                            {this.selection.annoType.length !== 6 ? ("Select All") : ("De-select all")}
+                            {/* Select All {this.selection.annoType.includes('issue') ? ("✓") : (null)} */}
+                        </Dropdown.Item>
                         <Dropdown.Divider />
                     &nbsp;Time Range
                     <Dropdown.Item as="button" eventKey="timeRange:day" onSelect={eventKey => this.updateSelected(eventKey)}>
@@ -147,12 +159,14 @@ class Filter extends React.Component {
                         <Dropdown.Item as="button" eventKey="timeRange:month" onSelect={eventKey => this.updateSelected(eventKey)}>
                             Past Month {this.selection.timeRange === 'month' ? ("✓") : (null)}
                         </Dropdown.Item>
-                        <Dropdown.Item as="button" eventKey="timeRange:6months" onSelect={eventKey => this.updateSelected(eventKey)}>
-                            Past 6 Months {this.selection.timeRange === '6months' ? ("✓") : (null)}
+                        <Dropdown.Item as="button:disabled" eventKey="timeRange:custom" onSelect={eventKey => this.updateSelected(eventKey)}>
+                            Custom Time Range
+                        </Dropdown.Item>
+                        {/* Past 6 Months {this.selection.timeRange === '6months' ? ("✓") : (null)}
                         </Dropdown.Item>
                         <Dropdown.Item as="button" eventKey="timeRange:year" onSelect={eventKey => this.updateSelected(eventKey)}>
                             Past Year {this.selection.timeRange === 'year' ? ("✓") : (null)}
-                        </Dropdown.Item>
+                        </Dropdown.Item> */}
                         <Dropdown.Item as="button" eventKey="timeRange:all" onSelect={eventKey => this.updateSelected(eventKey)}>
                             All Time {this.selection.timeRange === 'all' ? ("✓") : (null)}
                         </Dropdown.Item>
