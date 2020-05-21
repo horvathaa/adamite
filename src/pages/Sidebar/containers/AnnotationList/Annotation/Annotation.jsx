@@ -98,7 +98,7 @@ class Annotation extends Component {
   submitButtonHandler = (CardWrapperState, id) => {
     updateAnnotationById(CardWrapperState.id, {
       content: CardWrapperState.annotationContent,
-      annotationType: CardWrapperState.annotationType,
+      type: CardWrapperState.annotationType.toLowerCase(),
       tags: CardWrapperState.tags
     });
     this.setState({ editing: false });
@@ -113,6 +113,10 @@ class Annotation extends Component {
   }
 
   handleEditCancel() {
+    this.setState({ editing: false });
+  }
+
+  cancelButtonHandler = () => {
     this.setState({ editing: false });
   }
 
@@ -179,7 +183,7 @@ class Annotation extends Component {
               })}
             >
               <React.Fragment>
-                <CardWrapper tags={tags} annotationContent={content} edit={editing} pageAnnotation={anchor} id={id} submitButtonHandler={this.submitButtonHandler} elseContent={content} />
+                <CardWrapper tags={tags} annotationType={annotationType} annotationContent={content} edit={editing} pageAnnotation={anchor} id={id} cancelButtonHandler={this.cancelButtonHandler} submitButtonHandler={this.submitButtonHandler} elseContent={content} />
               </React.Fragment>
               {/* {editing ? (
                 <React.Fragment>
@@ -253,7 +257,7 @@ class Annotation extends Component {
                   onChange={e => this.annotationTagHandler(e)}
                 />
               </div>) : (null)} */}
-            {tags.length && !collapsed ? (
+            {tags.length && !collapsed && !editing ? (
               <div className={classNames({
                 TagRow: true
               })}>

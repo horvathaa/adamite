@@ -1,13 +1,13 @@
 import React from 'react';
 // import { Dropdown } from 'react-bootstrap';
 import './NewAnnotation.css';
-import ReactDOM from 'react-dom';
-import { Editor, EditorState } from 'draft-js';
-import { GiCancel } from 'react-icons/gi';
-import RichEditorExample from '../RichTextEditor/RichTextEditor'
-import CustomTag from '../CustomTag/CustomTag';
-import TagsInput from 'react-tagsinput'
-import Dropdown from 'react-dropdown';
+// import ReactDOM from 'react-dom';
+// import { Editor, EditorState } from 'draft-js';
+// import { GiCancel } from 'react-icons/gi';
+// import RichEditor from '../RichTextEditor/RichTextEditor'
+// import CustomTag from '../CustomTag/CustomTag';
+// import TagsInput from 'react-tagsinput'
+// import Dropdown from 'react-dropdown';
 import CardWrapper from '../CardWrapper/CardWrapper'
 
 // function MyEditor() {
@@ -82,21 +82,21 @@ class NewAnnotation extends React.Component {
     this.setState({ tags: newTag })
   }
 
+  cancelButtonHandler = () => {
+    this.props.resetNewSelection();
+  }
+
   submitButtonHandler = (CardWrapperState) => {
     this.setState({ submitted: true });
 
     const { url, newSelection, xpath, offsets } = this.props;
-    console.log('saving tags');
-    console.log(this.state);
-    console.log(this.props);
-    console.log(CardWrapperState);
     const annotationInfo = {
       anchor: newSelection,
       annotation: CardWrapperState.annotationContent,
       xpath: xpath,
       offsets: offsets,
       tags: CardWrapperState.tags,
-      annotationType: CardWrapperState.annotationType,
+      annotationType: CardWrapperState.annotationType.toLowerCase(),
     };
     console.log(annotationInfo);
     chrome.runtime.sendMessage(
@@ -139,8 +139,63 @@ class NewAnnotation extends React.Component {
 
     return (
       <React.Fragment>
-        <CardWrapper tags={tags} annotationContent={annotationContent} edit={!submitted} pageAnnotation={newSelection} submitButtonHandler={this.submitButtonHandler} elseContent={submittedLoadState} />
+        <CardWrapper
+          tags={tags} annotationContent={annotationContent}
+          edit={!submitted}
+          pageAnnotation={newSelection}
+
+          cancelButtonHandler={this.cancelButtonHandler}
+          submitButtonHandler={this.submitButtonHandler}
+          elseContent={submittedLoadState} />
       </React.Fragment>
+      //   <div className="NewAnnotationContainer">
+      //     <div className="InnerNewAnnotation">
+      //       <div className="SelectedTextContainer">{newSelection}</div>
+      //       <div className="TextareaContainer">
+      //         <RichEditor annotationChangeHandler={this.annotationChangeHandler} />
+      //       </div>
+      //       {!submitted ? (
+      //         <React.Fragment>
+      //           <div className="Tag-Container">
+      //             <div className="row">
+      //               <div className="TextareaContainer">
+      //                 <TagsInput value={tags} onChange={this.tagsHandleChange} onlyUnique={true} />
+      //               </div>
+      //             </div>
+      //           </div>
+      //           <div className="SubmitButtonContainer">
+      //             <div className="Tag-Container">
+      //               <div className="row">
+      //                 <div className="Dropdown-Col">
+      //                   <Dropdown options={options} onChange={this._onSelect} value={defaultOption} placeholder="Select an option" />
+      //                 </div>
+      //           &nbsp; &nbsp;
+      //             <button
+      //                   className="btn Cancel-Button"
+      //                   onClick={_ => this.props.resetNewSelection()}
+      //                 >
+      //                   <GiCancel /> Cancel
+      //           </button>
+      //           &nbsp; &nbsp;
+      //             <button
+      //                   id="NewAnnotation"
+      //                   className="Publish-Button SubmitButton "
+      //                   onClick={e => this.submitButtonHandler(e)}
+      //                   disabled={annotationContent.length === 0}
+      //                 >
+      //                   Publish
+      //           </button>
+      //               </div>
+      //             </div>
+      //           </div>
+      //         </React.Fragment>
+      //       ) : (
+      //           <div className="spinner-border text-secondary" role="status">
+      //             <span className="sr-only">...</span>
+      //           </div>
+      //         )}
+      //     </div>
+      //   </div >
     );
   }
 }

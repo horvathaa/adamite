@@ -43,6 +43,9 @@ function highlightColorHover() {
   document.getElementById('someElementId').className = 'cssClass';
 }
 
+function escapeRegExp(text) {
+  return text.replace(/[-[\]{}()*+?.,\\^$|#]/g, '\\$&');
+}
 
 function getNextNode(node) {
   if (node.firstChild) {
@@ -119,39 +122,52 @@ function wordmatch(element, word) {
 /*
  * Finds highlighted text and creates highlight for annotation
  */
-var matchText = function (nodes, startOffset, endOffset, callback, excludeElements) {
+var matchText = function (xpathInfo, offsets, callback, excludeElements) {
 
   var i = 0;
   excludeElements || (excludeElements = ['script', 'style', 'iframe', 'canvas']);
 
-  if (nodes.length === 0) {
-    return;
-  }
   var node;
-  nodes = nodes.sort((x, y) => x.xpath.length - y.xpath.length).reverse();
+  // nodes = nodes.sort((x, y) => x.xpath.length - y.xpath.length).reverse();
+  // console.log("nodes ", nodes);
+  // for (i = 0; i < nodes.length; i++) {
 
-  for (i = 0; i < nodes.length; i++) {
+  // if ((node = wordmatch(xpathToNodez(fullXpath), phrase)) === null) {
 
-    if ((node = wordmatch(xpathToNodez(nodes[i].xpath), nodes[i].text)) === null) {
-      continue;
-    }
+  // return;
+  // }
+  node = xpathToNodez(xpathInfo.xpath + "/text()");
+  // console.log(nodes[i]);
 
-    var substring = node.data;
+  // if (node.data === undefined) {
+  //   /* 
+  //   * step back one xpath node and try to find text, if in text split and creat span
+  //   * if not skip
+  //   */
+  // }
 
-    if (nodes[i].offsets.startOffset !== 0 && nodes[i].offsets.endOffset !== 0) {
-      substring = node.data.substring(nodes[i].offsets.startOffset, nodes[i].offsets.endOffset);
+  console.log(node.data);
+  console.log("whhyyyy substring!");
+  console.log(xpathInfo);
+  console.log("WHY!");
 
-    }
-    else if (nodes[i].offsets.startOffset !== 0) {
-      substring = node.data.substring(nodes[i].offsets.startOffset, node.data.length - 1);
-    }
-    else if (nodes[i].offsets.endOffset !== 0) {
-      substring = node.data.substring(0, endOffset);
-    }
-    splitReinsertText(node, substring, callback);
+  var substring = node.data;
+
+
+  if (xpathInfo.offsets.startOffset !== 0 && xpathInfo.offsets.endOffset !== 0) {
+    substring = node.data.substring(xpathInfo.offsets.startOffset, xpathInfo.offsets.endOffset);
+
   }
+  else if (xpathInfo.offsets.startOffset !== 0) {
+    substring = node.data.substring(xpathInfo.offsets.startOffset, node.data.length - 1);
+  }
+  else if (xpathInfo.offsets.endOffset !== 0) {
+    substring = node.data.substring(0, offsets.endOffset);
+  }
+  splitReinsertText(node, substring, callback);
+  // }
 
-  return nodes;
+  // return nodes;
 }
 
 function XpathConversion(element) {
@@ -220,6 +236,112 @@ function highlightpage(anno) {
   });
 }
 
+
+function findFirstDiffPos(a, b) {
+  var longerLength = Math.max(a.length, b.length);
+  for (var i = 0; i < longerLength; i++) {
+    if (a[i] !== b[i]) return i;
+  }
+
+  return -1;
+}
+
+function findXpath(xpathInfo, offsets, id, content) {
+  let cleanXpath = xpathInfo.xpath.substring(0, xpathInfo.xpath.length - 7);
+  let tempXpath = { relativePath: "", fullPath: "" };
+  var word = xpathInfo.text;
+  if (word.includes("+")) {
+    word = escapeRegExp(word);
+    console.log(word);
+  }
+  var queue = [document.body];
+  var curr;
+  while (curr = queue.pop()) {
+    // console.log(curr.textContent);
+    if (!curr.textContent.match(word)) continue;
+    for (var i = 0; i < curr.childNodes.length; ++i) {
+      switch (curr.childNodes[i].nodeType) {
+        case Node.TEXT_NODE: // 3
+          if (curr.childNodes[i].textContent.match(word)) {
+            console.log("Found!");
+            console.log(curr);
+            // wordPath.push({ xpath: XpathConversion(curr) });
+            let xpath = XpathConversion(curr);
+
+            let index = findFirstDiffPos(xpath, tempXpath.relativePath === "" ? cleanXpath : tempXpath.relativePath);
+            if (index < 0) {
+              let finalString = tempXpath.fullPath === "" ? cleanXpath : tempXpath.fullPath;
+              console.log(finalString);
+              console.log('we dod it!');
+              console.log(tempXpath);
+              xpathInfo.xpath = finalString;
+              matchText(xpathInfo, offsets, function (node, match, offset) {
+
+                var span = document.createElement("span");
+                span.setAttribute("id", id.toString());
+                span.textContent = match;
+                span.setAttribute('data-tooltip', content.length > 500 ? content.substring(0, 500) + "..." : content);
+                span.setAttribute('data-tooltip-position', "bottom");
+                span.className = "highlight-adamite-annotation";
+                node.parentNode.insertBefore(span, node.nextSibling);
+                document.getElementById(span.id).onclick = anchorClick;
+              });
+              return;
+            }
+            else {
+              tempXpath = { relativePath: cleanXpath.substring(0, index), fullPath: xpath };
+            }
+          }
+          break;
+        case Node.ELEMENT_NODE: // 1
+          queue.push(curr.childNodes[i]);
+          break;
+      }
+    }
+  }
+  if (tempXpath.relativePath !== "") {
+    console.log(tempXpath);
+    console.log('this is the best we got lol');
+    xpathInfo.xpath = tempXpath.fullPath;
+    matchText(xpathInfo, offsets, function (node, match, offset) {
+      var span = document.createElement("span");
+      span.setAttribute("id", id.toString());
+      span.textContent = match;
+      span.setAttribute('data-tooltip', content.length > 500 ? content.substring(0, 500) + "..." : content);
+      span.setAttribute('data-tooltip-position', "bottom");
+      span.className = "highlight-adamite-annotation";
+      node.parentNode.insertBefore(span, node.nextSibling);
+      document.getElementById(span.id).onclick = anchorClick;
+    });
+  }
+  else {
+    console.log("we done goof");
+  }
+
+
+}
+
+/*
+* 1. find word, compare to stored xpath. 
+* 2. Find the word in the list with the xpath closest to the one in storage. 
+*/
+function FindWords(anno) {
+
+  var wordPath = [];
+
+  anno.xpath.forEach(xpathInfo => {
+    if (!xpathInfo.xpath.length) { return; }
+    findXpath(xpathInfo, anno.offsets, anno.id, anno.content);
+
+  });
+  console.log('done with this annotation');
+
+  // console.log("wordpath:", wordPath);
+  // anno.xpath.forEach(xpath => {
+  //   wordPath.includes(xpath)
+  // })
+
+}
 chrome.runtime.sendMessage(
   {
     msg: 'REQUEST_ANNOTATED_TEXT_ON_THIS_PAGE',
@@ -230,15 +352,20 @@ chrome.runtime.sendMessage(
   data => {
     const { annotationsOnPage } = data;
     if (annotationsOnPage.length) {
-      annotationsOnPage.forEach(anno => {
-        highlightpage(anno);
-      });
+      annotationsOnPage.forEach(anno => FindWords(anno));
+      console.log('done with annotationsOnPage');
     }
+    // if (annotationsOnPage.length) {
+    //   annotationsOnPage.forEach(anno => {
+    //     console.log("nno: ", anno)
+    //     highlightpage(anno);
+    //   });
+
+    // }
   }
 );
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log(request);
   if (request.msg === 'ANNOTATION_DELETED_ON_PAGE') {
     let element = document.getElementById(request.id);
     $(element).contents().unwrap();
@@ -253,15 +380,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       },
       data => {
         const { annotationsOnPage } = data;
-        annotationsOnPage.forEach(anno => {
-          highlightpage(anno);
-        });
-
+        if (annotationsOnPage.length) {
+          annotationsOnPage.forEach(anno => FindWords(anno));
+          console.log('done with annotationsOnPage');
+        }
+        // annotationsOnPage.forEach(anno => {
+        //   highlightpage(anno);
+        // });
       }
     );
   }
   else if (request.msg === 'DELIVER_FILTERED_ANNOTATION_TAG' && request.from === 'background') {
-    console.log('got message from background');
     window.postMessage({ type: 'FROM_CONTENT', value: request.payload.response }, "*");
   }
 

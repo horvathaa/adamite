@@ -1,23 +1,22 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import "./RichTextEditor.css"
-import { Editor, EditorState, RichUtils, convertToRaw } from 'draft-js';
+import { Editor, EditorState, RichUtils, convertToRaw, ContentState } from 'draft-js';
 import { GrBlockQuote } from "react-icons/gr";
 import { MdFormatBold, MdFormatItalic, MdFormatUnderlined, MdCode, MdFormatListBulleted, MdFormatListNumbered } from 'react-icons/md';
 
 
-export default class RichEditorExample extends React.Component {
+export default class RichEditor extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            editorState: EditorState.createEmpty()
+            editorState: this.props.annotationContent !== undefined ? EditorState.createWithContent(ContentState.createFromText(this.props.annotationContent)) : EditorState.createEmpty(),
         };
 
         this.focus = () => this.refs.editor.focus();
         this.onChange = (editorState) => {
             const blocks = convertToRaw(editorState.getCurrentContent()).blocks;
             const value = blocks.map(block => (!block.text.trim() && '\n') || block.text).join('\n');
-            //console.log(blocks);
             this.props.annotationChangeHandler(value);
             this.setState({ editorState: editorState });
 
@@ -30,10 +29,6 @@ export default class RichEditorExample extends React.Component {
         }
 
     }
-
-    // componentDidMount = () => {
-    //     this.refs.editor.focus();
-    // }
 
     _handleKeyCommand(command) {
         const { editorState } = this.state;
@@ -82,6 +77,7 @@ export default class RichEditorExample extends React.Component {
         }
         EditorState.moveSelectionToEnd(this.state.editorState)
         var selectionState = this.state.editorState.getSelection();
+        //EditorState.createWithContent('Hello');
 
         return (
             <div className="RichEditor-root">
