@@ -87,9 +87,9 @@ export class Frame extends Component {
     maskStyle: {},
     containerClassName: '',
     containerStyle: {},
-    onMount: () => {},
-    onUnmount: () => {},
-    onLoad: () => {},
+    onMount: () => { },
+    onUnmount: () => { },
+    onLoad: () => { },
   };
 
   static propTypes = {
@@ -147,7 +147,6 @@ export class Frame extends Component {
         request.from === 'background' &&
         request.msg === 'UPDATE_SIDEBAR_WIDTH'
       ) {
-        // console.log(parseInt(request.width));
         this.setState({ width: parseInt(request.width) });
       }
     });
@@ -334,8 +333,8 @@ export class Frame extends Component {
                   style={{
                     backgroundImage: !this.state.loaded
                       ? `url(${chrome.extension.getURL(
-                          'iframe-background.gif'
-                        )})`
+                        'iframe-background.gif'
+                      )})`
                       : null,
                     backgroundPosition: 'center',
                     backgroundRepeat: 'no-repeat',

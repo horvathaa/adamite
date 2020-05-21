@@ -366,30 +366,39 @@ chrome.runtime.sendMessage(
 );
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  console.log("reques");
+  console.log(request);
   if (request.msg === 'ANNOTATION_DELETED_ON_PAGE') {
     let element = document.getElementById(request.id);
     $(element).contents().unwrap();
   }
-  else if (request.msg === 'ANNOTATIONS_UPDATED' && request.from === 'background') {
-    chrome.runtime.sendMessage(
-      {
-        msg: 'REQUEST_ANNOTATED_TEXT_ON_THIS_PAGE',
-        payload: {
-          url: window.location.href,
-        },
-      },
-      data => {
-        const { annotationsOnPage } = data;
-        if (annotationsOnPage.length) {
-          annotationsOnPage.forEach(anno => FindWords(anno));
-          console.log('done with annotationsOnPage');
-        }
-        // annotationsOnPage.forEach(anno => {
-        //   highlightpage(anno);
-        // });
-      }
-    );
+  else if (request.msg === 'ANNOTATION_ADDED') {
+
+    console.log('in annotaitonHelper');
+    console.log(request.newAnno);
+    request.newAnno.content = request.newAnno.annotation;
+    FindWords(request.newAnno);
   }
+  // else if (request.msg === 'ANNOTATIONS_UPDATED' && request.from === 'background') {
+  //   chrome.runtime.sendMessage(
+  //     {
+  //       msg: 'REQUEST_ANNOTATED_TEXT_ON_THIS_PAGE',
+  //       payload: {
+  //         url: window.location.href,
+  //       },
+  //     },
+  //     data => {
+  //       const { annotationsOnPage } = data;
+  //       if (annotationsOnPage.length) {
+  //         annotationsOnPage.forEach(anno => FindWords(anno));
+  //         console.log('done with annotationsOnPage');
+  //       }
+  //       // annotationsOnPage.forEach(anno => {
+  //       //   highlightpage(anno);
+  //       // });
+  //     }
+  //   );
+  // }
   else if (request.msg === 'DELIVER_FILTERED_ANNOTATION_TAG' && request.from === 'background') {
     window.postMessage({ type: 'FROM_CONTENT', value: request.payload.response }, "*");
   }

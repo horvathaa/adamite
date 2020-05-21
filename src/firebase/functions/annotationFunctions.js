@@ -1,4 +1,5 @@
 import { DB_COLLECTIONS, db, getCurrentUserId } from '../index';
+import firebase from '../firebase';
 
 export const getAllAnnotationsByUserId = uid => {
   return db.collection(DB_COLLECTIONS.ANNOTATIONS).where('authorId', '==', uid);
@@ -65,6 +66,5 @@ export const createAnnotation = async ({
     offsets,
     xpath
   };
-
-  return getAllAnnotations().doc().set(newAnnotation);
+  return db.collection(DB_COLLECTIONS.ANNOTATIONS).add(newAnnotation);
 };

@@ -109,8 +109,22 @@ class NewAnnotation extends React.Component {
       },
       response => {
         if (response.msg === 'DONE') {
+          annotationInfo.id = response.value;
+          chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+            chrome.tabs.sendMessage(
+              tabs[0].id,
+              {
+                msg: 'ANNOTATION_ADDED',
+                newAnno: annotationInfo,
+              }
+            );
+          });
+
+          console.log(response);
+          console.log("please look up")
           this.setState({ submitted: false });
           this.props.resetNewSelection();
+
         }
       }
     );
