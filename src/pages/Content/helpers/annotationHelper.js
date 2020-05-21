@@ -261,7 +261,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     );
   }
   else if (request.msg === 'DELIVER_FILTERED_ANNOTATION_TAG' && request.from === 'background') {
-    console.log('got message from background');
     window.postMessage({ type: 'FROM_CONTENT', value: request.payload.response }, "*");
   }
 

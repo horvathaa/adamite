@@ -152,6 +152,13 @@
   color: #555353;
 }
 
+.HamburgerMenu {
+  display: inline-flex;
+}
+
+.ExpandCollapse {
+  text-align: center;
+}
 
 #Trash {
   left: 0;

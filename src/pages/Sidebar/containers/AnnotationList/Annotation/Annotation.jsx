@@ -1,11 +1,22 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
-import { FaCaretDown, FaCaretUp, FaTrash, FaEdit, FaFont, FaExternalLinkAlt } from 'react-icons/fa';
+import { FaCaretDown, FaCaretUp, FaTrash, FaEdit, FaFont, FaExternalLinkAlt, FaHamburger } from 'react-icons/fa';
+import { GoThreeBars } from 'react-icons/go';
 import './Annotation.css';
 import { Dropdown } from 'react-bootstrap';
 import { checkPropTypes, string } from 'prop-types';
 import CustomTag from '../../CustomTag/CustomTag';
 import { deleteAnnotationForeverById, updateAnnotationById, getUserProfileById } from '../../../../../firebase';
+
+const HamburgerToggle = React.forwardRef(({ children, onClick }, ref) => (
+  <a ref={ref}
+    onClick={(e) => {
+      e.preventDefault();
+      onClick(e);
+    }}><GoThreeBars className="Icon" />
+    {children}
+  </a>
+));
 
 class Annotation extends Component {
 
@@ -184,6 +195,20 @@ class Annotation extends Component {
                   </div>
                   <div className="col2">
                     {author}
+                    &nbsp;&nbsp;
+                    {currentUser.uid === authorId && !collapsed ? (
+                      <Dropdown className="HamburgerMenu">
+                        <Dropdown.Toggle as={HamburgerToggle}></Dropdown.Toggle>
+                        <Dropdown.Menu>
+                          <Dropdown.Item as="button" eventKey={id} onSelect={eventKey => this.handleEditClick(id)}>
+                            Edit
+                        </Dropdown.Item>
+                          <Dropdown.Item as="button" eventKey={id} onSelect={eventKey => this.handleTrashClick(id)}>
+                            Delete
+                        </Dropdown.Item>
+                        </Dropdown.Menu>
+                      </Dropdown>
+                    ) : (null)}
                   </div>
                 </div>
               </div>
@@ -297,39 +322,19 @@ class Annotation extends Component {
 
               </div>
             ) : (null)}
-            <div className="IconRow">
-              <div className="container">
-                <div className="row">
-                  {currentUser.uid === authorId && !collapsed ? (
-                    <React.Fragment>
-                      <div className="col">
-                        <div className="row">
-                          <div className="IconContainer">
-                            <FaTrash className="Icon" id="Trash" onClick={_ => this.handleTrashClick(id)} />
-                          </div>
-                          <div className="IconContainer">
-                            <FaEdit className="Icon" id="Edit" onClick={_ => this.handleEditClick(id)} />
-                          </div>
-                        </div>
-                      </div>
-                    </React.Fragment>
-                  ) : (null)}
-                  {collapsed ? (
-                    <div className=" FaCaretUp-Col ">
-                      <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} className="Icon" />
-                    </div>
-                  ) : (
-                      <React.Fragment>
-                        <div className="col">
-                          <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} className="Icon" />
-                        </div>
-
-                      </React.Fragment>
-                    )
-                  }
-                </div>
+            {collapsed ? (
+              <div className="ExpandCollapse">
+                <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} className="Icon" />
               </div>
-            </div>
+            ) : (
+                <React.Fragment>
+                  <div className="ExpandCollapse">
+                    <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} className="Icon" />
+                  </div>
+
+                </React.Fragment>
+              )
+            }
           </div>
 
           <div
