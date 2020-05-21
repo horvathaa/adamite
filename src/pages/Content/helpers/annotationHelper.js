@@ -128,46 +128,26 @@ var matchText = function (xpathInfo, offsets, callback, excludeElements) {
   excludeElements || (excludeElements = ['script', 'style', 'iframe', 'canvas']);
 
   var node;
-  // nodes = nodes.sort((x, y) => x.xpath.length - y.xpath.length).reverse();
-  // console.log("nodes ", nodes);
-  // for (i = 0; i < nodes.length; i++) {
-
-  // if ((node = wordmatch(xpathToNodez(fullXpath), phrase)) === null) {
-
-  // return;
-  // }
-  node = xpathToNodez(xpathInfo.xpath + "/text()");
-  // console.log(nodes[i]);
-
-  // if (node.data === undefined) {
-  //   /* 
-  //   * step back one xpath node and try to find text, if in text split and creat span
-  //   * if not skip
-  //   */
-  // }
-
-  console.log(node.data);
-  console.log("whhyyyy substring!");
-  console.log(xpathInfo);
-  console.log("WHY!");
+  console.log("match text")
+  console.log(xpathInfo.xpath)
+  console.log(xpathInfo.text)
+  console.log(xpathToNodez(xpathInfo.xpath + "[contains(.,'" + xpathInfo.text + "')]"));
+  node = xpathToNodez(xpathInfo.xpath + "[contains(.,'" + xpathInfo.text + "')]");
+  console.log(node);
 
   var substring = node.data;
 
 
   if (xpathInfo.offsets.startOffset !== 0 && xpathInfo.offsets.endOffset !== 0) {
     substring = node.data.substring(xpathInfo.offsets.startOffset, xpathInfo.offsets.endOffset);
-
   }
   else if (xpathInfo.offsets.startOffset !== 0) {
-    substring = node.data.substring(xpathInfo.offsets.startOffset, node.data.length - 1);
+    substring = node.data.substring(xpathInfo.offsets.startOffset, node.data.length);
   }
   else if (xpathInfo.offsets.endOffset !== 0) {
     substring = node.data.substring(0, offsets.endOffset);
   }
   splitReinsertText(node, substring, callback);
-  // }
-
-  // return nodes;
 }
 
 function XpathConversion(element) {
@@ -246,34 +226,63 @@ function findFirstDiffPos(a, b) {
   return -1;
 }
 
+function findXpath69(xpath, content) {
+  var validXpath = xpathToNodez(xpath);
+  var closestXpath = xpath;
+  console.log("finding xpath");
+  if (validXpath !== null && xpathToNodez(closestXpath + "[contains(.,'" + content + "')]") !== null) {
+    console.log("not null");
+    console.log(closestXpath);
+    console.log(validXpath);
+    return closestXpath;
+    //return xpathToNodez(closestXpath + "[contains(.,'" + content + "')]");
+  }
+  // closestXpath = closestXpath.substring(0, closestXpath.match(".*\/")[0].length - 1);
+  // validXpath = xpathToNodez(closestXpath);
+  console.log('test');
+  console.log(closestXpath);
+  console.log(validXpath);
+  while ((validXpath === null || closestXpath !== "") && xpathToNodez(closestXpath + "[contains(.,'" + content + "')]") === null) {
+    console.log('in while');
+    closestXpath = closestXpath.substring(0, closestXpath.match(".*\/")[0].length - 1);
+    validXpath = xpathToNodez(closestXpath);
+    console.log(closestXpath);
+    console.log(validXpath);
+
+  }
+  console.log('donezo');
+  console.log(closestXpath);
+  console.log(validXpath);
+  return closestXpath + "/text()";
+  // return xpathToNodez(closestXpath + "/text()" + "[contains(.,'" + content + "')]");
+}
+
+
+
+
 function findXpath(xpathInfo, offsets, id, content) {
   let cleanXpath = xpathInfo.xpath.substring(0, xpathInfo.xpath.length - 7);
   let tempXpath = { relativePath: "", fullPath: "" };
   var word = xpathInfo.text;
-  if (word.includes("+")) {
-    word = escapeRegExp(word);
-    console.log(word);
-  }
+  word = escapeRegExp(word);
   var queue = [document.body];
   var curr;
+  var listofxpaths = [];
   while (curr = queue.pop()) {
-    // console.log(curr.textContent);
     if (!curr.textContent.match(word)) continue;
     for (var i = 0; i < curr.childNodes.length; ++i) {
       switch (curr.childNodes[i].nodeType) {
         case Node.TEXT_NODE: // 3
           if (curr.childNodes[i].textContent.match(word)) {
-            console.log("Found!");
-            console.log(curr);
-            // wordPath.push({ xpath: XpathConversion(curr) });
             let xpath = XpathConversion(curr);
 
-            let index = findFirstDiffPos(xpath, tempXpath.relativePath === "" ? cleanXpath : tempXpath.relativePath);
+            //let index = findFirstDiffPos(xpath, tempXpath.relativePath === "" ? cleanXpath : tempXpath.relativePath);
+            let index = findFirstDiffPos(xpath, cleanXpath);
+
+
             if (index < 0) {
-              let finalString = tempXpath.fullPath === "" ? cleanXpath : tempXpath.fullPath;
-              console.log(finalString);
-              console.log('we dod it!');
-              console.log(tempXpath);
+              let finalString = xpath;
+
               xpathInfo.xpath = finalString;
               matchText(xpathInfo, offsets, function (node, match, offset) {
 
@@ -290,6 +299,9 @@ function findXpath(xpathInfo, offsets, id, content) {
             }
             else {
               tempXpath = { relativePath: cleanXpath.substring(0, index), fullPath: xpath };
+              if (listofxpaths.filter(function (xpaths) { return xpaths.fullPath === tempXpath.fullPath }).length === 0) {
+                listofxpaths.push(tempXpath);
+              }
             }
           }
           break;
@@ -299,10 +311,11 @@ function findXpath(xpathInfo, offsets, id, content) {
       }
     }
   }
-  if (tempXpath.relativePath !== "") {
-    console.log(tempXpath);
-    console.log('this is the best we got lol');
-    xpathInfo.xpath = tempXpath.fullPath;
+  if (listofxpaths.length > 0) {
+    const longestGenre = Math.max(...listofxpaths.map(xpaths => xpaths.relativePath.length));
+    var tt = listofxpaths.filter(function (xpaths) { return xpaths.relativePath.length === longestGenre })
+
+    xpathInfo.xpath = tt[0].fullPath;
     matchText(xpathInfo, offsets, function (node, match, offset) {
       var span = document.createElement("span");
       span.setAttribute("id", id.toString());
@@ -328,19 +341,27 @@ function findXpath(xpathInfo, offsets, id, content) {
 function FindWords(anno) {
 
   var wordPath = [];
-
   anno.xpath.forEach(xpathInfo => {
+    console.log('annotation');
+    console.log(xpathInfo);
+
+
     if (!xpathInfo.xpath.length) { return; }
-    findXpath(xpathInfo, anno.offsets, anno.id, anno.content);
+    xpathInfo.xpath = findXpath69(xpathInfo.xpath, xpathInfo.text);
+    matchText(xpathInfo, xpathInfo.offsets, function (node, match, offset) {
+
+      var span = document.createElement("span");
+      span.setAttribute("id", anno.id.toString());
+      span.textContent = match;
+      span.setAttribute('data-tooltip', anno.content > 500 ? anno.content.substring(0, 500) + "..." : anno.content);
+      span.setAttribute('data-tooltip-position', "bottom");
+      span.className = "highlight-adamite-annotation";
+      node.parentNode.insertBefore(span, node.nextSibling);
+      document.getElementById(span.id).onclick = anchorClick;
+    });
+    //findXpath(xpathInfo, anno.offsets, anno.id, anno.content);
 
   });
-  console.log('done with this annotation');
-
-  // console.log("wordpath:", wordPath);
-  // anno.xpath.forEach(xpath => {
-  //   wordPath.includes(xpath)
-  // })
-
 }
 chrome.runtime.sendMessage(
   {
@@ -353,52 +374,24 @@ chrome.runtime.sendMessage(
     const { annotationsOnPage } = data;
     if (annotationsOnPage.length) {
       annotationsOnPage.forEach(anno => FindWords(anno));
-      console.log('done with annotationsOnPage');
     }
-    // if (annotationsOnPage.length) {
-    //   annotationsOnPage.forEach(anno => {
-    //     console.log("nno: ", anno)
-    //     highlightpage(anno);
-    //   });
 
-    // }
   }
 );
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log("reques");
-  console.log(request);
+
   if (request.msg === 'ANNOTATION_DELETED_ON_PAGE') {
     let element = document.getElementById(request.id);
     $(element).contents().unwrap();
   }
   else if (request.msg === 'ANNOTATION_ADDED') {
 
-    console.log('in annotaitonHelper');
-    console.log(request.newAnno);
+
     request.newAnno.content = request.newAnno.annotation;
     FindWords(request.newAnno);
   }
-  // else if (request.msg === 'ANNOTATIONS_UPDATED' && request.from === 'background') {
-  //   chrome.runtime.sendMessage(
-  //     {
-  //       msg: 'REQUEST_ANNOTATED_TEXT_ON_THIS_PAGE',
-  //       payload: {
-  //         url: window.location.href,
-  //       },
-  //     },
-  //     data => {
-  //       const { annotationsOnPage } = data;
-  //       if (annotationsOnPage.length) {
-  //         annotationsOnPage.forEach(anno => FindWords(anno));
-  //         console.log('done with annotationsOnPage');
-  //       }
-  //       // annotationsOnPage.forEach(anno => {
-  //       //   highlightpage(anno);
-  //       // });
-  //     }
-  //   );
-  // }
+
   else if (request.msg === 'DELIVER_FILTERED_ANNOTATION_TAG' && request.from === 'background') {
     window.postMessage({ type: 'FROM_CONTENT', value: request.payload.response }, "*");
   }
