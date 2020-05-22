@@ -1,19 +1,21 @@
 import React from 'react';
 // import { Dropdown } from 'react-bootstrap';
 import './NewAnnotation.css';
-import ReactDOM from 'react-dom';
-import { Editor, EditorState } from 'draft-js';
-import { GiCancel } from 'react-icons/gi';
-import RichEditorExample from '../RichTextEditor/RichTextEditor'
-import CustomTag from '../CustomTag/CustomTag';
-import TagsInput from 'react-tagsinput'
-import Dropdown from 'react-dropdown';
-function MyEditor() {
-  const [editorState, setEditorState] = React.useState(
-    EditorState.createEmpty(),
-  );
-  return <Editor editorState={editorState} onChange={setEditorState} />;
-}
+// import ReactDOM from 'react-dom';
+// import { Editor, EditorState } from 'draft-js';
+// import { GiCancel } from 'react-icons/gi';
+// import RichEditor from '../RichTextEditor/RichTextEditor'
+// import CustomTag from '../CustomTag/CustomTag';
+// import TagsInput from 'react-tagsinput'
+// import Dropdown from 'react-dropdown';
+import CardWrapper from '../CardWrapper/CardWrapper'
+
+// function MyEditor() {
+//   const [editorState, setEditorState] = React.useState(
+//     EditorState.createEmpty(),
+//   );
+//   return <Editor editorState={editorState} onChange={setEditorState} />;
+// }
 
 
 class NewAnnotation extends React.Component {
@@ -45,6 +47,7 @@ class NewAnnotation extends React.Component {
     document.removeEventListener('keydown', this.keydown, false);
   }
 
+  //TODO: FIX FOR NEW RICH TEXT ANNOTATOR
   // keydown = e => {
   //   if (e.key === 'Enter' && e.target.className === 'form-control' && this.state.annotationContent !== '') {
   //     this.submitButtonHandler();
@@ -79,18 +82,23 @@ class NewAnnotation extends React.Component {
     this.setState({ tags: newTag })
   }
 
-  submitButtonHandler = event => {
+  cancelButtonHandler = () => {
+    this.props.resetNewSelection();
+  }
+
+  submitButtonHandler = (CardWrapperState) => {
     this.setState({ submitted: true });
 
     const { url, newSelection, xpath, offsets } = this.props;
     const annotationInfo = {
       anchor: newSelection,
-      annotation: this.state.annotationContent,
+      annotation: CardWrapperState.annotationContent,
       xpath: xpath,
       offsets: offsets,
-      tags: this.state.tags,
-      annotationType: this.state.annotationType,
+      tags: CardWrapperState.tags,
+      annotationType: CardWrapperState.annotationType.toLowerCase(),
     };
+    console.log(annotationInfo);
     chrome.runtime.sendMessage(
       {
         msg: 'SAVE_ANNOTATED_TEXT',
@@ -101,8 +109,20 @@ class NewAnnotation extends React.Component {
       },
       response => {
         if (response.msg === 'DONE') {
+          annotationInfo.id = response.value;
+          chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+            chrome.tabs.sendMessage(
+              tabs[0].id,
+              {
+                msg: 'ANNOTATION_ADDED',
+                newAnno: annotationInfo,
+              }
+            );
+          });
+
           this.setState({ submitted: false });
           this.props.resetNewSelection();
+
         }
       }
     );
@@ -114,6 +134,13 @@ class NewAnnotation extends React.Component {
     const options = [
       'Default', 'To-do', 'Highlight', 'Navigation', 'Issue'
     ];
+
+    const submittedLoadState = (
+      <div className="spinner-border text-secondary" role="status">
+        <span className="sr-only">...</span>
+      </div>
+    )
+
     const defaultOption = options[0];
 
     if (!newSelection) {
@@ -123,82 +150,64 @@ class NewAnnotation extends React.Component {
     const { annotationContent, submitted, tags } = this.state;
 
     return (
+      <React.Fragment>
+        <CardWrapper
+          tags={tags} annotationContent={annotationContent}
+          edit={!submitted}
+          pageAnnotation={newSelection}
 
-      <div className="NewAnnotationContainer">
-        <div className="InnerNewAnnotation">
-          <div className="SelectedTextContainer">{newSelection}</div>
-          <div className="TextareaContainer">
-            <RichEditorExample annotationChangeHandler={this.annotationChangeHandler} />
-          </div>
-          {!submitted ? (
-            <React.Fragment>
-              <div className="Tag-Container">
-                <div className="row">
-                  <div className="TextareaContainer">
-                    <TagsInput value={tags} onChange={this.tagsHandleChange} onlyUnique={true} />
-                  </div>
-                </div>
-              </div>
-              <div className="SubmitButtonContainer">
-                <div className="Tag-Container">
-                  <div className="row">
-                    <div className="Dropdown-Col">
-                      <Dropdown options={options} onChange={this._onSelect} value={defaultOption} placeholder="Select an option" />
-                    </div>
-
-
-                    {/* <Dropdown className="AnnotationType">
-                  <Dropdown.Toggle variant="success" id="dropdown-basic">
-                    Annotation Type
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu >
-                    <Dropdown.Item as="button" eventKey="default" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                      Default
-                  </Dropdown.Item>
-                    <Dropdown.Item as="button" eventKey="to-do" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                      To-do
-                  </Dropdown.Item>
-                    <Dropdown.Item as="button" eventKey="question" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                      Question
-                  </Dropdown.Item>
-                    <Dropdown.Item as="button" eventKey="highlight" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                      Highlight
-                  </Dropdown.Item>
-                    <Dropdown.Item as="button" eventKey="navigation" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                      Navigation
-                  </Dropdown.Item>
-                    <Dropdown.Item as="button" eventKey="issue" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                      Issue
-                  </Dropdown.Item>
-                  </Dropdown.Menu>
-                </Dropdown> */}
-              &nbsp; &nbsp;
-                <button
-                      className="btn Cancel-Button"
-                      onClick={_ => this.props.resetNewSelection()}
-                    >
-                      <GiCancel /> Cancel
-              </button>
-              &nbsp; &nbsp;
-                <button
-                      id="NewAnnotation"
-                      className="Publish-Button SubmitButton "
-                      onClick={e => this.submitButtonHandler(e)}
-                      disabled={annotationContent.length === 0}
-                    >
-                      Publish
-              </button>
-                  </div>
-                </div>
-              </div>
-            </React.Fragment>
-          ) : (
-              <div className="spinner-border text-secondary" role="status">
-                <span className="sr-only">...</span>
-              </div>
-            )}
-        </div>
-      </div >
+          cancelButtonHandler={this.cancelButtonHandler}
+          submitButtonHandler={this.submitButtonHandler}
+          elseContent={submittedLoadState} />
+      </React.Fragment>
+      //   <div className="NewAnnotationContainer">
+      //     <div className="InnerNewAnnotation">
+      //       <div className="SelectedTextContainer">{newSelection}</div>
+      //       <div className="TextareaContainer">
+      //         <RichEditor annotationChangeHandler={this.annotationChangeHandler} />
+      //       </div>
+      //       {!submitted ? (
+      //         <React.Fragment>
+      //           <div className="Tag-Container">
+      //             <div className="row">
+      //               <div className="TextareaContainer">
+      //                 <TagsInput value={tags} onChange={this.tagsHandleChange} onlyUnique={true} />
+      //               </div>
+      //             </div>
+      //           </div>
+      //           <div className="SubmitButtonContainer">
+      //             <div className="Tag-Container">
+      //               <div className="row">
+      //                 <div className="Dropdown-Col">
+      //                   <Dropdown options={options} onChange={this._onSelect} value={defaultOption} placeholder="Select an option" />
+      //                 </div>
+      //           &nbsp; &nbsp;
+      //             <button
+      //                   className="btn Cancel-Button"
+      //                   onClick={_ => this.props.resetNewSelection()}
+      //                 >
+      //                   <GiCancel /> Cancel
+      //           </button>
+      //           &nbsp; &nbsp;
+      //             <button
+      //                   id="NewAnnotation"
+      //                   className="Publish-Button SubmitButton "
+      //                   onClick={e => this.submitButtonHandler(e)}
+      //                   disabled={annotationContent.length === 0}
+      //                 >
+      //                   Publish
+      //           </button>
+      //               </div>
+      //             </div>
+      //           </div>
+      //         </React.Fragment>
+      //       ) : (
+      //           <div className="spinner-border text-secondary" role="status">
+      //             <span className="sr-only">...</span>
+      //           </div>
+      //         )}
+      //     </div>
+      //   </div >
     );
   }
 }

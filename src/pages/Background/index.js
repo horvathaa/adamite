@@ -75,6 +75,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }).then(value => {
       sendResponse({
         msg: 'DONE',
+        value: value.id
       });
     });
   } else if (request.from === 'content' && request.msg === 'CONTENT_SELECTED') {

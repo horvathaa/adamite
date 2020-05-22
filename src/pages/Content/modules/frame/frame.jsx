@@ -148,7 +148,6 @@ export class Frame extends Component {
         request.from === 'background' &&
         request.msg === 'UPDATE_SIDEBAR_WIDTH'
       ) {
-        // console.log(parseInt(request.width));
         this.setState({ width: parseInt(request.width) });
       }
     });
