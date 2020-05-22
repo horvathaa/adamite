@@ -5,7 +5,7 @@ import $ from 'jquery';
 
 
 function anchorClick(e) {
-  const target = e.target.id;
+  const target = e.target.attributes.getNamedItem("name").value;
   chrome.runtime.sendMessage({
     msg: 'ANCHOR_CLICKED',
     from: 'content',
@@ -335,9 +335,8 @@ function FindWords(anno) {
   var wordPath = [];
 
   anno.xpath.forEach(xpathInfo => {
-    //console.log(xpathInfo.xpath.replace("/text()", ""))
+
     xpathInfo.xpath = xpathRepair(xpathInfo.xpath.replace("/text()", ""), xpathInfo.text, wordPath);
-    //xpathInfo.xpath += "/text()";
 
     matchText(xpathInfo, xpathInfo.offsets, function (node, match, offset) {
       if (node.parentNode.className !== 'highlight-adamite-annotation') {
@@ -348,16 +347,18 @@ function FindWords(anno) {
         // span.setAttribute('data-tooltip-position', "bottom");
         span.className = "highlight-adamite-annotation";
         node.parentNode.insertBefore(span, node.nextSibling);
-        // let collection = document.getElementsByClassName(span.id);
-        // for (let i = 0; i < collection.length; i++) {
-        //   collection[i].onclick = anchorClick;
-        // }
+
       }
       else if (node.parentNode.name === anno.id.toString()) {
         node.data += match;
       }
       else {
         node.data = match;
+      }
+      let collection = document.getElementsByName(anno.id.toString());
+      console.log(collection);
+      for (let i = 0; i < collection.length; i++) {
+        collection[i].onclick = anchorClick;
       }
     });
 
