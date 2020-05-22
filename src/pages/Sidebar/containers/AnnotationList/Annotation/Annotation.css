@@ -47,10 +47,12 @@
 
 .author {
   padding: 0px 0px 0px 4px;
+  color: #6B778C;
 }
 
 .timestamp {
   padding: 0px 0px 0px 4px;
+  color: #6B778C;
 }
 
 .profileContainer{
@@ -70,7 +72,8 @@
 
 .userProfileContainer {
   height: 100%;
-  width: 100%
+  width: 100%;
+  color: #6B778C;
 }
 
 .AnnotationContainer {
@@ -123,6 +126,10 @@
   position: relative;
 }
 
+#collapse {
+  transform: rotate(180deg) 
+}
+
 .Truncated {
   white-space: nowrap;
   /*word-break: break-all;*/
@@ -147,7 +154,7 @@
   line-height: 1rem;
   margin-left: 5px;
   font-style: italic;
-  color: #666;
+  color:  #6B778C;
   max-height: 200px;
   overflow: auto;
 
@@ -212,7 +219,8 @@
 
 .AnchorIcon {
   width: 14px;
-  color: #7f8080;
+  color:  #6B778C;
+  filter: brightness(.8);
   height: 14px;
   cursor: pointer;
 }
@@ -224,7 +232,8 @@
 
 .Icon {
   width: 1.4em;
-  color: #7f8080;
+  color:  #6B778C;
+  filter: brightness(.8);
   height: 1.5em;
   cursor: pointer;
 }

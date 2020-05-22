@@ -1,5 +1,6 @@
 import React from 'react';
 import './CardWrapper.css';
+import classNames from 'classnames';
 import { GiCancel } from 'react-icons/gi';
 import RichEditor from '../RichTextEditor/RichTextEditor'
 import TagsInput from 'react-tagsinput'
@@ -27,7 +28,7 @@ export default class CardWrapper extends React.Component {
         tags: this.props.tags.length === 0 ? [] : this.props.tags,
         elseContent: this.props.elseContent,
         pageAnnotation: this.props.pageAnnotation,
-
+        collapsed: this.props.collapsed
     };
 
     updateData = () => {
@@ -128,7 +129,14 @@ export default class CardWrapper extends React.Component {
                         </div>
                     </div>
                 </React.Fragment>
-            ) : <React.Fragment>{elseContent}</React.Fragment>}
+            ) : <React.Fragment>
+                    <div className={classNames({
+                        Truncated: this.props.collapsed,
+                        annotationContent: true
+                    })}>
+                        {elseContent}
+                    </div>
+                </React.Fragment>}
         </React.Fragment>);
 
         return (

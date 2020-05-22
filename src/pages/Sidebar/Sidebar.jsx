@@ -328,7 +328,7 @@ class Sidebar extends React.Component {
                 )}
             </div>
             <div>
-              {!filteredAnnotationsCopy.length ? (
+              {!filteredAnnotationsCopy.length && this.state.newSelection === null ? (
                 <div className="whoops">
                   There's nothing here! Try modifying your search/filter or writing a new annotation
                 </div>
