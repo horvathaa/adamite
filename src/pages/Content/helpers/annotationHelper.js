@@ -30,8 +30,13 @@ const alertBackgroundOfNewSelection = (selection, offsets, xpath) => {
   });
 };
 
+function removeQuotes(text) {
+  //text.replace(/[-[\]{}()*+’?.,\\^$|#]/g, '\\$&');
+  return replaceQuotes(text.replace(/[-[\]{}()*+’?.,\\^$|#]/g, '\\$&'));
+}
 function escapeRegExp(text) {
-  return text.replace(/[-[\]{}()*+’?.\x27,\\^$|#]/g, '\\$&');
+  //text.replace(/[-[\]{}()*+’?.,\\^$|#]/g, '\\$&');
+  return replaceQuotes(text.replace(/[-[\]{}()*+’?.,\\^$|#]/g, '\\$&'));
 }
 
 function getNextNode(node) {
@@ -169,6 +174,11 @@ document.addEventListener('mouseup', event => {
 //   return -1;
 // }
 
+function replaceQuotes(string) {
+  string = string.replace(/'/g, "&apos;")
+  return string.replace(/"/g, "&quot;")
+}
+
 function xpathRepair(xpath, content, endPaths) {
 
   /*
@@ -177,20 +187,21 @@ function xpathRepair(xpath, content, endPaths) {
   * 3. If not replace xpath with step2 xpath and repeat step 2
   * */
   var path;
-
-  if (xpathToNodez(xpath + "/text()[contains(.,'" + content + "')]") !== null) {
+  //console.log(endPaths);
+  if (xpathToNodez(xpath + "/text()[contains(.,'" + replaceQuotes(content) + "')]") !== null) {
     return xpath;
-  } else if (xpathToNodez(xpath + "//*/text()[contains(.," + '"' + escapeRegExp(content.trim()) + '"' + ")]") !== null) {
+  }
+  else if (xpathToNodez(xpath + "//*/text()[contains(.," + '"' + escapeRegExp(content.trim()) + '"' + ")]") !== null) {
     for (var i = 0; i < endPaths.length; i++) {
-      if ((path = xpathToNodez(xpath + endPaths[i] + "/text()[contains(.," + '"' + escapeRegExp(content.trim()) + '"' + ")]")) !== null) {
+      if ((path = xpathToNodez(xpath + "/" + endPaths[i] + "/text()[contains(.,'" + replaceQuotes(content) + "')]")) !== null) {
         return endPaths[i];
       }
     }
     return xpath;
   }
 
-  var xpathreplace = xpath.replace(/(SPAN)(\[.\])?(?!.*\1)\/?/, '');
-  var endofxpath = xpath.replace(/.*(SPAN)(\[.\])?(?!.*\1)\/?/, '');
+  var xpathreplace = xpath.replace(/(SPAN)(\[.*?\])?(?!.*\1)\/?/, '');
+  var endofxpath = xpath.replace(/.*(SPAN)(\[.*?\])?(?!.*\1)\/?/, '');
 
   if (endofxpath[endofxpath.length - 1] === "/") {
     endofxpath = endofxpath.substring(0, endofxpath.length - 1);
@@ -202,11 +213,11 @@ function xpathRepair(xpath, content, endPaths) {
   endPaths.push(endofxpath);
 
   if (xpath === xpathreplace) {
-    if (xpathToNodez(xpath + "/text()[contains(.,'" + content + "')]") !== null) {
+    if (xpathToNodez(xpath + "/text()[contains(.,'" + replaceQuotes(content) + "')]") !== null) {
       return xpath;
     } else if ((xpath + "//*/text()[contains(.," + '"' + escapeRegExp(content.trim()) + '"' + ")]") !== null) {
       for (var i = 0; i < endPaths.length; i++) {
-        if ((path = xpathToNodez(xpath + endPaths[i] + "/text()[contains(.," + '"' + escapeRegExp(content.trim()) + '"' + ")]")) !== null) {
+        if ((path = xpathToNodez(xpath + "/" + endPaths[i] + "/text()[contains(.,'" + replaceQuotes(content) + "')]")) !== null) {
           return endPaths[i];
         }
       }
@@ -322,6 +333,7 @@ function FindWords(anno) {
 
   var wordPath = [];
   anno.xpath.forEach(xpathInfo => {
+    //console.log(xpathInfo.xpath.replace("/text()", ""))
     xpathInfo.xpath = xpathRepair(xpathInfo.xpath.replace("/text()", ""), xpathInfo.text, wordPath);
     //xpathInfo.xpath += "/text()";
     matchText(xpathInfo, xpathInfo.offsets, function (node, match, offset) {
@@ -372,10 +384,18 @@ var matchText = function (xpathInfo, offsets, callback, excludeElements) {
   //closestXpath.substring(0, closestXpath.match(".*\/")[0].length - 1)
 
   //console.log(xpathInfo.xpath.substring(0, xpathInfo.xpath.match(".*\/")[0].length - 1) + "/*[contains(text()," + xpathInfo.text + ")]");
-  node = !xpathInfo.xpath.includes("/text()") ?
-    xpathToNodez(xpathInfo.xpath + "/*[text()[contains(.,'" + '"' + regexdXpath + '"' + "')]]/text()") :
-    xpathToNodez(xpathInfo.xpath + "[contains(.,'" + xpathInfo.text + "')]");
-  if ((node = xpathToNodez(xpathInfo.xpath + "/text()[contains(.,'" + xpathInfo.text + "')]")) === null) {
+  // node = !xpathInfo.xpath.includes("/text()") ?
+  //   xpathToNodez(xpathInfo.xpath + "/*[text()[contains(.,'" + '"' + regexdXpath + '"' + "')]]/text()") :
+  //   xpathToNodez(xpathInfo.xpath + "[contains(.,'" + xpathInfo.text + "')]");
+  // console.log("to nodes")
+  // console.log(xpathInfo.xpath + "/text()[contains(.,'" + replaceQuotes(xpathInfo.text) + "')]")
+  // console.log(xpathInfo.xpath + "/text()[contains(.,'" + replaceQuotes(xpathInfo.text) + "')]")
+  // console.log(xpathInfo.xpath + "/*[text()[contains(.,'" + '"' + regexdXpath + '"' + "')]]/text()")
+  // console.log(xpathToNodez(xpathInfo.xpath + "/text()[contains(.,'" + replaceQuotes(xpathInfo.text) + "')]"))
+  // console.log(xpathToNodez(xpathInfo.xpath + "/text()[contains(.,'" + replaceQuotes(xpathInfo.text) + "')]"))
+  // console.log(xpathToNodez(xpathInfo.xpath + "/*[text()[contains(.,'" + '"' + regexdXpath + '"' + "')]]/text()"))
+
+  if ((node = xpathToNodez(xpathInfo.xpath + "/text()[contains(.,'" + replaceQuotes(xpathInfo.text) + "')]")) === null) {
     if ((node = xpathToNodez(xpathInfo.xpath + "/*[contains(.,'" + regexdXpath + "')]")) === null) {
       if ((node = xpathToNodez(xpathInfo.xpath + "/*[text()[contains(.,'" + '"' + regexdXpath + '"' + "')]]/text()")) === null) {
         return;
