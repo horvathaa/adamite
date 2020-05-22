@@ -48,6 +48,10 @@
   background: white;
   border: 1px solid #bfbebe;
   box-shadow: 5px 5px 5px #88888887;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
 }
 
 .AnnoatationButton{
@@ -250,7 +254,7 @@
 
 .Publish-Button{
   position: relative;
-  background-color: #484848d9 ;
+  background-color: #5AAC44;
   color: whitesmoke ;
   padding: 0.25rem 0.5rem;
   font-size: 0.875rem;

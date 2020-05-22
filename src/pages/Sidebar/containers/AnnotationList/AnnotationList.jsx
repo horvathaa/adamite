@@ -6,32 +6,15 @@ import './AnnotationList.css';
 class AnnotationList extends Component {
   render() {
     const { annotations, currentUser } = this.props;
-    let annotationsCopy = [];
-    annotations.forEach(annotation => {
-      annotationsCopy.push({
-        anchor: annotation.anchorContent,
-        content: annotation.content,
-        id: annotation.id,
-        offsets: annotation.offsets,
-        xpath: annotation.xpath,
-        active: false,
-        type: annotation.type,
-        authorId: annotation.authorId,
-        timeStamp: annotation.createdTimestamp,
-        url: annotation.url,
-        tags: annotation.tags
-      });
-    });
-
     return (
       <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
-        {annotationsCopy.map((annotation, idx) => {
+        {annotations.map((annotation, idx) => {
           return (
             <React.Fragment>
               <Annotation
                 key={idx}
                 id={annotation.id}
-                anchor={annotation.anchor}
+                anchor={annotation.anchorContent}
                 content={annotation.content}
                 div={annotation.div}
                 active={annotation.active}
@@ -39,7 +22,7 @@ class AnnotationList extends Component {
                 authorId={annotation.authorId}
                 currentUser={currentUser}
                 trashed={annotation.trashed}
-                timeStamp={annotation.timeStamp}
+                timeStamp={annotation.createdTimestamp}
                 offsets={annotation.offsets}
                 xpath={annotation.xpath}
                 url={annotation.url}

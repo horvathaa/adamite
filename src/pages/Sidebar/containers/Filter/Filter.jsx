@@ -159,7 +159,7 @@ class Filter extends React.Component {
                         <Dropdown.Item as="button" eventKey="timeRange:month" onSelect={eventKey => this.updateSelected(eventKey)}>
                             Past Month {this.selection.timeRange === 'month' ? ("✓") : (null)}
                         </Dropdown.Item>
-                        <Dropdown.Item as="button:disabled" eventKey="timeRange:custom" onSelect={eventKey => this.updateSelected(eventKey)}>
+                        <Dropdown.Item as="button" eventKey="timeRange:custom" onSelect={eventKey => this.updateSelected(eventKey)}>
                             Custom Time Range
                         </Dropdown.Item>
                         {/* Past 6 Months {this.selection.timeRange === '6months' ? ("✓") : (null)}

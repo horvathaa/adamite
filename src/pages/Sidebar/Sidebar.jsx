@@ -328,11 +328,15 @@ class Sidebar extends React.Component {
                 )}
             </div>
             <div>
-              {/* {inputText !== '' ? ( */}
-              <AnnotationList annotations={filteredAnnotationsCopy} currentUser={currentUser} url={this.state.url} />
-              {/* ) : ( */}
-              {/* <AnnotationList annotations={filteredAnnotations} currentUser={currentUser} url={this.state.url} /> */}
-              {/* )} */}
+              {!filteredAnnotationsCopy.length ? (
+                <div className="whoops">
+                  There's nothing here! Try modifying your search/filter or writing a new annotation
+                </div>
+              ) : (
+                  <AnnotationList annotations={filteredAnnotationsCopy}
+                    currentUser={currentUser}
+                    url={this.state.url} />
+                )}
             </div>
           </div>
         )}

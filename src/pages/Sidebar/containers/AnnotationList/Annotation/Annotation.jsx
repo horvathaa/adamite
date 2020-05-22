@@ -6,6 +6,7 @@ import './Annotation.css';
 import { Dropdown } from 'react-bootstrap';
 import { checkPropTypes, string } from 'prop-types';
 import CustomTag from '../../CustomTag/CustomTag';
+import profile from '../../../../../assets/img/SVGs/Profile.svg';
 import { deleteAnnotationForeverById, updateAnnotationById, getUserProfileById } from '../../../../../firebase';
 
 const HamburgerToggle = React.forwardRef(({ children, onClick }, ref) => (
@@ -189,13 +190,25 @@ class Annotation extends Component {
                 Header: true,
                 Truncated: collapsed,
               })}>
-                <div className="row">
-                  <div className="col">
+                <div className="profileContainer">
+                  <img src={profile} alt="profile" className="profile" />
+                  {/* <Profile className="profile" /> */}
+                </div>
+                <div className="userProfileContainer">
+
+                  <div className="author">
+                    {author}
+                  </div>
+                  <div className="timestamp">
                     {this.formatTimestamp(timeStamp)}
                   </div>
+                </div>
+                <div className="row">
+                  {/* <div className="col">
+
+                  </div> */}
                   <div className="col2">
-                    {author}
-                    &nbsp;&nbsp;
+
                     {currentUser.uid === authorId && !collapsed ? (
                       <Dropdown className="HamburgerMenu">
                         <Dropdown.Toggle as={HamburgerToggle}></Dropdown.Toggle>
