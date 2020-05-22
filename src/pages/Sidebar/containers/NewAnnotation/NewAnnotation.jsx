@@ -120,8 +120,6 @@ class NewAnnotation extends React.Component {
             );
           });
 
-          console.log(response);
-          console.log("please look up")
           this.setState({ submitted: false });
           this.props.resetNewSelection();
 
