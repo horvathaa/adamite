@@ -14,7 +14,7 @@ const iframeClass = css({
   border: 'none',
   width: '100%',
   height: '100%',
-  background: 'white',
+  background: 'whitesmoke',
   boxSizing: 'border-box',
   // borderRadius: '3px',
 });
@@ -30,6 +30,7 @@ const containerClass = css({
   boxShadow: '0px 0px 8px rgba(0,0,0,.15)',
   // transform: 'translateX(115%)',
   transition: 'transform .25s cubic-bezier(0, 0, 0.3, 1)',
+  background: 'whitesmoke',
   zIndex: 99999999,
 });
 

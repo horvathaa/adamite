@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
-import { FaCaretDown, FaCaretUp, FaTrash, FaEdit } from 'react-icons/fa';
+import { FaCaretDown, FaCaretUp, FaTrash, FaEdit, FaFont, FaExternalLinkAlt } from 'react-icons/fa';
 import './Annotation.css';
 import { Dropdown } from 'react-bootstrap';
 import { checkPropTypes, string } from 'prop-types';
 import CustomTag from '../../CustomTag/CustomTag';
-import { deleteAnnotationForeverById, updateAnnotationById } from '../../../../../firebase';
+import { deleteAnnotationForeverById, updateAnnotationById, getUserProfileById } from '../../../../../firebase';
 import CardWrapper from '../../CardWrapper/CardWrapper'
 
 class Annotation extends Component {
@@ -15,24 +15,42 @@ class Annotation extends Component {
     content: this.props.content,
     collapsed: false,
     annotationType: this.props.type,
-    editing: false
+    editing: false,
+    authorId: this.props.authorId
   };
 
   updateData = () => {
-    let { tags, content, type } = this.props;
-
+    let { tags, content, type, authorId } = this.props;
     this.setState({
-      tags, content, annotationType: type
-    })
+      tags, content, annotationType: type, authorId
+    });
+
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     document.addEventListener('keydown', this.keydown, false);
     this.updateData();
+    let authorDoc = getUserProfileById(this.state.authorId);
+    let user = "";
+    await authorDoc.get().then(function (doc) {
+      if (doc.exists) {
+        user = doc.data().email.substring(0, doc.data().email.indexOf('@'));
+      }
+      else {
+        user = "anonymous";
+      }
+    }).catch(function (error) {
+      console.log('could not get doc:', error);
+    });
+
+    this.setState({ author: user });
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.tags !== this.props.tags || prevProps.content !== this.props.content || prevProps.type !== this.props.type) {
+    if (prevProps.tags !== this.props.tags ||
+      prevProps.content !== this.props.content ||
+      prevProps.type !== this.props.type ||
+      prevProps.authorId !== this.props.authorId) {
       this.updateData();
     }
   }
@@ -52,6 +70,10 @@ class Annotation extends Component {
     var sec = date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
     var time = day + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec;
     return time;
+  }
+
+  handleExternalAnchor(url) {
+    chrome.runtime.sendMessage({ msg: "LOAD_EXTERNAL_ANCHOR", from: 'content', payload: url });
   }
 
   handleDoneToDo() {
@@ -134,8 +156,8 @@ class Annotation extends Component {
   }
 
   render() {
-    const { anchor, idx, id, active, authorId, currentUser, trashed, timeStamp } = this.props;
-    const { editing, collapsed, tags, content, annotationType } = this.state;
+    const { anchor, idx, id, active, authorId, currentUser, trashed, timeStamp, url, currentUrl } = this.props;
+    const { editing, collapsed, tags, content, annotationType, author } = this.state;
     if (annotationType === 'default' && !trashed) {
       return (
         <li key={idx} id={id} className={classNames({ AnnotationItem: true })}>
@@ -164,7 +186,8 @@ class Annotation extends Component {
                   <div className="col">
                     {this.formatTimestamp(timeStamp)}
                   </div>
-                  <div className="col">
+                  <div className="col2">
+                    {author}
                   </div>
                 </div>
               </div>
@@ -175,7 +198,14 @@ class Annotation extends Component {
                 Truncated: collapsed
               })}
             >
-              {anchor}
+              <div className="AnchorIconContainer">
+                {currentUrl === url ? (
+                  <FaFont className="AnchorIcon" />
+                ) : (<FaExternalLinkAlt className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />)}
+              </div>
+              <div className="AnchorTextContainer">
+                {anchor}
+              </div>
             </div>
             <div
               className={classNames({

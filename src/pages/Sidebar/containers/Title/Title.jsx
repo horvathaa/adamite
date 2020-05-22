@@ -66,7 +66,7 @@ export default class Title extends React.Component {
                       </Dropdown.Toggle>
                       <Dropdown.Menu >
                         <Dropdown.Item onClick={this.signOutClickedHandler}>
-                          sign out
+                          Sign Out
                           </Dropdown.Item>
                       </Dropdown.Menu>
 

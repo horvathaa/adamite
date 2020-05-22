@@ -89,22 +89,24 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     const annotationsOnPage = annotations.filter(a => a.url === url); // can use this later so we get all annotations that match our filter criterias
     sendResponse({ annotationsOnPage });
   } else if (request.msg === 'FILTER_BY_TAG') {
-    // chrome.runtime.sendMessage({ msg: 'REQUEST_FILTERED_ANNOTATIONS', from: 'background' }, (response) => {
-    chrome.windows.create({
-      url: chrome.runtime.getURL('filterWindow.html'),
-      width: 600,
-      height: 400,
-      type: 'popup'
-    }, (window) => {
-      createdWindow = window;
+    chrome.runtime.sendMessage({ msg: 'REQUEST_FILTERED_ANNOTATIONS', from: 'background' }, (response) => {
+      if (response.done) {
+        chrome.windows.create({
+          url: chrome.runtime.getURL('filterWindow.html'),
+          width: 600,
+          height: 400,
+          type: 'popup'
+        }, (window) => {
+          createdWindow = window;
+        });
+      }
     });
-    // chrome.runtime.sendMessage({ msg: 'DELIVER_FILTERED_ANNOTATION_TAG', from: 'background', payload: response })
-
-    // });
 
   } else if (request.msg === 'TAGS_SELECTED' && request.from === 'background') {
     chrome.runtime.sendMessage({ msg: 'FILTER_TAGS', from: 'background', payload: request.payload.tags });
     chrome.windows.remove(createdWindow.id);
+  } else if (request.msg === 'LOAD_EXTERNAL_ANCHOR' && request.from === 'content') {
+    chrome.tabs.create({ url: request.payload });
   }
   return true;
 });

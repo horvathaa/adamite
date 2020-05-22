@@ -1,3 +1,10 @@
 .Filter {
-    text-align: right;
+    width: 2em;
+    color: #7f8080;
+    height: 2em;
+    cursor: pointer;
 }
+
+/* .Filter.hover, .Filter:hover {
+    filter: brightness(.5);
+  } */
