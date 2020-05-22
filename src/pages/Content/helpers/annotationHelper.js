@@ -5,7 +5,7 @@ import $ from 'jquery';
 
 
 function anchorClick(e) {
-  const target = e.target.id;
+  const target = e.target.attributes.getNamedItem("name").value;
   chrome.runtime.sendMessage({
     msg: 'ANCHOR_CLICKED',
     from: 'content',
@@ -30,13 +30,9 @@ const alertBackgroundOfNewSelection = (selection, offsets, xpath) => {
   });
 };
 
-function removeQuotes(text) {
-  //text.replace(/[-[\]{}()*+’?.,\\^$|#]/g, '\\$&');
-  return replaceQuotes(text.replace(/[-[\]{}()*+’?.,\\^$|#]/g, '\\$&'));
-}
+
 function escapeRegExp(text) {
-  //text.replace(/[-[\]{}()*+’?.,\\^$|#]/g, '\\$&');
-  return replaceQuotes(text.replace(/[-[\]{}()*+’?.,\\^$|#]/g, '\\$&'));
+  return text.replace(/[-[\]{}()*+’?.,\\^$|#]/g, '\\$&');
 }
 
 function getNextNode(node) {
@@ -174,10 +170,16 @@ document.addEventListener('mouseup', event => {
 //   return -1;
 // }
 
-function replaceQuotes(string) {
-  string = string.replace(/'/g, "&apos;")
+function replaceQuotes2(string) {
+  string = string.replace(/'/g, "\\'")
   return string.replace(/"/g, "&quot;")
 }
+
+function replaceQuotes(string) {
+  string = string.replace(/'/g, "quot;")
+  return string.replace(/"/g, "&quot;")
+}
+
 
 function xpathRepair(xpath, content, endPaths) {
 
@@ -187,13 +189,12 @@ function xpathRepair(xpath, content, endPaths) {
   * 3. If not replace xpath with step2 xpath and repeat step 2
   * */
   var path;
-  //console.log(endPaths);
-  if (xpathToNodez(xpath + "/text()[contains(.,'" + replaceQuotes(content) + "')]") !== null) {
+  if (xpathToNodez(xpath + "/text()[contains(.," + QuoteRepair(content) + ")]") !== null) {
     return xpath;
   }
-  else if (xpathToNodez(xpath + "//*/text()[contains(.," + '"' + escapeRegExp(content.trim()) + '"' + ")]") !== null) {
+  else if (xpathToNodez(xpath + "//*/text()[contains(.," + QuoteRepair(content) + ")]") !== null) {
     for (var i = 0; i < endPaths.length; i++) {
-      if ((path = xpathToNodez(xpath + "/" + endPaths[i] + "/text()[contains(.,'" + replaceQuotes(content) + "')]")) !== null) {
+      if ((path = xpathToNodez(xpath + "/" + endPaths[i] + "/text()[contains(.," + QuoteRepair(content) + ")]")) !== null) {
         return endPaths[i];
       }
     }
@@ -213,11 +214,11 @@ function xpathRepair(xpath, content, endPaths) {
   endPaths.push(endofxpath);
 
   if (xpath === xpathreplace) {
-    if (xpathToNodez(xpath + "/text()[contains(.,'" + replaceQuotes(content) + "')]") !== null) {
+    if (xpathToNodez(xpath + "/text()[contains(.," + QuoteRepair(content) + ")]") !== null) {
       return xpath;
-    } else if ((xpath + "//*/text()[contains(.," + '"' + escapeRegExp(content.trim()) + '"' + ")]") !== null) {
+    } else if ((xpath + "//*/text()[contains(.," + QuoteRepair(content) + ")]") !== null) {
       for (var i = 0; i < endPaths.length; i++) {
-        if ((path = xpathToNodez(xpath + "/" + endPaths[i] + "/text()[contains(.,'" + replaceQuotes(content) + "')]")) !== null) {
+        if ((path = xpathToNodez(xpath + "/" + endPaths[i] + "/text()[contains(.," + QuoteRepair(content) + ")]")) !== null) {
           return endPaths[i];
         }
       }
@@ -332,22 +333,33 @@ function findChildXpath(xpathInfo, queue) {
 function FindWords(anno) {
 
   var wordPath = [];
+
   anno.xpath.forEach(xpathInfo => {
-    //console.log(xpathInfo.xpath.replace("/text()", ""))
+
     xpathInfo.xpath = xpathRepair(xpathInfo.xpath.replace("/text()", ""), xpathInfo.text, wordPath);
-    //xpathInfo.xpath += "/text()";
+
     matchText(xpathInfo, xpathInfo.offsets, function (node, match, offset) {
-      var span = document.createElement("span");
-      span.setAttribute("name", anno.id.toString());
-      span.textContent = match;
-      // span.setAttribute('data-tooltip', anno.content > 500 ? anno.content.substring(0, 500) + "..." : anno.content);
-      // span.setAttribute('data-tooltip-position', "bottom");
-      span.className = "highlight-adamite-annotation";
-      node.parentNode.insertBefore(span, node.nextSibling);
-      // let collection = document.getElementsByClassName(span.id);
-      // for (let i = 0; i < collection.length; i++) {
-      //   collection[i].onclick = anchorClick;
-      // }
+      if (node.parentNode.className !== 'highlight-adamite-annotation') {
+        var span = document.createElement("span");
+        span.setAttribute("name", anno.id.toString());
+        span.textContent = match;
+        // span.setAttribute('data-tooltip', anno.content > 500 ? anno.content.substring(0, 500) + "..." : anno.content);
+        // span.setAttribute('data-tooltip-position', "bottom");
+        span.className = "highlight-adamite-annotation";
+        node.parentNode.insertBefore(span, node.nextSibling);
+
+      }
+      else if (node.parentNode.name === anno.id.toString()) {
+        node.data += match;
+      }
+      else {
+        node.data = match;
+      }
+      let collection = document.getElementsByName(anno.id.toString());
+      console.log(collection);
+      for (let i = 0; i < collection.length; i++) {
+        collection[i].onclick = anchorClick;
+      }
     });
 
 
@@ -370,6 +382,67 @@ function FindWords(anno) {
   });
 }
 
+function cleanStringForXpath(str) {
+  var parts = str.match(/[^'"]+|['"]/g);
+  parts = parts.map(function (part) {
+    if (part === "'") {
+      return '"\'"'; // output "'"
+    }
+
+    if (part === '"') {
+      return "'\"'"; // output '"'
+    }
+    return "'" + part + "'";
+  });
+  return "concat(" + parts.join(",") + ")";
+}
+
+/*
+ * Reconstruct string as a xpathconcat 
+ * if string has  both an apostrophe and double quotes
+ */
+function reconstructStringForBothQuotes(string) {
+  var wordString = string.split(/'/g).filter(function (el) { return el.length != 0 }).join("").split(/"/g).filter(function (el) { return el.length != 0 });
+  var replacementWord = "";
+  for (var i = 0; i < string.length; i++) {
+    if (string[i] === "'") {
+      replacementWord += "\"\'\", ";
+
+    }
+    else if (string[i] === '"') {
+      replacementWord += '\'\"\', ';
+    }
+    else {
+      replacementWord += string[i]
+    }
+  }
+  string = replacementWord;
+
+  for (var i = 0; i < wordString.length; i++) {
+    string = string.replace(wordString[i], "'" + wordString[i] + "', ")
+    wordString[i] = "'" + wordString[i] + "', ";
+  }
+  return "concat(" + string.replace(/\,([^\,]*)$/g, "") + ")";
+}
+
+/*
+ * Browsers currently use Xpath 1.0 which does no allow for escapes on quotes
+ * Rebuild contains query to fix for this. 
+ * Change when browers someday go to 2.0
+ */
+function QuoteRepair(string) {
+  var apostrophe = string.match(/'/g);
+  var doubleQuote = string.match(/"/g);
+  if (apostrophe !== null && doubleQuote !== null) {
+    return reconstructStringForBothQuotes(string);
+  }
+  else if (apostrophe !== null) {
+    return "\"" + string + "\"";
+  }
+  else {
+    return "\'" + string + "\'";
+  }
+}
 
 /*
  * Finds highlighted text and creates highlight for annotation
@@ -381,23 +454,10 @@ var matchText = function (xpathInfo, offsets, callback, excludeElements) {
 
   var node;
   var regexdXpath = escapeRegExp(xpathInfo.text.trim())
-  //closestXpath.substring(0, closestXpath.match(".*\/")[0].length - 1)
 
-  //console.log(xpathInfo.xpath.substring(0, xpathInfo.xpath.match(".*\/")[0].length - 1) + "/*[contains(text()," + xpathInfo.text + ")]");
-  // node = !xpathInfo.xpath.includes("/text()") ?
-  //   xpathToNodez(xpathInfo.xpath + "/*[text()[contains(.,'" + '"' + regexdXpath + '"' + "')]]/text()") :
-  //   xpathToNodez(xpathInfo.xpath + "[contains(.,'" + xpathInfo.text + "')]");
-  // console.log("to nodes")
-  // console.log(xpathInfo.xpath + "/text()[contains(.,'" + replaceQuotes(xpathInfo.text) + "')]")
-  // console.log(xpathInfo.xpath + "/text()[contains(.,'" + replaceQuotes(xpathInfo.text) + "')]")
-  // console.log(xpathInfo.xpath + "/*[text()[contains(.,'" + '"' + regexdXpath + '"' + "')]]/text()")
-  // console.log(xpathToNodez(xpathInfo.xpath + "/text()[contains(.,'" + replaceQuotes(xpathInfo.text) + "')]"))
-  // console.log(xpathToNodez(xpathInfo.xpath + "/text()[contains(.,'" + replaceQuotes(xpathInfo.text) + "')]"))
-  // console.log(xpathToNodez(xpathInfo.xpath + "/*[text()[contains(.,'" + '"' + regexdXpath + '"' + "')]]/text()"))
-
-  if ((node = xpathToNodez(xpathInfo.xpath + "/text()[contains(.,'" + replaceQuotes(xpathInfo.text) + "')]")) === null) {
-    if ((node = xpathToNodez(xpathInfo.xpath + "/*[contains(.,'" + regexdXpath + "')]")) === null) {
-      if ((node = xpathToNodez(xpathInfo.xpath + "/*[text()[contains(.,'" + '"' + regexdXpath + '"' + "')]]/text()")) === null) {
+  if ((node = xpathToNodez(xpathInfo.xpath + "/text()[contains(.," + QuoteRepair(xpathInfo.text) + ")]")) === null) {
+    if ((node = xpathToNodez(xpathInfo.xpath + "/*[contains(.," + QuoteRepair(xpathInfo.text) + ")]")) === null) {
+      if ((node = xpathToNodez(xpathInfo.xpath + "/*[text()[contains(.," + QuoteRepair(xpathInfo.text) + ")]]/text()")) === null) {
         return;
       }
     }
