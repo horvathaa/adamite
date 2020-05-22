@@ -276,11 +276,10 @@
     min-width: 0;
     display: flex;
     align-items: center;
-    padding: 4px 4px 4px 4px;
+    padding: 4px 6px 0px 6px;
     cursor: default;
     color: #6B778C;
-    font-size: 1rem;
-    word-break: break-all;
+    font-size: .9rem;
     transition: all 0.1s ease-in;
     margin: 5px 0px;
   }

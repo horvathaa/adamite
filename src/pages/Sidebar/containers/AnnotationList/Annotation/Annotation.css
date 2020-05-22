@@ -48,6 +48,7 @@
 .author {
   padding: 0px 0px 0px 4px;
   color: #6B778C;
+  font-weight: bold;
 }
 
 .timestamp {
@@ -148,7 +149,7 @@
   border-left: 3px solid #6B778C;
   padding: 11px 5px 11px 5px;
   font-weight: lighter;
-  font-size: 1rem;
+  font-size: .9rem;
   margin-top: 5px;
   margin-bottom: 5px;
   line-height: 1rem;

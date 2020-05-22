@@ -293,7 +293,7 @@ class Sidebar extends React.Component {
     const filteredAnnotationsCopy = [];
     filteredAnnotations.forEach((anno) => {
       const { content } = anno;
-      if (content.includes(inputText)) {
+      if (content.toLowerCase().includes(inputText)) {
         filteredAnnotationsCopy.push(anno);
       }
     });
