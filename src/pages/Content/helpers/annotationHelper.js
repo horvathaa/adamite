@@ -3,6 +3,7 @@ import './anchor-box.css';
 
 import $ from 'jquery';
 
+var couldntFindCount = 0;;
 
 function anchorClick(e) {
   const target = e.target.attributes.getNamedItem("name").value;
@@ -183,7 +184,10 @@ function xpathRepair(xpath, content, endPaths) {
   * 3. If not replace xpath with step2 xpath and repeat step 2
   * */
   var path;
-  console.log('top of xpath - first check', xpath + "/text()[contains(.," + QuoteRepair(content) + ")]");
+  if (xpath === "") {
+    return xpath;
+  }
+  // console.log('top of xpath - first check', xpath + "/text()[contains(.," + QuoteRepair(content) + ")]");
   if (xpathToNodez(xpath + "/text()[contains(.," + QuoteRepair(content) + ")]") !== null) {
     return xpath;
   }
@@ -206,7 +210,10 @@ function xpathRepair(xpath, content, endPaths) {
     xpathreplace = xpathreplace.substring(0, xpathreplace.length - 1);
   }
 
-  endPaths.push(endofxpath);
+
+  if (!endPaths.length) {
+    endPaths.push(endofxpath);
+  }
 
   if (xpath === xpathreplace) {
     if (xpathToNodez(xpath + "/text()[contains(.," + QuoteRepair(content) + ")]") !== null) {
@@ -220,10 +227,10 @@ function xpathRepair(xpath, content, endPaths) {
       return xpath;
     }
     xpathreplace = xpathreplace.match(/.*(\/)(?!.*\1)\/?/, "");
-    console.log(xpathreplace);
+    // console.log(xpathreplace);
     // let toReplace = xpathreplace.match(/.(\/)(?!.*\1)\/?*/, "");
     xpathreplace = xpathreplace[0].substring(0, xpathreplace[0].length - 1);
-    console.log(xpathreplace);
+    // console.log(xpathreplace);
     // toReplace = toReplace.substring(1, )
     return xpathRepair(xpathreplace, content, endPaths);
   }
@@ -239,12 +246,14 @@ function findChildXpath(xpathInfo, queue) {
   while (curr = queue.pop()) {
     if (!curr.textContent.match(word)) continue;
     for (var i = 0; i < curr.childNodes.length; ++i) {
-      console.log('here\'s node again in findchild', curr);
-      console.log('child node', curr.childNodes[i].nodeType);
+      // console.log('here\'s node again in findchild', curr);
+      // console.log('child node', curr.childNodes[i].nodeType);
       switch (curr.childNodes[i].nodeType) {
         case Node.TEXT_NODE: // 3
-          console.log('matching word in text node', word);
+          // console.log('matching word in text node', word);
           if (curr.childNodes[i].textContent.match(word)) {
+            // console.log('returned this node', curr.childNodes[i]);
+            // console.log('matched on this word', word);
             return curr.childNodes[i];
           }
           break;
@@ -339,11 +348,13 @@ function FindWords(anno) {
 
   var wordPath = [];
 
-  console.log('in find words with this anno', anno);
+  // console.log('in find words with this anno', anno);
   anno.xpath.forEach(xpathInfo => {
-    console.log('this is the xpath we have', xpathInfo.xpath);
+    // console.log('this is the xpath we have', xpathInfo.xpath);
+    // console.log(anno.anchorContent);
+    // xpathInfo.xpath = xpathRepair(xpathInfo.xpath.replace("/text()", ""), xpathInfo.text, wordPath);
     xpathInfo.xpath = xpathRepair(xpathInfo.xpath.replace("/text()", ""), xpathInfo.text, wordPath);
-    console.log('got this xpath from xpathrepair', xpathInfo.xpath);
+    // console.log('got this xpath from xpathrepair', xpathInfo.xpath);
     matchText(xpathInfo, xpathInfo.offsets, function (node, match, offset) {
       // if (node.parentNode.className !== 'highlight-adamite-annotation') {
       var span = document.createElement("span");
@@ -461,19 +472,30 @@ var matchText = function (xpathInfo, offsets, callback, excludeElements) {
 
   var node;
   var regexdXpath = escapeRegExp(xpathInfo.text.trim())
-  console.log('in match text with this xpathinfo', xpathInfo);
+  // console.log('in match text with this xpathinfo', xpathInfo);
   if ((node = xpathToNodez(xpathInfo.xpath + "/text()[contains(.," + QuoteRepair(xpathInfo.text) + ")]")) === null) {
     if ((node = xpathToNodez(xpathInfo.xpath + "/*[contains(.," + QuoteRepair(xpathInfo.text) + ")]")) === null) {
       if ((node = xpathToNodez(xpathInfo.xpath + "/*[text()[contains(.," + QuoteRepair(xpathInfo.text) + ")]]/text()")) === null) {
+        console.log('couldnt find node');
+        couldntFindCount++;
+        console.log('count of unfound nodes', couldntFindCount);
         return;
       }
     }
   }
   if (node.nodeType !== 3) {
-    console.log('in if tyoe thing');
+    // console.log('in if tyoe thing');
     node = findChildXpath(xpathInfo, [node]);
-    console.log('here\'s node', node);
+    // console.log('here\'s node', node);
   }
+
+  if (node === null || node === undefined) {
+    console.log('couldnt find node');
+    couldntFindCount++;
+    console.log('count of unfound nodes', couldntFindCount);
+    return;
+  }
+  // console.log('node', node);
   var substring = node.data;
 
 

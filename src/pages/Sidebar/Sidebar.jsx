@@ -299,7 +299,6 @@ class Sidebar extends React.Component {
     });
 
     return (
-
       <div className="SidebarContainer">
         <Title currentUser={currentUser} />
         {currentUser === null && <Authentication />}
