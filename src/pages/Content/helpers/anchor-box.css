@@ -3,10 +3,10 @@
     opacity: 50%;
 }
 
-.highlight-adamite-annotation:hover {
-    filter: brightness(1);
-    background-color: #dede0a;
-}
+/* .highlight-adamite-annotation:hover {
+    /* filter: brightness(1); 
+    /* background-color: #dede0a; 
+} */
 .highlight-adamite-annotation {
     background-color: #ffff0099;
     cursor: help;
