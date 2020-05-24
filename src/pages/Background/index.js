@@ -90,16 +90,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     sendResponse({ annotationsOnPage });
   } else if (request.msg === 'FILTER_BY_TAG') {
     chrome.runtime.sendMessage({ msg: 'REQUEST_FILTERED_ANNOTATIONS', from: 'background' }, (response) => {
-      if (response.done) {
-        chrome.windows.create({
-          url: chrome.runtime.getURL('filterWindow.html'),
-          width: 600,
-          height: 400,
-          type: 'popup'
-        }, (window) => {
-          createdWindow = window;
-        });
-      }
+      setTimeout(() => {
+        if (response.done) {
+          chrome.windows.create({
+            url: chrome.runtime.getURL('filterWindow.html'),
+            width: 600,
+            height: 400,
+            type: 'popup'
+          }, (window) => {
+            createdWindow = window;
+          });
+        }
+      }, 500);
     });
 
   } else if (request.msg === 'TAGS_SELECTED' && request.from === 'background') {

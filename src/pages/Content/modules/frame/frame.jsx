@@ -338,7 +338,7 @@ export class Frame extends Component {
                       )})`
                       : null,
                     backgroundPosition: 'center',
-                    backgroundRepeat: 'repeat',
+                    backgroundRepeat: 'no-repeat',
                     height: '100vh',
                   }}
                   src={url}

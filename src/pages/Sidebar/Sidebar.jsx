@@ -138,7 +138,6 @@ class Sidebar extends React.Component {
             }
           }
         );
-
         this.setState({
           filteredAnnotations: this.state.annotations.filter(function (element) { return element.id === target; })
         });
@@ -155,8 +154,6 @@ class Sidebar extends React.Component {
         }
       }
       else if (request.from === 'background' && request.msg === 'REQUEST_FILTERED_ANNOTATIONS') {
-        console.log(this.state);
-        // sendResponse(this.state.filteredAnnotations);
         chrome.storage.local.set({ annotations: this.state.filteredAnnotations });
         sendResponse({ done: true });
       }
@@ -298,6 +295,9 @@ class Sidebar extends React.Component {
       }
     });
 
+    chrome.storage.local.set({ annotations: filteredAnnotationsCopy });
+    console.log(this.selection);
+
     return (
       <div className="SidebarContainer">
         <Title currentUser={currentUser} />
@@ -327,6 +327,17 @@ class Sidebar extends React.Component {
                 )}
             </div>
             <div>
+              {this.selection.tags.length ? (
+                <div className="whoops">
+                  Current tags:
+                  <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
+                    {this.selection.tags.map((tag, idx) => {
+                      return (<li key={idx} style={{ display: "inline" }}>{tag},&nbsp;</li>);
+                    })}
+                  </ul>
+                </div>
+              ) : (null)}
+
               {!filteredAnnotationsCopy.length && this.state.newSelection === null ? (
                 <div className="whoops">
                   There's nothing here! Try modifying your search/filter or writing a new annotation

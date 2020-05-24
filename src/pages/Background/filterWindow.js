@@ -31,12 +31,18 @@ chrome.storage.local.get(annotations => {
         });
     })
     console.log(tagSet);
+    let tagButtonContainer = document.createElement('div');
+    tagButtonContainer.setAttribute("class", "tagButtonContainer");
+    document.body.appendChild(tagButtonContainer);
     tagSet.forEach(tag => {
+        let tagButtonPad = document.createElement('div');
+        tagButtonPad.setAttribute("class", "buttonContainer");
+        tagButtonContainer.appendChild(tagButtonPad);
         let tagButton = document.createElement('button');
         tagButton.innerHTML = tag;
         // tagButton.style = 'padding: 5px';
         tagButton.onclick = modifySelectedTags;
-        document.body.appendChild(tagButton);
+        tagButtonPad.appendChild(tagButton);
     });
 
     document.body.appendChild(document.createElement('br'));
@@ -45,29 +51,3 @@ chrome.storage.local.get(annotations => {
     submitButton.onclick = transmitSelectedTags;
     document.body.appendChild(submitButton);
 })
-
-// chrome.runtime.sendMessage({ msg: 'REQUEST_FILTERED_ANNOTATIONS', from: 'background' }, (response) => {
-//     // filteredAnnotations = response;
-//     let tagSet = new Set();
-//     console.log(response);
-//     response.forEach(annotation => {
-//         annotation.tags.forEach(tag => {
-//             tagSet.add(tag);
-//         });
-//     })
-//     console.log(tagSet);
-//     tagSet.forEach(tag => {
-//         let tagButton = document.createElement('button');
-//         tagButton.innerHTML = tag;
-//         // tagButton.style = 'padding: 5px';
-//         tagButton.onclick = modifySelectedTags;
-//         document.body.appendChild(tagButton);
-//     });
-
-//     document.body.appendChild(document.createElement('br'));
-//     let submitButton = document.createElement('button');
-//     submitButton.innerHTML = 'Save';
-//     submitButton.onclick = transmitSelectedTags;
-//     document.body.appendChild(submitButton);
-
-// });
