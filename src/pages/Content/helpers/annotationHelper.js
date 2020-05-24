@@ -238,13 +238,11 @@ function getNodesInRange2(range) {
 function highlight(range, startOffset, endOffset, callback) {
 
   // let nodes = getNodesInRange2(range);
-  console.log("NEW RANGE", nodes)
 
   //Text nodes that were highlighted by user
   var nodes = getNodesInRange2(range).filter(function (element) {
     return element.nodeType === 3 && element.data.trim() !== "";
   });
-  console.log("NEW RANGE", nodes)
 
   let start = true;
   let substring = "";
