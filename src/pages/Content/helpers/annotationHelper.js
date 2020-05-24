@@ -182,7 +182,7 @@ function CreateStringBody(xpathInfo) {
   var word = xpathInfo.text;
   word = escapeRegExp(word);
   var curr;
-  queue = [document.body];
+  var queue = [document.body];
   Selection.toString()
   while (curr = queue.pop()) {
     if (!curr.textContent.match(word)) continue;
