@@ -293,6 +293,7 @@ function FindWords(anno) {
     span.textContent = match;
     span.className = "highlight-adamite-annotation";
     node.parentNode.insertBefore(span, node.nextSibling);
+    span.onclick = anchorClick;
   });
 }
 
@@ -408,7 +409,6 @@ chrome.runtime.sendMessage(
     if (annotationsOnPage.length) {
       annotationsOnPage.reverse().forEach(anno => FindWords(anno));
     }
-
   }
 );
 
