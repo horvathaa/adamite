@@ -70,12 +70,12 @@ function XpathConversion(element) {
     for (var i = 0; i < siblings.length; i++) {
         var sibling = siblings[i];
         if (sibling === element)
-            return XpathConversion(element.parentNode) + '/' + (element.nodeType === 3 ? ('text()' + '[' + (txt + 1) + ']') : (element.tagName + '[' + (ix + 1) + ']'));
+            return XpathConversion(element.parentNode) + '/' +/* (element.nodeType === 3 ? ('text()' + '[' + (txt + 1) + ']') : (*/element.tagName + '[' + (ix + 1) + ']';
         if (sibling.nodeType === 1 && sibling.tagName === element.tagName)
             ix++;
-        else if (sibling.nodeType === 3) {
-            txt++
-        }
+        // else if (sibling.nodeType === 3) {
+        //     txt++
+        // }
     }
 }
 
@@ -90,8 +90,6 @@ document.addEventListener('mouseup', event => {
             return element.nodeType === 3 && element.data.trim() !== "";
         });
 
-        console.log("TEXTNODES", textNodes);
-
         const offsets = {
             startOffset: rect.startOffset,
             endOffset: rect.endOffset,
@@ -102,6 +100,7 @@ document.addEventListener('mouseup', event => {
         for (var i = 0; i < textNodes.length; i++) {
             tempArry.push(XpathConversion(textNodes[i].parentNode))
         }
+
         var master = sharedStart(tempArry);
 
         // for (var i = 0; i < textNodes.length; i++) {
@@ -116,14 +115,13 @@ document.addEventListener('mouseup', event => {
         //     }
         //   }
         // );
+
         xpathToNode.push({
-            start: XpathConversion(textNodes[0]),
-            end: XpathConversion(textNodes[textNodes.length - 1]),
+            start: XpathConversion(textNodes[0].parentNode),
+            end: XpathConversion(textNodes[textNodes.length - 1].parentNode),
             startOffset: rect.startOffset,
             endOffset: rect.endOffset
         });
-
-        console.log("MAKING XPATH", xpathToNode)
 
         alertBackgroundOfNewSelection(selection.toString(), offsets, xpathToNode);
     }
