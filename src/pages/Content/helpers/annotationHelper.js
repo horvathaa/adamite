@@ -406,7 +406,7 @@ chrome.runtime.sendMessage(
   data => {
     const { annotationsOnPage } = data;
     if (annotationsOnPage.length) {
-      annotationsOnPage.forEach(anno => FindWords(anno));
+      annotationsOnPage.reverse().forEach(anno => FindWords(anno));
     }
 
   }
