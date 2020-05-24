@@ -17,7 +17,7 @@ export const getAllAnnotationsByUserIdAndUrl = (uid, url) => {
 };
 
 export const getAllAnnotations = () => {
-  return db.collection(DB_COLLECTIONS.ANNOTATIONS);
+  return db.collection(DB_COLLECTIONS.ANNOTATIONS).orderBy("createdTimestamp", "desc");
 };
 
 export const getAnnotationById = id => {

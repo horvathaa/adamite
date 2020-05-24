@@ -44,6 +44,7 @@
   width: 100%;
   padding-right: 15px;
   padding-left: 0px;
+  display: inline-flex;
 }
 
 .TitleContainer .container {
@@ -95,6 +96,8 @@
   height: 1.5em;
 }
 
+
+
 .userIcon:focus {
   color: transparent !important;
   background-color: transparent !important;
@@ -104,8 +107,9 @@
 }
 
 
-#dropdown-menu {
+#dropdown-menu{
   background-color: transparent;
+  padding: 4px;
 }
 
 .caret {
@@ -153,6 +157,8 @@
   border-color: transparent;
   outline-color: none;
 }
+
+
 
 
 

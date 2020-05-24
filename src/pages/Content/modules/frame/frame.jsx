@@ -13,7 +13,7 @@ import {
 const iframeClass = css({
   border: 'none',
   width: '100%',
-  height: '100%',
+  // height: '100%',
   background: 'whitesmoke',
   boxSizing: 'border-box',
   // borderRadius: '3px',
@@ -23,7 +23,7 @@ const containerClass = css({
   position: 'fixed',
   top: '0px',
   // right: '0px',
-  height: '100%',
+  // height: '100%',
   padding: '0px 0px 0px 0px',
   boxSizing: 'border-box',
   borderRadius: '3px',
@@ -77,7 +77,7 @@ export class Frame extends Component {
 
     isDragging: false,
     width: 320,
-    height: '100%',
+    // height: '100%',
     loaded: false,
   };
 
@@ -317,7 +317,7 @@ export class Frame extends Component {
             <div
               style={{
                 display: 'flex',
-                height: '100%',
+                // height: '100%',
               }}
             >
               <div
