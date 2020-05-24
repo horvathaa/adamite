@@ -1,9 +1,8 @@
 
 import './anchor-box.css';
-
 import $ from 'jquery';
 
-var couldntFindCount = 0;;
+var xpathRange = require('xpath-range');
 
 function anchorClick(e) {
   const target = e.target.attributes.getNamedItem("name").value;
@@ -18,18 +17,7 @@ function anchorClick(e) {
 }
 
 
-const alertBackgroundOfNewSelection = (selection, offsets, xpath) => {
-  // supporting creation of annotations in sidebar
-  chrome.runtime.sendMessage({
-    msg: 'CONTENT_SELECTED',
-    from: 'content',
-    payload: {
-      selection,
-      offsets,
-      xpath,
-    },
-  });
-};
+
 
 
 function escapeRegExp(text) {
@@ -90,76 +78,6 @@ function xpathToNodez(path) {
   return document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
 }
 
-// function wordmatch(element, word) {
-//   if (element === null) {
-//     return;
-//   }
-//   do {
-//     if (element.nodeType !== 3) {
-//       element = element.nextSibling;
-//     }
-//     else if (element.data.trim() === word.trim()) {
-//       return element;
-//     }
-//     else {
-//       element = element.nextSibling;
-//     }
-//   } while (element !== null)
-//   return null;
-// }
-
-
-function XpathConversion(element) {
-  if (element.tagName == 'HTML')
-    return '/HTML[1]';
-  if (element === document.body)
-    return '/HTML[1]/BODY[1]';
-
-  var ix = 0;
-  var siblings = element.parentNode.childNodes;
-  for (var i = 0; i < siblings.length; i++) {
-    var sibling = siblings[i];
-    if (sibling === element)
-      return XpathConversion(element.parentNode) + '/' + element.tagName + '[' + (ix + 1) + ']';
-    if (sibling.nodeType === 1 && sibling.tagName === element.tagName)
-      ix++;
-  }
-}
-
-document.addEventListener('mouseup', event => {
-  var selection = window.getSelection();
-
-  if (selection.type === 'Range') {
-    const rect = selection.getRangeAt(0);
-
-    //Text nodes that were highlighted by user
-    var textNodes = getNodesInRange(rect).filter(function (element) {
-      return element.nodeType === 3 && element.data.trim() !== "";
-    });
-
-    const offsets = {
-      startOffset: rect.startOffset,
-      endOffset: rect.endOffset,
-    };
-
-    var xpathToNode = [];
-
-    for (var i = 0; i < textNodes.length; i++) {
-      xpathToNode.push(
-        {
-          xpath: XpathConversion(textNodes[i].parentNode) + "/text()",
-          text: textNodes[i].data,
-          offsets: {
-            startOffset: i === 0 ? rect.startOffset : 0,
-            endOffset: i === textNodes.length - 1 ? rect.endOffset : 0
-          }
-        }
-      );
-    }
-    alertBackgroundOfNewSelection(selection.toString(), offsets, xpathToNode);
-  }
-
-});
 
 
 // function findFirstDiffPos(a, b) {
@@ -227,11 +145,7 @@ function xpathRepair(xpath, content, endPaths) {
       return xpath;
     }
     xpathreplace = xpathreplace.match(/.*(\/)(?!.*\1)\/?/, "");
-    // console.log(xpathreplace);
-    // let toReplace = xpathreplace.match(/.(\/)(?!.*\1)\/?*/, "");
     xpathreplace = xpathreplace[0].substring(0, xpathreplace[0].length - 1);
-    // console.log(xpathreplace);
-    // toReplace = toReplace.substring(1, )
     return xpathRepair(xpathreplace, content, endPaths);
   }
   return xpathRepair(xpathreplace, content, endPaths);
@@ -242,15 +156,13 @@ function findChildXpath(xpathInfo, queue) {
   var word = xpathInfo.text;
   word = escapeRegExp(word);
   var curr;
+  queue = [document.body];
 
   while (curr = queue.pop()) {
     if (!curr.textContent.match(word)) continue;
     for (var i = 0; i < curr.childNodes.length; ++i) {
-      // console.log('here\'s node again in findchild', curr);
-      // console.log('child node', curr.childNodes[i].nodeType);
       switch (curr.childNodes[i].nodeType) {
         case Node.TEXT_NODE: // 3
-          // console.log('matching word in text node', word);
           if (curr.childNodes[i].textContent.match(word)) {
             // console.log('returned this node', curr.childNodes[i]);
             // console.log('matched on this word', word);
@@ -265,80 +177,90 @@ function findChildXpath(xpathInfo, queue) {
   }
 }
 
+function CreateStringBody(xpathInfo) {
 
-// function findXpath(xpathInfo, offsets, id, content) {
-//   let cleanXpath = xpathInfo.xpath.substring(0, xpathInfo.xpath.length - 7);
-//   let tempXpath = { relativePath: "", fullPath: "" };
-//   var word = xpathInfo.text;
-//   word = escapeRegExp(word);
-//   var queue = [document.body];
-//   var curr;
-//   var listofxpaths = [];
-//   while (curr = queue.pop()) {
-//     if (!curr.textContent.match(word)) continue;
-//     for (var i = 0; i < curr.childNodes.length; ++i) {
-//       switch (curr.childNodes[i].nodeType) {
-//         case Node.TEXT_NODE: // 3
-//           if (curr.childNodes[i].textContent.match(word)) {
-//             let xpath = XpathConversion(curr);
+  var word = xpathInfo.text;
+  word = escapeRegExp(word);
+  var curr;
+  queue = [document.body];
+  Selection.toString()
+  while (curr = queue.pop()) {
+    if (!curr.textContent.match(word)) continue;
+    for (var i = 0; i < curr.childNodes.length; ++i) {
+      switch (curr.childNodes[i].nodeType) {
+        case Node.TEXT_NODE: // 3
+          if (curr.childNodes[i].textContent.match(word)) {
+            return curr.childNodes[i];
+          }
+          break;
+        case Node.ELEMENT_NODE: // 1
+          queue.push(curr.childNodes[i]);
+          break;
+      }
+    }
+  }
+}
 
-//             //let index = findFirstDiffPos(xpath, tempXpath.relativePath === "" ? cleanXpath : tempXpath.relativePath);
-//             let index = findFirstDiffPos(xpath, cleanXpath);
+function textsNodesUnderNode(node) {
+  var all = [];
+  for (node = node.firstChild; node; node = node.nextSibling) {
+    if (node.nodeType == 3) all.push(node);
+    else all = all.concat(textsNodesUnderNode(node));
+  }
+  return all;
+}
 
+function getNodesInRange2(range) {
+  var start = range.startContainer;
+  var end = range.endContainer;
+  var commonAncestor = range.commonAncestorContainer;
+  var nodes = [];
+  var node;
 
-//             if (index < 0) {
-//               let finalString = xpath;
+  // walk children and siblings from start until end is found
+  if (start.isSameNode(end) && start.nodeType === Node.TEXT_NODE) {
+    return [start];
+  }
+  else if (start.isSameNode(end)) {
+    return textsNodesUnderNode(start);
+  }
+  for (node = start; node; node = getNextNode(node)) {
+    if (node.nodeType === 3 && node.data.trim() !== "")
+      nodes.push(node);
+    if (node == end)
+      break;
+  }
 
-//               xpathInfo.xpath = finalString;
-//               matchText(xpathInfo, offsets, function (node, match, offset) {
-
-//                 var span = document.createElement("span");
-//                 span.setAttribute("id", id.toString());
-//                 span.textContent = match;
-//                 span.setAttribute('data-tooltip', content.length > 500 ? content.substring(0, 500) + "..." : content);
-//                 span.setAttribute('data-tooltip-position', "bottom");
-//                 span.className = "highlight-adamite-annotation";
-//                 node.parentNode.insertBefore(span, node.nextSibling);
-//                 document.getElementById(span.id).onclick = anchorClick;
-//               });
-//               return;
-//             }
-//             else {
-//               tempXpath = { relativePath: cleanXpath.substring(0, index), fullPath: xpath };
-//               if (listofxpaths.filter(function (xpaths) { return xpaths.fullPath === tempXpath.fullPath }).length === 0) {
-//                 listofxpaths.push(tempXpath);
-//               }
-//             }
-//           }
-//           break;
-//         case Node.ELEMENT_NODE: // 1
-//           queue.push(curr.childNodes[i]);
-//           break;
-//       }
-//     }
-//   }
-//   if (listofxpaths.length > 0) {
-//     const longestGenre = Math.max(...listofxpaths.map(xpaths => xpaths.relativePath.length));
-//     var tt = listofxpaths.filter(function (xpaths) { return xpaths.relativePath.length === longestGenre })
-
-//     xpathInfo.xpath = tt[0].fullPath;
-//     matchText(xpathInfo, offsets, function (node, match, offset) {
-//       var span = document.createElement("span");
-//       span.setAttribute("id", id.toString());
-//       span.textContent = match;
-//       span.setAttribute('data-tooltip', content.length > 500 ? content.substring(0, 500) + "..." : content);
-//       span.setAttribute('data-tooltip-position', "bottom");
-//       span.className = "highlight-adamite-annotation";
-//       node.parentNode.insertBefore(span, node.nextSibling);
-//       document.getElementById(span.id).onclick = anchorClick;
-//     });
-//   }
-//   else {
-//     console.log("we done goof");
-//   }
+  return nodes;
+}
 
 
-// }
+function highlight(range, startOffset, endOffset, callback) {
+
+  let nodes = getNodesInRange2(range);
+  let start = true;
+  let substring = "";
+  if (nodes.length === 1) {
+    substring = nodes[0].data.substring(startOffset, endOffset ? endOffset : nodes[0].data.length);
+    return splitReinsertText(nodes[0], substring, callback);
+  }
+  for (let i = 0; i < nodes.length; i++) {
+    if (nodes[i].nodeType === 3) {
+      if (startOffset !== 0 && start) {
+        substring = nodes[i].data.substring(startOffset, nodes[i].data.length);
+        start = false;
+      }
+      else if (endOffset !== 0 && i == nodes.length - 1) {
+        substring = nodes[i].data.substring(0, endOffset);
+      }
+      else {
+        substring = nodes[i].data;
+      }
+      splitReinsertText(nodes[i], substring, callback);
+    }
+  }
+
+}
 
 /*
 * 1. find word, compare to stored xpath. 
@@ -348,55 +270,13 @@ function FindWords(anno) {
 
   var wordPath = [];
 
-  // console.log('in find words with this anno', anno);
-  anno.xpath.forEach(xpathInfo => {
-    // console.log('this is the xpath we have', xpathInfo.xpath);
-    // console.log(anno.anchorContent);
-    // xpathInfo.xpath = xpathRepair(xpathInfo.xpath.replace("/text()", ""), xpathInfo.text, wordPath);
-    xpathInfo.xpath = xpathRepair(xpathInfo.xpath.replace("/text()", ""), xpathInfo.text, wordPath);
-    // console.log('got this xpath from xpathrepair', xpathInfo.xpath);
-    matchText(xpathInfo, xpathInfo.offsets, function (node, match, offset) {
-      // if (node.parentNode.className !== 'highlight-adamite-annotation') {
-      var span = document.createElement("span");
-      span.setAttribute("name", anno.id.toString());
-      span.textContent = match;
-      // span.setAttribute('data-tooltip', anno.content > 500 ? anno.content.substring(0, 500) + "..." : anno.content);
-      // span.setAttribute('data-tooltip-position', "bottom");
-      span.className = "highlight-adamite-annotation";
-      node.parentNode.insertBefore(span, node.nextSibling);
-
-      // }
-      // else if (node.parentNode.attributes.getNamedItem("name").value === anno.id.toString()) {
-      //   node.data = node.data.concat(match);
-      //   console.log('what did we do?', node.data);
-      //   // node.data += match;
-      // }
-      // else {
-      //   node.data = match;
-      // }
-      let collection = document.getElementsByName(anno.id.toString());
-      for (let i = 0; i < collection.length; i++) {
-        collection[i].onclick = anchorClick;
-      }
-    });
-
-
-    // if (!xpathInfo.xpath.length) { return; }
-    // //if (!xpathInfo.xpath.includes("/text()")) xpathInfo.xpath = xpathInfo.xpath.substring(0, xpathInfo.xpath.match(".*\/")[0].length - 1);
-    // xpathInfo.xpath = findXpath69(xpathInfo.xpath, xpathInfo.text);
-    // matchText(xpathInfo, xpathInfo.offsets, function (node, match, offset) {
-
-    //   var span = document.createElement("span");
-    //   span.setAttribute("id", anno.id.toString());
-    //   span.textContent = match;
-    //   span.setAttribute('data-tooltip', anno.content > 500 ? anno.content.substring(0, 500) + "..." : anno.content);
-    //   span.setAttribute('data-tooltip-position', "bottom");
-    //   span.className = "highlight-adamite-annotation";
-    //   node.parentNode.insertBefore(span, node.nextSibling);
-    //   document.getElementById(span.id).onclick = anchorClick;
-    // });
-    //findXpath(xpathInfo, anno.offsets, anno.id, anno.content);
-
+  let newRange = xpathRange.toRange(anno.xpath[0].start, anno.xpath[0].startOffset, anno.xpath[0].end, anno.xpath[0].endOffset, document);
+  highlight(newRange, anno.xpath[0].startOffset, anno.xpath[0].endOffset, function (node, match, offset) {
+    var span = document.createElement("span");
+    span.setAttribute("name", anno.id.toString());
+    span.textContent = match;
+    span.className = "highlight-adamite-annotation";
+    node.parentNode.insertBefore(span, node.nextSibling);
   });
 }
 
@@ -465,51 +345,40 @@ function QuoteRepair(string) {
 /*
  * Finds highlighted text and creates highlight for annotation
  */
-var matchText = function (xpathInfo, offsets, callback, excludeElements) {
+// var matchText = function (xpathInfo, offsets, callback, excludeElements) {
 
-  var i = 0;
-  excludeElements || (excludeElements = ['script', 'style', 'iframe', 'canvas']);
+//   var i = 0;
+//   excludeElements || (excludeElements = ['script', 'style', 'iframe', 'canvas']);
 
-  var node;
-  var regexdXpath = escapeRegExp(xpathInfo.text.trim())
-  // console.log('in match text with this xpathinfo', xpathInfo);
-  if ((node = xpathToNodez(xpathInfo.xpath + "/text()[contains(.," + QuoteRepair(xpathInfo.text) + ")]")) === null) {
-    if ((node = xpathToNodez(xpathInfo.xpath + "/*[contains(.," + QuoteRepair(xpathInfo.text) + ")]")) === null) {
-      if ((node = xpathToNodez(xpathInfo.xpath + "/*[text()[contains(.," + QuoteRepair(xpathInfo.text) + ")]]/text()")) === null) {
-        console.log('couldnt find node');
-        couldntFindCount++;
-        console.log('count of unfound nodes', couldntFindCount);
-        return;
-      }
-    }
-  }
-  if (node.nodeType !== 3) {
-    // console.log('in if tyoe thing');
-    node = findChildXpath(xpathInfo, [node]);
-    // console.log('here\'s node', node);
-  }
-
-  if (node === null || node === undefined) {
-    console.log('couldnt find node');
-    couldntFindCount++;
-    console.log('count of unfound nodes', couldntFindCount);
-    return;
-  }
-  // console.log('node', node);
-  var substring = node.data;
+//   var node;
+//   var regexdXpath = escapeRegExp(xpathInfo.text.trim())
+//   console.log('in match text with this xpathinfo', xpathInfo);
+//   if ((node = xpathToNodez(xpathInfo.xpath + "/text()[contains(.," + QuoteRepair(xpathInfo.text) + ")]")) === null) {
+//     if ((node = xpathToNodez(xpathInfo.xpath + "/*[contains(.," + QuoteRepair(xpathInfo.text) + ")]")) === null) {
+//       if ((node = xpathToNodez(xpathInfo.xpath + "/*[text()[contains(.," + QuoteRepair(xpathInfo.text) + ")]]/text()")) === null) {
+//         return;
+//       }
+//     }
+//   }
+//   if (node.nodeType !== 3) {
+//     console.log('in if tyoe thing');
+//     node = findChildXpath(xpathInfo, [node]);
+//     console.log('here\'s node', node);
+//   }
+//   var substring = node.data;
 
 
-  if (xpathInfo.offsets.startOffset !== 0 && xpathInfo.offsets.endOffset !== 0) {
-    substring = node.data.substring(xpathInfo.offsets.startOffset, xpathInfo.offsets.endOffset);
-  }
-  else if (xpathInfo.offsets.startOffset !== 0) {
-    substring = node.data.substring(xpathInfo.offsets.startOffset, node.data.length);
-  }
-  else if (xpathInfo.offsets.endOffset !== 0) {
-    substring = node.data.substring(0, offsets.endOffset);
-  }
-  splitReinsertText(node, substring, callback);
-}
+//   if (xpathInfo.offsets.startOffset !== 0 && xpathInfo.offsets.endOffset !== 0) {
+//     substring = node.data.substring(xpathInfo.offsets.startOffset, xpathInfo.offsets.endOffset);
+//   }
+//   else if (xpathInfo.offsets.startOffset !== 0) {
+//     substring = node.data.substring(xpathInfo.offsets.startOffset, node.data.length);
+//   }
+//   else if (xpathInfo.offsets.endOffset !== 0) {
+//     substring = node.data.substring(0, offsets.endOffset);
+//   }
+//   splitReinsertText(node, substring, callback);
+// }
 
 chrome.runtime.sendMessage(
   {
@@ -520,7 +389,6 @@ chrome.runtime.sendMessage(
   },
   data => {
     const { annotationsOnPage } = data;
-    console.log(annotationsOnPage);
     if (annotationsOnPage.length) {
       annotationsOnPage.forEach(anno => FindWords(anno));
     }
@@ -533,12 +401,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.msg === 'ANNOTATION_DELETED_ON_PAGE') {
     let collection = document.getElementsByName(request.id);
     while (collection[0] !== undefined) {
+      var parent = collection[0].parentNode;
       $(collection[0]).contents().unwrap();
+      parent.normalize();
     }
   }
   else if (request.msg === 'ANNOTATION_ADDED') {
-
-
     request.newAnno.content = request.newAnno.annotation;
     FindWords(request.newAnno);
   }

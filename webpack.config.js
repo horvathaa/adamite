@@ -70,6 +70,16 @@ var options = {
         loader: 'babel-loader',
         exclude: /node_modules/,
       },
+      {
+        test: /\.(png)$/,
+        use: {
+          loader: 'url-loader',
+          options: {
+            limit: 25000
+          }
+        },
+        include: /node_modules/,
+      }
     ],
   },
   resolve: {
