@@ -1,7 +1,7 @@
 {
-  "name": "documentation-annotator",
-  "version": "0.0.1",
-  "description": "A documentation annotor to help software developers learn from one another",
+  "name": "ADAMITE",
+  "version": "1.0.0",
+  "description": "A documentation annotator to help software developers learn from one another",
   "license": "MIT",
   "scripts": {
     "build": "node utils/build.js",

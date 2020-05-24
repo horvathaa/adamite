@@ -1,5 +1,5 @@
 {
-  "name": "Documentation Annotator",
+  "name": "ADAMITE",
   "options_page": "options.html",
   "background": {
     "page": "background.html"
@@ -15,7 +15,7 @@
     "newtab": "newtab.html"
   },
   "icons": {
-    "128": "icon-128.png"
+    "128": "Adamite.png"
   },
   "content_scripts": [
     {

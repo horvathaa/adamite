@@ -6,10 +6,13 @@ import { APP_NAME_FULL } from '../../../../shared/constants';
 import { AiOutlineUser } from 'react-icons/ai';
 import '../../../../assets/img/Adamite.png';
 import profile from '../../../../assets/img/SVGs/Profile.svg';
+import { GoThreeBars } from 'react-icons/go';
 // import '../../../Background/test.html';
 import { useState } from 'react';
 
 import './Title.css';
+
+
 
 export default class Title extends React.Component {
   constructor(props) {
@@ -62,7 +65,7 @@ export default class Title extends React.Component {
                 <div className="row2">
                   <div className="col2 ">
                     <Dropdown onMouseOver={this.onMouseEnter} onMouseLeave={this.onMouseLeave} show={this.state.dropdownOpen} toggle={this.toggle.toString()}>
-                      <Dropdown.Toggle id="dropdown-menu" >
+                      <Dropdown.Toggle id="dropdown-menu" className="vertical-center">
                         <img src={profile} alt="profile" className="profile" />
                       </Dropdown.Toggle>
                       <Dropdown.Menu >
@@ -72,6 +75,7 @@ export default class Title extends React.Component {
                       </Dropdown.Menu>
 
                     </Dropdown>
+
                   </div>
                 </div>
               </div>

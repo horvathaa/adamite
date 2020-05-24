@@ -103,6 +103,10 @@ function xpathRepair(xpath, content, endPaths) {
   * 3. If not replace xpath with step2 xpath and repeat step 2
   * */
   var path;
+  if (xpath === "") {
+    return xpath;
+  }
+  // console.log('top of xpath - first check', xpath + "/text()[contains(.," + QuoteRepair(content) + ")]");
   if (xpathToNodez(xpath + "/text()[contains(.," + QuoteRepair(content) + ")]") !== null) {
     return xpath;
   }
@@ -125,7 +129,10 @@ function xpathRepair(xpath, content, endPaths) {
     xpathreplace = xpathreplace.substring(0, xpathreplace.length - 1);
   }
 
-  endPaths.push(endofxpath);
+
+  if (!endPaths.length) {
+    endPaths.push(endofxpath);
+  }
 
   if (xpath === xpathreplace) {
     if (xpathToNodez(xpath + "/text()[contains(.," + QuoteRepair(content) + ")]") !== null) {
@@ -158,6 +165,8 @@ function findChildXpath(xpathInfo, queue) {
       switch (curr.childNodes[i].nodeType) {
         case Node.TEXT_NODE: // 3
           if (curr.childNodes[i].textContent.match(word)) {
+            // console.log('returned this node', curr.childNodes[i]);
+            // console.log('matched on this word', word);
             return curr.childNodes[i];
           }
           break;
@@ -174,7 +183,7 @@ function CreateStringBody(xpathInfo) {
   var word = xpathInfo.text;
   word = escapeRegExp(word);
   var curr;
-  queue = [document.body];
+  var queue = [document.body];
   Selection.toString()
   while (curr = queue.pop()) {
     if (!curr.textContent.match(word)) continue;
