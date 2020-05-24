@@ -94,6 +94,7 @@ function replaceQuotes(string) {
   return string.replace(/"/g, "&quot;")
 }
 
+//TODO REWRITE TO MATCH TRY RANGE!
 function xpathRepair(xpath, content, endPaths) {
 
   /*
@@ -208,6 +209,14 @@ function getNodesInRange2(range) {
   var nodes = [];
   var node;
 
+  // walk parent nodes from start to common ancestor
+  for (node = start.parentNode; node; node = node.parentNode) {
+    nodes.push(node);
+    if (node == commonAncestor)
+      break;
+  }
+  nodes.reverse();
+
   // walk children and siblings from start until end is found
   if (start.isSameNode(end) && start.nodeType === Node.TEXT_NODE) {
     return [start];
@@ -228,7 +237,15 @@ function getNodesInRange2(range) {
 
 function highlight(range, startOffset, endOffset, callback) {
 
-  let nodes = getNodesInRange2(range);
+  // let nodes = getNodesInRange2(range);
+  console.log("NEW RANGE", nodes)
+
+  //Text nodes that were highlighted by user
+  var nodes = getNodesInRange2(range).filter(function (element) {
+    return element.nodeType === 3 && element.data.trim() !== "";
+  });
+  console.log("NEW RANGE", nodes)
+
   let start = true;
   let substring = "";
   if (nodes.length === 1) {
@@ -260,7 +277,8 @@ function highlight(range, startOffset, endOffset, callback) {
 function FindWords(anno) {
 
   var wordPath = [];
-
+  console.log("RANGE ")
+  console.log(anno)
   let newRange = xpathRange.toRange(anno.xpath[0].start, anno.xpath[0].startOffset, anno.xpath[0].end, anno.xpath[0].endOffset, document);
   highlight(newRange, anno.xpath[0].startOffset, anno.xpath[0].endOffset, function (node, match, offset) {
     var span = document.createElement("span");
