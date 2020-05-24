@@ -6,9 +6,13 @@ import './AnnotationList.css';
 class AnnotationList extends Component {
   render() {
     const { annotations, currentUser } = this.props;
+
+    // this is just for the user study - do not keep this in real version of app!
+    const annotationsCopy = annotations.filter(anno => anno.authorId === currentUser.uid || anno.authorId === 'XRCVPsHHNANyhefwAaLBBCAecRz1');
+
     return (
       <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
-        {annotations.map((annotation, idx) => {
+        {annotationsCopy.map((annotation, idx) => {
           return (
             <React.Fragment>
               <Annotation
