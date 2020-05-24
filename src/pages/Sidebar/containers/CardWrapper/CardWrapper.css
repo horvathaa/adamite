@@ -269,6 +269,29 @@
     /* opacity: 0.65; */
     filter: brightness(.75);
   }
+
+  .annotationContent {
+    padding: 4px;
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    padding: 4px 6px 0px 6px;
+    cursor: default;
+    color: #6B778C;
+    font-size: .9rem;
+    transition: all 0.1s ease-in;
+    margin: 5px 0px;
+  }
+
+  .Truncated {
+    white-space: nowrap;
+    /*word-break: break-all;*/
+    overflow-x: hidden;
+    overflow-y: hidden;
+    text-overflow: ellipsis;
+    /* display: none; */
+  }
   
   .Cancel-Button{
     position: relative;

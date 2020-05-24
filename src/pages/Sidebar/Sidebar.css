@@ -24,6 +24,9 @@
   filter: brightness(.5);
 }
 
+.TopRow {
+  display: flex;
+}
 
 .Header {
   text-align: center;
@@ -31,4 +34,12 @@
 
 .AnnotationListPadding {
   padding: 8px 8px 8px 8px;
+}
+
+.whoops {
+  text-align: center;
+  font-family: Helvetica;
+  font-size: 0.9rem;
+  padding: 4px 4px 4px 4px;
+  color: #6B778C;
 }

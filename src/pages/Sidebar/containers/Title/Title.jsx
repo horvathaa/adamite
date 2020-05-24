@@ -5,6 +5,7 @@ import { Dropdown } from 'react-bootstrap';
 import { APP_NAME_FULL } from '../../../../shared/constants';
 import { AiOutlineUser } from 'react-icons/ai';
 import '../../../../assets/img/Adamite.png';
+import profile from '../../../../assets/img/SVGs/Profile.svg';
 // import '../../../Background/test.html';
 import { useState } from 'react';
 
@@ -62,7 +63,7 @@ export default class Title extends React.Component {
                   <div className="col2 ">
                     <Dropdown onMouseOver={this.onMouseEnter} onMouseLeave={this.onMouseLeave} show={this.state.dropdownOpen} toggle={this.toggle.toString()}>
                       <Dropdown.Toggle id="dropdown-menu" >
-                        <AiOutlineUser className="userIcon" />
+                        <img src={profile} alt="profile" className="profile" />
                       </Dropdown.Toggle>
                       <Dropdown.Menu >
                         <Dropdown.Item onClick={this.signOutClickedHandler}>
@@ -71,13 +72,7 @@ export default class Title extends React.Component {
                       </Dropdown.Menu>
 
                     </Dropdown>
-
-                    {/* <AiOutlineUser className="userIcon" /> */}
                   </div>
-                  {/* <div className="UserEmail">{currentUser.email}</div> */}
-                  {/* <button className="UserSignOutButton" onClick={signOutClickedHandler}>
-                  Sign Out
-                    </button> */}
                 </div>
               </div>
             )}

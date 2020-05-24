@@ -11,10 +11,12 @@
   },
   "dependencies": {
     "@hot-loader/react-dom": "^16.13.0",
+    "@ideaconsult/anno-tip": "^1.0.0",
     "@types/react": "^16.9.26",
     "annotator": "^2.0.0-alpha.3",
     "bootstrap": "^4.5.0",
     "classnames": "^2.2.6",
+    "dom-highlight-range": "^3.0.1",
     "draft-js": "^0.11.5",
     "email-validator": "^2.0.4",
     "emotion": "^10.0.27",
@@ -35,8 +37,10 @@
     "slate": "^0.58.1",
     "slate-history": "^0.58.1",
     "slate-react": "^0.58.1",
+    "url-loader": "^4.1.0",
     "xmldom": "^0.3.0",
-    "xpath": "0.0.27"
+    "xpath": "0.0.27",
+    "xpath-range": "^1.1.1"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0",

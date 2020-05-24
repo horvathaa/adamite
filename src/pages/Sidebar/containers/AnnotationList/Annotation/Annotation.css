@@ -45,11 +45,47 @@
   border-bottom-right-radius: 8px;
 }
 
+.author {
+  padding: 0px 0px 0px 4px;
+  color: #6B778C;
+  font-weight: bold;
+}
+
+.timestamp {
+  padding: 0px 0px 0px 4px;
+  color: #6B778C;
+}
+
+.profileContainer{
+  padding: 4px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: #EBECF0;
+  text-align: center;
+}
+
+.profile {
+  width: 20px;
+  height: 20px;
+  color: #6B778C;
+}
+
+.userProfileContainer {
+  height: 100%;
+  width: 100%;
+  color: #6B778C;
+}
+
 .AnnotationContainer {
   padding: 5px;
   background: white;
   border: 1px solid #bfbebe;
-  box-shadow: 5px 5px 5px #88888887;
+  box-shadow: 2px 2px 2px #88888887;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
 
   flex: 1;
   min-width: 0;
@@ -91,6 +127,10 @@
   position: relative;
 }
 
+#collapse {
+  transform: rotate(180deg) 
+}
+
 .Truncated {
   white-space: nowrap;
   /*word-break: break-all;*/
@@ -106,16 +146,16 @@
   min-width: 0;
 
 
-  border-left: 3px solid #658167;
+  border-left: 3px solid #6B778C;
   padding: 11px 5px 11px 5px;
   font-weight: lighter;
-  font-size: 1rem;
+  font-size: .9rem;
   margin-top: 5px;
   margin-bottom: 5px;
   line-height: 1rem;
   margin-left: 5px;
   font-style: italic;
-  color: #666;
+  color:  #6B778C;
   max-height: 200px;
   overflow: auto;
 
@@ -133,9 +173,6 @@
   color: rgb(85, 83, 83);
   font-size: 1rem;
   word-break: break-all;
-
-
-
   transition: all 0.1s ease-in;
 
   margin: 5px 0px;
@@ -151,8 +188,16 @@
   padding-left: 5px;
   text-align: left;
   color: #555353;
+  display: flex;
 }
 
+.HamburgerMenu {
+  display: inline-flex;
+}
+
+.ExpandCollapse {
+  text-align: center;
+}
 
 #Trash {
   left: 0;
@@ -175,7 +220,8 @@
 
 .AnchorIcon {
   width: 14px;
-  color: #7f8080;
+  color:  #6B778C;
+  filter: brightness(.8);
   height: 14px;
   cursor: pointer;
 }
@@ -187,7 +233,8 @@
 
 .Icon {
   width: 1.4em;
-  color: #7f8080;
+  color:  #6B778C;
+  filter: brightness(.8);
   height: 1.5em;
   cursor: pointer;
 }
