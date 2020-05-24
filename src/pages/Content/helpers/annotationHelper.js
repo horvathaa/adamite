@@ -284,8 +284,8 @@ function highlight(range, startOffset, endOffset, callback) {
 function FindWords(anno) {
 
   var wordPath = [];
-  console.log("RANGE ")
-  console.log(anno)
+  // console.log("RANGE ")
+  // console.log(anno)
   let newRange = xpathRange.toRange(anno.xpath[0].start, anno.xpath[0].startOffset, anno.xpath[0].end, anno.xpath[0].endOffset, document);
   highlight(newRange, anno.xpath[0].startOffset, anno.xpath[0].endOffset, function (node, match, offset) {
     var span = document.createElement("span");

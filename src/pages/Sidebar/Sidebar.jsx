@@ -287,7 +287,7 @@ class Sidebar extends React.Component {
     }
 
     const inputText = searchBarInputText.toLowerCase();
-    const filteredAnnotationsCopy = [];
+    let filteredAnnotationsCopy = [];
     filteredAnnotations.forEach((anno) => {
       const { content } = anno;
       if (content.toLowerCase().includes(inputText)) {
@@ -296,7 +296,10 @@ class Sidebar extends React.Component {
     });
 
     chrome.storage.local.set({ annotations: filteredAnnotationsCopy });
-    console.log(this.selection);
+    filteredAnnotationsCopy = filteredAnnotationsCopy.sort((a, b) =>
+      (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
+    );
+    // console.log(this.selection);
 
     return (
       <div className="SidebarContainer">
