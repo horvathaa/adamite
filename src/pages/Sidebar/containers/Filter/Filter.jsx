@@ -25,25 +25,11 @@ class Filter extends React.Component {
         archive: null,
         tags: []
     }
-    // _forceOpen = true;
+
 
     state = {
         menuOpen: false
     }
-
-
-    // dropdownToggle(newValue) {
-    //     console.log('in dropdownToggle');
-    //     console.log(newValue);
-    //     console.log('this._forceopen', this._forceOpen);
-    //     if (this._forceOpen) {
-    //         this.setState({ menuOpen: true });
-    //         this._forceOpen = false;
-    //     } else {
-    //         this.setState({ menuOpen: newValue });
-    //     }
-    // }
-
 
 
     componentDidMount() {
