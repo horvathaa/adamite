@@ -2,15 +2,18 @@ import '../../assets/img/Adamite.png';
 import '../../assets/img/icon-128.png';
 import './helpers/authHelper';
 import './helpers/sidebarHelper';
-import './helpers/filterHelper';
+import './helpers/objectCleaner';
+
 import './filterWindow.html';
 
 import {
   auth,
   createAnnotation,
   getAllAnnotationsByUserId,
+  updateAnnotationById,
   getAllAnnotations,
 } from '../../firebase/index';
+import { FaSadCry } from 'react-icons/fa';
 
 let unsubscribeAnnotations = null;
 let annotations = [];
@@ -88,6 +91,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     const { url } = request.payload;
     const annotationsOnPage = annotations.filter(a => a.url === url); // can use this later so we get all annotations that match our filter criterias
     sendResponse({ annotationsOnPage });
+  } else if (request.msg === 'UPDATE_XPATH_BY_IDS') {
+    // firebase: in action
+    request.payload.toUpdate.forEach(e =>
+      updateAnnotationById(
+        e.id, clean({
+          "xpath.start": e.xpath.start,
+          "xpath.startOffset": e.xpath.startOffset,
+          "xpath.end": e.xpath.end,
+          "xpath.endOffset": e.xpath.endOffset,
+        }),
+      ).then(value => {
+        console.log("VALYE", value)
+      })
+    );
+    //sendResponse({ updatedAnnotationXpath });
   } else if (request.msg === 'FILTER_BY_TAG') {
     chrome.runtime.sendMessage({ msg: 'REQUEST_FILTERED_ANNOTATIONS', from: 'background' }, (response) => {
       setTimeout(() => {

@@ -70,12 +70,12 @@ function XpathConversion(element) {
     for (var i = 0; i < siblings.length; i++) {
         var sibling = siblings[i];
         if (sibling === element)
-            return XpathConversion(element.parentNode) + '/' +/* (element.nodeType === 3 ? ('text()' + '[' + (txt + 1) + ']') : (*/element.tagName + '[' + (ix + 1) + ']';
+            return XpathConversion(element.parentNode) + '/' + (element.nodeType === 3 ? ('text()' + '[' + (txt + 1) + ']') : (element.tagName + '[' + (ix + 1) + ']'));
         if (sibling.nodeType === 1 && sibling.tagName === element.tagName)
             ix++;
-        // else if (sibling.nodeType === 3) {
-        //     txt++
-        // }
+        else if (sibling.nodeType === 3) {
+            txt++
+        }
     }
 }
 
@@ -95,7 +95,7 @@ document.addEventListener('mouseup', event => {
             endOffset: rect.endOffset,
         };
 
-        var xpathToNode = [];
+        //var xpathToNode = [];
         var tempArry = []
         for (var i = 0; i < textNodes.length; i++) {
             tempArry.push(XpathConversion(textNodes[i].parentNode))
@@ -116,13 +116,13 @@ document.addEventListener('mouseup', event => {
         //   }
         // );
 
-        xpathToNode.push({
-            start: XpathConversion(textNodes[0].parentNode),
-            end: XpathConversion(textNodes[textNodes.length - 1].parentNode),
+        var xpathToNode = {
+            start: XpathConversion(textNodes[0]),
+            end: XpathConversion(textNodes[textNodes.length - 1]),
             startOffset: rect.startOffset,
             endOffset: rect.endOffset
-        });
-
+        };
+        console.log("CREATED ANNOTATION", xpathToNode)
         alertBackgroundOfNewSelection(selection.toString(), offsets, xpathToNode);
     }
 

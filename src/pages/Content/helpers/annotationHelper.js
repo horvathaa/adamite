@@ -19,7 +19,6 @@ function anchorClick(e) {
 
 
 
-
 function escapeRegExp(text) {
   return text.replace(/[-[\]{}()*+’?.,\\^$|#]/g, '\\$&');
 }
@@ -202,6 +201,15 @@ function CreateStringBody(xpathInfo) {
   }
 }
 
+function NodesUnderNode(node) {
+  var all = [];
+  for (node = node.firstChild; node; node = node.nextSibling) {
+    if (node.nodeType == 3) all.push(node);
+    else all = all.concat(textsNodesUnderNode(node));
+  }
+  return all;
+}
+
 function textsNodesUnderNode(node) {
   var all = [];
   for (node = node.firstChild; node; node = node.nextSibling) {
@@ -286,8 +294,8 @@ function FindWords(anno) {
   var wordPath = [];
   console.log("RANGE ")
   console.log(anno)
-  let newRange = xpathRange.toRange(anno.xpath[0].start, anno.xpath[0].startOffset, anno.xpath[0].end, anno.xpath[0].endOffset, document);
-  highlight(newRange, anno.xpath[0].startOffset, anno.xpath[0].endOffset, function (node, match, offset) {
+  let newRange = xpathRange.toRange(anno.xpath.start, anno.xpath.startOffset, anno.xpath.end, anno.xpath.endOffset, document);
+  highlight(newRange, anno.xpath.startOffset, anno.xpath.endOffset, function (node, match, offset) {
     var span = document.createElement("span");
     span.setAttribute("name", anno.id.toString());
     span.textContent = match;
@@ -408,19 +416,309 @@ chrome.runtime.sendMessage(
     if (annotationsOnPage.length) {
       annotationsOnPage.reverse().forEach(anno => FindWords(anno));
     }
-
   }
 );
+
+
+function XpathConversion(element) {
+  if (element.tagName == 'HTML')
+    return '/HTML[1]';
+  if (element === document.body)
+    return '/HTML[1]/BODY[1]';
+
+  var ix = 0;
+  var txt = 0;
+  var siblings = element.parentNode.childNodes;
+  for (var i = 0; i < siblings.length; i++) {
+    var sibling = siblings[i];
+    if (sibling === element)
+      return XpathConversion(element.parentNode) + '/' + (element.nodeType === 3 ? ('text()' + '[' + (txt + 1) + ']') : (element.tagName + '[' + (ix + 1) + ']'));
+    if (sibling.nodeType === 1 && sibling.tagName === element.tagName)
+      ix++;
+    else if (sibling.nodeType === 3) {
+      txt++
+    }
+  }
+}
+
+function flatten(arr) {
+  var el, flat, i, len;
+  flat = [];
+  for (i = 0, len = arr.length; i < len; i++) {
+    el = arr[i];
+    flat = flat.concat(el && $.isArray(el) ? flatten(el) : el);
+  }
+  return flat;
+}
+
+function findAllNodesUnderRange(node) {
+  var nodes;
+  console.log(node)
+  if (node && node.className !== 'highlight-adamite-annotation') {
+    console.log("HERE")
+    nodes = [];
+    //if (node.nodeType !== Node.COMMENT_NODE) {
+    node = node.lastChild;
+    while (node) {
+      nodes.push(findAllNodesUnderRange(node));
+      node = node.previousSibling;
+    }
+    //}
+    return nodes.reverse();
+  } else {
+    return node;
+  }
+}
+
+function getDescendants(node, accum) {
+  var i;
+  accum = accum || [];
+  for (i = 0; i < node.childNodes.length; i++) {
+    accum.push(node.childNodes[i])
+    getDescendants(node.childNodes[i], accum);
+  }
+  return accum;
+}
+
+function sendUpdateXpaths(toUpdate) {
+  chrome.runtime.sendMessage(
+    {
+      msg: 'UPDATE_XPATH_BY_IDS',
+      payload: {
+        toUpdate,
+      },
+    },
+    data => {
+      console.log("DATA", data)
+      const { annotationsOnPage } = data;
+      if (annotationsOnPage.length) {
+        annotationsOnPage.reverse().forEach(anno => FindWords(anno));
+      }
+    }
+  );
+}
+
+function removeSpans(collection) {
+  while (collection[0] !== undefined) {
+    var parent = collection[0].parentNode;
+    $(collection[0]).contents().unwrap();
+    parent.normalize();
+  }
+}
+
+//Finds all adamite spans under an adamite span range
+function findUniqueSpanIds(range, id) {
+
+  var rangeNodes = getNodesInRange(range).filter(function (element) {
+    return element.className === 'highlight-adamite-annotation' && element.attributes.getNamedItem("name").value === id;
+  });
+  var innerSpanNodes = [];
+  rangeNodes.forEach(e => innerSpanNodes.push(getDescendants(e)));
+  innerSpanNodes = flatten(innerSpanNodes).filter(function (element) {
+    return element.className === 'highlight-adamite-annotation' && element.attributes.getNamedItem("name").value !== id;
+  });
+  console.log("indernodes!", innerSpanNodes)
+
+  //filters down to just one Id
+  return innerSpanNodes = innerSpanNodes.filter((span, index, self) => self.findIndex(t => t.attributes.getNamedItem("name").value === span.attributes.getNamedItem("name").value) === index)
+}
+
+//Calculate the offset of the new Xpath
+function getendOffset(nodes, startOffset) {
+  //if the start and end nodes share a parent then we need to get a better end offset
+  var iterNode, i = nodes.length - 1, offset = 0;
+
+  if (nodes[0].parentNode.isSameNode(nodes[nodes.length - 1].parentNode)) {
+    iterNode = nodes[nodes.length - 1];
+    for (var i = nodes.length - 1; i >= 0; i--) {
+      if (nodes[i].attributes.getNamedItem("name").value !== nodes[0].attributes.getNamedItem("name").value || !nodes[0].parentNode.isSameNode(nodes[i].parentNode)) {
+        break;
+      }
+      offset += nodes[i].innerText.length;
+    }
+    i++;
+    if (nodes[i].isSameNode(nodes[0])) {
+      offset += startOffset
+    }
+    return offset;
+
+  } else {
+    return "N/A";
+  }
+
+}
+
+function UpdateXpathObj(id, start, startOffset, end, endOffset) {
+  this.id = id;
+  this.xpath = {};
+  this.xpath["start"] = start;
+  this.xpath["startOffset"] = startOffset;
+  this.xpath["end"] = end;
+  this.xpath["endOffset"] = endOffset;
+}
+
+/*
+ * TODO: IF UPDATED XPATH IS ON A DIFFERENT PARENT
+ * IF THERE IS AN ELEMENT IN THE PARENT THAT WLL BE CHANGED BECAUSE OF THE DELETION 
+ * BUT IS NOT UNDER THE ELEMENT TO BE DELETED SPAN
+ */
+
+function updateXpaths(spanCollection, id) {
+
+  var newObject = [];
+
+
+  let range = document.createRange();
+  range.setStart(spanCollection[0], 0);
+  range.setEnd(spanCollection[spanCollection.length - 1], spanCollection[spanCollection.length - 1].childNodes.length);
+
+
+  console.log("Span Collection", spanCollection)
+  console.log("delete range", range)
+
+
+  var innerSpanNodes = findUniqueSpanIds(range, id);
+
+
+  if (innerSpanNodes.length === 0) {
+    removeSpans(spanCollection);
+    return;
+  }
+  var nodesToUpdate = []
+  for (var i = 0; i < innerSpanNodes.length; i++) {
+    var spanApearance = document.getElementsByName(innerSpanNodes[i].attributes.getNamedItem("name").value);
+    nodesToUpdate.push({
+      spanApearance: spanApearance,
+      start: range.intersectsNode(spanApearance[0]),
+      end: range.intersectsNode(spanApearance[spanApearance.length - 1]),
+    });
+  }
+
+  removeSpans(spanCollection);
+
+  console.log("indernodes unique !", innerSpanNodes)
+  console.log("RANGES BOOL", nodesToUpdate)
+
+  for (var i = 0; i < nodesToUpdate.length; i++) {
+
+    //var spanApearance = document.getElementsByName(innerSpanNodes[i].attributes.getNamedItem("name").value);
+    console.log("SPAN TO RENEW !", spanApearance)
+    console.log("is first in range", range)
+    var node = nodesToUpdate[i];
+    var spanNodes = node.spanApearance;
+    var idToChange = spanNodes[0].attributes.getNamedItem("name").value;
+    var newStart = null;
+    var startOffset = null;
+    var endofoffset = null;
+    var newEnd = null;
+    // var startOffset = spanApearance[0].previousSibling.length
+    // var endofoffset = getendOffset(spanApearance, spanApearance[0].previousSibling.length)
+    // var startprev = spanApearance[0].previousSibling
+
+
+    //if the start of the span range is outside the delted range and on the left
+    if (node.start) {
+      console.log("start is true")
+      newStart = spanNodes[0].previousSibling
+      startOffset = spanNodes[0].previousSibling.length
+    }
+    //if right most section is out of the inner span and not part of the parent span
+    if (node.end  /*add a check to see if it is in the parent*/) {
+      console.log("end is true", spanNodes)
+      newEnd = spanNodes[spanNodes.length - 1].previousSibling
+      while (1) { //endprev.attributes.getNamedItem("name").value === spanApearance[0].attributes.getNamedItem("name").value) {
+        console.log(newEnd)
+        if (newEnd.nodeType == 3 || newEnd.attributes.getNamedItem("name") === null || newEnd.attributes.getNamedItem("name").value !== spanNodes[0].attributes.getNamedItem("name").value) {
+          break;
+        }
+        newEnd = newEnd.previousSibling
+      }
+      endofoffset = getendOffset(spanNodes, spanNodes[0].previousSibling.length)
+    }
+
+    // else if()
+    // console.log("START XPATH !", XpathConversion(spanApearance[0]))
+    // console.log("END XPATH !", spanApearance[spanApearance.length - 1].previousSibling)
+    // console.log("START OFFSET", spanApearance[0].previousSibling.length)
+    // console.log("END OFFSET", spanApearance[spanApearance.length - 1].textContent.length)
+    console.log("Calculated END OFFSET", endofoffset)
+
+
+
+
+    // var endprev = spanApearance[spanApearance.length - 1].previousSibling
+    // while (1) { //endprev.attributes.getNamedItem("name").value === spanApearance[0].attributes.getNamedItem("name").value) {
+    //   console.log(endprev)
+    //   if (endprev.nodeType == 3 || endprev.attributes.getNamedItem("name") === null || endprev.attributes.getNamedItem("name").value !== spanApearance[0].attributes.getNamedItem("name").value) {
+    //     break;
+    //   }
+    //   endprev = endprev.previousSibling
+    // }
+
+
+
+    var parent = spanNodes[0].parentNode;
+    $(spanNodes[0]).contents().unwrap();
+    parent.normalize();
+    console.log("parent1", parent)
+
+    parent = spanNodes[spanNodes.length - 1].parentNode;
+    $(spanNodes[spanNodes.length - 1]).contents().unwrap();
+    parent.normalize();
+    console.log("parent2", parent)
+    console.log("can you compare null?", !newEnd.isSameNode(newStart))
+    console.log("start", newStart)
+    console.log("ENDPRVE", newEnd)
+    console.log("Calculated END OFFSET", endofoffset)
+    if (newEnd !== null && newEnd.nextSibling !== null && !newEnd.isSameNode(spanNodes[0])) {
+      newEnd = newEnd.nextSibling;
+    }
+
+
+    // let range         2 = document.createRange();
+    // console.log("PREV", endprev.nextSibling)
+    // range2.setStart(startprev, startOffset);
+    // range2.setEnd(endprev, endofoffset);
+
+    //console.log("START XPATH !", XpathConversion(newStart))
+    console.log("END XPATH !", XpathConversion(newEnd))
+    newEnd = newEnd === null ? null : XpathConversion(newEnd);
+    newStart = newStart === null ? null : XpathConversion(newStart);
+
+    newObject.push(new UpdateXpathObj(idToChange, newStart, startOffset, newEnd, endofoffset));
+    console.log("cUSTOm Object", newObject);
+
+    // var fakeAnno = {
+    //   id: newObject[newObject.length - 1].id,
+    //   xpath: [{
+    //     start: XpathConversion(spanNodes[0]),
+    //     startOffset: 0,
+    //     end: newObject[newObject.length - 1].end,
+    //     endOffset: newObject[newObject.length - 1].endOffset
+    //   }]
+    // };
+    // //TODO UPDATE TO HAVE THIS PULL FROM SENDUPDATE!
+    // FindWords(fakeAnno);
+  }
+  // call update
+  if (newObject.length !== 0)
+    sendUpdateXpaths(newObject);
+
+  console.log("DONE!");
+}
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   if (request.msg === 'ANNOTATION_DELETED_ON_PAGE') {
     let collection = document.getElementsByName(request.id);
-    while (collection[0] !== undefined) {
-      var parent = collection[0].parentNode;
-      $(collection[0]).contents().unwrap();
-      parent.normalize();
-    }
+    console.log("COLLECTION", collection)
+    updateXpaths(collection, request.id)
+    // while (collection[0] !== undefined) {
+    //   var parent = collection[0].parentNode;
+    //   $(collection[0]).contents().unwrap();
+    //   parent.normalize();
+    // }
+
   }
   else if (request.msg === 'ANNOTATION_ADDED') {
     request.newAnno.content = request.newAnno.annotation;
