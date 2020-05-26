@@ -83,14 +83,13 @@ export default class CardWrapper extends React.Component {
     }
 
     dropDownSelection = (option) => {
-        console.log(option);
-        this.setState({ annotationType: option.value })
+        this.setState({ annotationType: option.value });
     }
 
     render() {
 
         const options = [
-            'Default', 'To-do'/*, 'Highlight', 'Navigation', 'Issue'*/
+            'Default', 'To-do', 'Question', 'Highlight', 'Navigation', 'Issue'
         ];
         const defaultOption = options[0];
 

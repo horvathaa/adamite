@@ -475,107 +475,104 @@ class Annotation extends Component {
             })}
           >
             {!this.state.collapsed ? (
-              <div className={classNames({
+              <div className={" container " + classNames({
                 Header: true,
-                Truncated: this.state.collapsed,
+                Truncated: collapsed,
               })}>
-                {this.formatTimestamp(timeStamp)}
+                <div className="profileContainer">
+                  <img src={profile} alt="profile" className="profile" />
+                  {/* <Profile className="profile" /> */}
+                </div>
+                <div className="userProfileContainer">
+
+                  <div className="author">
+                    {author}
+                  </div>
+                  <div className="timestamp">
+                    {this.formatTimestamp(timeStamp)}
+                  </div>
+                </div>
+                <div className="row">
+                  {/* <div className="col">
+
+                  </div> */}
+                  <div className="col2">
+
+                    {currentUser.uid === authorId && !collapsed ? (
+                      <Dropdown className="HamburgerMenu">
+                        <Dropdown.Toggle as={HamburgerToggle}></Dropdown.Toggle>
+                        <Dropdown.Menu>
+                          <Dropdown.Item as="button" eventKey={id} onSelect={eventKey => this.handleEditClick(id)}>
+                            Edit
+                        </Dropdown.Item>
+                          <Dropdown.Item as="button" eventKey={id} onSelect={eventKey => this.handleTrashClick(id)}>
+                            Delete
+                        </Dropdown.Item>
+                        </Dropdown.Menu>
+                      </Dropdown>
+                    ) : (null)}
+                  </div>
+                </div>
               </div>
             ) : (null)}
             <div
               className={classNames({
                 AnchorContainer: true,
-                Truncated: this.state.collapsed
+                Truncated: collapsed
               })}
             >
-              {anchor}
-            </div>
-            <div
-              className={classNames({
-                ContentContainer: true,
-                Truncated: this.state.collapsed,
-                editAreaContainer: this.state.editing,
-              })}
-            >
-              {this.state.editing ? (
-                <React.Fragment>
-                  <div className="editAreaContainer">
-                    <div className="TextareaContainer">
-                      <textarea
-                        className="form-control"
-                        rows="2"
-                        placeholder={content}
-                        //value={content} -to-do make this work better
-                        onChange={e => this.annotationChangeHandler(e)}
-                      />
-                    </div>
-                    <div className="SubmitButtonContainer">
-                      <Dropdown >
-                        <Dropdown.Toggle variant="success" id="dropdown-basic">
-                          Annotation Type
-                      </Dropdown.Toggle>
-                        <Dropdown.Menu >
-                          <Dropdown.Item as="button" eventKey="default" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                            Default
-                        </Dropdown.Item>
-                          <Dropdown.Item as="button" eventKey="to-do" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                            To-do
-                        </Dropdown.Item>
-                          <Dropdown.Item as="button" eventKey="question" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                            Question/Answer
-                        </Dropdown.Item>
-                          <Dropdown.Item as="button" eventKey="highlight" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                            Highlight
-                        </Dropdown.Item>
-                          <Dropdown.Item as="button" eventKey="navigation" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                            Navigation
-                        </Dropdown.Item>
-                          <Dropdown.Item as="button" eventKey="issue" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                            Issue
-                        </Dropdown.Item>
-                        </Dropdown.Menu>
-                      </Dropdown>
-                    &nbsp; &nbsp;
-                      <button
-                        className="btn btn-sm btn-outline-danger"
-                        onClick={_ => this.handleEditCancel()}
-                      >
-                        Cancel
-                        </button>
-                        &nbsp; &nbsp;
-                      <button
-                        className="btn btn-sm btn-outline-secondary SubmitButton"
-                        onClick={e => this.submitButtonHandler(e, id)}
-                        disabled={content.length === 0}
-                      >
-                        Save
-                      </button>
-                    </div>
-                  </div>
-                </React.Fragment>
-              ) : (<div>
-                {content}
+              <div className="AnchorIconContainer">
+                {currentUrl === url ? (
+                  <FaFont className="AnchorIcon" />
+                ) : (<FaExternalLinkAlt className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />)}
               </div>
-                )}
+              <div className="AnchorTextContainer">
+                {anchor}
+              </div>
             </div>
-            <div className="IconRow">
-              {currentUser.uid === authorId ? (
+
+            <React.Fragment>
+              <CardWrapper tags={tags}
+                annotationType={annotationType}
+                annotationContent={content}
+                edit={editing}
+                pageAnnotation={anchor} id={id}
+                cancelButtonHandler={this.cancelButtonHandler}
+                submitButtonHandler={this.submitButtonHandler}
+                elseContent={content}
+                collapsed={collapsed} />
+            </React.Fragment>
+
+            {tags.length && !collapsed && !editing ? (
+              <div className={classNames({
+                TagRow: true
+              })}>
+                <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
+                  {tags.map((tagContent, idx) => {
+                    return (
+                      <CustomTag idx={idx} content={tagContent} deleteTag={this.deleteTag} editing={editing} />
+                    )
+                  }
+                  )}
+                </ul>
+
+              </div>
+            ) : (null)}
+            {collapsed ? (
+              <div className="ExpandCollapse">
+                <img src={expand} alt="Expand" onClick={_ => this.handleExpandCollapse('expand')} className="Icon" />
+                {/* <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} className="Icon" /> */}
+              </div>
+            ) : (
                 <React.Fragment>
-                  <div className="IconContainer">
-                    <FaTrash className="Icon" id="Trash" onClick={_ => this.handleTrashClick(id)} />
+                  <div className="ExpandCollapse">
+                    {/* <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} className="Icon" /> */}
+                    <img src={expand} id="collapse" alt="Collapse" onClick={_ => this.handleExpandCollapse('collapse')} className="Icon" />
                   </div>
-                  <div className="IconContainer">
-                    <FaEdit className="Icon" id="Edit" onClick={_ => this.handleEditClick(id)} />
-                  </div>
+
                 </React.Fragment>
-              ) : (null)}
-              {this.state.collapsed ? (
-                <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} className="Icon" />
-              ) : (
-                  <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} className="Icon" />
-                )
-              }
-            </div>
+              )
+            }
           </div>
 
           <div
@@ -618,107 +615,104 @@ class Annotation extends Component {
             })}
           >
             {!this.state.collapsed ? (
-              <div className={classNames({
+              <div className={" container " + classNames({
                 Header: true,
-                Truncated: this.state.collapsed,
+                Truncated: collapsed,
               })}>
-                {this.formatTimestamp(timeStamp)}
+                <div className="profileContainer">
+                  <img src={profile} alt="profile" className="profile" />
+                  {/* <Profile className="profile" /> */}
+                </div>
+                <div className="userProfileContainer">
+
+                  <div className="author">
+                    {author}
+                  </div>
+                  <div className="timestamp">
+                    {this.formatTimestamp(timeStamp)}
+                  </div>
+                </div>
+                <div className="row">
+                  {/* <div className="col">
+
+                </div> */}
+                  <div className="col2">
+
+                    {currentUser.uid === authorId && !collapsed ? (
+                      <Dropdown className="HamburgerMenu">
+                        <Dropdown.Toggle as={HamburgerToggle}></Dropdown.Toggle>
+                        <Dropdown.Menu>
+                          <Dropdown.Item as="button" eventKey={id} onSelect={eventKey => this.handleEditClick(id)}>
+                            Edit
+                      </Dropdown.Item>
+                          <Dropdown.Item as="button" eventKey={id} onSelect={eventKey => this.handleTrashClick(id)}>
+                            Delete
+                      </Dropdown.Item>
+                        </Dropdown.Menu>
+                      </Dropdown>
+                    ) : (null)}
+                  </div>
+                </div>
               </div>
             ) : (null)}
             <div
               className={classNames({
                 AnchorContainer: true,
-                Truncated: this.state.collapsed
+                Truncated: collapsed
               })}
             >
-              {anchor}
-            </div>
-            <div
-              className={classNames({
-                ContentContainer: true,
-                Truncated: this.state.collapsed,
-                editAreaContainer: this.state.editing,
-              })}
-            >
-              {this.state.editing ? (
-                <React.Fragment>
-                  <div className="editAreaContainer">
-                    <div className="TextareaContainer">
-                      <textarea
-                        className="form-control"
-                        rows="2"
-                        placeholder={content}
-                        //value={content} -to-do make this work better
-                        onChange={e => this.annotationChangeHandler(e)}
-                      />
-                    </div>
-                    <div className="SubmitButtonContainer">
-                      <Dropdown >
-                        <Dropdown.Toggle variant="success" id="dropdown-basic">
-                          Annotation Type
-                      </Dropdown.Toggle>
-                        <Dropdown.Menu >
-                          <Dropdown.Item as="button" eventKey="default" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                            Default
-                        </Dropdown.Item>
-                          <Dropdown.Item as="button" eventKey="to-do" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                            To-do
-                        </Dropdown.Item>
-                          <Dropdown.Item as="button" eventKey="question" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                            Question/Answer
-                        </Dropdown.Item>
-                          <Dropdown.Item as="button" eventKey="highlight" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                            Highlight
-                        </Dropdown.Item>
-                          <Dropdown.Item as="button" eventKey="navigation" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                            Navigation
-                        </Dropdown.Item>
-                          <Dropdown.Item as="button" eventKey="issue" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                            Issue
-                        </Dropdown.Item>
-                        </Dropdown.Menu>
-                      </Dropdown>
-                    &nbsp; &nbsp;
-                      <button
-                        className="btn btn-sm btn-outline-danger"
-                        onClick={_ => this.handleEditCancel()}
-                      >
-                        Cancel
-                        </button>
-                        &nbsp; &nbsp;
-                      <button
-                        className="btn btn-sm btn-outline-secondary SubmitButton"
-                        onClick={e => this.submitButtonHandler(e, id)}
-                        disabled={content.length === 0}
-                      >
-                        Save
-                      </button>
-                    </div>
-                  </div>
-                </React.Fragment>
-              ) : (<div>
-                {content}
+              <div className="AnchorIconContainer">
+                {currentUrl === url ? (
+                  <FaFont className="AnchorIcon" />
+                ) : (<FaExternalLinkAlt className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />)}
               </div>
-                )}
+              <div className="AnchorTextContainer">
+                {anchor}
+              </div>
             </div>
-            <div className="IconRow">
-              {currentUser.uid === authorId ? (
+
+            <React.Fragment>
+              <CardWrapper tags={tags}
+                annotationType={annotationType}
+                annotationContent={content}
+                edit={editing}
+                pageAnnotation={anchor} id={id}
+                cancelButtonHandler={this.cancelButtonHandler}
+                submitButtonHandler={this.submitButtonHandler}
+                elseContent={content}
+                collapsed={collapsed} />
+            </React.Fragment>
+
+            {tags.length && !collapsed && !editing ? (
+              <div className={classNames({
+                TagRow: true
+              })}>
+                <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
+                  {tags.map((tagContent, idx) => {
+                    return (
+                      <CustomTag idx={idx} content={tagContent} deleteTag={this.deleteTag} editing={editing} />
+                    )
+                  }
+                  )}
+                </ul>
+
+              </div>
+            ) : (null)}
+            {collapsed ? (
+              <div className="ExpandCollapse">
+                <img src={expand} alt="Expand" onClick={_ => this.handleExpandCollapse('expand')} className="Icon" />
+                {/* <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} className="Icon" /> */}
+              </div>
+            ) : (
                 <React.Fragment>
-                  <div className="IconContainer">
-                    <FaTrash className="Icon" id="Trash" onClick={_ => this.handleTrashClick(id)} />
+                  <div className="ExpandCollapse">
+                    {/* <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} className="Icon" /> */}
+                    <img src={expand} id="collapse" alt="Collapse" onClick={_ => this.handleExpandCollapse('collapse')} className="Icon" />
                   </div>
-                  <div className="IconContainer">
-                    <FaEdit className="Icon" id="Edit" onClick={_ => this.handleEditClick(id)} />
-                  </div>
+
                 </React.Fragment>
-              ) : (null)}
-              {this.state.collapsed ? (
-                <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} className="Icon" />
-              ) : (
-                  <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} className="Icon" />
-                )
-              }
-            </div>
+              )
+            }
           </div>
 
           <div
@@ -761,107 +755,104 @@ class Annotation extends Component {
             })}
           >
             {!this.state.collapsed ? (
-              <div className={classNames({
+              <div className={" container " + classNames({
                 Header: true,
-                Truncated: this.state.collapsed,
+                Truncated: collapsed,
               })}>
-                {this.formatTimestamp(timeStamp)}
+                <div className="profileContainer">
+                  <img src={profile} alt="profile" className="profile" />
+                  {/* <Profile className="profile" /> */}
+                </div>
+                <div className="userProfileContainer">
+
+                  <div className="author">
+                    {author}
+                  </div>
+                  <div className="timestamp">
+                    {this.formatTimestamp(timeStamp)}
+                  </div>
+                </div>
+                <div className="row">
+                  {/* <div className="col">
+
+                  </div> */}
+                  <div className="col2">
+
+                    {currentUser.uid === authorId && !collapsed ? (
+                      <Dropdown className="HamburgerMenu">
+                        <Dropdown.Toggle as={HamburgerToggle}></Dropdown.Toggle>
+                        <Dropdown.Menu>
+                          <Dropdown.Item as="button" eventKey={id} onSelect={eventKey => this.handleEditClick(id)}>
+                            Edit
+                        </Dropdown.Item>
+                          <Dropdown.Item as="button" eventKey={id} onSelect={eventKey => this.handleTrashClick(id)}>
+                            Delete
+                        </Dropdown.Item>
+                        </Dropdown.Menu>
+                      </Dropdown>
+                    ) : (null)}
+                  </div>
+                </div>
               </div>
             ) : (null)}
             <div
               className={classNames({
                 AnchorContainer: true,
-                Truncated: this.state.collapsed
+                Truncated: collapsed
               })}
             >
-              {anchor}
-            </div>
-            <div
-              className={classNames({
-                ContentContainer: true,
-                Truncated: this.state.collapsed,
-                editAreaContainer: this.state.editing,
-              })}
-            >
-              {this.state.editing ? (
-                <React.Fragment>
-                  <div className="editAreaContainer">
-                    <div className="TextareaContainer">
-                      <textarea
-                        className="form-control"
-                        rows="2"
-                        placeholder={content}
-                        //value={content} -to-do make this work better
-                        onChange={e => this.annotationChangeHandler(e)}
-                      />
-                    </div>
-                    <div className="SubmitButtonContainer">
-                      <Dropdown >
-                        <Dropdown.Toggle variant="success" id="dropdown-basic">
-                          Annotation Type
-                      </Dropdown.Toggle>
-                        <Dropdown.Menu >
-                          <Dropdown.Item as="button" eventKey="default" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                            Default
-                        </Dropdown.Item>
-                          <Dropdown.Item as="button" eventKey="to-do" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                            To-do
-                        </Dropdown.Item>
-                          <Dropdown.Item as="button" eventKey="question" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                            Question/Answer
-                        </Dropdown.Item>
-                          <Dropdown.Item as="button" eventKey="highlight" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                            Highlight
-                        </Dropdown.Item>
-                          <Dropdown.Item as="button" eventKey="navigation" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                            Navigation
-                        </Dropdown.Item>
-                          <Dropdown.Item as="button" eventKey="issue" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                            Issue
-                        </Dropdown.Item>
-                        </Dropdown.Menu>
-                      </Dropdown>
-                    &nbsp; &nbsp;
-                      <button
-                        className="btn btn-sm btn-outline-danger"
-                        onClick={_ => this.handleEditCancel()}
-                      >
-                        Cancel
-                        </button>
-                        &nbsp; &nbsp;
-                      <button
-                        className="btn btn-sm btn-outline-secondary SubmitButton"
-                        onClick={e => this.submitButtonHandler(e, id)}
-                        disabled={content.length === 0}
-                      >
-                        Save
-                      </button>
-                    </div>
-                  </div>
-                </React.Fragment>
-              ) : (<div>
-                {content}
+              <div className="AnchorIconContainer">
+                {currentUrl === url ? (
+                  <FaFont className="AnchorIcon" />
+                ) : (<FaExternalLinkAlt className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />)}
               </div>
-                )}
+              <div className="AnchorTextContainer">
+                {anchor}
+              </div>
             </div>
-            <div className="IconRow">
-              {currentUser.uid === authorId ? (
+
+            <React.Fragment>
+              <CardWrapper tags={tags}
+                annotationType={annotationType}
+                annotationContent={content}
+                edit={editing}
+                pageAnnotation={anchor} id={id}
+                cancelButtonHandler={this.cancelButtonHandler}
+                submitButtonHandler={this.submitButtonHandler}
+                elseContent={content}
+                collapsed={collapsed} />
+            </React.Fragment>
+
+            {tags.length && !collapsed && !editing ? (
+              <div className={classNames({
+                TagRow: true
+              })}>
+                <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
+                  {tags.map((tagContent, idx) => {
+                    return (
+                      <CustomTag idx={idx} content={tagContent} deleteTag={this.deleteTag} editing={editing} />
+                    )
+                  }
+                  )}
+                </ul>
+
+              </div>
+            ) : (null)}
+            {collapsed ? (
+              <div className="ExpandCollapse">
+                <img src={expand} alt="Expand" onClick={_ => this.handleExpandCollapse('expand')} className="Icon" />
+                {/* <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} className="Icon" /> */}
+              </div>
+            ) : (
                 <React.Fragment>
-                  <div className="IconContainer">
-                    <FaTrash className="Icon" id="Trash" onClick={_ => this.handleTrashClick(id)} />
+                  <div className="ExpandCollapse">
+                    {/* <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} className="Icon" /> */}
+                    <img src={expand} id="collapse" alt="Collapse" onClick={_ => this.handleExpandCollapse('collapse')} className="Icon" />
                   </div>
-                  <div className="IconContainer">
-                    <FaEdit className="Icon" id="Edit" onClick={_ => this.handleEditClick(id)} />
-                  </div>
+
                 </React.Fragment>
-              ) : (null)}
-              {this.state.collapsed ? (
-                <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} className="Icon" />
-              ) : (
-                  <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} className="Icon" />
-                )
-              }
-            </div>
+              )
+            }
           </div>
 
           <div
@@ -904,107 +895,104 @@ class Annotation extends Component {
             })}
           >
             {!this.state.collapsed ? (
-              <div className={classNames({
+              <div className={" container " + classNames({
                 Header: true,
-                Truncated: this.state.collapsed,
+                Truncated: collapsed,
               })}>
-                {this.formatTimestamp(timeStamp)}
+                <div className="profileContainer">
+                  <img src={profile} alt="profile" className="profile" />
+                  {/* <Profile className="profile" /> */}
+                </div>
+                <div className="userProfileContainer">
+
+                  <div className="author">
+                    {author}
+                  </div>
+                  <div className="timestamp">
+                    {this.formatTimestamp(timeStamp)}
+                  </div>
+                </div>
+                <div className="row">
+                  {/* <div className="col">
+
+                </div> */}
+                  <div className="col2">
+
+                    {currentUser.uid === authorId && !collapsed ? (
+                      <Dropdown className="HamburgerMenu">
+                        <Dropdown.Toggle as={HamburgerToggle}></Dropdown.Toggle>
+                        <Dropdown.Menu>
+                          <Dropdown.Item as="button" eventKey={id} onSelect={eventKey => this.handleEditClick(id)}>
+                            Edit
+                      </Dropdown.Item>
+                          <Dropdown.Item as="button" eventKey={id} onSelect={eventKey => this.handleTrashClick(id)}>
+                            Delete
+                      </Dropdown.Item>
+                        </Dropdown.Menu>
+                      </Dropdown>
+                    ) : (null)}
+                  </div>
+                </div>
               </div>
             ) : (null)}
             <div
               className={classNames({
                 AnchorContainer: true,
-                Truncated: this.state.collapsed
+                Truncated: collapsed
               })}
             >
-              {anchor}
-            </div>
-            <div
-              className={classNames({
-                ContentContainer: true,
-                Truncated: this.state.collapsed,
-                editAreaContainer: this.state.editing,
-              })}
-            >
-              {this.state.editing ? (
-                <React.Fragment>
-                  <div className="editAreaContainer">
-                    <div className="TextareaContainer">
-                      <textarea
-                        className="form-control"
-                        rows="2"
-                        placeholder={content}
-                        //value={content} -to-do make this work better
-                        onChange={e => this.annotationChangeHandler(e)}
-                      />
-                    </div>
-                    <div className="SubmitButtonContainer">
-                      <Dropdown >
-                        <Dropdown.Toggle variant="success" id="dropdown-basic">
-                          Annotation Type
-                      </Dropdown.Toggle>
-                        <Dropdown.Menu >
-                          <Dropdown.Item as="button" eventKey="default" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                            Default
-                        </Dropdown.Item>
-                          <Dropdown.Item as="button" eventKey="to-do" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                            To-do
-                        </Dropdown.Item>
-                          <Dropdown.Item as="button" eventKey="question" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                            Question/Answer
-                        </Dropdown.Item>
-                          <Dropdown.Item as="button" eventKey="highlight" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                            Highlight
-                        </Dropdown.Item>
-                          <Dropdown.Item as="button" eventKey="navigation" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                            Navigation
-                        </Dropdown.Item>
-                          <Dropdown.Item as="button" eventKey="issue" onSelect={eventKey => this.updateAnnotationType(eventKey)}>
-                            Issue
-                        </Dropdown.Item>
-                        </Dropdown.Menu>
-                      </Dropdown>
-                    &nbsp; &nbsp;
-                      <button
-                        className="btn btn-sm btn-outline-danger"
-                        onClick={_ => this.handleEditCancel()}
-                      >
-                        Cancel
-                        </button>
-                        &nbsp; &nbsp;
-                      <button
-                        className="btn btn-sm btn-outline-secondary SubmitButton"
-                        onClick={e => this.submitButtonHandler(e, id)}
-                        disabled={content.length === 0}
-                      >
-                        Save
-                      </button>
-                    </div>
-                  </div>
-                </React.Fragment>
-              ) : (<div>
-                {content}
+              <div className="AnchorIconContainer">
+                {currentUrl === url ? (
+                  <FaFont className="AnchorIcon" />
+                ) : (<FaExternalLinkAlt className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />)}
               </div>
-                )}
+              <div className="AnchorTextContainer">
+                {anchor}
+              </div>
             </div>
-            <div className="IconRow">
-              {currentUser.uid === authorId ? (
+
+            <React.Fragment>
+              <CardWrapper tags={tags}
+                annotationType={annotationType}
+                annotationContent={content}
+                edit={editing}
+                pageAnnotation={anchor} id={id}
+                cancelButtonHandler={this.cancelButtonHandler}
+                submitButtonHandler={this.submitButtonHandler}
+                elseContent={content}
+                collapsed={collapsed} />
+            </React.Fragment>
+
+            {tags.length && !collapsed && !editing ? (
+              <div className={classNames({
+                TagRow: true
+              })}>
+                <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
+                  {tags.map((tagContent, idx) => {
+                    return (
+                      <CustomTag idx={idx} content={tagContent} deleteTag={this.deleteTag} editing={editing} />
+                    )
+                  }
+                  )}
+                </ul>
+
+              </div>
+            ) : (null)}
+            {collapsed ? (
+              <div className="ExpandCollapse">
+                <img src={expand} alt="Expand" onClick={_ => this.handleExpandCollapse('expand')} className="Icon" />
+                {/* <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} className="Icon" /> */}
+              </div>
+            ) : (
                 <React.Fragment>
-                  <div className="IconContainer">
-                    <FaTrash className="Icon" id="Trash" onClick={_ => this.handleTrashClick(id)} />
+                  <div className="ExpandCollapse">
+                    {/* <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} className="Icon" /> */}
+                    <img src={expand} id="collapse" alt="Collapse" onClick={_ => this.handleExpandCollapse('collapse')} className="Icon" />
                   </div>
-                  <div className="IconContainer">
-                    <FaEdit className="Icon" id="Edit" onClick={_ => this.handleEditClick(id)} />
-                  </div>
+
                 </React.Fragment>
-              ) : (null)}
-              {this.state.collapsed ? (
-                <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} className="Icon" />
-              ) : (
-                  <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} className="Icon" />
-                )
-              }
-            </div>
+              )
+            }
           </div>
 
           <div

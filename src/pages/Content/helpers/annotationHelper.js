@@ -405,6 +405,7 @@ chrome.runtime.sendMessage(
     },
   },
   data => {
+    console.log('current page', window.location.href);
     const { annotationsOnPage } = data;
     if (annotationsOnPage.length) {
       annotationsOnPage.reverse().forEach(anno => FindWords(anno));
