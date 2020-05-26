@@ -3,7 +3,7 @@ console.log('loaded filterWindow.js');
 let selectedTags = [];
 
 function modifySelectedTags(event) {
-    console.log(event.target);
+    // console.log(event.target);
     if (selectedTags.includes(event.target.innerHTML)) {
         selectedTags = selectedTags.filter(tag => tag !== event.target.innerHTML);
         event.target.style = 'background-color: white';
@@ -24,13 +24,13 @@ function transmitSelectedTags(event) {
 
 chrome.storage.local.get(annotations => {
     let tagSet = new Set();
-    console.log(annotations);
+    // console.log(annotations);
     annotations.annotations.forEach(annotation => {
         annotation.tags.forEach(tag => {
             tagSet.add(tag);
         });
     })
-    console.log(tagSet);
+    // console.log(tagSet);
     let tagButtonContainer = document.createElement('div');
     tagButtonContainer.setAttribute("class", "tagButtonContainer");
     document.body.appendChild(tagButtonContainer);
