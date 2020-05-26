@@ -2,7 +2,7 @@ import '../../assets/img/Adamite.png';
 import '../../assets/img/icon-128.png';
 import './helpers/authHelper';
 import './helpers/sidebarHelper';
-import './helpers/objectCleaner';
+import { clean } from './helpers/objectCleaner';
 
 import './filterWindow.html';
 
@@ -93,6 +93,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     sendResponse({ annotationsOnPage });
   } else if (request.msg === 'UPDATE_XPATH_BY_IDS') {
     // firebase: in action
+    // var assd = request.payload.toUpdate;
+    // for (var i = 0; i < assd.length; i++) {
+    //   console.log("PAYLOAD", assd)
+    //   console.log("CLEANNN", clean({
+    //     "xpath.start": assd[i].xpath.start,
+    //     "xpath.startOffset": assd[i].xpath.startOffset,
+    //     "xpath.end": assd[i].xpath.end,
+    //     "xpath.endOffset": assd[i].xpath.endOffset,
+    //   }));
+    // }
+
+
     request.payload.toUpdate.forEach(e =>
       updateAnnotationById(
         e.id, clean({

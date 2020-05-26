@@ -507,17 +507,16 @@ function removeSpans(collection) {
 }
 
 //Finds all adamite spans under an adamite span range
-function findUniqueSpanIds(range, id) {
+function findUniqueSpanIds(rangeNodes, id) {
 
-  var rangeNodes = getNodesInRange(range).filter(function (element) {
-    return element.className === 'highlight-adamite-annotation' && element.attributes.getNamedItem("name").value === id;
-  });
+  // var rangeNodes = getNodesInRange(range).filter(function (element) {
+  //   return element.className === 'highlight-adamite-annotation' && element.attributes.getNamedItem("name").value === id;
+  // });
   var innerSpanNodes = [];
   rangeNodes.forEach(e => innerSpanNodes.push(getDescendants(e)));
   innerSpanNodes = flatten(innerSpanNodes).filter(function (element) {
     return element.className === 'highlight-adamite-annotation' && element.attributes.getNamedItem("name").value !== id;
   });
-  console.log("indernodes!", innerSpanNodes)
 
   //filters down to just one Id
   return innerSpanNodes = innerSpanNodes.filter((span, index, self) => self.findIndex(t => t.attributes.getNamedItem("name").value === span.attributes.getNamedItem("name").value) === index)
@@ -557,6 +556,22 @@ function UpdateXpathObj(id, start, startOffset, end, endOffset) {
   this.xpath["endOffset"] = endOffset;
 }
 
+function filterArrayFromArray(arr, matchArr) {
+  var filtered = arr.filter(
+    function (e) {
+      return this.indexOf(e) < 0;
+    },
+    matchArr
+  );
+  return filtered;
+}
+
+
+function findNewXpath() {
+
+}
+
+
 /*
  * TODO: IF UPDATED XPATH IS ON A DIFFERENT PARENT
  * IF THERE IS AN ELEMENT IN THE PARENT THAT WLL BE CHANGED BECAUSE OF THE DELETION 
@@ -572,13 +587,27 @@ function updateXpaths(spanCollection, id) {
   range.setStart(spanCollection[0], 0);
   range.setEnd(spanCollection[spanCollection.length - 1], spanCollection[spanCollection.length - 1].childNodes.length);
 
+  var endRangeParent = range.endContainer.parentNode;
+
+  let endRange = document.createRange();
+  endRange.setStart(endRangeParent, 0);
+  endRange.setEnd(endRangeParent, endRangeParent.childNodes.length);
+
 
   console.log("Span Collection", spanCollection)
   console.log("delete range", range)
 
+  var InnerrangeNodes = getNodesInRange(range).filter(function (element) {
+    return element.className === 'highlight-adamite-annotation' && element.attributes.getNamedItem("name").value === id;
+  });
+  var OuterrangeNodes = getNodesInRange(endRange);
 
-  var innerSpanNodes = findUniqueSpanIds(range, id);
-
+  var innerSpanNodes = findUniqueSpanIds(InnerrangeNodes, id);
+  var outerEndSpanNodes = findUniqueSpanIds(OuterrangeNodes, id);
+  console.log("EndTange", endRange);
+  console.log("OuterrangeNodes", OuterrangeNodes);
+  console.log("Outer End Nodes", filterArrayFromArray(outerEndSpanNodes, innerSpanNodes));
+  outerEndSpanNodes = filterArrayFromArray(outerEndSpanNodes, innerSpanNodes)
 
   if (innerSpanNodes.length === 0) {
     removeSpans(spanCollection);
@@ -594,15 +623,24 @@ function updateXpaths(spanCollection, id) {
     });
   }
 
+  var nodesToUpdateOuter = []
+  for (var i = 0; i < outerEndSpanNodes.length; i++) {
+    var spanApearance = document.getElementsByName(outerEndSpanNodes[i].attributes.getNamedItem("name").value);
+    nodesToUpdateOuter.push({
+      spanApearance: spanApearance,
+      start: range.intersectsNode(spanApearance[0]),
+      end: range.intersectsNode(spanApearance[spanApearance.length - 1]),
+    });
+  }
+
   removeSpans(spanCollection);
 
   console.log("indernodes unique !", innerSpanNodes)
   console.log("RANGES BOOL", nodesToUpdate)
 
+  //spans that were in the span that is to be deleted
   for (var i = 0; i < nodesToUpdate.length; i++) {
 
-    //var spanApearance = document.getElementsByName(innerSpanNodes[i].attributes.getNamedItem("name").value);
-    console.log("SPAN TO RENEW !", spanApearance)
     console.log("is first in range", range)
     var node = nodesToUpdate[i];
     var spanNodes = node.spanApearance;
@@ -611,19 +649,16 @@ function updateXpaths(spanCollection, id) {
     var startOffset = null;
     var endofoffset = null;
     var newEnd = null;
-    // var startOffset = spanApearance[0].previousSibling.length
-    // var endofoffset = getendOffset(spanApearance, spanApearance[0].previousSibling.length)
-    // var startprev = spanApearance[0].previousSibling
-
 
     //if the start of the span range is outside the delted range and on the left
-    if (node.start) {
-      console.log("start is true")
-      newStart = spanNodes[0].previousSibling
-      startOffset = spanNodes[0].previousSibling.length
-    }
+    //if (node.start) {
+    console.log("start is true")
+    newStart = spanNodes[0].previousSibling
+    startOffset = spanNodes[0].previousSibling.length
+    console.log("startOffsetr", spanNodes[0].previousSibling)
+    //}
     //if right most section is out of the inner span and not part of the parent span
-    if (node.end  /*add a check to see if it is in the parent*/) {
+    if (node.end || spanNodes[spanNodes.length - 1].parentNode.isSameNode(endRangeParent) /*add a check to see if it is in the parent*/) {
       console.log("end is true", spanNodes)
       newEnd = spanNodes[spanNodes.length - 1].previousSibling
       while (1) { //endprev.attributes.getNamedItem("name").value === spanApearance[0].attributes.getNamedItem("name").value) {
@@ -635,27 +670,7 @@ function updateXpaths(spanCollection, id) {
       }
       endofoffset = getendOffset(spanNodes, spanNodes[0].previousSibling.length)
     }
-
-    // else if()
-    // console.log("START XPATH !", XpathConversion(spanApearance[0]))
-    // console.log("END XPATH !", spanApearance[spanApearance.length - 1].previousSibling)
-    // console.log("START OFFSET", spanApearance[0].previousSibling.length)
-    // console.log("END OFFSET", spanApearance[spanApearance.length - 1].textContent.length)
     console.log("Calculated END OFFSET", endofoffset)
-
-
-
-
-    // var endprev = spanApearance[spanApearance.length - 1].previousSibling
-    // while (1) { //endprev.attributes.getNamedItem("name").value === spanApearance[0].attributes.getNamedItem("name").value) {
-    //   console.log(endprev)
-    //   if (endprev.nodeType == 3 || endprev.attributes.getNamedItem("name") === null || endprev.attributes.getNamedItem("name").value !== spanApearance[0].attributes.getNamedItem("name").value) {
-    //     break;
-    //   }
-    //   endprev = endprev.previousSibling
-    // }
-
-
 
     var parent = spanNodes[0].parentNode;
     $(spanNodes[0]).contents().unwrap();
@@ -666,43 +681,122 @@ function updateXpaths(spanCollection, id) {
     $(spanNodes[spanNodes.length - 1]).contents().unwrap();
     parent.normalize();
     console.log("parent2", parent)
-    console.log("can you compare null?", !newEnd.isSameNode(newStart))
+    //console.log("can you compare null?", !newEnd.isSameNode(newStart))
     console.log("start", newStart)
+    console.log("start", startOffset)
     console.log("ENDPRVE", newEnd)
     console.log("Calculated END OFFSET", endofoffset)
-    if (newEnd !== null && newEnd.nextSibling !== null && !newEnd.isSameNode(spanNodes[0])) {
+    if (newEnd !== null && newEnd.nextSibling !== null && !newEnd.isSameNode(newStart)) {
       newEnd = newEnd.nextSibling;
     }
 
-
-    // let range         2 = document.createRange();
-    // console.log("PREV", endprev.nextSibling)
-    // range2.setStart(startprev, startOffset);
-    // range2.setEnd(endprev, endofoffset);
-
-    //console.log("START XPATH !", XpathConversion(newStart))
-    console.log("END XPATH !", XpathConversion(newEnd))
     newEnd = newEnd === null ? null : XpathConversion(newEnd);
     newStart = newStart === null ? null : XpathConversion(newStart);
 
     newObject.push(new UpdateXpathObj(idToChange, newStart, startOffset, newEnd, endofoffset));
     console.log("cUSTOm Object", newObject);
-
-    // var fakeAnno = {
-    //   id: newObject[newObject.length - 1].id,
-    //   xpath: [{
-    //     start: XpathConversion(spanNodes[0]),
-    //     startOffset: 0,
-    //     end: newObject[newObject.length - 1].end,
-    //     endOffset: newObject[newObject.length - 1].endOffset
-    //   }]
-    // };
-    // //TODO UPDATE TO HAVE THIS PULL FROM SENDUPDATE!
-    // FindWords(fakeAnno);
+    if (newStart !== null && newEnd !== null) {
+      var fakeAnno = {
+        id: idToChange,
+        xpath: {
+          start: newStart,
+          startOffset: startOffset,
+          end: newEnd,
+          endOffset: endofoffset
+        }
+      };
+      console.log("fakeAnno,", fakeAnno)
+      //TODO UPDATE TO HAVE THIS PULL FROM SENDUPDATE!
+      FindWords(fakeAnno);
+    }
   }
+  //spans that were in the parent of the span deleted
+  for (var i = 0; i < nodesToUpdateOuter.length; i++) {
+
+
+    console.log("is first in range", range)
+    var node = nodesToUpdateOuter[i];
+    var spanNodes = node.spanApearance;
+    var idToChange = spanNodes[0].attributes.getNamedItem("name").value;
+    var newStart = null;
+    var startOffset = null;
+    var endofoffset = null;
+    var newEnd = null;
+
+    //if the start of the span range is outside the delted range and on the left
+
+    console.log("start is true")
+    newStart = spanNodes[0].previousSibling
+    startOffset = spanNodes[0].previousSibling.length
+    console.log("startOffsetr", spanNodes[0].previousSibling)
+
+    //if right most section is out of the inner span and not part of the parent span
+    if (node.end || spanNodes[spanNodes.length - 1].parentNode.isSameNode(endRangeParent) /*add a check to see if it is in the parent*/) {
+      console.log("end is true", spanNodes)
+      newEnd = spanNodes[spanNodes.length - 1].previousSibling
+      while (1) { //endprev.attributes.getNamedItem("name").value === spanApearance[0].attributes.getNamedItem("name").value) {
+        console.log(newEnd)
+        if (newEnd.nodeType == 3 || newEnd.attributes.getNamedItem("name") === null || newEnd.attributes.getNamedItem("name").value !== spanNodes[0].attributes.getNamedItem("name").value) {
+          break;
+        }
+        newEnd = newEnd.previousSibling
+      }
+      endofoffset = getendOffset(spanNodes, spanNodes[0].previousSibling.length)
+    }
+    console.log("Calculated END OFFSET", endofoffset)
+
+    var parent = spanNodes[0].parentNode;
+    $(spanNodes[0]).contents().unwrap();
+    parent.normalize();
+    console.log("parent1", parent)
+
+
+    //if the span for this annotation is not over only one div
+    if (spanNodes.length !== 0) {
+      parent = spanNodes[spanNodes.length - 1].parentNode;
+      $(spanNodes[spanNodes.length - 1]).contents().unwrap();
+      parent.normalize();
+      console.log("parent2", parent)
+    }
+    //start and end xpath should be the same since it is only one div
+    else {
+      newStart = newEnd
+    }
+    //console.log("can you compare null?", !newEnd.isSameNode(newStart))
+    console.log("start", newStart)
+    console.log("start", startOffset)
+    console.log("ENDPRVE", newEnd)
+    console.log("Calculated END OFFSET", endofoffset)
+    if (newEnd !== null && newEnd.nextSibling !== null && !newEnd.isSameNode(newStart)) {
+      newEnd = newEnd.nextSibling;
+    }
+
+    newEnd = newEnd === null ? null : XpathConversion(newEnd);
+    newStart = newStart === null ? null : XpathConversion(newStart);
+
+    newObject.push(new UpdateXpathObj(idToChange, newStart, startOffset, newEnd, endofoffset));
+    console.log("cUSTOm Object", newObject);
+    if (newStart !== null && newEnd !== null) {
+      var fakeAnno = {
+        id: idToChange,
+        xpath: {
+          start: newStart,
+          startOffset: startOffset,
+          end: newEnd,
+          endOffset: endofoffset
+        }
+      };
+      console.log("fakeAnno,", fakeAnno)
+      //TODO UPDATE TO HAVE THIS PULL FROM SENDUPDATE!
+      FindWords(fakeAnno);
+    }
+  }
+
+
   // call update
-  if (newObject.length !== 0)
-    sendUpdateXpaths(newObject);
+
+  // if (newObject.length !== 0)
+  //   sendUpdateXpaths(newObject);
 
   console.log("DONE!");
 }
