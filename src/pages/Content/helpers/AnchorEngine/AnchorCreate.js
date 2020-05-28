@@ -20,6 +20,9 @@ export const createAnnotation = () => {
     if (selection.type === 'Range') {
         const rect = selection.getRangeAt(0);
 
+        console.log("this is our selection 1 ", selection)
+        console.log("this is our selection 2 ", rect)
+
         //Text nodes that were highlighted by user
         var textNodes = getNodesInRange(rect).filter(function (element) {
             return element.nodeType === 3 && element.data.trim() !== "";
@@ -35,19 +38,6 @@ export const createAnnotation = () => {
         for (var i = 0; i < textNodes.length; i++) {
             tempArry.push(xpathConversion(textNodes[i].parentNode))
         }
-
-        // for (var i = 0; i < textNodes.length; i++) {
-        // xpathToNode.push(
-        //   {
-        //     xpath: XpathConversion(textNodes[i].parentNode) + "/text()",
-        //     masterXpath: master,
-        //     text: textNodes[i].data,
-        //     offsets: {
-        //       startOffset: i === 0 ? rect.startOffset : 0,
-        //       endOffset: i === textNodes.length - 1 ? rect.endOffset : 0
-        //     }
-        //   }
-        // );
 
         var xpathToNode = {
             start: xpathConversion(textNodes[0]),

@@ -107,7 +107,7 @@ class Annotation extends Component {
             }
           );
         }
-        // deleteAnnotationForeverById(id);
+        deleteAnnotationForeverById(id);
       });
 
     } else {

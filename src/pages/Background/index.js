@@ -113,11 +113,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           "xpath.end": e.xpath.end,
           "xpath.endOffset": e.xpath.endOffset,
         }),
-      ).then(value => {
-        console.log("VALYE", value)
-      })
+      )
     );
-    //sendResponse({ updatedAnnotationXpath });
   } else if (request.msg === 'FILTER_BY_TAG') {
     chrome.runtime.sendMessage({ msg: 'REQUEST_FILTERED_ANNOTATIONS', from: 'background' }, (response) => {
       setTimeout(() => {

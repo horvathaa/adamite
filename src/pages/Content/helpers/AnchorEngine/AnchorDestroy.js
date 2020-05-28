@@ -11,13 +11,6 @@ function sendUpdateXpaths(toUpdate) {
                 toUpdate,
             },
         },
-        data => {
-            console.log("DATA", data)
-            const { annotationsOnPage } = data;
-            if (annotationsOnPage.length) {
-                annotationsOnPage.reverse().forEach(anno => highlightRange(anno));
-            }
-        }
     );
 }
 
@@ -81,18 +74,13 @@ function UpdateXpathObj(id, start, startOffset, end, endOffset) {
     };
 }
 
-
-
-function findNewXpath() {
-
-}
-
 /**
  * 
  * @param {Array} spanCollection collection of spans that are to be deleted 
  * @param {string} id identifier of said span collection
  */
 export const updateXpaths = (spanCollection, id) => {
+    console.log("this is the spanCollection", spanCollection)
     //Finds an annotation in the local storage by the annotation id
     chrome.storage.local.get(annotations => {
         updateXpathResponse(spanCollection, id, annotations.annotations);
@@ -115,6 +103,8 @@ function findNodesIntersectingRange(affectedNodes, range) {
             spanApearance: spanApearance,
             start: range.intersectsNode(spanApearance[0]),
             end: range.intersectsNode(spanApearance[spanApearance.length - 1]),
+            childOf: null,
+            parentTo: null,
         });
     }
     return nodesToUpdate
@@ -147,11 +137,14 @@ function findNodesToChange(id, intersectRange, inParentRange) {
     var InnerRangeNodes = getNodesInRange(intersectRange).filter(function (element) {
         return element.className === 'highlight-adamite-annotation' && element.attributes.getNamedItem("name").value === id;
     });
+
     var OuterrangeNodes = getNodesInRange(inParentRange);
 
     //Filter nodes to only one node per id
     var innerSpanNodes = findUniqueSpanIds(InnerRangeNodes, id);
     var outerEndSpanNodes = findUniqueSpanIds(OuterrangeNodes, id);
+
+    console.log("findUniqueSpanIds", innerSpanNodes);
 
     //Filter out nodes that are already found in the inner span of nodes to delete
     outerEndSpanNodes = filterArrayFromArray(outerEndSpanNodes, innerSpanNodes)
@@ -170,21 +163,130 @@ function findNodesToChange(id, intersectRange, inParentRange) {
     );
     return flatten(nodesToUpdate);
 }
-/*
- * TODO: IF UPDATED XPATH IS ON A DIFFERENT PARENT
- * IF THERE IS AN ELEMENT IN THE PARENT THAT WLL BE CHANGED BECAUSE OF THE DELETION 
- * BUT IS NOT UNDER THE ELEMENT TO BE DELETED SPAN
+
+/**
+ * Finds new end node after span Deletion (probably can infinite loop lol)
+ * @param {Array} spanNodes 
+ * @return new end node for annotation
  */
+function getEndNode(spanNodes) {
+    var endNode = spanNodes[spanNodes.length - 1].previousSibling
+    while (1) {
+        console.log(endNode)
+        if (endNode.nodeType == 3 || endNode.attributes.getNamedItem("name") === null || endNode.attributes.getNamedItem("name").value !== spanNodes[0].attributes.getNamedItem("name").value) {
+            return endNode;
+        }
+        endNode = endNode.previousSibling
+    }
+}
+
+//might be able to refactor this to be used for on annotion create update?
+function findNewXpaths(node, endContainerParentNode, annotation) {
+    var spanNodes = node.spanApearance;
+    var idToChange = spanNodes[0].attributes.getNamedItem("name").value;
+    var newStart = null;
+    var startOffset = null;
+    var endofoffset = null;
+    var newEnd = null;
+
+    //if the start of the span range is not outside the deleted range and on the left
+    if (node.start) {
+        newStart = spanNodes[0].previousSibling
+        startOffset = spanNodes[0].previousSibling.length
+    }
+    //if right most section is out of the inner span and not part of the parent span
+    if (node.end || spanNodes[spanNodes.length - 1].parentNode.isSameNode(endContainerParentNode) /*add a check to see if it is in the parent*/) {
+        newEnd = getEndNode(spanNodes);
+        console.log("spanNodes NED", spanNodes)
+        console.log("FOUND NEW NED", xpathConversion(newEnd))
+        endofoffset = getendOffset(spanNodes, spanNodes[0].previousSibling.length)
+    }
+
+    console.log("Calculated END OFFSET", endofoffset)
+
+    removeSpans(spanNodes);
+
+    if (newEnd !== null && newEnd.nextSibling !== null && !newEnd.isSameNode(newStart)) {
+        newEnd = newEnd.nextSibling;
+    }
+
+    newEnd = newEnd === null ? null : xpathConversion(newEnd);
+    newStart = newStart === null ? null : xpathConversion(newStart);
+
+    var newPath = UpdateXpathObj(idToChange, newStart, startOffset, newEnd, endofoffset);
+    console.log("cUSTOm Object", newPath);
+    if (newStart !== null && newEnd !== null) {
+        highlightRange(newPath);
+    }
+    else {
+        console.log("ELSE END");
+        oldXpathsToHighlight(idToChange, annotation, newStart, startOffset, newEnd, endofoffset)
+    }
+
+    return newPath;
+}
+
+//might be able to refactor this to be used for on annotion create update?
+function findNewXpaths2(node, endContainerParentNode) {
+    var spanNodes = node.spanApearance;
+    var idToChange = spanNodes[0].attributes.getNamedItem("name").value;
+    var newStart = null;
+    var startOffset = null;
+    var endofoffset = null;
+    var newEnd = null;
+
+    console.log("NEW@2", spanNodes)
+
+    //if the start of the span range is not outside the deleted range and on the left
+    if (node.start) {
+        newStart = spanNodes[0].previousSibling
+        startOffset = spanNodes[0].previousSibling.length
+    }
+    //if right most section is out of the inner span and not part of the parent span
+    if (node.end || spanNodes[spanNodes.length - 1].parentNode.isSameNode(endContainerParentNode) /*add a check to see if it is in the parent*/) {
+        newEnd = getEndNode(spanNodes);
+        console.log("spanNodes NED", spanNodes)
+        console.log("FOUND NEW NED", xpathConversion(newEnd))
+        endofoffset = getendOffset(spanNodes, spanNodes[0].previousSibling.length)
+    }
+
+    console.log("Calculated END OFFSET", endofoffset)
+
+    removeSpans(spanNodes);
+
+    if (newEnd !== null && newEnd.nextSibling !== null && !newEnd.isSameNode(newStart)) {
+        newEnd = newEnd.nextSibling;
+    }
+
+    newEnd = newEnd === null ? null : xpathConversion(newEnd);
+    newStart = newStart === null ? null : xpathConversion(newStart);
+
+    return UpdateXpathObj(idToChange, newStart, startOffset, newEnd, endofoffset);
+}
+
+function childHighlight(spanCollection) {
+    var newPaths = [];
+    //nodesToUpdate = nodesToUpdate.reverse();
+    console.log("chjild hgh", spanCollection)
+    var spanToDeleteRange = createRange(spanCollection.spanApearance[0], 0, spanCollection.spanApearance[spanCollection.spanApearance.length - 1], spanCollection.spanApearance[spanCollection.spanApearance.length - 1].childNodes.length);
+
+    var endContainerParentNode = spanToDeleteRange.endContainer.parentNode;
+    console.log(endContainerParentNode)
+    var nepat = findNewXpaths2(spanCollection, endContainerParentNode);
+    //console.log("CHILD NEW PATH", findNewXpaths2(spanCollection, endContainerParentNode))
+    return nepat;
+
+}
 
 function updateXpathResponse(spanCollection, id, annotation) {
     console.log("Fuckin google annotations", annotation)
-    var newObject = [];
+    var newPaths = [];
 
     console.log("SPAN COLLECTION", spanCollection)
     var spanToDeleteRange = createRange(spanCollection[0], 0, spanCollection[spanCollection.length - 1], spanCollection[spanCollection.length - 1].childNodes.length);
 
-    var endRangeParent = spanToDeleteRange.endContainer.parentNode;
-    var endRange = createRange(endRangeParent, 0, endRangeParent, endRangeParent.childNodes.length);
+    var endContainerParentNode = spanToDeleteRange.endContainer.parentNode;
+    var endRange = createRange(endContainerParentNode, 0, endContainerParentNode, endContainerParentNode.childNodes.length);
 
     //get unique nodes that need to be updated
     var nodesToUpdate = [];
@@ -195,68 +297,61 @@ function updateXpathResponse(spanCollection, id, annotation) {
 
     removeSpans(spanCollection);
 
-    //console.log("indernodes unique !", innerSpanNodes)
+    var newToUpdate = [];
+    //span in span find?
     console.log("nodes to update", nodesToUpdate)
-
-    //spans that were in the span that is to be deleted
+    var child = false;
+    var newNodez = [];
+    var supernewNodes = [];
+    nodesToUpdate = nodesToUpdate.reverse();
+    //nodesToUpdate.forEach(e => e.spanCollection.forEach(f => parentIsSpan(f)));
     for (var i = 0; i < nodesToUpdate.length; i++) {
-
-        console.log("is first in range", spanToDeleteRange)
-        var node = nodesToUpdate[i];
-        var spanNodes = node.spanApearance;
-        var idToChange = spanNodes[0].attributes.getNamedItem("name").value;
-        var newStart = null;
-        var startOffset = null;
-        var endofoffset = null;
-        var newEnd = null;
-
-        //if the start of the span range is outside the delted range and on the left
-        if (node.start) {
-            console.log("start is true")
-            newStart = spanNodes[0].previousSibling
-            startOffset = spanNodes[0].previousSibling.length
-            console.log("startOffsetr", spanNodes[0].previousSibling)
-        }
-        //if right most section is out of the inner span and not part of the parent span
-        if (node.end || spanNodes[spanNodes.length - 1].parentNode.isSameNode(endRangeParent) /*add a check to see if it is in the parent*/) {
-            console.log("end is true", spanNodes)
-            newEnd = spanNodes[spanNodes.length - 1].previousSibling
-            while (1) { //endprev.attributes.getNamedItem("name").value === spanApearance[0].attributes.getNamedItem("name").value) {
-                console.log(newEnd)
-                if (newEnd.nodeType == 3 || newEnd.attributes.getNamedItem("name") === null || newEnd.attributes.getNamedItem("name").value !== spanNodes[0].attributes.getNamedItem("name").value) {
-                    break;
-                }
-                newEnd = newEnd.previousSibling
+        child = false;
+        for (var x = 0; x < nodesToUpdate[i].spanApearance.length; x++) {
+            if (nodesToUpdate[i].spanApearance[x].parentNode.className === 'highlight-adamite-annotation') {
+                var parentN = nodesToUpdate[i].spanApearance[x].parentNode;
+                console.log("IN HERE")
+                supernewNodes.push(childHighlight(nodesToUpdate[i], annotation));
+                child = true;
+                break;
             }
-            endofoffset = getendOffset(spanNodes, spanNodes[0].previousSibling.length)
         }
-        console.log("Calculated END OFFSET", endofoffset)
-
-        removeSpans(spanNodes);
-
-        if (newEnd !== null && newEnd.nextSibling !== null && !newEnd.isSameNode(newStart)) {
-            newEnd = newEnd.nextSibling;
+        if (child !== true) {
+            newNodez.push(nodesToUpdate[i])
         }
+    }
+    console.log("supernewNodes", supernewNodes)
+    console.log("new nodez", newNodez)
 
-        newEnd = newEnd === null ? null : xpathConversion(newEnd);
-        newStart = newStart === null ? null : xpathConversion(newStart);
-
-        newObject.push(new UpdateXpathObj(idToChange, newStart, startOffset, newEnd, endofoffset));
-        console.log("cUSTOm Object", newObject);
-        if (newStart !== null && newEnd !== null) {
-            highlightRange(newObject[newObject.length - 1]);
+    //nodesToUpdate = nodesToUpdate.reverse();
+    // //console.log("indernodes unique !", innerSpanNodes)
+    console.log("nodes to update", newNodez)
+    for (var i = 0; i < newNodez.length; i++) {
+        newPaths.push(findNewXpaths(newNodez[i], endContainerParentNode, annotation));
+    }
+    for (var i = 0; i < supernewNodes.length; i++) {
+        if (supernewNodes[i].start !== null && supernewNodes[i].end !== null) {
+            highlightRange(supernewNodes[i]);
         }
         else {
             console.log("ELSE END");
-            oldXpathsToHighlight(idToChange, annotation, newStart, startOffset, newEnd, endofoffset)
+            oldXpathsToHighlight(supernewNodes[i].id, annotation, supernewNodes[i].start, supernewNodes[i].startOffset, supernewNodes[i].end, supernewNodes[i].endOffset)
         }
     }
     // call update
-    // if (newObject.length !== 0)
-    //     sendUpdateXpaths(newObject);
+    console.log("BEFORE PATH newPaths", newPaths)
+    console.log("BEFORE PATH supernewNodes", supernewNodes)
+    supernewNodes.forEach(e => newPaths.push(e))
+    //newPaths = flatten(newPaths.push(supernewNodes));
+    console.log(newPaths)
+    if (newPaths.length !== 0)
+        sendUpdateXpaths(newPaths.reverse());
 
     console.log("DONE!");
 }
+
+//span in span in span 
+
 
 /**
  * Updates an old annotation from local storage with new xpath information and highlights range
