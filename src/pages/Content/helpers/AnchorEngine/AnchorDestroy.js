@@ -46,14 +46,16 @@ function getendOffset(nodes, startOffset) {
     if (nodes[0].parentNode.isSameNode(nodes[nodes.length - 1].parentNode)) {
         iterNode = nodes[nodes.length - 1];
         for (var i = nodes.length - 1; i >= 0; i--) {
+            console.log("ENDNODE " + i, nodes[i], nodes[i].attributes.getNamedItem("name").value, nodes[0].attributes.getNamedItem("name").value)
             if (nodes[i].attributes.getNamedItem("name").value !== nodes[0].attributes.getNamedItem("name").value || !nodes[0].parentNode.isSameNode(nodes[i].parentNode)) {
                 break;
             }
+            console.log("ADDING", nodes[i].innerText.length)
             offset += nodes[i].innerText.length;
         }
         i++;
         if (nodes[i].isSameNode(nodes[0])) {
-            offset += startOffset
+            offset += startOffset !== undefined ? startOffset : 0;
         }
         return offset;
 
@@ -171,8 +173,12 @@ function findNodesToChange(id, intersectRange, inParentRange) {
  */
 function getEndNode(spanNodes) {
     var endNode = spanNodes[spanNodes.length - 1].previousSibling
+    console.log("spanNodesLength", spanNodes.length)
+    if (spanNodes.length === 1) {
+        return spanNodes[spanNodes.length - 1].previousSibling;
+    }
+    // var endNode = spanNodes[spanNodes.length - 1].previousSibling
     while (1) {
-        console.log(endNode)
         if (endNode.nodeType == 3 || endNode.attributes.getNamedItem("name") === null || endNode.attributes.getNamedItem("name").value !== spanNodes[0].attributes.getNamedItem("name").value) {
             return endNode;
         }
@@ -197,15 +203,15 @@ function findNewXpaths(node, endContainerParentNode, annotation) {
     //if right most section is out of the inner span and not part of the parent span
     if (node.end || spanNodes[spanNodes.length - 1].parentNode.isSameNode(endContainerParentNode) /*add a check to see if it is in the parent*/) {
         newEnd = getEndNode(spanNodes);
-        console.log("spanNodes NED", spanNodes)
-        console.log("FOUND NEW NED", xpathConversion(newEnd))
         endofoffset = getendOffset(spanNodes, spanNodes[0].previousSibling.length)
     }
 
-    console.log("Calculated END OFFSET", endofoffset)
-
     removeSpans(spanNodes);
 
+    if (newStart.nodeType !== 3) {
+        newStart = newStart.nextSibling;
+        startOffset = 0;
+    }
     if (newEnd !== null && newEnd.nextSibling !== null && !newEnd.isSameNode(newStart)) {
         newEnd = newEnd.nextSibling;
     }
@@ -303,7 +309,7 @@ function updateXpathResponse(spanCollection, id, annotation) {
     var child = false;
     var newNodez = [];
     var supernewNodes = [];
-    nodesToUpdate = nodesToUpdate.reverse();
+    //nodesToUpdate = nodesToUpdate.reverse();
     //nodesToUpdate.forEach(e => e.spanCollection.forEach(f => parentIsSpan(f)));
     for (var i = 0; i < nodesToUpdate.length; i++) {
         child = false;
@@ -325,10 +331,11 @@ function updateXpathResponse(spanCollection, id, annotation) {
 
     //nodesToUpdate = nodesToUpdate.reverse();
     // //console.log("indernodes unique !", innerSpanNodes)
-    console.log("nodes to update", newNodez)
+    // console.log("nodes to update", newNodez)
     for (var i = 0; i < newNodez.length; i++) {
         newPaths.push(findNewXpaths(newNodez[i], endContainerParentNode, annotation));
     }
+    console.log("Before we highlight", supernewNodes)
     for (var i = 0; i < supernewNodes.length; i++) {
         if (supernewNodes[i].start !== null && supernewNodes[i].end !== null) {
             highlightRange(supernewNodes[i]);
@@ -342,10 +349,10 @@ function updateXpathResponse(spanCollection, id, annotation) {
     console.log("BEFORE PATH newPaths", newPaths)
     console.log("BEFORE PATH supernewNodes", supernewNodes)
     supernewNodes.forEach(e => newPaths.push(e))
-    //newPaths = flatten(newPaths.push(supernewNodes));
-    console.log(newPaths)
-    if (newPaths.length !== 0)
-        sendUpdateXpaths(newPaths.reverse());
+
+    // console.log(newPaths)
+    // if (newPaths.length !== 0)
+    //     sendUpdateXpaths(newPaths.reverse());
 
     console.log("DONE!");
 }

@@ -22,10 +22,9 @@ function anchorClick(e) {
 export const highlightRange = (anno) => {
 
     var wordPath = [];
-    console.log("ANNO ")
-    console.log(anno)
+    // console.log("ANNO ")
+    // console.log(anno)
     let newRange = xpathRange.toRange(anno.xpath.start, anno.xpath.startOffset, anno.xpath.end, anno.xpath.endOffset, document);
-    console.log("NEW RANGE", newRange);
     highlight(newRange, anno.xpath.startOffset, anno.xpath.endOffset, function (node, match, offset) {
 
         var span = document.createElement("span");
@@ -42,7 +41,7 @@ function highlight(range, startOffset, endOffset, callback) {
     var nodes = getNodesInRange(range).filter(function (element) {
         return element.nodeType === 3 && element.data.trim() !== "";
     });
-    console.log("NODES", nodes[0].data)
+    // console.log("NODES", nodes[0].data)
 
     let start = true;
     let substring = "";
@@ -55,7 +54,7 @@ function highlight(range, startOffset, endOffset, callback) {
             if (startOffset !== 0 && start) {
 
                 substring = nodes[i].data.substring(startOffset, nodes[i].data.length);
-                console.log("string", substring.length)
+                // console.log("string", substring.length)
                 substring = startOffset;
                 start = false;
             }
@@ -76,9 +75,9 @@ var splitReinsertText = function (node, substring, callback) {
         var args = [].slice.call(arguments),
             offset = args[args.length - 2],
             newTextNode = node.splitText(offset);
-        console.log("args", args);
-        console.log("offsets", offset);
-        console.log("newtextnode", newTextNode)
+        // console.log("args", args);
+        // console.log("offsets", offset);
+        // console.log("newtextnode", newTextNode)
         newTextNode.data = newTextNode.data.substr(all.length);
 
         callback.apply(window, [node].concat(args));
