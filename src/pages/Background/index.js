@@ -57,7 +57,6 @@ const broadcastAnnotationsUpdated = () => {
 let createdWindow = null;
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log(request.msg);
   if (request.msg === 'REQUEST_TAB_URL') {
     sendResponse({ url: sender.tab.url });
   } else if (request.msg === 'SAVE_ANNOTATED_TEXT') {

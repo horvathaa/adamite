@@ -15,7 +15,6 @@ chrome.runtime.sendMessage(
     data => {
         const { annotationsOnPage } = data;
         if (annotationsOnPage.length) {
-            console.log("annotations on page", annotationsOnPage)
             annotationsOnPage.reverse().forEach(anno => highlightRange(anno));
         }
     }
@@ -29,13 +28,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     if (request.msg === 'ANNOTATION_DELETED_ON_PAGE') {
         let collection = document.getElementsByName(request.id);
-        console.log("COLLECTION", collection)
         updateXpaths(collection, request.id)
-        // while (collection[0] !== undefined) {
-        //   var parent = collection[0].parentNode;
-        //   $(collection[0]).contents().unwrap();
-        //   parent.normalize();
-        // }
     }
     else if (request.msg === 'ANNOTATION_ADDED') {
         request.newAnno.content = request.newAnno.annotation;

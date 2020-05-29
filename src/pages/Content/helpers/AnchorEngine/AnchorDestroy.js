@@ -100,7 +100,6 @@ function UpdateXpathObj(id, start, startOffset, end, endOffset) {
  * @param {string} id identifier of said span collection
  */
 export const updateXpaths = (spanCollection, id) => {
-    console.log("this is the spanCollection", spanCollection)
     //Finds an annotation in the local storage by the annotation id
     chrome.storage.local.get(annotations => {
         updateXpathResponse(spanCollection, id, annotations.annotations);
@@ -164,8 +163,6 @@ function findNodesToChange(id, intersectRange, inParentRange) {
     var innerSpanNodes = findUniqueSpanIds(InnerRangeNodes, id);
     var outerEndSpanNodes = findUniqueSpanIds(OuterrangeNodes, id);
 
-    console.log("findUniqueSpanIds", innerSpanNodes);
-
     //Filter out nodes that are already found in the inner span of nodes to delete
     outerEndSpanNodes = filterArrayFromArray(outerEndSpanNodes, innerSpanNodes)
 
@@ -191,7 +188,6 @@ function findNodesToChange(id, intersectRange, inParentRange) {
  */
 function getEndNode(spanNodes) {
     var endNode = spanNodes[spanNodes.length - 1].previousSibling
-    console.log("spanNodesLength", spanNodes.length)
     if (spanNodes.length === 1) {
         return spanNodes[spanNodes.length - 1].previousSibling;
     }
@@ -309,8 +305,6 @@ function updateXpathResponse(spanCollection, id, annotation) {
     // console.log(newPaths)
     if (newPaths.length !== 0)
         sendUpdateXpaths(newPaths);
-
-    console.log("DONE!");
 }
 
 //span in span in span 
@@ -319,7 +313,6 @@ function highlight(nodeRange, annotation) {
         highlightRange(nodeRange);
     }
     else {
-        console.log("ELSE END");
         oldXpathsToHighlight(nodeRange, annotation)
     }
 }
@@ -337,7 +330,6 @@ function oldXpathsToHighlight(nodeRange, annotation) {
         updatedAnnotationById.xpath.start = nodeRange.start
         updatedAnnotationById.xpath.startOffset = nodeRange.startOffset
     }
-    console.log("this is end", nodeRange.end)
     if (nodeRange.end !== null) {
         updatedAnnotationById.xpath.end = nodeRange.end
         updatedAnnotationById.xpath.endOffset = nodeRange.endOffset

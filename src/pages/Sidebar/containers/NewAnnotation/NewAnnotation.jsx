@@ -98,7 +98,7 @@ class NewAnnotation extends React.Component {
       tags: CardWrapperState.tags,
       annotationType: CardWrapperState.annotationType.toLowerCase(),
     };
-    console.log(annotationInfo);
+
     chrome.runtime.sendMessage(
       {
         msg: 'SAVE_ANNOTATED_TEXT',
