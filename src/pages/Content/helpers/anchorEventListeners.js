@@ -15,6 +15,7 @@ chrome.runtime.sendMessage(
     data => {
         const { annotationsOnPage } = data;
         if (annotationsOnPage.length) {
+            console.log("annotations on page", annotationsOnPage)
             annotationsOnPage.reverse().forEach(anno => highlightRange(anno));
         }
     }
