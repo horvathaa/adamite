@@ -414,7 +414,7 @@ chrome.runtime.sendMessage(
 );
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-
+  console.log(request.msg);
   if (request.msg === 'ANNOTATION_DELETED_ON_PAGE') {
     let collection = document.getElementsByName(request.id);
     while (collection[0] !== undefined) {
@@ -424,11 +424,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
   }
   else if (request.msg === 'ANNOTATION_ADDED') {
+    console.log('got message');
+    console.log(request.newAnno);
     request.newAnno.content = request.newAnno.annotation;
     FindWords(request.newAnno);
-  }
-
-  else if (request.msg === 'DELIVER_FILTERED_ANNOTATION_TAG' && request.from === 'background') {
+  } else if (request.msg === 'DELIVER_FILTERED_ANNOTATION_TAG' && request.from === 'background') {
     window.postMessage({ type: 'FROM_CONTENT', value: request.payload.response }, "*");
   }
 

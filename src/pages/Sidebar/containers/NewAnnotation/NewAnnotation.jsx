@@ -121,7 +121,6 @@ class NewAnnotation extends React.Component {
 
           this.setState({ submitted: false });
           this.props.resetNewSelection();
-
         }
       }
     );

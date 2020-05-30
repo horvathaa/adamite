@@ -11,6 +11,8 @@ const alertBackgroundOfNewSelection = (selection, offsets, xpath) => {
     });
 };
 
+var queue = [];
+
 function getNextNode(node) {
     if (node.firstChild) {
         return node.firstChild;
@@ -123,7 +125,29 @@ document.addEventListener('mouseup', event => {
             endOffset: rect.endOffset
         });
 
-        alertBackgroundOfNewSelection(selection.toString(), offsets, xpathToNode);
+        if (queue.length) {
+            let newAnno = queue.pop();
+            chrome.runtime.sendMessage({
+                msg: 'SAVE_NEW_ANCHOR',
+                from: 'content',
+                payload: {
+                    newAnno: newAnno,
+                    xpath: xpathToNode,
+                    url: window.location.href,
+                    anchor: selection.toString(),
+                    offsets: offsets,
+                }
+            });
+        }
+        else {
+            // console.log('do we do this every time???', xpathToNode);
+            alertBackgroundOfNewSelection(selection.toString(), offsets, xpathToNode);
+        }
     }
-
 });
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.msg === 'ADD_NEW_ANCHOR') {
+        queue.push(request.payload);
+    }
+})

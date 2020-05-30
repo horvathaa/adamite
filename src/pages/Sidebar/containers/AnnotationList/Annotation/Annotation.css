@@ -163,6 +163,14 @@
 
 }
 
+.Anchor {
+  list-style-type: none
+}
+
+.AnchorList {
+  list-style-type: none
+}
+
 
 .ToDo-Button{
   position: relative;

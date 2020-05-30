@@ -10,6 +10,7 @@ import profile from '../../../../../assets/img/SVGs/Profile.svg';
 import expand from '../../../../../assets/img/SVGs/expand.svg'
 import { deleteAnnotationForeverById, updateAnnotationById, getUserProfileById } from '../../../../../firebase';
 import CardWrapper from '../../CardWrapper/CardWrapper'
+import AnchorList from './AnchorList/AnchorList';
 
 const HamburgerToggle = React.forwardRef(({ children, onClick }, ref) => (
   <a ref={ref}
@@ -89,8 +90,11 @@ class Annotation extends Component {
     chrome.runtime.sendMessage({ msg: "LOAD_EXTERNAL_ANCHOR", from: 'content', payload: url });
   }
 
-  handleDoneToDo() {
-    return;
+  handleDoneToDo(id) {
+    updateAnnotationById(id, {
+      trashed: true
+    }
+    );
   }
 
   handleTrashClick(id) {
@@ -151,6 +155,23 @@ class Annotation extends Component {
     this.setState({ editing: false });
   }
 
+  handleNewAnchor(id) {
+    alert('Select the text you want to anchor this annotation to!')
+    chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+      chrome.tabs.sendMessage(tabs[0].id, {
+        msg: 'ADD_NEW_ANCHOR',
+        payload: {
+          content: this.state.content,
+          type: this.state.annotationType,
+          sharedId: id,
+          author: this.props.currentUser.uid,
+          tags: this.state.tags
+        }
+      });
+    });
+
+  }
+
   cancelButtonHandler = () => {
     this.setState({ editing: false });
   }
@@ -169,7 +190,7 @@ class Annotation extends Component {
   }
 
   render() {
-    const { anchor, idx, id, active, authorId, currentUser, trashed, timeStamp, url, currentUrl } = this.props;
+    const { anchor, idx, id, active, authorId, currentUser, trashed, timeStamp, url, currentUrl, childAnchor } = this.props;
     const { editing, collapsed, tags, content, annotationType, author } = this.state;
     if (annotationType === 'default' && !trashed) {
       return (
@@ -224,6 +245,9 @@ class Annotation extends Component {
                           <Dropdown.Item as="button" eventKey={id} onSelect={eventKey => this.handleTrashClick(id)}>
                             Delete
                         </Dropdown.Item>
+                          <Dropdown.Item as="button" eventKey={id} onSelect={eventKey => this.handleNewAnchor(id)}>
+                            Add new anchor
+                        </Dropdown.Item>
                         </Dropdown.Menu>
                       </Dropdown>
                     ) : (null)}
@@ -231,21 +255,42 @@ class Annotation extends Component {
                 </div>
               </div>
             ) : (null)}
-            <div
-              className={classNames({
-                AnchorContainer: true,
-                Truncated: collapsed
-              })}
-            >
-              <div className="AnchorIconContainer">
-                {currentUrl === url ? (
-                  <FaFont className="AnchorIcon" />
-                ) : (<FaExternalLinkAlt className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />)}
+            {!childAnchor.length ? (
+              <div
+                className={classNames({
+                  AnchorContainer: true,
+                  Truncated: collapsed
+                })}
+              >
+                <div className="AnchorIconContainer">
+                  {currentUrl === url ? (
+                    <FaFont className="AnchorIcon" />
+                  ) : (<FaExternalLinkAlt className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />)}
+                </div>
+                <div className="AnchorTextContainer">
+                  {anchor}
+                </div>
               </div>
-              <div className="AnchorTextContainer">
-                {anchor}
-              </div>
-            </div>
+            ) : (
+                <React.Fragment>
+                  <div
+                    className={classNames({
+                      AnchorContainer: true,
+                      Truncated: collapsed
+                    })}
+                  >
+                    <div className="AnchorIconContainer">
+                      {currentUrl === url ? (
+                        <FaFont className="AnchorIcon" />
+                      ) : (<FaExternalLinkAlt className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />)}
+                    </div>
+                    <div className="AnchorTextContainer">
+                      {anchor}
+                    </div>
+                  </div>
+                  <AnchorList childAnchor={childAnchor} currentUrl={currentUrl} collapsed={collapsed} />
+                </React.Fragment>
+              )}
 
             <React.Fragment>
               <CardWrapper tags={tags}
@@ -416,7 +461,7 @@ class Annotation extends Component {
             ) : (null)}
             {currentUser.uid === authorId && !editing && (
               <button className="ToDo-Button"
-                onClick={_ => this.handleDoneToDo()}>Done?</button>
+                onClick={_ => this.handleDoneToDo(id)}>Done?</button>
             )}
             {collapsed ? (
               <div className="ExpandCollapse">
@@ -1013,6 +1058,13 @@ class Annotation extends Component {
             })}
           ></div>
         </li>
+      );
+    }
+    else {
+      return (
+        <div className="whoops">
+          This annotation is archived
+        </div>
       );
     }
   }

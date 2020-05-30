@@ -39,22 +39,26 @@ export const updateAnnotationById = (id, newAnnotationFields = {}) => {
 export const createAnnotation = async ({
   authorId,
   taskId,
+  SharedId,
   AnnotationContent,
   AnnotationAnchorContent,
   AnnotationType,
   url,
   AnnotationTags,
   offsets,
-  xpath
+  xpath,
+  childAnchor
 }) => {
   authorId = authorId ? authorId : getCurrentUserId();
   if (!authorId) {
     return;
   }
+  // SharedId = SharedId ? SharedId : undefined;
 
   let newAnnotation = {
     authorId,
     taskId,
+    SharedId,
     trashed: false,
     createdTimestamp: new Date().getTime(),
     content: AnnotationContent,
@@ -64,7 +68,8 @@ export const createAnnotation = async ({
     url,
     tags: AnnotationTags,
     offsets,
-    xpath
+    xpath,
+    childAnchor
   };
   return db.collection(DB_COLLECTIONS.ANNOTATIONS).add(newAnnotation);
 };
