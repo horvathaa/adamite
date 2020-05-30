@@ -30,6 +30,28 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         let collection = document.getElementsByName(request.id);
         updateXpaths(collection, request.id)
     }
+    else if (request.msg === 'ANNOTATION_FOCUS_ONCLICK') {
+        var findSpan = document.getElementsByName(request.id);
+        if (findSpan.length === 0) {
+            return;
+        }
+        findSpan[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        //findSpan.forEach(e => e.style.backgroundColor = '#B0B65B')
+    }
+    else if (request.msg === 'ANNOTATION_FOCUS') {
+        var findSpan = document.getElementsByName(request.id);
+        if (findSpan.length === 0) {
+            return;
+        }
+        findSpan.forEach(e => e.style.backgroundColor = '#7cce7299');
+    }
+    else if (request.msg === 'ANNOTATION_DEFOCUS') {
+        var findSpan = document.getElementsByName(request.id);
+        if (findSpan.length === 0) {
+            return;
+        }
+        findSpan.forEach(e => e.style.backgroundColor = null)
+    }
     else if (request.msg === 'ANNOTATION_ADDED') {
         request.newAnno.content = request.newAnno.annotation;
         highlightRange(request.newAnno);

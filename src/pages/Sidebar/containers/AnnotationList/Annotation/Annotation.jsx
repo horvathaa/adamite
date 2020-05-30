@@ -29,6 +29,7 @@ class Annotation extends Component {
     collapsed: false,
     annotationType: this.props.type,
     editing: false,
+    id: this.props.id,
     authorId: this.props.authorId
   };
 
@@ -83,6 +84,60 @@ class Annotation extends Component {
     // var sec = date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
     var time = hour + ':' + min + ' ' + day + ' ' + month + ' ' + year;
     return time;
+  }
+
+  handleOnLocalOnClick = () => {
+    if (this.state.id === null) {
+      return;
+    }
+    chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+      let url = tabs[0].url;
+      if (this.props.url === url) {
+        chrome.tabs.sendMessage(
+          tabs[0].id,
+          {
+            msg: 'ANNOTATION_FOCUS_ONCLICK',
+            id: this.state.id,
+          }
+        );
+      }
+    });
+  }
+
+  handleOnLocalOnMouseEnter = () => {
+    if (this.state.id === null) {
+      return;
+    }
+    chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+      let url = tabs[0].url;
+      if (this.props.url === url) {
+        chrome.tabs.sendMessage(
+          tabs[0].id,
+          {
+            msg: 'ANNOTATION_FOCUS',
+            id: this.state.id,
+          }
+        );
+      }
+    });
+  }
+
+  handleOnLocalOnMouseLeave = () => {
+    if (this.state.id === null) {
+      return;
+    }
+    chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+      let url = tabs[0].url;
+      if (this.props.url === url) {
+        chrome.tabs.sendMessage(
+          tabs[0].id,
+          {
+            msg: 'ANNOTATION_DEFOCUS',
+            id: this.state.id,
+          }
+        );
+      }
+    });
   }
 
   handleExternalAnchor(url) {
@@ -236,10 +291,12 @@ class Annotation extends Component {
                 AnchorContainer: true,
                 Truncated: collapsed
               })}
+              onMouseEnter={this.handleOnLocalOnMouseEnter}
+              onMouseLeave={this.handleOnLocalOnMouseLeave}
             >
               <div className="AnchorIconContainer">
                 {currentUrl === url ? (
-                  <FaFont className="AnchorIcon" />
+                  <FaFont className="AnchorIcon" onClick={this.handleOnLocalOnClick} />
                 ) : (<FaExternalLinkAlt className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />)}
               </div>
               <div className="AnchorTextContainer">

@@ -140,6 +140,17 @@
   display: none;
 }
 
+.AnchorContainer:hover {
+  color: yellowgreen;
+  border-color: yellowgreen;
+  cursor: pointer;
+
+}
+
+.AnchorContainer:hover object {
+  fill: yellowgreen;
+  stroke: yellowgreen;
+}
 
 .AnchorContainer {
   flex: 1;
@@ -220,7 +231,7 @@
 
 .AnchorIcon {
   width: 14px;
-  color:  #6B778C;
+  /* color:  #6B778C; */
   filter: brightness(.8);
   height: 14px;
   cursor: pointer;
@@ -228,6 +239,7 @@
 
 .AnchorIcon.hover, .AnchorIcon:hover {
   filter: brightness(.5);
+  color: RED;
 }
 
 
