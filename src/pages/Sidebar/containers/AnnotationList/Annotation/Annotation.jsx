@@ -234,8 +234,7 @@ class Annotation extends Component {
 
                   </div> */}
                   <div className="col2">
-
-                    {currentUser.uid === authorId && !collapsed ? (
+                    {currentUser.uid === authorId ? (
                       <Dropdown className="HamburgerMenu">
                         <Dropdown.Toggle as={HamburgerToggle}></Dropdown.Toggle>
                         <Dropdown.Menu>
@@ -250,7 +249,17 @@ class Annotation extends Component {
                         </Dropdown.Item>
                         </Dropdown.Menu>
                       </Dropdown>
-                    ) : (null)}
+                    ) : (
+                        <Dropdown className="HamburgerMenu">
+                          <Dropdown.Toggle as={HamburgerToggle}></Dropdown.Toggle>
+                          <Dropdown.Menu>
+                            <Dropdown.Item as="button" eventKey={id} onSelect={eventKey => this.handleNewAnchor(id)}>
+                              Add new anchor
+                        </Dropdown.Item>
+                          </Dropdown.Menu>
+                        </Dropdown>
+                      )}
+
                   </div>
                 </div>
               </div>
@@ -356,7 +365,7 @@ class Annotation extends Component {
         </li>
       );
     }
-    else if (annotationType === 'to-do' && !trashed) {
+    else if (annotationType === 'to-do' && !trashed && currentUser.uid === authorId) {
       return (
         <li key={idx} id={id} className={classNames({ AnnotationItem: true })}>
           <div
@@ -1063,7 +1072,7 @@ class Annotation extends Component {
     else {
       return (
         <div className="whoops">
-          This annotation is archived
+          This annotation is private
         </div>
       );
     }

@@ -22,6 +22,7 @@ class AnnotationList extends Component {
     });
 
     const annotationsCopy = annotations.filter(anno => anno.SharedId === null);
+    // this.props.requestFilterUpdate(annotationsCopy);
     return (
       <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
         {annotationsCopy.map((annotation, idx) => {
