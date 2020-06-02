@@ -83,7 +83,6 @@ export default class CardWrapper extends React.Component {
     }
 
     dropDownSelection = (option) => {
-        console.log(option);
         this.setState({ annotationType: option.value })
     }
 

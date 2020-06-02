@@ -139,9 +139,8 @@ class Sidebar extends React.Component {
           }
         );
         this.setState({
-          filteredAnnotations: this.state.annotations.filter(function (element) { return element.id === target; })
+          filteredAnnotations: this.state.annotations.filter(element => target.includes(element.id))
         });
-
       } else if (
         request.from === 'background' &&
         request.msg === 'TOGGLE_SIDEBAR'
