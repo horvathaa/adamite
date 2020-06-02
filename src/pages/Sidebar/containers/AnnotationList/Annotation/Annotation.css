@@ -171,6 +171,16 @@
   list-style-type: none
 }
 
+.Unarchive {
+  position: relative;
+  background-color: #6B778C;
+  color: whitesmoke ;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  font-weight: bold;
+  line-height: 1.5;
+  border-radius: 0.2rem;
+}
 
 .ToDo-Button{
   position: relative;

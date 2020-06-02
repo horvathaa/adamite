@@ -97,6 +97,14 @@ class Annotation extends Component {
     );
   }
 
+  handleUnArchive(e) {
+    let id = e.target.value;
+    updateAnnotationById(id, {
+      trashed: false
+    }
+    );
+  }
+
   handleTrashClick(id) {
     // eslint-disable-next-line no-restricted-globals
     if (confirm("Are you sure? This action cannot be reversed")) {
@@ -264,7 +272,7 @@ class Annotation extends Component {
                 </div>
               </div>
             ) : (null)}
-            {!childAnchor.length ? (
+            {childAnchor === undefined || !childAnchor.length ? (
               <div
                 className={classNames({
                   AnchorContainer: true,
@@ -1071,9 +1079,22 @@ class Annotation extends Component {
     }
     else {
       return (
-        <div className="whoops">
-          This annotation is private
-        </div>
+        <React.Fragment>
+          {authorId === currentUser.uid ? (
+            <div className="whoops">
+              This annotation is archived &nbsp; &nbsp;
+              <button value={id} className="Unarchive" onClick={this.handleUnArchive}>
+                Un-archive?
+            </button>
+            </div>
+          ) : (
+              <div className="whoops">
+                This annotation is private
+              </div>
+            )
+          }
+        </React.Fragment>
+
       );
     }
   }

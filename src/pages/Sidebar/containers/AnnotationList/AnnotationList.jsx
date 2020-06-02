@@ -21,12 +21,13 @@ class AnnotationList extends Component {
       }
     });
 
-    const annotationsCopy = annotations.filter(anno => anno.SharedId === null);
+    const annotationsCopy = annotations.filter(anno => anno.SharedId === null || "undefined" === typeof (anno['SharedId']));
+    console.log(annotationsCopy);
     // this.props.requestFilterUpdate(annotationsCopy);
     return (
       <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
         {annotationsCopy.map((annotation, idx) => {
-          // console.log(annotation);
+          console.log(annotation);
           return (
             <React.Fragment>
               <Annotation
