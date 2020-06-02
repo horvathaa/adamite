@@ -4,7 +4,39 @@ import $ from 'jquery';
 var xpathRange = require('xpath-range');
 
 function anchorClick(e) {
-    const target = e.target.attributes.getNamedItem("name").value;
+    console.log("in Anchor click", e)
+    console.log("spanz", document.getElementsByName(e.target.attributes.getNamedItem("name").value));
+    var ids = [e.target.attributes.getNamedItem("name").value];
+
+    var spans = document.getElementsByName(ids[0])
+
+
+    for (var i = 0; i < spans.length; i++) {
+        //children
+        var arr = [].slice.call(spans[i].children);
+        var arr = arr.filter((function (element) {
+            return element.className === 'highlight-adamite-annotation';
+        }));
+        arr.forEach(element => {
+            ids.push(element.attributes.getNamedItem("name").value)
+        });
+        //parents
+        var parentNode = spans[i].parentNode
+        while (parentNode.className === 'highlight-adamite-annotation') {
+            ids.push(parentNode.attributes.getNamedItem("name").value)
+            parentNode = parentNode.parentNode;
+        }
+    }
+    // ids = ids.filter(function (item, pos) {
+    //     return ids.indexOf(item) == pos;
+    // });
+
+    var ids = [...new Set(ids)]
+
+    console.log("here is the ids", ids)
+    //);
+    const target = ids;
+    // const target = e.target.attributes.getNamedItem("name").value;
     chrome.runtime.sendMessage({
         msg: 'ANCHOR_CLICKED',
         from: 'content',
@@ -30,6 +62,7 @@ export const highlightRange = (anno) => {
         var span = document.createElement("span");
         span.setAttribute("name", anno.id.toString());
         span.textContent = match;
+        span.onclick = anchorClick;
         span.className = "highlight-adamite-annotation";
         node.parentNode.insertBefore(span, node.nextSibling);
         node.parentNode.normalize()
@@ -41,7 +74,6 @@ function highlight(range, startOffset, endOffset, callback) {
     var nodes = getNodesInRange(range).filter(function (element) {
         return element.nodeType === 3 && element.data.trim() !== "";
     });
-    // console.log("NODES", nodes[0].data)
 
     let start = true;
     let substring = "";
@@ -54,7 +86,6 @@ function highlight(range, startOffset, endOffset, callback) {
             if (startOffset !== 0 && start) {
 
                 substring = nodes[i].data.substring(startOffset, nodes[i].data.length);
-                // console.log("string", substring.length)
                 substring = startOffset;
                 start = false;
             }
@@ -75,9 +106,6 @@ var splitReinsertText = function (node, substring, callback) {
         var args = [].slice.call(arguments),
             offset = args[args.length - 2],
             newTextNode = node.splitText(offset);
-        // console.log("args", args);
-        // console.log("offsets", offset);
-        // console.log("newtextnode", newTextNode)
         newTextNode.data = newTextNode.data.substr(all.length);
 
         callback.apply(window, [node].concat(args));
