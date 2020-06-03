@@ -11,6 +11,7 @@ import expand from '../../../../../assets/img/SVGs/expand.svg'
 import { deleteAnnotationForeverById, updateAnnotationById, getUserProfileById } from '../../../../../firebase';
 import CardWrapper from '../../CardWrapper/CardWrapper'
 import AnchorList from './AnchorList/AnchorList';
+import Anchor from './AnchorList/Anchor';
 
 const HamburgerToggle = React.forwardRef(({ children, onClick }, ref) => (
   <a ref={ref}
@@ -30,6 +31,7 @@ class Annotation extends Component {
     collapsed: false,
     annotationType: this.props.type,
     editing: false,
+    id: this.props.id,
     authorId: this.props.authorId
   };
 
@@ -84,10 +86,6 @@ class Annotation extends Component {
     // var sec = date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
     var time = hour + ':' + min + ' ' + day + ' ' + month + ' ' + year;
     return time;
-  }
-
-  handleExternalAnchor(url) {
-    chrome.runtime.sendMessage({ msg: "LOAD_EXTERNAL_ANCHOR", from: 'content', payload: url });
   }
 
   handleDoneToDo(id) {
@@ -273,38 +271,10 @@ class Annotation extends Component {
               </div>
             ) : (null)}
             {childAnchor === undefined || !childAnchor.length ? (
-              <div
-                className={classNames({
-                  AnchorContainer: true,
-                  Truncated: collapsed
-                })}
-              >
-                <div className="AnchorIconContainer">
-                  {currentUrl === url ? (
-                    <FaFont className="AnchorIcon" />
-                  ) : (<FaExternalLinkAlt className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />)}
-                </div>
-                <div className="AnchorTextContainer">
-                  {anchor}
-                </div>
-              </div>
+              <Anchor id={this.state.id} currentUrl={currentUrl} url={url} collapsed={collapsed} anchorContent={anchor} />
             ) : (
                 <React.Fragment>
-                  <div
-                    className={classNames({
-                      AnchorContainer: true,
-                      Truncated: collapsed
-                    })}
-                  >
-                    <div className="AnchorIconContainer">
-                      {currentUrl === url ? (
-                        <FaFont className="AnchorIcon" />
-                      ) : (<FaExternalLinkAlt className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />)}
-                    </div>
-                    <div className="AnchorTextContainer">
-                      {anchor}
-                    </div>
-                  </div>
+                  <Anchor id={this.state.id} currentUrl={currentUrl} url={url} collapsed={collapsed} anchorContent={anchor} />
                   <AnchorList childAnchor={childAnchor} currentUrl={currentUrl} collapsed={collapsed} />
                 </React.Fragment>
               )}

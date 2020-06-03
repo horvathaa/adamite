@@ -33,7 +33,7 @@ export const deleteAnnotationForeverById = id => {
 };
 
 export const updateAnnotationById = (id, newAnnotationFields = {}) => {
-  getAnnotationById(id).update({ ...newAnnotationFields });
+  return getAnnotationById(id).update({ ...newAnnotationFields });
 };
 
 export const createAnnotation = async ({

@@ -2,16 +2,18 @@ import '../../assets/img/Adamite.png';
 import '../../assets/img/icon-128.png';
 import './helpers/authHelper';
 import './helpers/sidebarHelper';
-import './helpers/filterHelper';
+import { clean } from './helpers/objectCleaner';
+
 import './filterWindow.html';
 
 import {
   auth,
   createAnnotation,
   getAllAnnotationsByUserId,
-  getAllAnnotations,
-  updateAnnotationById
+  updateAnnotationById,
+  getAllAnnotations
 } from '../../firebase/index';
+import { FaSadCry } from 'react-icons/fa';
 
 let unsubscribeAnnotations = null;
 let annotations = [];
@@ -55,7 +57,6 @@ const broadcastAnnotationsUpdated = () => {
 let createdWindow = null;
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log(request.msg);
   if (request.msg === 'REQUEST_TAB_URL') {
     sendResponse({ url: sender.tab.url });
   } else if (request.msg === 'SAVE_ANNOTATED_TEXT') {
@@ -96,8 +97,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       AnnotationAnchorContent: anchor,
       offsets: offsets
     }).then(value => {
+      console.log(value);
       let highlightObj = {
-        id: newAnno.sharedId,
+        id: value.id,
         content: newAnno.content,
         xpath: xpath
       }
@@ -121,6 +123,30 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     const { url } = request.payload;
     const annotationsOnPage = annotations.filter(a => a.url === url); // can use this later so we get all annotations that match our filter criterias
     sendResponse({ annotationsOnPage });
+  } else if (request.msg === 'UPDATE_XPATH_BY_IDS') {
+    // firebase: in action
+    // var assd = request.payload.toUpdate;
+    // for (var i = 0; i < assd.length; i++) {
+    //   console.log("PAYLOAD", assd)
+    //   console.log("CLEANNN", clean({
+    //     "xpath.start": assd[i].xpath.start,
+    //     "xpath.startOffset": assd[i].xpath.startOffset,
+    //     "xpath.end": assd[i].xpath.end,
+    //     "xpath.endOffset": assd[i].xpath.endOffset,
+    //   }));
+    // }
+
+
+    request.payload.toUpdate.forEach(e =>
+      updateAnnotationById(
+        e.id, clean({
+          "xpath.start": e.xpath.start,
+          "xpath.startOffset": e.xpath.startOffset,
+          "xpath.end": e.xpath.end,
+          "xpath.endOffset": e.xpath.endOffset,
+        }),
+      )
+    );
   } else if (request.msg === 'FILTER_BY_TAG') {
     chrome.runtime.sendMessage({ msg: 'REQUEST_FILTERED_ANNOTATIONS', from: 'background' }, (response) => {
       setTimeout(() => {

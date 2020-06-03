@@ -139,9 +139,22 @@ class Sidebar extends React.Component {
           }
         );
         this.setState({
-          filteredAnnotations: this.state.annotations.filter(function (element) { return element.id === target; })
+          filteredAnnotations: this.state.annotations.filter(element => {
+            if (element.childAnchor !== undefined && element.childAnchor !== null && element.childAnchor.length) {
+              let doesContain = false;
+              element.childAnchor.forEach(anno => {
+                if (target.includes(anno.id)) {
+                  doesContain = true;
+                }
+              })
+              if (!doesContain) {
+                doesContain = target.includes(element.id);
+              }
+              return doesContain;
+            }
+            return target.includes(element.id);
+          })
         });
-
       } else if (
         request.from === 'background' &&
         request.msg === 'TOGGLE_SIDEBAR'

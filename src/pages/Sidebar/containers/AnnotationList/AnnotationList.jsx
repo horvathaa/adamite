@@ -14,12 +14,12 @@ class AnnotationList extends Component {
     listOfChildAnnos.forEach(anno => {
       for (let parentAnno of annotations) {
         if (parentAnno.id === anno.SharedId && !parentAnno.childAnchor.includes(anno)) {
-          // console.log('found a match - heres kid', anno);
-          // console.log('and heres the rent', parentAnno);
           parentAnno.childAnchor.push(anno);
         }
       }
     });
+
+    console.log('before filter', annotations);
 
     const annotationsCopy = annotations.filter(anno => anno.SharedId === null || "undefined" === typeof (anno['SharedId']));
     console.log(annotationsCopy);
