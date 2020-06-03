@@ -98,7 +98,6 @@ class NewAnnotation extends React.Component {
       tags: CardWrapperState.tags,
       annotationType: CardWrapperState.annotationType.toLowerCase(),
     };
-
     chrome.runtime.sendMessage(
       {
         msg: 'SAVE_ANNOTATED_TEXT',
@@ -122,7 +121,6 @@ class NewAnnotation extends React.Component {
 
           this.setState({ submitted: false });
           this.props.resetNewSelection();
-
         }
       }
     );
@@ -160,54 +158,7 @@ class NewAnnotation extends React.Component {
           submitButtonHandler={this.submitButtonHandler}
           elseContent={submittedLoadState} />
       </React.Fragment>
-      //   <div className="NewAnnotationContainer">
-      //     <div className="InnerNewAnnotation">
-      //       <div className="SelectedTextContainer">{newSelection}</div>
-      //       <div className="TextareaContainer">
-      //         <RichEditor annotationChangeHandler={this.annotationChangeHandler} />
-      //       </div>
-      //       {!submitted ? (
-      //         <React.Fragment>
-      //           <div className="Tag-Container">
-      //             <div className="row">
-      //               <div className="TextareaContainer">
-      //                 <TagsInput value={tags} onChange={this.tagsHandleChange} onlyUnique={true} />
-      //               </div>
-      //             </div>
-      //           </div>
-      //           <div className="SubmitButtonContainer">
-      //             <div className="Tag-Container">
-      //               <div className="row">
-      //                 <div className="Dropdown-Col">
-      //                   <Dropdown options={options} onChange={this._onSelect} value={defaultOption} placeholder="Select an option" />
-      //                 </div>
-      //           &nbsp; &nbsp;
-      //             <button
-      //                   className="btn Cancel-Button"
-      //                   onClick={_ => this.props.resetNewSelection()}
-      //                 >
-      //                   <GiCancel /> Cancel
-      //           </button>
-      //           &nbsp; &nbsp;
-      //             <button
-      //                   id="NewAnnotation"
-      //                   className="Publish-Button SubmitButton "
-      //                   onClick={e => this.submitButtonHandler(e)}
-      //                   disabled={annotationContent.length === 0}
-      //                 >
-      //                   Publish
-      //           </button>
-      //               </div>
-      //             </div>
-      //           </div>
-      //         </React.Fragment>
-      //       ) : (
-      //           <div className="spinner-border text-secondary" role="status">
-      //             <span className="sr-only">...</span>
-      //           </div>
-      //         )}
-      //     </div>
-      //   </div >
+
     );
   }
 }

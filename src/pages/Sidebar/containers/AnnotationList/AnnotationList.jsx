@@ -6,15 +6,35 @@ import './AnnotationList.css';
 class AnnotationList extends Component {
   render() {
     const { annotations, currentUser } = this.props;
+
+    /* {annotationsCopy.map((annotation, idx) => { */
+    // this is just for the user study - do not keep this in real version of app!
+    // const annotationsCopy = annotations.filter(anno => anno.authorId === currentUser.uid || anno.authorId === 'XRCVPsHHNANyhefwAaLBBCAecRz1');
+    let listOfChildAnnos = annotations.filter(anno => anno.SharedId !== null);
+    listOfChildAnnos.forEach(anno => {
+      for (let parentAnno of annotations) {
+        if (parentAnno.id === anno.SharedId && !parentAnno.childAnchor.includes(anno)) {
+          parentAnno.childAnchor.push(anno);
+        }
+      }
+    });
+
+    console.log('before filter', annotations);
+
+    const annotationsCopy = annotations.filter(anno => anno.SharedId === null || "undefined" === typeof (anno['SharedId']));
+    console.log(annotationsCopy);
+    // this.props.requestFilterUpdate(annotationsCopy);
     return (
       <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
-        {annotations.map((annotation, idx) => {
+        {annotationsCopy.map((annotation, idx) => {
+          console.log(annotation);
           return (
             <React.Fragment>
               <Annotation
                 key={idx}
                 id={annotation.id}
                 anchor={annotation.anchorContent}
+                childAnchor={annotation.childAnchor}
                 content={annotation.content}
                 div={annotation.div}
                 active={annotation.active}

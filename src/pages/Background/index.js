@@ -11,7 +11,7 @@ import {
   createAnnotation,
   getAllAnnotationsByUserId,
   updateAnnotationById,
-  getAllAnnotations,
+  getAllAnnotations
 } from '../../firebase/index';
 import { FaSadCry } from 'react-icons/fa';
 
@@ -66,6 +66,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     //content = JSON.parse(content); // consider just pass content as an object
     createAnnotation({
       taskId: null,
+      SharedId: null,
       AnnotationContent: content.annotation,
       AnnotationAnchorContent: content.anchor,
       AnnotationAnchorPath: null,
@@ -74,10 +75,42 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       AnnotationType: content.annotationType, // could be other types (string)
       url,
       AnnotationTags: content.tags,
+      childAnchor: []
     }).then(value => {
       sendResponse({
         msg: 'DONE',
         value: value.id
+      });
+    });
+  } else if (request.from === 'content' && request.msg === 'SAVE_NEW_ANCHOR') {
+    let { newAnno, xpath, url, anchor, offsets } = request.payload;
+    // console.log('somewhow made it here', newAnno, xpath);
+    createAnnotation({
+      taskId: null,
+      childAnchor: null,
+      AnnotationContent: newAnno.content,
+      AnnotationType: newAnno.type,
+      SharedId: newAnno.sharedId,
+      xpath: xpath,
+      url: url,
+      AnnotationTags: newAnno.tags,
+      AnnotationAnchorContent: anchor,
+      offsets: offsets
+    }).then(value => {
+      console.log(value);
+      let highlightObj = {
+        id: value.id,
+        content: newAnno.content,
+        xpath: xpath
+      }
+      chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+        chrome.tabs.sendMessage(
+          tabs[0].id,
+          {
+            msg: 'ANNOTATION_ADDED',
+            newAnno: highlightObj,
+          }
+        );
       });
     });
   } else if (request.from === 'content' && request.msg === 'CONTENT_SELECTED') {

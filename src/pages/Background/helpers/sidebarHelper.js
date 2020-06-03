@@ -20,7 +20,7 @@ const persistSidebarOpenStatus = (status) => {
 /**
  * Sidebar on Left
  */
-let sidebarOnLeft = true; // left -> true  |  right -> false
+let sidebarOnLeft = false; // left -> true  |  right -> false
 
 chrome.storage.sync.get(['sidebarOnLeft'], (result) => {
   if (result.sidebarOnLeft !== undefined) {

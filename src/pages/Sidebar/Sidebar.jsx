@@ -139,7 +139,21 @@ class Sidebar extends React.Component {
           }
         );
         this.setState({
-          filteredAnnotations: this.state.annotations.filter(element => target.includes(element.id))
+          filteredAnnotations: this.state.annotations.filter(element => {
+            if (element.childAnchor !== undefined && element.childAnchor !== null && element.childAnchor.length) {
+              let doesContain = false;
+              element.childAnchor.forEach(anno => {
+                if (target.includes(anno.id)) {
+                  doesContain = true;
+                }
+              })
+              if (!doesContain) {
+                doesContain = target.includes(element.id);
+              }
+              return doesContain;
+            }
+            return target.includes(element.id);
+          })
         });
       } else if (
         request.from === 'background' &&
@@ -194,7 +208,17 @@ class Sidebar extends React.Component {
       return true;
     }
     if (siteScope.includes('onPage') && !siteScope.includes('acrossWholeSite')) {
+      // console.log('annotation in filter', annotation);
+      // if (annotation.childAnchors !== undefined) {
+      //   annotation.childAnchors.forEach(anno => {
+      //     if (anno.url === this.state.url) {
+      //       return true;
+      //     }
+      //   });
+      // }
+      // else {
       return annotation.url === this.state.url;
+      // }
     }
     else if (siteScope.includes('acrossWholeSite')) {
       let url = new URL(this.state.url);
@@ -273,6 +297,22 @@ class Sidebar extends React.Component {
     });
   }
 
+  // to-do make this work probs race condition where annotationlist requests this be called before
+  // this.selection is set
+  requestChildAnchorFilterUpdate(annotations) {
+    console.log('lol', this.selection);
+    this.setState({
+      filteredAnnotations:
+        annotations.filter(annotation => {
+          return this.checkSiteScope(annotation, this.selection.siteScope) &&
+            this.checkUserScope(annotation, this.selection.userScope) &&
+            this.checkAnnoType(annotation, this.selection.annoType) &&
+            this.checkTimeRange(annotation, this.selection.timeRange) &&
+            this.checkTags(annotation, this.selection.tags);
+        })
+    });
+  }
+
 
   resetNewSelection = () => {
     this.setState({ newSelection: null });
@@ -286,7 +326,7 @@ class Sidebar extends React.Component {
     }
 
     const inputText = searchBarInputText.toLowerCase();
-    const filteredAnnotationsCopy = [];
+    let filteredAnnotationsCopy = [];
     filteredAnnotations.forEach((anno) => {
       const { content } = anno;
       if (content.toLowerCase().includes(inputText)) {
@@ -295,7 +335,10 @@ class Sidebar extends React.Component {
     });
 
     chrome.storage.local.set({ annotations: filteredAnnotationsCopy });
-    console.log(this.selection);
+    filteredAnnotationsCopy = filteredAnnotationsCopy.sort((a, b) =>
+      (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
+    );
+    // console.log(this.selection);
 
     return (
       <div className="SidebarContainer">
@@ -344,7 +387,8 @@ class Sidebar extends React.Component {
               ) : (
                   <AnnotationList annotations={filteredAnnotationsCopy}
                     currentUser={currentUser}
-                    url={this.state.url} />
+                    url={this.state.url}
+                    requestFilterUpdate={this.requestChildAnchorFilterUpdate} />
                 )}
             </div>
           </div>

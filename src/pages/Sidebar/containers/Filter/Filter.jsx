@@ -16,7 +16,6 @@ const filterToggle = React.forwardRef(({ children, onClick }, ref) => (
 ));
 
 
-
 class Filter extends React.Component {
     selection = {
         siteScope: ['onPage'],
@@ -26,6 +25,12 @@ class Filter extends React.Component {
         archive: null,
         tags: []
     }
+
+
+    state = {
+        menuOpen: false
+    }
+
 
     componentDidMount() {
         chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -60,7 +65,9 @@ class Filter extends React.Component {
             else {
                 this.selection.annoType = [];
             }
+            this._forceOpen = true;
         }
+        this._forceOpen = true;
         if (eventKey.includes('siteScope')) {
             let choice = eventKey.substring(eventKey.indexOf(':') + 1, eventKey.length)
             if (this.selection.siteScope.includes(choice)) {
@@ -68,6 +75,7 @@ class Filter extends React.Component {
             } else {
                 this.selection.siteScope.push(choice);
             }
+            this._forceOpen = true;
             // this.selection.siteScope = eventKey.substring(eventKey.indexOf(':') + 1, eventKey.length);
         }
         else if (eventKey.includes('userScope')) {
@@ -77,6 +85,7 @@ class Filter extends React.Component {
             } else {
                 this.selection.userScope.push(choice);
             }
+            this._forceOpen = true;
         }
         else if (eventKey.includes('annoType')) {
             let choice = eventKey.substring(eventKey.indexOf(':') + 1, eventKey.length)
@@ -85,35 +94,36 @@ class Filter extends React.Component {
             } else {
                 this.selection.annoType.push(choice);
             }
+            this._forceOpen = true;
         }
         else if (eventKey.includes('timeRange')) {
             this.selection.timeRange = eventKey.substring(eventKey.indexOf(':') + 1, eventKey.length)
+            this._forceOpen = true;
         }
         this.props.applyFilter(this.selection);
 
     }
+    // open={this.state.menuOpen} onToggle={val => this.dropdownToggle(val)} open={this.state.menuOpen}
 
     render() {
         return (
             <React.Fragment>
-                <Dropdown className="Filter">
+                <Dropdown className="Filter" >
                     <Dropdown.Toggle as={filterToggle} id="dropdown-basic">
 
                     </Dropdown.Toggle>
                     <Dropdown.Menu >
-                        {/* &nbsp;{this.props.filterAnnotationLength()} annotations
-                    <Dropdown.Divider /> */}
-                    &nbsp;Site scope
+                        &nbsp;Site scope
                     <Dropdown.Item as="button" eventKey="siteScope:onPage" onSelect={eventKey => this.updateSelected(eventKey)}>
                             On page {this.selection.siteScope.includes('onPage') ? ("✓") : (null)}
                         </Dropdown.Item>
-                        <Dropdown.Item as="button" eventKey="siteScope:anchorToPage" onSelect={eventKey => this.updateSelected(eventKey)}>
+                        <Dropdown.Item as="button" disabled eventKey="siteScope:anchorToPage" onSelect={eventKey => this.updateSelected(eventKey)}>
                             Anchored to Page {this.selection.siteScope.includes('anchorToPage') ? ("✓") : (null)}
                         </Dropdown.Item>
                         <Dropdown.Item as="button" eventKey="siteScope:acrossWholeSite" onSelect={eventKey => this.updateSelected(eventKey)}>
                             Across whole site {this.selection.siteScope.includes('acrossWholeSite') ? ("✓") : (null)}
                         </Dropdown.Item>
-                        <Dropdown.Item as="button" eventKey="siteScope:anchorToAllSitePages" onSelect={eventKey => this.updateSelected(eventKey)}>
+                        <Dropdown.Item as="button" disabled eventKey="siteScope:anchorToAllSitePages" onSelect={eventKey => this.updateSelected(eventKey)}>
                             Anchored to All Site Pages {this.selection.siteScope.includes('anchorToAllSitePages') ? ("✓") : (null)}
                         </Dropdown.Item>
                         <Dropdown.Divider />
@@ -159,7 +169,7 @@ class Filter extends React.Component {
                         <Dropdown.Item as="button" eventKey="timeRange:month" onSelect={eventKey => this.updateSelected(eventKey)}>
                             Past Month {this.selection.timeRange === 'month' ? ("✓") : (null)}
                         </Dropdown.Item>
-                        <Dropdown.Item as="button" eventKey="timeRange:custom" onSelect={eventKey => this.updateSelected(eventKey)}>
+                        <Dropdown.Item as="button" disabled eventKey="timeRange:custom" /*onSelect={eventKey => this.updateSelected(eventKey)} */>
                             Custom Time Range
                         </Dropdown.Item>
                         {/* Past 6 Months {this.selection.timeRange === '6months' ? ("✓") : (null)}

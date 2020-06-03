@@ -11,9 +11,6 @@
     "activeTab",
     "storage"
   ],
-  "chrome_url_overrides": {
-    "newtab": "newtab.html"
-  },
   "icons": {
     "128": "Adamite.png"
   },

@@ -1,6 +1,8 @@
 
 import { xpathConversion, getNodesInRange } from './AnchorHelpers';
 
+var queue = [];
+
 const alertBackgroundOfNewSelection = (selection, offsets, xpath) => {
     // supporting creation of annotations in sidebar
     chrome.runtime.sendMessage({
@@ -13,6 +15,12 @@ const alertBackgroundOfNewSelection = (selection, offsets, xpath) => {
         },
     });
 };
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.msg === 'ADD_NEW_ANCHOR') {
+        queue.push(request.payload);
+    }
+});
 
 export const createAnnotation = () => {
     var selection = window.getSelection();
@@ -42,7 +50,23 @@ export const createAnnotation = () => {
             endOffset: rect.endOffset
         };
 
-        alertBackgroundOfNewSelection(selection.toString(), offsets, xpathToNode);
+        if (queue.length) {
+            let newAnno = queue.pop();
+            chrome.runtime.sendMessage({
+                msg: 'SAVE_NEW_ANCHOR',
+                from: 'content',
+                payload: {
+                    newAnno: newAnno,
+                    xpath: xpathToNode,
+                    url: window.location.href,
+                    anchor: selection.toString(),
+                    offsets: offsets,
+                }
+            });
+        }
+        else {
+            alertBackgroundOfNewSelection(selection.toString(), offsets, xpathToNode);
+        }
     }
 
 }
