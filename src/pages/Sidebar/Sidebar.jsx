@@ -40,17 +40,24 @@ class Sidebar extends React.Component {
       this.unsubscribeAnnotations();
     }
     // getAllAnnotationsByUserIdAndUrl(uid, url).onSnapshot(querySnapshot => {
-    getAllAnnotations().onSnapshot(querySnapshot => {
-      let annotations = [];
-      querySnapshot.forEach(snapshot => {
-        annotations.push({
-          id: snapshot.id,
-          ...snapshot.data(),
-        });
-      });
-      this.setState({ annotations });
-      this.requestFilterUpdate();
-    });
+    chrome.runtime.sendMessage(
+      {
+        msg: 'GET_ANNOTATIONS_PAGE_LOAD',
+        uid: uid,
+        url: url,
+      },
+    );
+    // getAllAnnotations().onSnapshot(querySnapshot => {
+    //   let annotations = [];
+    //   querySnapshot.forEach(snapshot => {
+    //     annotations.push({
+    //       id: snapshot.id,
+    //       ...snapshot.data(),
+    //     });
+    //   });
+    //   this.setState({ annotations });
+    //   this.requestFilterUpdate();
+    // });
 
 
   };
@@ -167,7 +174,7 @@ class Sidebar extends React.Component {
         }
       }
       else if (request.from === 'background' && request.msg === 'REQUEST_FILTERED_ANNOTATIONS') {
-        chrome.storage.local.set({ annotations: this.state.filteredAnnotations });
+        //chrome.storage.local.set({ annotations: this.state.filteredAnnotations });
         sendResponse({ done: true });
       }
     });
@@ -300,7 +307,7 @@ class Sidebar extends React.Component {
   // to-do make this work probs race condition where annotationlist requests this be called before
   // this.selection is set
   requestChildAnchorFilterUpdate(annotations) {
-    console.log('lol', this.selection);
+
     this.setState({
       filteredAnnotations:
         annotations.filter(annotation => {
@@ -334,7 +341,7 @@ class Sidebar extends React.Component {
       }
     });
 
-    chrome.storage.local.set({ annotations: filteredAnnotationsCopy });
+    //chrome.storage.local.set({ annotations: filteredAnnotationsCopy });
     filteredAnnotationsCopy = filteredAnnotationsCopy.sort((a, b) =>
       (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
     );

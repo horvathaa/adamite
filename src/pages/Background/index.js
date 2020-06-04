@@ -10,10 +10,14 @@ import {
   auth,
   createAnnotation,
   getAllAnnotationsByUserId,
+  getAllAnnotationsByUrl,
+  getAllAnnotationsByUserUrlAndMaxTime,
+  getAllAnnotationsByUserIdAndUrl,
   updateAnnotationById,
   getAllAnnotations
 } from '../../firebase/index';
 import { FaSadCry } from 'react-icons/fa';
+import Annotation from '../Sidebar/containers/AnnotationList/Annotation/Annotation';
 
 let unsubscribeAnnotations = null;
 let annotations = [];
@@ -54,12 +58,75 @@ const broadcastAnnotationsUpdated = () => {
   });
 };
 
+function yada(annotations, url, uid) {
+  console.log("here is some value", annotations)
+  if (!annotations.hasOwnProperty('annotations') || (annotations.annotations !== null && annotations.annotations.length === 0)) {
+    console.log("ine here")
+    getAllAnnotationsByUrl(url).get()
+      .then(function (item) {
+        var toStore = []
+        item.forEach(function (doc) {
+          console.log("ITEM => ", doc.data());
+          toStore.push({
+            id: doc.id,
+            ...doc.data(),
+          });
+        });
+        console.log(toStore);
+        chrome.storage.local.set({ annotations: toStore });
+      }).catch(function (error) {
+        console.log("Error getting documents: ", error);
+      });
+  }
+  else {
+    var maxTimeStamp = Math.max.apply(Math, annotations.annotations.map(function (o) { return o.createdTimestamp; }))
+    maxTimeStamp--;
+    console.log("HERE IS TT");
+    getAllAnnotationsByUserUrlAndMaxTime(url, maxTimeStamp).get()
+      .then(function (item) {
+        console.log("here are the itmes found", item)
+        var toStore = []
+
+        item.forEach(function (doc) {
+          console.log("ITEM => ", doc.data());
+          toStore.push({
+            id: doc.id,
+            ...doc.data(),
+          });
+        });
+        console.log("tostore", toStore)
+        for (var i = 0; i < annotations.annotations.length; i++) {
+          console.log("id", annotations.annotations[i].id)
+          var found = toStore.filter(e => e.id == annotations.annotations[i].id)
+          console.log("was it found?", found)
+        }
+        //add old annotations to new annotations if they don't exist in the new one
+
+        // console.log(toStore);
+        // chrome.storage.sync.set({ annotations: toStore });
+      }).catch(function (error) {
+        console.log("Error getting documents: ", error);
+      });
+  }
+
+}
+
 let createdWindow = null;
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.msg === 'REQUEST_TAB_URL') {
     sendResponse({ url: sender.tab.url });
-  } else if (request.msg === 'SAVE_ANNOTATED_TEXT') {
+  }
+  else if (request.msg === 'GET_ANNOTATIONS_PAGE_LOAD') {
+    console.log("here is the message", request)
+    chrome.storage.local.get(annotations => {
+      yada(annotations, request.url, request.uid)
+      // var tt = annotations.annotation.filter(function (element) {
+      //   return element.id === nodeRange.id;
+      // });
+    });
+  }
+  else if (request.msg === 'SAVE_ANNOTATED_TEXT') {
     let { url, content } = request.payload;
 
     // firebase: in action
@@ -124,19 +191,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     const annotationsOnPage = annotations.filter(a => a.url === url); // can use this later so we get all annotations that match our filter criterias
     sendResponse({ annotationsOnPage });
   } else if (request.msg === 'UPDATE_XPATH_BY_IDS') {
-    // firebase: in action
-    // var assd = request.payload.toUpdate;
-    // for (var i = 0; i < assd.length; i++) {
-    //   console.log("PAYLOAD", assd)
-    //   console.log("CLEANNN", clean({
-    //     "xpath.start": assd[i].xpath.start,
-    //     "xpath.startOffset": assd[i].xpath.startOffset,
-    //     "xpath.end": assd[i].xpath.end,
-    //     "xpath.endOffset": assd[i].xpath.endOffset,
-    //   }));
-    // }
-
-
     request.payload.toUpdate.forEach(e =>
       updateAnnotationById(
         e.id, clean({

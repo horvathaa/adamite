@@ -144,7 +144,8 @@ class Annotation extends Component {
     updateAnnotationById(CardWrapperState.id, {
       content: CardWrapperState.annotationContent,
       type: CardWrapperState.annotationType.toLowerCase(),
-      tags: CardWrapperState.tags
+      tags: CardWrapperState.tags,
+      createdTimestamp: new Date().getTime()
     });
     this.setState({ editing: false });
   }

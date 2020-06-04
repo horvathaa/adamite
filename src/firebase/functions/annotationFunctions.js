@@ -16,6 +16,13 @@ export const getAllAnnotationsByUserIdAndUrl = (uid, url) => {
     .where('url', '==', url);
 };
 
+export const getAllAnnotationsByUserUrlAndMaxTime = (url, maxTime) => {
+  return db
+    .collection(DB_COLLECTIONS.ANNOTATIONS)
+    .where('createdTimestamp', '>', maxTime)
+    .where('url', '==', url);
+};
+
 export const getAllAnnotations = () => {
   return db.collection(DB_COLLECTIONS.ANNOTATIONS)/*.orderBy("createdTimestamp", "desc")*/;
 };
