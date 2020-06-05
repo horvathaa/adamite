@@ -153,6 +153,13 @@
     flex-wrap: wrap;
 }
 
+#collapseTagList {
+    transform: rotate(90deg);
+    width: 18px;
+    height: 18px;
+}
+  
+
 /* .Filter.hover, .Filter:hover {
     filter: brightness(.5);
   } */

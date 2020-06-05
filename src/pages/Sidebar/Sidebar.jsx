@@ -29,7 +29,7 @@ class Sidebar extends React.Component {
   };
 
   selection = {
-    siteScope: 'onPage',
+    siteScope: ['onPage'],
     userScope: ['public'],
     annoType: ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'],
     timeRange: 'all',
@@ -310,7 +310,6 @@ class Sidebar extends React.Component {
   // to-do make this work probs race condition where annotationlist requests this be called before
   // this.selection is set
   requestChildAnchorFilterUpdate(annotations) {
-    console.log('lol', this.selection);
     this.setState({
       filteredAnnotations:
         annotations.filter(annotation => {
@@ -370,8 +369,8 @@ class Sidebar extends React.Component {
               {this.state.showFilter &&
                 <Filter applyFilter={this.applyFilter}
                   filterAnnotationLength={this.getFilteredAnnotationListLength}
-                  annotations={filteredAnnotationsCopy}
                   getFilteredAnnotations={this.getFilteredAnnotations}
+                  currentFilter={this.selection}
                 />}
               {this.state.newSelection !== null &&
                 this.state.newSelection.trim().length > 0 && (

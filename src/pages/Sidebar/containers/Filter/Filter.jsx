@@ -5,6 +5,7 @@ import classNames from 'classnames';
 import { Combobox } from 'react-widgets';
 import 'react-widgets/dist/css/react-widgets.css';
 import { FaCheck, FaFilter } from 'react-icons/fa';
+import expand from '../../../../assets/img/SVGs/expand.svg'
 import { trashAnnotationById } from '../../../../firebase';
 
 
@@ -19,6 +20,12 @@ class Filter extends React.Component {
         tags: []
     }
 
+    constructor(props) {
+        super(props);
+        this.selection = props.currentFilter;
+    }
+
+
     tagSet = [];
 
     state = {
@@ -26,9 +33,9 @@ class Filter extends React.Component {
     }
 
 
-    componentDidMount() {
+    async componentDidMount() {
         let tagSet = new Set();
-        this.props.annotations.forEach(annotation => {
+        await this.props.getFilteredAnnotations().forEach(annotation => {
             annotation.tags.forEach(tag => {
                 tagSet.add(tag);
             });
@@ -53,7 +60,6 @@ class Filter extends React.Component {
 
     async handleTagClick(event) {
         let tagName = event.target.value;
-        console.log('lol wut', this.selection);
         if (this.selection.tags.includes(tagName)) {
             this.selection.tags = this.selection.tags.filter(e => e !== tagName);
         }
@@ -225,28 +231,40 @@ class Filter extends React.Component {
                 </div>
                 <div className="FilterByTag">
                     Filter By Tag
-                    {this.selection.tags.length ? (
-                        this.selection.tags.map(tag => {
-                            return (<div className="TagButtonPad">
-                                <button className={classNames({ TagButton: true, selected: this.selection.tags.includes(tag) })}>{tag}</button>
-                            </div>);
-                        })
-                    ) : (null)}
                     <div className="TagListContainer">
-                        <button value="chooseTag" className="TagButton" onClick={e => this.handleTagSelect(e)}>
-                            Choose tag(s) >
-                    </button> &nbsp; &nbsp;
-
-                        {this.state.tagSelect ? (
-                            this.tagSet.map(tag => {
+                        {this.selection.tags.length ? (
+                            this.selection.tags.map(tag => {
                                 return (<div className="TagButtonPad">
-                                    <button value={tag} className={
-                                        classNames({ TagButton: true, selected: this.selection.tags.includes(tag) })}
-                                        onClick={e => this.handleTagClick(e)}>
-                                        {tag}
+                                    <button value={tag}
+                                        className={
+                                            classNames({ TagButton: true, selected: this.selection.tags.includes(tag) })}
+                                        onClick={e => this.handleTagClick(e)}>{tag}
                                     </button>
                                 </div>);
                             })
+                        ) : (null)}
+                        {/* </div>
+                    <div className="TagListContainer"> */}
+                        {!this.state.tagSelect ? (
+                            <button value="chooseTag" className="TagButton" onClick={e => this.handleTagSelect(e)}>
+                                Choose tag(s) >
+                            </button>) : (null)}
+                        {this.state.tagSelect ? (
+                            <React.Fragment>
+                                {this.tagSet.map(tag => {
+                                    if (!this.selection.tags.includes(tag))
+                                        return (<div className="TagButtonPad">
+                                            <button value={tag} className={
+                                                classNames({ TagButton: true, selected: this.selection.tags.includes(tag) })}
+                                                onClick={e => this.handleTagClick(e)}>
+                                                {tag}
+                                            </button>
+                                        </div>);
+                                })}
+                                <button className="TagButton" >
+                                    <img src={expand} alt="collapse tag list" id="collapseTagList" onClick={e => this.handleTagSelect(e)} />
+                                </button>
+                            </React.Fragment>
                         ) : (null)}
                     </div>
                 </div>
