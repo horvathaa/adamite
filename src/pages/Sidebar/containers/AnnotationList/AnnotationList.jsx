@@ -19,7 +19,7 @@ class AnnotationList extends Component {
       }
     });
 
-    console.log('before filter', annotations);
+    // console.log('before filter', annotations);
 
     const annotationsCopy = annotations.filter(anno => anno.SharedId === null || "undefined" === typeof (anno['SharedId']));
     console.log(annotationsCopy);

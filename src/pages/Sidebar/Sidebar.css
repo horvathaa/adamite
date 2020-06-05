@@ -12,6 +12,9 @@
   flex-direction: column;
   justify-content: center;
   align-items: flex-end;
+  width: 20px;
+  height: 20px;
+  color: #6B778C;
 }
 
 .Icon {
@@ -43,4 +46,8 @@
   font-size: 0.9rem;
   padding: 4px 4px 4px 4px;
   color: #6B778C;
+}
+
+.FilterButton {
+  padding: 4px 0px 0px 4px;
 }

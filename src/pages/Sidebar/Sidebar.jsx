@@ -1,6 +1,7 @@
 import React from 'react';
 import './Sidebar.css';
-import { FaFilter } from 'react-icons/fa';
+import filter from '../../assets/img/SVGs/filter.svg';
+// import { FaFilter } from 'react-icons/fa';
 import Title from './containers/Title/Title';
 import Authentication from './containers//Authentication//Authentication';
 import AnnotationList from './containers/AnnotationList/AnnotationList';
@@ -23,7 +24,8 @@ class Sidebar extends React.Component {
     currentUser: undefined,
     selected: undefined,
     dropdownOpen: false,
-    searchBarInputText: ''
+    searchBarInputText: '',
+    showFilter: false
   };
 
   selection = {
@@ -192,6 +194,10 @@ class Sidebar extends React.Component {
     });
   };
 
+  handleShowFilter = (event) => {
+    this.setState({ showFilter: !this.state.showFilter });
+  }
+
   clearSearchBoxInputText = () => {
     this.setState({ searchBarInputText: '' });
   };
@@ -270,6 +276,10 @@ class Sidebar extends React.Component {
     return this.state.filteredAnnotations.length;
   }
 
+  getFilteredAnnotations = () => {
+    return this.state.filteredAnnotations;
+  }
+
   applyFilter = (filterSelection) => {
     this.selection = filterSelection;
     this.setState({
@@ -334,7 +344,7 @@ class Sidebar extends React.Component {
       }
     });
 
-    chrome.storage.local.set({ annotations: filteredAnnotationsCopy });
+    // chrome.storage.local.set({ annotations: filteredAnnotationsCopy });
     filteredAnnotationsCopy = filteredAnnotationsCopy.sort((a, b) =>
       (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
     );
@@ -347,9 +357,9 @@ class Sidebar extends React.Component {
         {currentUser !== null && (
           <div>
             <div className='TopRow'>
-              <Filter applyFilter={this.applyFilter}
-                filterAnnotationLength={this.getFilteredAnnotationListLength}
-              />
+              <div className="FilterButton">
+                <img src={filter} alt="Filter icon" onClick={this.handleShowFilter} className="Filter" />
+              </div>
               <SearchBar
                 searchBarInputText={searchBarInputText}
                 handleSearchBarInputText={this.handleSearchBarInputText}
@@ -357,6 +367,12 @@ class Sidebar extends React.Component {
               />
             </div>
             <div>
+              {this.state.showFilter &&
+                <Filter applyFilter={this.applyFilter}
+                  filterAnnotationLength={this.getFilteredAnnotationListLength}
+                  annotations={filteredAnnotationsCopy}
+                  getFilteredAnnotations={this.getFilteredAnnotations}
+                />}
               {this.state.newSelection !== null &&
                 this.state.newSelection.trim().length > 0 && (
                   <NewAnnotation
