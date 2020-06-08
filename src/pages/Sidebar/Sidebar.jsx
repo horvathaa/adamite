@@ -13,7 +13,6 @@ import { getAllAnnotationsByUserIdAndUrl, getAllAnnotationsByUrl, getAllAnnotati
 import { style } from 'glamor';
 
 class Sidebar extends React.Component {
-
   state = {
     url: '',
     annotations: [],
@@ -43,7 +42,7 @@ class Sidebar extends React.Component {
       this.unsubscribeAnnotations();
     }
     // getAllAnnotationsByUserIdAndUrl(uid, url).onSnapshot(querySnapshot => {
-    getAllAnnotations().onSnapshot(querySnapshot => {
+    getAllAnnotationsByUrl(url).onSnapshot(querySnapshot => {
       let annotations = [];
       querySnapshot.forEach(snapshot => {
         annotations.push({
@@ -388,8 +387,12 @@ class Sidebar extends React.Component {
                   />
                 )}
             </div>
+            <div className="FilterSummary">
+
+            </div>
             <div>
-              {this.selection.tags.length ? (
+
+              {/* {this.selection.tags.length ? (
                 <div className="whoops">
                   Current tags:
                   <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
@@ -398,7 +401,7 @@ class Sidebar extends React.Component {
                     })}
                   </ul>
                 </div>
-              ) : (null)}
+              ) : (null)} */}
 
               {!filteredAnnotationsCopy.length && this.state.newSelection === null && !this.state.showFilter ? (
                 <div className="whoops">
