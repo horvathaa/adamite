@@ -63,9 +63,31 @@ class Filter extends React.Component {
         this.props.applyFilter(this.selection);
     }
 
+    setAnnoTypeListEmpty = () => {
+        this.selection.annoType = [];
+        this.props.applyFilter(this.selection);
+    }
+
+    setAnnoTypeListFull = () => {
+        this.selection.annoType = ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'];
+        this.props.applyFilter(this.selection);
+    }
+
+    revertToDefaultFilter = () => {
+        this.selection = {
+            siteScope: ['onPage'],
+            userScope: ['public'],
+            annoType: ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'],
+            timeRange: 'all',
+            archive: null,
+            tags: []
+        }
+        this.props.applyFilter(this.selection);
+    }
+
     async updateUserScope(eventKey) {
         let choice = "";
-        if (eventKey === 'Public') {
+        if (eventKey === 'Anyone') {
             choice = 'public';
         } else {
             choice = 'onlyMe';
@@ -90,6 +112,11 @@ class Filter extends React.Component {
         else if (eventKey === 'Past Month') {
             choice = "month";
         }
+
+        else if (eventKey === 'Past Year') {
+            choice = "year";
+        }
+
         else if (eventKey === 'All Time') {
             choice = "all";
         }
@@ -128,17 +155,17 @@ class Filter extends React.Component {
             <div className='FilterContainer'>
                 <div className="UserTime">
                     <div className="User">
-                        User
+                        Author
                         <Combobox
-                            data={['Only me', 'Public']}
-                            defaultValue={'Public'}
+                            data={['Only me', 'Anyone']}
+                            defaultValue={'Anyone'}
                             onChange={value => this.updateUserScope(value)}
                         />
                     </div>
                     <div className="Time">
                         Time Range
                         <Combobox
-                            data={['Past Day', 'Past Week', 'Past Month', 'All Time', 'Custom Time Range']}
+                            data={['Past Day', 'Past Week', 'Past Month', 'Past Year', 'All Time', 'Custom Time Range...']}
                             defaultValue={'All Time'}
                             onChange={value => this.updateTimeRange(value)}
                         />
@@ -162,27 +189,16 @@ class Filter extends React.Component {
                         </button>
                         </div>
                     </div>
-                    <div className="SiteScopeRow">
-                        <div className="SiteScopeButtonContainer">
-                            <button value="anchorToPage"
-                                disabled
-                                className={classNames({ filterButton: true, selected: this.selection.siteScope.includes('anchoredToPage') })}
-                                onClick={value => this.updateSiteScope(value)}>
-                                Anchored to Page
-                        </button>
-                        </div>
-                        <div className="SiteScopeButtonContainer">
-                            <button value="anchorToAllSitePages"
-                                disabled
-                                className={classNames({ filterButton: true, selected: this.selection.siteScope.includes('anchorToAllSitePages') })}
-                                onClick={value => this.updateSiteScope(value)}>
-                                Anchored to Any Site Page
-                        </button>
-                        </div>
-                    </div>
                 </div>
                 <div className="AnnotationTypeFilter">
-                    Annotation Type
+                    Annotation Type &nbsp; &nbsp;
+                        {this.selection.annoType.length !== 6 ? (
+                        <button className="AnnoTypeButtonSelect" onClick={this.setAnnoTypeListFull}>
+                            Select all types
+                        </button>) : (<button className="AnnoTypeButtonSelect" onClick={this.setAnnoTypeListEmpty}>
+                            De-Select all types
+                        </button>)
+                    }
                     <div className="AnnoTypeButtonRow">
                         <div className="AnnoTypeButtonContainer">
                             <button value="default"
@@ -260,6 +276,11 @@ class Filter extends React.Component {
                                 </React.Fragment>
                             )}
                     </div>
+                </div>
+                <div className="Revert">
+                    <button className="RevertFilterButton" onClick={this.revertToDefaultFilter}>
+                        Revert to Default Filter
+                        </button>
                 </div>
             </div>
         )
