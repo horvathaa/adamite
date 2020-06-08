@@ -1,6 +1,8 @@
 import React from 'react';
 import './Sidebar.css';
-import { FaFilter } from 'react-icons/fa';
+import filter from '../../assets/img/SVGs/filter.svg';
+import classNames from 'classnames';
+// import { FaFilter } from 'react-icons/fa';
 import Title from './containers/Title/Title';
 import Authentication from './containers//Authentication//Authentication';
 import AnnotationList from './containers/AnnotationList/AnnotationList';
@@ -23,11 +25,12 @@ class Sidebar extends React.Component {
     currentUser: undefined,
     selected: undefined,
     dropdownOpen: false,
-    searchBarInputText: ''
+    searchBarInputText: '',
+    showFilter: false
   };
 
   selection = {
-    siteScope: 'onPage',
+    siteScope: ['onPage'],
     userScope: ['public'],
     annoType: ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'],
     timeRange: 'all',
@@ -166,10 +169,10 @@ class Sidebar extends React.Component {
           }, 500);
         }
       }
-      else if (request.from === 'background' && request.msg === 'REQUEST_FILTERED_ANNOTATIONS') {
-        chrome.storage.local.set({ annotations: this.state.filteredAnnotations });
-        sendResponse({ done: true });
-      }
+      // else if (request.from === 'background' && request.msg === 'REQUEST_FILTERED_ANNOTATIONS') {
+      //   chrome.storage.local.set({ annotations: this.state.filteredAnnotations });
+      //   sendResponse({ done: true });
+      // }
     });
   }
 
@@ -191,6 +194,10 @@ class Sidebar extends React.Component {
       searchBarInputText: inputText,
     });
   };
+
+  handleShowFilter = (event) => {
+    this.setState({ showFilter: !this.state.showFilter });
+  }
 
   clearSearchBoxInputText = () => {
     this.setState({ searchBarInputText: '' });
@@ -270,6 +277,14 @@ class Sidebar extends React.Component {
     return this.state.filteredAnnotations.length;
   }
 
+  getFilteredAnnotations = () => {
+    return this.state.filteredAnnotations;
+  }
+
+  openFilter = () => {
+    this.setState({ showFilter: true });
+  }
+
   applyFilter = (filterSelection) => {
     this.selection = filterSelection;
     this.setState({
@@ -300,7 +315,6 @@ class Sidebar extends React.Component {
   // to-do make this work probs race condition where annotationlist requests this be called before
   // this.selection is set
   requestChildAnchorFilterUpdate(annotations) {
-    console.log('lol', this.selection);
     this.setState({
       filteredAnnotations:
         annotations.filter(annotation => {
@@ -334,7 +348,7 @@ class Sidebar extends React.Component {
       }
     });
 
-    chrome.storage.local.set({ annotations: filteredAnnotationsCopy });
+    // chrome.storage.local.set({ annotations: filteredAnnotationsCopy });
     filteredAnnotationsCopy = filteredAnnotationsCopy.sort((a, b) =>
       (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
     );
@@ -346,10 +360,10 @@ class Sidebar extends React.Component {
         {currentUser === null && <Authentication />}
         {currentUser !== null && (
           <div>
-            <div className='TopRow'>
-              <Filter applyFilter={this.applyFilter}
-                filterAnnotationLength={this.getFilteredAnnotationListLength}
-              />
+            <div className={classNames({ TopRow: true, filterOpen: this.state.showFilter })}>
+              <div className="FilterButton">
+                <img src={filter} alt="Filter icon" onClick={this.handleShowFilter} className="Filter" />
+              </div>
               <SearchBar
                 searchBarInputText={searchBarInputText}
                 handleSearchBarInputText={this.handleSearchBarInputText}
@@ -357,6 +371,12 @@ class Sidebar extends React.Component {
               />
             </div>
             <div>
+              {this.state.showFilter &&
+                <Filter applyFilter={this.applyFilter}
+                  filterAnnotationLength={this.getFilteredAnnotationListLength}
+                  getFilteredAnnotations={this.getFilteredAnnotations}
+                  currentFilter={this.selection}
+                />}
               {this.state.newSelection !== null &&
                 this.state.newSelection.trim().length > 0 && (
                   <NewAnnotation
@@ -380,9 +400,13 @@ class Sidebar extends React.Component {
                 </div>
               ) : (null)}
 
-              {!filteredAnnotationsCopy.length && this.state.newSelection === null ? (
+              {!filteredAnnotationsCopy.length && this.state.newSelection === null && !this.state.showFilter ? (
                 <div className="whoops">
-                  There's nothing here! Try modifying your search/filter or writing a new annotation
+                  There's nothing here! Try
+                  <button className="ModifyFilter" onClick={this.openFilter}>
+                    modifying your filter,
+                  </button>
+                  or creating a new annotation
                 </div>
               ) : (
                   <AnnotationList annotations={filteredAnnotationsCopy}

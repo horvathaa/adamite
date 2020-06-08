@@ -1,20 +1,9 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import './Filter.css';
-import { Dropdown } from 'react-bootstrap';
-import { FaCheck, FaFilter } from 'react-icons/fa';
-import { trashAnnotationById } from '../../../../firebase';
-
-const filterToggle = React.forwardRef(({ children, onClick }, ref) => (
-    <a ref={ref}
-        onClick={(e) => {
-            e.preventDefault();
-            onClick(e);
-        }}><FaFilter />
-        {children}
-    </a>
-));
-
+import classNames from 'classnames';
+import { Combobox } from 'react-widgets';
+import 'react-widgets/dist/css/react-widgets.css';
+import expand from '../../../../assets/img/SVGs/expand.svg'
 
 class Filter extends React.Component {
     selection = {
@@ -26,172 +15,274 @@ class Filter extends React.Component {
         tags: []
     }
 
+    constructor(props) {
+        super(props);
+        this.selection = props.currentFilter;
+    }
+
+    tagSet = [];
 
     state = {
-        menuOpen: false
+        tagSelect: false,
     }
 
 
-    componentDidMount() {
-        chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-            if (request.msg === 'TAGS_SELECTED' && request.from === 'background') {
-                this.selection.tags = request.payload.tags;
-                this.props.applyFilter(this.selection);
-                return;
-            }
-        });
-    }
-
-    async updateSelected(eventKey) {
-        if (eventKey === 'setDefault') {
-            this.selection.siteScope = ['onPage'];
-            this.selection.userScope = ['public'];
-            this.selection.annoType = ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'];
-            this.selection.timeRange = 'all';
-            this.selection.tags = [];
-            this.props.applyFilter(this.selection);
-            return;
-        }
-        if (eventKey === 'filterByTag') {
-            chrome.runtime.sendMessage({
-                msg: 'FILTER_BY_TAG',
-                payload: this.selection,
+    async componentDidMount() {
+        let tagSet = new Set();
+        await this.props.getFilteredAnnotations().forEach(annotation => {
+            annotation.tags.forEach(tag => {
+                tagSet.add(tag);
             });
+        })
+        this.tagSet = [...tagSet];
+    }
+
+    async handleTagSelect() {
+        await this.getTags();
+        this.setState({ tagSelect: !this.state.tagSelect })
+    }
+
+    async getTags() {
+        let tagSet = new Set();
+        await this.props.getFilteredAnnotations().forEach(annotation => {
+            annotation.tags.forEach(tag => {
+                tagSet.add(tag);
+            });
+        })
+        this.tagSet = [...tagSet];
+    }
+
+    async handleTagClick(event) {
+        let tagName = event.target.value;
+        if (this.selection.tags.includes(tagName)) {
+            this.selection.tags = this.selection.tags.filter(e => e !== tagName);
         }
-        if (eventKey === 'annoType:selectAll') {
-            if (this.selection.annoType.length !== 6) {
-                this.selection.annoType = ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'];
-            }
-            else {
-                this.selection.annoType = [];
-            }
-            this._forceOpen = true;
-        }
-        this._forceOpen = true;
-        if (eventKey.includes('siteScope')) {
-            let choice = eventKey.substring(eventKey.indexOf(':') + 1, eventKey.length)
-            if (this.selection.siteScope.includes(choice)) {
-                this.selection.siteScope = this.selection.siteScope.filter(e => e !== choice);
-            } else {
-                this.selection.siteScope.push(choice);
-            }
-            this._forceOpen = true;
-            // this.selection.siteScope = eventKey.substring(eventKey.indexOf(':') + 1, eventKey.length);
-        }
-        else if (eventKey.includes('userScope')) {
-            let choice = eventKey.substring(eventKey.indexOf(':') + 1, eventKey.length)
-            if (this.selection.userScope.includes(choice)) {
-                this.selection.userScope = this.selection.userScope.filter(e => e !== choice);
-            } else {
-                this.selection.userScope.push(choice);
-            }
-            this._forceOpen = true;
-        }
-        else if (eventKey.includes('annoType')) {
-            let choice = eventKey.substring(eventKey.indexOf(':') + 1, eventKey.length)
-            if (this.selection.annoType.includes(choice) || this.selection.annoType.includes('all')) {
-                this.selection.annoType = this.selection.annoType.filter(e => e !== choice);
-            } else {
-                this.selection.annoType.push(choice);
-            }
-            this._forceOpen = true;
-        }
-        else if (eventKey.includes('timeRange')) {
-            this.selection.timeRange = eventKey.substring(eventKey.indexOf(':') + 1, eventKey.length)
-            this._forceOpen = true;
+        else {
+            this.selection.tags.push(tagName);
         }
         this.props.applyFilter(this.selection);
-
     }
-    // open={this.state.menuOpen} onToggle={val => this.dropdownToggle(val)} open={this.state.menuOpen}
+
+    setAnnoTypeListEmpty = () => {
+        this.selection.annoType = [];
+        this.props.applyFilter(this.selection);
+    }
+
+    setAnnoTypeListFull = () => {
+        this.selection.annoType = ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'];
+        this.props.applyFilter(this.selection);
+    }
+
+    revertToDefaultFilter = () => {
+        this.selection = {
+            siteScope: ['onPage'],
+            userScope: ['public'],
+            annoType: ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'],
+            timeRange: 'all',
+            archive: null,
+            tags: []
+        }
+        this.props.applyFilter(this.selection);
+    }
+
+    async updateUserScope(eventKey) {
+        let choice = "";
+        if (eventKey === 'Anyone') {
+            choice = 'public';
+        } else {
+            choice = 'onlyMe';
+        }
+        if (this.selection.userScope.includes(choice)) {
+            this.selection.userScope = this.selection.userScope.filter(e => e !== choice);
+        } else {
+            this.selection.userScope.push(choice);
+        }
+        this.props.applyFilter(this.selection);
+        await this.getTags();
+    }
+
+    async updateTimeRange(eventKey) {
+        let choice = "";
+        if (eventKey === 'Past Day') {
+            choice = "day";
+        }
+        else if (eventKey === 'Past Week') {
+            choice = "week";
+        }
+        else if (eventKey === 'Past Month') {
+            choice = "month";
+        }
+
+        else if (eventKey === 'Past Year') {
+            choice = "year";
+        }
+
+        else if (eventKey === 'All Time') {
+            choice = "all";
+        }
+        else if (eventKey === 'Custom Time Range') {
+            choice = "custom";
+        }
+        this.selection.timeRange = choice;
+        this.props.applyFilter(this.selection);
+        await this.getTags();
+    }
+
+    async updateAnnoType(eventKey) {
+        let choice = eventKey.target.value;
+        if (this.selection.annoType.includes(choice)) {
+            this.selection.annoType = this.selection.annoType.filter(e => e !== choice);
+        } else {
+            this.selection.annoType.push(choice);
+        }
+        this.props.applyFilter(this.selection);
+        await this.getTags();
+    }
+
+    async updateSiteScope(eventKey) {
+        let choice = eventKey.target.value;
+        if (this.selection.siteScope.includes(choice)) {
+            this.selection.siteScope = this.selection.siteScope.filter(e => e !== choice);
+        } else {
+            this.selection.siteScope.push(choice);
+        }
+        this.props.applyFilter(this.selection);
+        await this.getTags();
+    }
 
     render() {
         return (
-            <React.Fragment>
-                <Dropdown className="Filter" >
-                    <Dropdown.Toggle as={filterToggle} id="dropdown-basic">
-
-                    </Dropdown.Toggle>
-                    <Dropdown.Menu >
-                        &nbsp;Site scope
-                    <Dropdown.Item as="button" eventKey="siteScope:onPage" onSelect={eventKey => this.updateSelected(eventKey)}>
-                            On page {this.selection.siteScope.includes('onPage') ? ("✓") : (null)}
-                        </Dropdown.Item>
-                        <Dropdown.Item as="button" disabled eventKey="siteScope:anchorToPage" onSelect={eventKey => this.updateSelected(eventKey)}>
-                            Anchored to Page {this.selection.siteScope.includes('anchorToPage') ? ("✓") : (null)}
-                        </Dropdown.Item>
-                        <Dropdown.Item as="button" eventKey="siteScope:acrossWholeSite" onSelect={eventKey => this.updateSelected(eventKey)}>
-                            Across whole site {this.selection.siteScope.includes('acrossWholeSite') ? ("✓") : (null)}
-                        </Dropdown.Item>
-                        <Dropdown.Item as="button" disabled eventKey="siteScope:anchorToAllSitePages" onSelect={eventKey => this.updateSelected(eventKey)}>
-                            Anchored to All Site Pages {this.selection.siteScope.includes('anchorToAllSitePages') ? ("✓") : (null)}
-                        </Dropdown.Item>
-                        <Dropdown.Divider />
-                     &nbsp; User view
-                    <Dropdown.Item as="button" eventKey="userScope:onlyMe" onSelect={eventKey => this.updateSelected(eventKey)}>
-                            Only me {this.selection.userScope.includes('onlyMe') ? ("✓") : (null)}
-                        </Dropdown.Item>
-                        <Dropdown.Item as="button" eventKey="userScope:public" onSelect={eventKey => this.updateSelected(eventKey)}>
-                            Public {this.selection.userScope.includes('public') ? ("✓") : (null)}
-                        </Dropdown.Item>
-                        <Dropdown.Divider />
-                    &nbsp;Type of Annotation
-                    <Dropdown.Item as="button" eventKey="annoType:default" onSelect={eventKey => this.updateSelected(eventKey)}>
-                            Default {this.selection.annoType.includes('default') ? ("✓") : (null)}
-                        </Dropdown.Item>
-                        <Dropdown.Item as="button" eventKey="annoType:to-do" onSelect={eventKey => this.updateSelected(eventKey)}>
-                            To-do {this.selection.annoType.includes('to-do') ? ("✓") : (null)}
-                        </Dropdown.Item>
-                        <Dropdown.Item as="button" eventKey="annoType:question" onSelect={eventKey => this.updateSelected(eventKey)}>
-                            Question/Answer {this.selection.annoType.includes('question') ? ("✓") : (null)}
-                        </Dropdown.Item>
-                        <Dropdown.Item as="button" eventKey="annoType:highlight" onSelect={eventKey => this.updateSelected(eventKey)}>
-                            Highlight {this.selection.annoType.includes('highlight') ? ("✓") : (null)}
-                        </Dropdown.Item>
-                        <Dropdown.Item as="button" eventKey="annoType:navigation" onSelect={eventKey => this.updateSelected(eventKey)}>
-                            Navigation {this.selection.annoType.includes('navigation') ? ("✓") : (null)}
-                        </Dropdown.Item>
-                        <Dropdown.Item as="button" eventKey="annoType:issue" onSelect={eventKey => this.updateSelected(eventKey)}>
-                            Issue {this.selection.annoType.includes('issue') ? ("✓") : (null)}
-                        </Dropdown.Item>
-                        <Dropdown.Item as="button" eventKey="annoType:selectAll" onSelect={eventKey => this.updateSelected(eventKey)}>
-                            {this.selection.annoType.length !== 6 ? ("Select All") : ("De-select all")}
-                            {/* Select All {this.selection.annoType.includes('issue') ? ("✓") : (null)} */}
-                        </Dropdown.Item>
-                        <Dropdown.Divider />
-                    &nbsp;Time Range
-                    <Dropdown.Item as="button" eventKey="timeRange:day" onSelect={eventKey => this.updateSelected(eventKey)}>
-                            Past Day {this.selection.timeRange === 'day' ? ("✓") : (null)}
-                        </Dropdown.Item>
-                        <Dropdown.Item as="button" eventKey="timeRange:week" onSelect={eventKey => this.updateSelected(eventKey)}>
-                            Past Week {this.selection.timeRange === 'week' ? ("✓") : (null)}
-                        </Dropdown.Item>
-                        <Dropdown.Item as="button" eventKey="timeRange:month" onSelect={eventKey => this.updateSelected(eventKey)}>
-                            Past Month {this.selection.timeRange === 'month' ? ("✓") : (null)}
-                        </Dropdown.Item>
-                        <Dropdown.Item as="button" disabled eventKey="timeRange:custom" /*onSelect={eventKey => this.updateSelected(eventKey)} */>
-                            Custom Time Range
-                        </Dropdown.Item>
-                        {/* Past 6 Months {this.selection.timeRange === '6months' ? ("✓") : (null)}
-                        </Dropdown.Item>
-                        <Dropdown.Item as="button" eventKey="timeRange:year" onSelect={eventKey => this.updateSelected(eventKey)}>
-                            Past Year {this.selection.timeRange === 'year' ? ("✓") : (null)}
-                        </Dropdown.Item> */}
-                        <Dropdown.Item as="button" eventKey="timeRange:all" onSelect={eventKey => this.updateSelected(eventKey)}>
-                            All Time {this.selection.timeRange === 'all' ? ("✓") : (null)}
-                        </Dropdown.Item>
-                        <Dropdown.Divider />
-                        <Dropdown.Item as="button" eventKey="filterByTag" onSelect={eventKey => this.updateSelected(eventKey)}>
-                            Filter by Tag...
-                    </Dropdown.Item>
-                        <Dropdown.Divider />
-                        <Dropdown.Item as="button" eventKey="setDefault" onSelect={eventKey => this.updateSelected(eventKey)}>
-                            Revert to Default
-                    </Dropdown.Item>
-                    </Dropdown.Menu>
-
-                </Dropdown>
-            </React.Fragment>
+            <div className='FilterContainer'>
+                <div className="UserTime">
+                    <div className="User">
+                        Author
+                        <Combobox
+                            data={['Only me', 'Anyone']}
+                            defaultValue={'Anyone'}
+                            onChange={value => this.updateUserScope(value)}
+                        />
+                    </div>
+                    <div className="Time">
+                        Time Range
+                        <Combobox
+                            data={['Past Day', 'Past Week', 'Past Month', 'Past Year', 'All Time', 'Custom Time Range...']}
+                            defaultValue={'All Time'}
+                            onChange={value => this.updateTimeRange(value)}
+                        />
+                    </div>
+                </div>
+                <div className="SiteScope">
+                    Location
+                    <div className="SiteScopeRow">
+                        <div className="SiteScopeButtonContainer">
+                            <button value="onPage"
+                                className={classNames({ filterButton: true, selected: this.selection.siteScope.includes('onPage') })}
+                                onClick={value => this.updateSiteScope(value)}>
+                                On Page
+                        </button>
+                        </div>
+                        <div className="SiteScopeButtonContainer">
+                            <button value="acrossWholeSite"
+                                className={classNames({ filterButton: true, selected: this.selection.siteScope.includes('acrossWholeSite') })}
+                                onClick={value => this.updateSiteScope(value)}>
+                                Across Whole Site
+                        </button>
+                        </div>
+                    </div>
+                </div>
+                <div className="AnnotationTypeFilter">
+                    Annotation Type &nbsp; &nbsp;
+                        {this.selection.annoType.length <= 5 ? (
+                        <button className="AnnoTypeButtonSelect" onClick={this.setAnnoTypeListFull}>
+                            Select all types
+                        </button>) : (<button className="AnnoTypeButtonSelect" onClick={this.setAnnoTypeListEmpty}>
+                            De-Select all types
+                        </button>)
+                    }
+                    <div className="AnnoTypeButtonRow">
+                        <div className="AnnoTypeButtonContainer">
+                            <button value="default"
+                                className={classNames({ filterButton: true, selected: this.selection.annoType.includes('default') })}
+                                onClick={value => this.updateAnnoType(value)}>
+                                Default
+                        </button>
+                        </div>
+                        <div className="AnnoTypeButtonContainer">
+                            <button value="to-do"
+                                className={classNames({ filterButton: true, selected: this.selection.annoType.includes('to-do') })}
+                                onClick={value => this.updateAnnoType(value)}>
+                                To-do
+                        </button>
+                        </div>
+                        <div className="AnnoTypeButtonContainer">
+                            <button value="question"
+                                className={classNames({ filterButton: true, selected: this.selection.annoType.includes('question') })}
+                                onClick={value => this.updateAnnoType(value)}>
+                                Question/Answer
+                        </button>
+                        </div>
+                        <div className="AnnoTypeButtonContainer">
+                            <button value="highlight"
+                                className={classNames({ filterButton: true, selected: this.selection.annoType.includes('highlight') })}
+                                onClick={value => this.updateAnnoType(value)}>
+                                Highlight
+                        </button>
+                        </div>
+                        <div className="AnnoTypeButtonContainer">
+                            <button value="issue"
+                                className={classNames({ filterButton: true, selected: this.selection.annoType.includes('issue') })}
+                                onClick={value => this.updateAnnoType(value)}>
+                                Issue
+                        </button>
+                        </div>
+                    </div>
+                </div>
+                <div className="FilterByTag">
+                    Filter By Tag
+                    <div className="TagListContainer">
+                        {this.selection.tags.length ? (
+                            this.selection.tags.map(tag => {
+                                return (<div className="TagButtonPad">
+                                    <button value={tag}
+                                        className={
+                                            classNames({ TagButton: true, selected: this.selection.tags.includes(tag) })}
+                                        onClick={e => this.handleTagClick(e)}>{tag}
+                                    </button>
+                                </div>);
+                            })
+                        ) : (null)}
+                        {!this.state.tagSelect ? (
+                            <div className="TagButtonPad">
+                                <button value="chooseTag" className="TagButton" onClick={e => this.handleTagSelect(e)}>
+                                    Choose tag(s) >
+                            </button>
+                            </div>) : (
+                                <React.Fragment>
+                                    {this.tagSet.map(tag => {
+                                        if (!this.selection.tags.includes(tag))
+                                            return (<div className="TagButtonPad">
+                                                <button value={tag} className={
+                                                    classNames({ TagButton: true, selected: this.selection.tags.includes(tag) })}
+                                                    onClick={e => this.handleTagClick(e)}>
+                                                    {tag}
+                                                </button>
+                                            </div>);
+                                    })}
+                                    <div className="TagButtonPad">
+                                        <button className="TagButton" >
+                                            <img src={expand} alt="collapse tag list" id="collapseTagList" onClick={e => this.handleTagSelect(e)} />
+                                        </button>
+                                    </div>
+                                </React.Fragment>
+                            )}
+                    </div>
+                </div>
+                <div className="Revert">
+                    <button className="RevertFilterButton" onClick={this.revertToDefaultFilter}>
+                        Revert to Default Filter
+                    </button>
+                </div>
+            </div>
         )
     }
 }

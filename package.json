@@ -34,6 +34,7 @@
     "react-hot-loader": "^4.12.20",
     "react-icons": "^3.10.0",
     "react-tagsinput": "^3.19.0",
+    "react-widgets": "^4.5.0",
     "slate": "^0.58.1",
     "slate-history": "^0.58.1",
     "slate-react": "^0.58.1",
