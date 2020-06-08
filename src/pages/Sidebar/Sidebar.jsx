@@ -402,11 +402,11 @@ class Sidebar extends React.Component {
 
               {!filteredAnnotationsCopy.length && this.state.newSelection === null && !this.state.showFilter ? (
                 <div className="whoops">
-                  There's nothing here!
+                  There's nothing here! Try
                   <button className="ModifyFilter" onClick={this.openFilter}>
-                    Try modifying your search/filter
+                    modifying your filter,
                   </button>
-                  or writing a new annotation
+                  or creating a new annotation
                 </div>
               ) : (
                   <AnnotationList annotations={filteredAnnotationsCopy}

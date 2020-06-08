@@ -192,7 +192,7 @@ class Filter extends React.Component {
                 </div>
                 <div className="AnnotationTypeFilter">
                     Annotation Type &nbsp; &nbsp;
-                        {this.selection.annoType.length !== 6 ? (
+                        {this.selection.annoType.length <= 5 ? (
                         <button className="AnnoTypeButtonSelect" onClick={this.setAnnoTypeListFull}>
                             Select all types
                         </button>) : (<button className="AnnoTypeButtonSelect" onClick={this.setAnnoTypeListEmpty}>
