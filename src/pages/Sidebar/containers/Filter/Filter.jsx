@@ -1,14 +1,9 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import './Filter.css';
 import classNames from 'classnames';
 import { Combobox } from 'react-widgets';
 import 'react-widgets/dist/css/react-widgets.css';
-import { FaCheck, FaFilter } from 'react-icons/fa';
 import expand from '../../../../assets/img/SVGs/expand.svg'
-import { trashAnnotationById } from '../../../../firebase';
-
-
 
 class Filter extends React.Component {
     selection = {
@@ -241,9 +236,11 @@ class Filter extends React.Component {
                             })
                         ) : (null)}
                         {!this.state.tagSelect ? (
-                            <button value="chooseTag" className="TagButton" onClick={e => this.handleTagSelect(e)}>
-                                Choose tag(s) >
-                            </button>) : (
+                            <div className="TagButtonPad">
+                                <button value="chooseTag" className="TagButton" onClick={e => this.handleTagSelect(e)}>
+                                    Choose tag(s) >
+                            </button>
+                            </div>) : (
                                 <React.Fragment>
                                     {this.tagSet.map(tag => {
                                         if (!this.selection.tags.includes(tag))

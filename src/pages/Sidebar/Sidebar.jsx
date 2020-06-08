@@ -1,6 +1,7 @@
 import React from 'react';
 import './Sidebar.css';
 import filter from '../../assets/img/SVGs/filter.svg';
+import classNames from 'classnames';
 // import { FaFilter } from 'react-icons/fa';
 import Title from './containers/Title/Title';
 import Authentication from './containers//Authentication//Authentication';
@@ -168,10 +169,10 @@ class Sidebar extends React.Component {
           }, 500);
         }
       }
-      else if (request.from === 'background' && request.msg === 'REQUEST_FILTERED_ANNOTATIONS') {
-        chrome.storage.local.set({ annotations: this.state.filteredAnnotations });
-        sendResponse({ done: true });
-      }
+      // else if (request.from === 'background' && request.msg === 'REQUEST_FILTERED_ANNOTATIONS') {
+      //   chrome.storage.local.set({ annotations: this.state.filteredAnnotations });
+      //   sendResponse({ done: true });
+      // }
     });
   }
 
@@ -355,7 +356,7 @@ class Sidebar extends React.Component {
         {currentUser === null && <Authentication />}
         {currentUser !== null && (
           <div>
-            <div className='TopRow'>
+            <div className={classNames({ TopRow: true, filterOpen: this.state.showFilter })}>
               <div className="FilterButton">
                 <img src={filter} alt="Filter icon" onClick={this.handleShowFilter} className="Filter" />
               </div>

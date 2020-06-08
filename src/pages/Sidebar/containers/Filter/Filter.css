@@ -8,12 +8,12 @@
 .FilterContainer {
     padding: 5px;
     background: white;
-    border: 1px solid #bfbebe;
+    /* border: 1px solid #bfbebe; */
     box-shadow: 2px 2px 2px #88888887;
     border-bottom-left-radius: 8px;
     border-bottom-right-radius: 8px;
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
+    /* border-top-left-radius: 8px;
+    border-top-right-radius: 8px; */
   
     flex: 1;
     min-width: 0;

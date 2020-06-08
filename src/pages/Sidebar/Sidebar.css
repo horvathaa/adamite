@@ -32,6 +32,12 @@
   display: flex;
 }
 
+.TopRow.filterOpen {
+  display: flex;
+  background-color: white;
+}
+
+
 .Header {
   text-align: center;
 }
