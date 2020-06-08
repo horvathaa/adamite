@@ -281,6 +281,10 @@ class Sidebar extends React.Component {
     return this.state.filteredAnnotations;
   }
 
+  openFilter = () => {
+    this.setState({ showFilter: true });
+  }
+
   applyFilter = (filterSelection) => {
     this.selection = filterSelection;
     this.setState({
@@ -396,9 +400,13 @@ class Sidebar extends React.Component {
                 </div>
               ) : (null)}
 
-              {!filteredAnnotationsCopy.length && this.state.newSelection === null ? (
+              {!filteredAnnotationsCopy.length && this.state.newSelection === null && !this.state.showFilter ? (
                 <div className="whoops">
-                  There's nothing here! Try modifying your search/filter or writing a new annotation
+                  There's nothing here!
+                  <button className="ModifyFilter" onClick={this.openFilter}>
+                    Try modifying your search/filter
+                  </button>
+                  or writing a new annotation
                 </div>
               ) : (
                   <AnnotationList annotations={filteredAnnotationsCopy}

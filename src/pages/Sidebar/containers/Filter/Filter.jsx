@@ -280,7 +280,7 @@ class Filter extends React.Component {
                 <div className="Revert">
                     <button className="RevertFilterButton" onClick={this.revertToDefaultFilter}>
                         Revert to Default Filter
-                        </button>
+                    </button>
                 </div>
             </div>
         )
