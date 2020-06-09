@@ -8,6 +8,7 @@ import Authentication from './containers//Authentication//Authentication';
 import AnnotationList from './containers/AnnotationList/AnnotationList';
 import NewAnnotation from './containers/NewAnnotation/NewAnnotation';
 import Filter from './containers/Filter/Filter';
+import FilterSummary from './containers/Filter/FilterSummary';
 import SearchBar from './containers/SearchBar/SearchBar';
 import { getAllAnnotationsByUserIdAndUrl, getAllAnnotationsByUrl, getAllAnnotations, trashAnnotationById } from '../../firebase/index';
 import { style } from 'glamor';
@@ -42,7 +43,7 @@ class Sidebar extends React.Component {
       this.unsubscribeAnnotations();
     }
     // getAllAnnotationsByUserIdAndUrl(uid, url).onSnapshot(querySnapshot => {
-    getAllAnnotationsByUrl(url).onSnapshot(querySnapshot => {
+    getAllAnnotations().onSnapshot(querySnapshot => {
       let annotations = [];
       querySnapshot.forEach(snapshot => {
         annotations.push({
@@ -370,6 +371,7 @@ class Sidebar extends React.Component {
               />
             </div>
             <div>
+              {!this.state.showFilter && <FilterSummary filter={this.selection} />}
               {this.state.showFilter &&
                 <Filter applyFilter={this.applyFilter}
                   filterAnnotationLength={this.getFilteredAnnotationListLength}
@@ -387,22 +389,7 @@ class Sidebar extends React.Component {
                   />
                 )}
             </div>
-            <div className="FilterSummary">
-
-            </div>
             <div>
-
-              {/* {this.selection.tags.length ? (
-                <div className="whoops">
-                  Current tags:
-                  <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
-                    {this.selection.tags.map((tag, idx) => {
-                      return (<li key={idx} style={{ display: "inline" }}>{tag},&nbsp;</li>);
-                    })}
-                  </ul>
-                </div>
-              ) : (null)} */}
-
               {!filteredAnnotationsCopy.length && this.state.newSelection === null && !this.state.showFilter ? (
                 <div className="whoops">
                   There's nothing here! Try

@@ -3,7 +3,7 @@ import './Filter.css';
 import classNames from 'classnames';
 import { Combobox } from 'react-widgets';
 import 'react-widgets/dist/css/react-widgets.css';
-import expand from '../../../../assets/img/SVGs/expand.svg'
+import expand from '../../../../assets/img/SVGs/expand.svg';
 
 class Filter extends React.Component {
     selection = {
@@ -92,11 +92,12 @@ class Filter extends React.Component {
         } else {
             choice = 'onlyMe';
         }
-        if (this.selection.userScope.includes(choice)) {
-            this.selection.userScope = this.selection.userScope.filter(e => e !== choice);
-        } else {
-            this.selection.userScope.push(choice);
-        }
+        // if (this.selection.userScope.includes(choice)) {
+        //     this.selection.userScope = this.selection.userScope.filter(e => e !== choice);
+        // } else {
+        //     this.selection.userScope.push(choice);
+        // }
+        this.selection.userScope = [choice];
         this.props.applyFilter(this.selection);
         await this.getTags();
     }
@@ -151,6 +152,26 @@ class Filter extends React.Component {
     }
 
     render() {
+        let userScopeDefault = this.selection.userScope.includes('public') ? 'Anyone' : 'Only Me';
+        let timeRangeDefault = "";
+        if (this.selection.timeRange === 'day') {
+            timeRangeDefault = "Past Day";
+        }
+        else if (this.selection.timeRange === 'week') {
+            timeRangeDefault = "Past Week";
+        }
+        else if (this.selection.timeRange === 'month') {
+            timeRangeDefault = "Past Month";
+        }
+        else if (this.selection.timeRange === 'year') {
+            timeRangeDefault = "Past Year";
+        }
+        else if (this.selection.timeRange === 'all') {
+            timeRangeDefault = "All Time";
+        }
+        else if (this.selection.timeRange === 'custom') {
+            timeRangeDefault = "Custom Time Range...";
+        }
         return (
             <div className='FilterContainer'>
                 <div className="UserTime">
@@ -158,7 +179,7 @@ class Filter extends React.Component {
                         Author
                         <Combobox
                             data={['Only me', 'Anyone']}
-                            defaultValue={'Anyone'}
+                            defaultValue={userScopeDefault}
                             onChange={value => this.updateUserScope(value)}
                         />
                     </div>
@@ -166,7 +187,7 @@ class Filter extends React.Component {
                         Time Range
                         <Combobox
                             data={['Past Day', 'Past Week', 'Past Month', 'Past Year', 'All Time', 'Custom Time Range...']}
-                            defaultValue={'All Time'}
+                            defaultValue={timeRangeDefault}
                             onChange={value => this.updateTimeRange(value)}
                         />
                     </div>

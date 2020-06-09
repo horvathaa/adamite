@@ -17,7 +17,7 @@ const SearchBar = ({
                 className={classNames({
                     SearchBarInput: true,
                 })}
-                placeholder={<img src={search} />, 'search annotation content here'}
+                placeholder={'Search annotation content here'}
                 value={searchBarInputText}
                 onChange={(e) => handleSearchBarInputText(e)}
             />

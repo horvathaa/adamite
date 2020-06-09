@@ -30,6 +30,7 @@
 
 .TopRow {
   display: flex;
+  background-color: white;
 }
 
 .TopRow.filterOpen {
