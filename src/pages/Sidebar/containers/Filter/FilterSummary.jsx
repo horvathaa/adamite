@@ -65,7 +65,8 @@ class FilterSummary extends React.Component {
             annoType = "All Annotation Types";
         }
         else {
-            filter.annoType.map((idx, type) => {
+            filter.annoType.map((type, idx) => {
+                console.log('lol', type);
                 if (idx !== (filter.annoType.length - 1)) {
                     if (type !== 'question' && type !== 'navigation') {
                         annoType += (type.charAt(0).toUpperCase() + type.slice(1)) + ", ";
