@@ -36,10 +36,7 @@ class Sidebar extends React.Component {
   }
 
   setUpAnnotationsListener = (uid, url) => {
-    if (this.unsubscribeAnnotations) {
-      this.unsubscribeAnnotations();
-    }
-    // getAllAnnotationsByUserIdAndUrl(uid, url).onSnapshot(querySnapshot => {
+
     chrome.runtime.sendMessage(
       {
         msg: 'GET_ANNOTATIONS_PAGE_LOAD',
@@ -47,18 +44,6 @@ class Sidebar extends React.Component {
         url: url,
       },
     );
-    // getAllAnnotations().onSnapshot(querySnapshot => {
-    //   let annotations = [];
-    //   querySnapshot.forEach(snapshot => {
-    //     annotations.push({
-    //       id: snapshot.id,
-    //       ...snapshot.data(),
-    //     });
-    //   });
-    //   this.setState({ annotations });
-    //   this.requestFilterUpdate();
-    // });
-
 
   };
 
@@ -70,6 +55,7 @@ class Sidebar extends React.Component {
   }
 
   componentDidMount() {
+    console.log("RERENDER")
     chrome.runtime.sendMessage(
       {
         msg: 'GET_CURRENT_USER',
@@ -176,6 +162,14 @@ class Sidebar extends React.Component {
       else if (request.from === 'background' && request.msg === 'REQUEST_FILTERED_ANNOTATIONS') {
         //chrome.storage.local.set({ annotations: this.state.filteredAnnotations });
         sendResponse({ done: true });
+      }
+      else if (
+        request.from === 'background' &&
+        request.msg === 'CONTENT_UPDATED'
+      ) {
+        this.setState({ annotations: request.payload })
+        this.requestFilterUpdate();
+        console.log("HERE is johnnnnn", request.payload)
       }
     });
   }

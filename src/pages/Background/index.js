@@ -3,112 +3,71 @@ import '../../assets/img/icon-128.png';
 import './helpers/authHelper';
 import './helpers/sidebarHelper';
 import { clean } from './helpers/objectCleaner';
+import {
+  getAllAnnotationsByUrl,
+  createAnnotation,
+  updateAnnotationById,
+} from '../../firebase/index';
 
 import './filterWindow.html';
 
-import {
-  auth,
-  createAnnotation,
-  getAllAnnotationsByUserId,
-  getAllAnnotationsByUrl,
-  getAllAnnotationsByUserUrlAndMaxTime,
-  getAllAnnotationsByUserIdAndUrl,
-  updateAnnotationById,
-  getAllAnnotations
-} from '../../firebase/index';
-import { FaSadCry } from 'react-icons/fa';
-import Annotation from '../Sidebar/containers/AnnotationList/Annotation/Annotation';
-
 let unsubscribeAnnotations = null;
-let annotations = [];
-auth.onAuthStateChanged(user => {
-  if (user) {
-    // unsubscribeAnnotations = getAllAnnotationsByUserId(user.uid)
-    //   .orderBy('createdTimestamp', 'desc')
-    //   .onSnapshot(querySnapshot => {
-    unsubscribeAnnotations = getAllAnnotations()
-      .orderBy('createdTimestamp', 'desc')
-      .onSnapshot(querySnapshot => {
-        let annArray = [];
-        querySnapshot.forEach(snapshot => {
-          annArray.push({
-            ...snapshot.data(),
-            id: snapshot.id,
-          });
-        });
-        annotations = annArray;
-        broadcastAnnotationsUpdated();
-      });
-  } else {
-    if (unsubscribeAnnotations) {
-      unsubscribeAnnotations();
-      unsubscribeAnnotations = null;
-    }
-  }
-});
+var pageannotationsActive = [];
 
-const broadcastAnnotationsUpdated = () => {
-  chrome.tabs.query({ currentWindow: true }, function (tabs) {
-    tabs.forEach(tab => {
-      chrome.tabs.sendMessage(tab.id, {
-        from: 'background',
-        msg: 'ANNOTATIONS_UPDATED',
-      });
-    });
+const broadcastAnnotationsUpdated = (message, annotations) => {
+  chrome.runtime.sendMessage({
+    msg: message,
+    from: 'background',
+    payload: annotations,
   });
 };
 
-function yada(annotations, url, uid) {
-  console.log("here is some value", annotations)
-  if (!annotations.hasOwnProperty('annotations') || (annotations.annotations !== null && annotations.annotations.length === 0)) {
-    console.log("ine here")
-    getAllAnnotationsByUrl(url).get()
-      .then(function (item) {
-        var toStore = []
-        item.forEach(function (doc) {
-          console.log("ITEM => ", doc.data());
-          toStore.push({
-            id: doc.id,
-            ...doc.data(),
+const broadcastAnnotationsUpdatedTab = (message, annotations, tabId) => {
+  chrome.tabs.query({ active: true }, tabs => {
+    console.log("here are the tabs you cuck", tabs)
+    chrome.tabs.sendMessage(
+      tabId,
+      {
+        msg: message,
+        from: 'background',
+        payload: annotations,
+      }
+    );
+  });
+};
+
+function promiseToComeBack(url) {
+  pageannotationsActive.push({
+    url: url,
+    annotations: null,
+    timeout: 500,
+    unsubscribe: null
+  });
+  return new Promise((resolve, reject) => {
+    resolve(getAllAnnotationsByUrl(url).onSnapshot(querySnapshot => {
+      let annotations = [];
+      querySnapshot.forEach(snapshot => {
+        annotations.push({
+          id: snapshot.id,
+          ...snapshot.data(),
+        });
+      });
+      var pos = pageannotationsActive.map(function (e) { return e.url; }).indexOf(url);
+      pageannotationsActive[pos].annotations = annotations;
+      broadcastAnnotationsUpdated("CONTENT_UPDATED", annotations)
+      chrome.tabs.query({}, tabs => {
+
+        tabs = tabs.filter(e => e.url === pageannotationsActive[pos].url)
+        tabs.forEach(function (tab) {
+          chrome.tabs.sendMessage(tab.id, {
+            msg: 'REFRESH_HIGHLIGHTS',
+            payload: annotations,
           });
         });
-        console.log(toStore);
-        chrome.storage.local.set({ annotations: toStore });
-      }).catch(function (error) {
-        console.log("Error getting documents: ", error);
+        console.log("these are changed tabs", tabs)
       });
-  }
-  else {
-    var maxTimeStamp = Math.max.apply(Math, annotations.annotations.map(function (o) { return o.createdTimestamp; }))
-    maxTimeStamp--;
-    console.log("HERE IS TT");
-    getAllAnnotationsByUserUrlAndMaxTime(url, maxTimeStamp).get()
-      .then(function (item) {
-        console.log("here are the itmes found", item)
-        var toStore = []
-
-        item.forEach(function (doc) {
-          console.log("ITEM => ", doc.data());
-          toStore.push({
-            id: doc.id,
-            ...doc.data(),
-          });
-        });
-        console.log("tostore", toStore)
-        for (var i = 0; i < annotations.annotations.length; i++) {
-          console.log("id", annotations.annotations[i].id)
-          var found = toStore.filter(e => e.id == annotations.annotations[i].id)
-          console.log("was it found?", found)
-        }
-        //add old annotations to new annotations if they don't exist in the new one
-
-        // console.log(toStore);
-        // chrome.storage.sync.set({ annotations: toStore });
-      }).catch(function (error) {
-        console.log("Error getting documents: ", error);
-      });
-  }
-
+    }));
+  });
 }
 
 let createdWindow = null;
@@ -118,13 +77,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     sendResponse({ url: sender.tab.url });
   }
   else if (request.msg === 'GET_ANNOTATIONS_PAGE_LOAD') {
-    console.log("here is the message", request)
-    chrome.storage.local.get(annotations => {
-      yada(annotations, request.url, request.uid)
-      // var tt = annotations.annotation.filter(function (element) {
-      //   return element.id === nodeRange.id;
-      // });
-    });
+    var findActiveUrl = pageannotationsActive.filter(e => e.url === request.url)
+    if (findActiveUrl.length !== 0) {
+      console.log("Found snnotations!", sender.tab.id)
+      broadcastAnnotationsUpdatedTab("CONTENT_UPDATED", findActiveUrl[0].annotations, sender.tab.id);
+      broadcastAnnotationsUpdatedTab("HIGHLIGHT_ANNOTATIONS", findActiveUrl[0].annotations, sender.tab.id);
+    }
+    else {
+      promiseToComeBack(request.url)
+        .then(function (e) {
+          pageannotationsActive[pageannotationsActive.length - 1].unsubscribe = e;
+        });
+    }
   }
   else if (request.msg === 'SAVE_ANNOTATED_TEXT') {
     let { url, content } = request.payload;
@@ -170,15 +134,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         content: newAnno.content,
         xpath: xpath
       }
-      chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-        chrome.tabs.sendMessage(
-          tabs[0].id,
-          {
-            msg: 'ANNOTATION_ADDED',
-            newAnno: highlightObj,
-          }
-        );
-      });
+      // chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+      //   chrome.tabs.sendMessage(
+      //     tabs[0].id,
+      //     {
+      //       msg: 'ANNOTATION_ADDED',
+      //       newAnno: highlightObj,
+      //     }
+      //   );
+      // });
     });
   } else if (request.from === 'content' && request.msg === 'CONTENT_SELECTED') {
     chrome.tabs.sendMessage(sender.tab.id, {
@@ -188,8 +152,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
   } else if (request.msg === 'REQUEST_ANNOTATED_TEXT_ON_THIS_PAGE') {
     const { url } = request.payload;
-    const annotationsOnPage = annotations.filter(a => a.url === url); // can use this later so we get all annotations that match our filter criterias
-    sendResponse({ annotationsOnPage });
+    //console.log("REQUEST ANNOTATED TEXT ON THIS PAGE", annotations)
+    // var test = getAllAnnotationsByUrlCache(url).then(function (cacheAnno) {
+    //   var test = cacheAnno.filter(e => e.url === url);
+    //   const annotationsOnPage = test // can use this later so we get all annotations that match our filter criterias
+    //   console.log("THIS IS HIGHLIGHTS", test)
+    //   //sendResponse({ annotationsOnPage });
+    // });
+
+    // const annotationsOnPage = test // can use this later so we get all annotations that match our filter criterias
+    // sendResponse({ annotationsOnPage });
   } else if (request.msg === 'UPDATE_XPATH_BY_IDS') {
     request.payload.toUpdate.forEach(e =>
       updateAnnotationById(
