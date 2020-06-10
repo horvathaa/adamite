@@ -309,12 +309,10 @@ class Annotation extends Component {
             {collapsed ? (
               <div className="ExpandCollapse">
                 <img src={expand} alt="Expand" onClick={_ => this.handleExpandCollapse('expand')} className="Icon" />
-                {/* <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} className="Icon" /> */}
               </div>
             ) : (
                 <React.Fragment>
                   <div className="ExpandCollapse">
-                    {/* <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} className="Icon" /> */}
                     <img src={expand} id="collapse" alt="Collapse" onClick={_ => this.handleExpandCollapse('collapse')} className="Icon" />
                   </div>
 
@@ -1057,11 +1055,7 @@ class Annotation extends Component {
                 Un-archive?
             </button>
             </div>
-          ) : (
-              <div className="whoops">
-                This annotation is private
-              </div>
-            )
+          ) : (null)
           }
         </React.Fragment>
 
