@@ -20,7 +20,7 @@ class Filter extends React.Component {
         this.selection = props.currentFilter;
     }
 
-    tagSet = [];
+    tagSet = {};
 
     state = {
         tagSelect: false,
@@ -28,13 +28,18 @@ class Filter extends React.Component {
 
 
     async componentDidMount() {
-        let tagSet = new Set();
+        let tagSet = {};
         await this.props.getFilteredAnnotations().forEach(annotation => {
             annotation.tags.forEach(tag => {
-                tagSet.add(tag);
+                if (tagSet.hasOwnProperty(tag)) {
+                    tagSet[tag] += 1;
+                }
+                else {
+                    tagSet[tag] = 1;
+                }
             });
         })
-        this.tagSet = [...tagSet];
+        this.tagSet = tagSet;
     }
 
     async handleTagSelect() {
@@ -43,13 +48,18 @@ class Filter extends React.Component {
     }
 
     async getTags() {
-        let tagSet = new Set();
+        let tagSet = {};
         await this.props.getFilteredAnnotations().forEach(annotation => {
             annotation.tags.forEach(tag => {
-                tagSet.add(tag);
+                if (tagSet.hasOwnProperty(tag)) {
+                    tagSet[tag] += 1;
+                }
+                else {
+                    tagSet[tag] = 1;
+                }
             });
         })
-        this.tagSet = [...tagSet];
+        this.tagSet = tagSet;
     }
 
     async handleTagClick(event) {
@@ -267,7 +277,8 @@ class Filter extends React.Component {
                                     <button value={tag}
                                         className={
                                             classNames({ TagButton: true, selected: this.selection.tags.includes(tag) })}
-                                        onClick={e => this.handleTagClick(e)}>{tag}
+                                        onClick={e => this.handleTagClick(e)}>
+                                        {tag} &nbsp; {this.tagSet[tag]}
                                     </button>
                                 </div>);
                             })
@@ -279,7 +290,19 @@ class Filter extends React.Component {
                             </button>
                             </div>) : (
                                 <React.Fragment>
-                                    {this.tagSet.map(tag => {
+                                    {Object.entries(this.tagSet).map(tagCountPair => {
+                                        if (!this.selection.tags.includes(tagCountPair[0]))
+                                            return (<div className="TagButtonPad">
+                                                <button value={tagCountPair[0]} className={
+                                                    classNames({ TagButton: true, selected: this.selection.tags.includes(tagCountPair[0]) })}
+                                                    onClick={e => this.handleTagClick(e)}>
+                                                    {tagCountPair[0]} &nbsp; {tagCountPair[1]}
+                                                </button>
+                                            </div>);
+                                    })
+
+                                    }
+                                    {/* {this.tagSet.map(tag => {
                                         if (!this.selection.tags.includes(tag))
                                             return (<div className="TagButtonPad">
                                                 <button value={tag} className={
@@ -288,7 +311,7 @@ class Filter extends React.Component {
                                                     {tag}
                                                 </button>
                                             </div>);
-                                    })}
+                                    })} */}
                                     <div className="TagButtonPad">
                                         <button className="TagButton" >
                                             <img src={expand} alt="collapse tag list" id="collapseTagList" onClick={e => this.handleTagSelect(e)} />
