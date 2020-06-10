@@ -342,8 +342,8 @@ class Sidebar extends React.Component {
     const inputText = searchBarInputText.toLowerCase();
     let filteredAnnotationsCopy = [];
     filteredAnnotations.forEach((anno) => {
-      const { content } = anno;
-      if (content.toLowerCase().includes(inputText)) {
+      const { content, anchorContent } = anno;
+      if (content.toLowerCase().includes(inputText) || anchorContent.toLowerCase().includes(inputText)) {
         filteredAnnotationsCopy.push(anno);
       }
     });

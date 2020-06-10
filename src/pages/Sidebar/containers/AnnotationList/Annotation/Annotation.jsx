@@ -315,7 +315,6 @@ class Annotation extends Component {
                   <div className="ExpandCollapse">
                     <img src={expand} id="collapse" alt="Collapse" onClick={_ => this.handleExpandCollapse('collapse')} className="Icon" />
                   </div>
-
                 </React.Fragment>
               )
             }

@@ -9,6 +9,10 @@ export const getAllAnnotationsByUrl = url => {
   return db.collection(DB_COLLECTIONS.ANNOTATIONS).where('url', '==', url);
 };
 
+export const getAnnotationsAcrossSite = url => {
+
+}
+
 export const getAllAnnotationsByUserIdAndUrl = (uid, url) => {
   return db
     .collection(DB_COLLECTIONS.ANNOTATIONS)
