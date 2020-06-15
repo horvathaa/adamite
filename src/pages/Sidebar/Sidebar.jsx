@@ -39,22 +39,14 @@ class Sidebar extends React.Component {
   }
 
   setUpAnnotationsListener = (uid, url) => {
-    if (this.unsubscribeAnnotations) {
-      this.unsubscribeAnnotations();
-    }
-    // getAllAnnotationsByUserIdAndUrl(uid, url).onSnapshot(querySnapshot => {
-    getAllAnnotations().onSnapshot(querySnapshot => {
-      let annotations = [];
-      querySnapshot.forEach(snapshot => {
-        annotations.push({
-          id: snapshot.id,
-          ...snapshot.data(),
-        });
-      });
-      this.setState({ annotations });
-      this.requestFilterUpdate();
-    });
 
+    chrome.runtime.sendMessage(
+      {
+        msg: 'GET_ANNOTATIONS_PAGE_LOAD',
+        uid: uid,
+        url: url,
+      },
+    );
 
   };
 
@@ -66,6 +58,7 @@ class Sidebar extends React.Component {
   }
 
   componentDidMount() {
+    console.log("RERENDER")
     chrome.runtime.sendMessage(
       {
         msg: 'GET_CURRENT_USER',
@@ -170,9 +163,17 @@ class Sidebar extends React.Component {
         }
       }
       // else if (request.from === 'background' && request.msg === 'REQUEST_FILTERED_ANNOTATIONS') {
-      //   chrome.storage.local.set({ annotations: this.state.filteredAnnotations });
+      //   //chrome.storage.local.set({ annotations: this.state.filteredAnnotations });
       //   sendResponse({ done: true });
       // }
+      else if (
+        request.from === 'background' &&
+        request.msg === 'CONTENT_UPDATED'
+      ) {
+        this.setState({ annotations: request.payload })
+        this.requestFilterUpdate();
+        console.log("HERE is johnnnnn", request.payload)
+      }
     });
   }
 
@@ -186,6 +187,22 @@ class Sidebar extends React.Component {
       }
     }
     return false;
+  }
+
+  // helper method from
+  // https://stackoverflow.com/questions/18773778/create-array-of-unique-objects-by-property
+  removeDuplicates(annotationArray) {
+    const flags = new Set();
+    const annotations = annotationArray.filter(anno => {
+      if (flags.has(anno.id)) {
+        return false;
+      }
+      flags.add(anno.id);
+      return true;
+    });
+    console.log('old list', annotationArray);
+    console.log('new list', annotations);
+    return annotations;
   }
 
   handleSearchBarInputText = (event) => {
@@ -210,7 +227,7 @@ class Sidebar extends React.Component {
     return this.containsObject(annotation.type, annoType);
   }
 
-  checkSiteScope(annotation, siteScope) {
+  async checkSiteScope(annotation, siteScope) {
     if (!siteScope.length) {
       return true;
     }
@@ -224,12 +241,25 @@ class Sidebar extends React.Component {
       //   });
       // }
       // else {
+      // to-do make this check smarter by ignoring parts of the url (#, ?, etc.) - just get substring and compare
       return annotation.url === this.state.url;
       // }
     }
     else if (siteScope.includes('acrossWholeSite')) {
-      let url = new URL(this.state.url);
-      return annotation.url.includes(url.hostname)
+      return new Promise((resolve, reject) => {
+        console.log('in acrosswholesite');
+        let url = new URL(this.state.url);
+        chrome.runtime.sendMessage({
+          from: 'content',
+          msg: 'REQUEST_PAGINATED_ACROSS_SITE_ANNOTATIONS',
+          payload: { hostname: url.hostname, url: this.state.url }
+        },
+          response => {
+            console.log('sending response', response);
+            resolve(response.annotations);
+          });
+      });
+      // return annotation.url.includes(url.hostname)
     }
   }
 
@@ -287,16 +317,34 @@ class Sidebar extends React.Component {
 
   applyFilter = (filterSelection) => {
     this.selection = filterSelection;
-    this.setState({
-      filteredAnnotations:
-        this.state.annotations.filter(annotation => {
-          return this.checkSiteScope(annotation, filterSelection.siteScope) &&
-            this.checkUserScope(annotation, filterSelection.userScope) &&
+    if (filterSelection.siteScope.includes('onPage') && !filterSelection.siteScope.includes('acrossWholeSite')) {
+      this.setState({
+        filteredAnnotations:
+          this.state.annotations.filter(annotation => {
+            return this.checkSiteScope(annotation, filterSelection.siteScope) &&
+              this.checkUserScope(annotation, filterSelection.userScope) &&
+              this.checkAnnoType(annotation, filterSelection.annoType) &&
+              this.checkTimeRange(annotation, filterSelection.timeRange) &&
+              this.checkTags(annotation, filterSelection.tags);
+          })
+      });
+    }
+    else if (filterSelection.siteScope.includes('acrossWholeSite')) {
+      // console.log('sitescope', filterSelection.siteScope);
+      this.checkSiteScope(undefined, filterSelection.siteScope).then(annotations => {
+        // console.log('in our then', annotations);
+        annotations = annotations.filter(annotation => {
+          return this.checkUserScope(annotation, filterSelection.userScope) &&
             this.checkAnnoType(annotation, filterSelection.annoType) &&
             this.checkTimeRange(annotation, filterSelection.timeRange) &&
-            this.checkTags(annotation, filterSelection.tags);
-        })
-    });
+            this.checkTags(annotation, filterSelection.tags)
+        });
+        let newList = annotations.concat(this.state.filteredAnnotations);
+        newList = this.removeDuplicates(newList);
+        this.setState({ filteredAnnotations: newList });
+        // console.log('new annotations', this.state.filteredAnnotations);
+      });
+    }
   }
 
   requestFilterUpdate() {
@@ -348,7 +396,7 @@ class Sidebar extends React.Component {
       }
     });
 
-    // chrome.storage.local.set({ annotations: filteredAnnotationsCopy });
+    //chrome.storage.local.set({ annotations: filteredAnnotationsCopy });
     filteredAnnotationsCopy = filteredAnnotationsCopy.sort((a, b) =>
       (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
     );

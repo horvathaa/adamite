@@ -21,7 +21,7 @@ function sendUpdateXpaths(toUpdate) {
  * Removes span from HTML DOM
  * @param {Array} collection 
  */
-function removeSpans(collection) {
+export const removeSpans = (collection) => {
     while (collection[0] !== undefined) {
         var parent = collection[0].parentNode;
         $(collection[0]).contents().unwrap();

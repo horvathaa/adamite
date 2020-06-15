@@ -9,14 +9,21 @@ export const getAllAnnotationsByUrl = url => {
   return db.collection(DB_COLLECTIONS.ANNOTATIONS).where('url', '==', url);
 };
 
-export const getAnnotationsAcrossSite = url => {
-
+export const getAnnotationsAcrossSite = hostname => {
+  return db.collection(DB_COLLECTIONS.ANNOTATIONS).where('hostname', '==', hostname).limit(15);
 }
 
 export const getAllAnnotationsByUserIdAndUrl = (uid, url) => {
   return db
     .collection(DB_COLLECTIONS.ANNOTATIONS)
     .where('authorId', '==', uid)
+    .where('url', '==', url);
+};
+
+export const getAllAnnotationsByUserUrlAndMaxTime = (url, maxTime) => {
+  return db
+    .collection(DB_COLLECTIONS.ANNOTATIONS)
+    .where('createdTimestamp', '>', maxTime)
     .where('url', '==', url);
 };
 
@@ -48,6 +55,7 @@ export const createAnnotation = async ({
   AnnotationAnchorContent,
   AnnotationType,
   url,
+  hostname,
   AnnotationTags,
   offsets,
   xpath,
@@ -70,6 +78,7 @@ export const createAnnotation = async ({
     anchorPath: null,
     type: AnnotationType,
     url,
+    hostname,
     tags: AnnotationTags,
     offsets,
     xpath,
