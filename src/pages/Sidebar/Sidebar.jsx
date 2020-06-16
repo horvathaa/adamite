@@ -8,12 +8,12 @@ import Authentication from './containers//Authentication//Authentication';
 import AnnotationList from './containers/AnnotationList/AnnotationList';
 import NewAnnotation from './containers/NewAnnotation/NewAnnotation';
 import Filter from './containers/Filter/Filter';
+import FilterSummary from './containers/Filter/FilterSummary';
 import SearchBar from './containers/SearchBar/SearchBar';
 import { getAllAnnotationsByUserIdAndUrl, getAllAnnotationsByUrl, getAllAnnotations, trashAnnotationById } from '../../firebase/index';
 import { style } from 'glamor';
 
 class Sidebar extends React.Component {
-
   state = {
     url: '',
     annotations: [],
@@ -26,35 +26,27 @@ class Sidebar extends React.Component {
     selected: undefined,
     dropdownOpen: false,
     searchBarInputText: '',
-    showFilter: false
+    showFilter: false,
+    selection: {
+      siteScope: ['onPage'],
+      userScope: ['public'],
+      annoType: ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'],
+      timeRange: 'all',
+      archive: null,
+      tags: []
+    }
   };
 
-  selection = {
-    siteScope: ['onPage'],
-    userScope: ['public'],
-    annoType: ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'],
-    timeRange: 'all',
-    archive: null,
-    tags: []
-  }
 
   setUpAnnotationsListener = (uid, url) => {
-    if (this.unsubscribeAnnotations) {
-      this.unsubscribeAnnotations();
-    }
-    // getAllAnnotationsByUserIdAndUrl(uid, url).onSnapshot(querySnapshot => {
-    getAllAnnotations().onSnapshot(querySnapshot => {
-      let annotations = [];
-      querySnapshot.forEach(snapshot => {
-        annotations.push({
-          id: snapshot.id,
-          ...snapshot.data(),
-        });
-      });
-      this.setState({ annotations });
-      this.requestFilterUpdate();
-    });
 
+    chrome.runtime.sendMessage(
+      {
+        msg: 'GET_ANNOTATIONS_PAGE_LOAD',
+        uid: uid,
+        url: url,
+      },
+    );
 
   };
 
@@ -62,10 +54,21 @@ class Sidebar extends React.Component {
     if (this.unsubscribeAnnotations) {
       this.unsubscribeAnnotations();
     }
+  }
 
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this.handleScroll);
+  }
+
+  handleScroll = (event, filterSelection) => {
+    const scrollIsAtTheBottom = (document.documentElement.scrollHeight - window.innerHeight) - 1 <= Math.floor(window.scrollY);
+    if (scrollIsAtTheBottom && filterSelection.siteScope.includes('acrossWholeSite')) {
+      this.filterAcrossWholeSite(filterSelection);
+    }
   }
 
   componentDidMount() {
+    window.addEventListener('scroll', (event) => this.handleScroll(event, this.state.selection));
     chrome.runtime.sendMessage(
       {
         msg: 'GET_CURRENT_USER',
@@ -169,10 +172,14 @@ class Sidebar extends React.Component {
           }, 500);
         }
       }
-      // else if (request.from === 'background' && request.msg === 'REQUEST_FILTERED_ANNOTATIONS') {
-      //   chrome.storage.local.set({ annotations: this.state.filteredAnnotations });
-      //   sendResponse({ done: true });
-      // }
+      else if (
+        request.from === 'background' &&
+        request.msg === 'CONTENT_UPDATED'
+      ) {
+        this.setState({ annotations: request.payload })
+        this.requestFilterUpdate();
+        console.log("HERE is johnnnnn", request.payload)
+      }
     });
   }
 
@@ -186,6 +193,20 @@ class Sidebar extends React.Component {
       }
     }
     return false;
+  }
+
+  // helper method from
+  // https://stackoverflow.com/questions/18773778/create-array-of-unique-objects-by-property
+  removeDuplicates(annotationArray) {
+    const flags = new Set();
+    const annotations = annotationArray.filter(anno => {
+      if (flags.has(anno.id)) {
+        return false;
+      }
+      flags.add(anno.id);
+      return true;
+    });
+    return annotations;
   }
 
   handleSearchBarInputText = (event) => {
@@ -210,26 +231,27 @@ class Sidebar extends React.Component {
     return this.containsObject(annotation.type, annoType);
   }
 
-  checkSiteScope(annotation, siteScope) {
+  async checkSiteScope(annotation, siteScope) {
     if (!siteScope.length) {
       return true;
     }
     if (siteScope.includes('onPage') && !siteScope.includes('acrossWholeSite')) {
-      // console.log('annotation in filter', annotation);
-      // if (annotation.childAnchors !== undefined) {
-      //   annotation.childAnchors.forEach(anno => {
-      //     if (anno.url === this.state.url) {
-      //       return true;
-      //     }
-      //   });
-      // }
-      // else {
+      // to-do make this check smarter by ignoring parts of the url (#, ?, etc.)
+      // - just get substring and compare
       return annotation.url === this.state.url;
-      // }
     }
     else if (siteScope.includes('acrossWholeSite')) {
-      let url = new URL(this.state.url);
-      return annotation.url.includes(url.hostname)
+      return new Promise((resolve, reject) => {
+        let url = new URL(this.state.url);
+        chrome.runtime.sendMessage({
+          from: 'content',
+          msg: 'REQUEST_PAGINATED_ACROSS_SITE_ANNOTATIONS',
+          payload: { hostname: url.hostname, url: this.state.url }
+        },
+          response => {
+            resolve(response.annotations);
+          });
+      });
     }
   }
 
@@ -285,44 +307,65 @@ class Sidebar extends React.Component {
     this.setState({ showFilter: true });
   }
 
-  applyFilter = (filterSelection) => {
-    this.selection = filterSelection;
-    this.setState({
-      filteredAnnotations:
-        this.state.annotations.filter(annotation => {
-          return this.checkSiteScope(annotation, filterSelection.siteScope) &&
-            this.checkUserScope(annotation, filterSelection.userScope) &&
-            this.checkAnnoType(annotation, filterSelection.annoType) &&
-            this.checkTimeRange(annotation, filterSelection.timeRange) &&
-            this.checkTags(annotation, filterSelection.tags);
-        })
+  filterAcrossWholeSite = (filterSelection) => {
+    this.checkSiteScope(undefined, filterSelection.siteScope).then(annotations => {
+      annotations = annotations.filter(annotation => {
+        return this.checkUserScope(annotation, filterSelection.userScope) &&
+          this.checkAnnoType(annotation, filterSelection.annoType) &&
+          this.checkTimeRange(annotation, filterSelection.timeRange) &&
+          this.checkTags(annotation, filterSelection.tags)
+      });
+      let newList = annotations.concat(this.state.filteredAnnotations);
+      newList = this.removeDuplicates(newList);
+      this.setState({ filteredAnnotations: newList });
     });
+  }
+
+  applyFilter = (filterSelection) => {
+    this.setState({ selection: filterSelection });
+    if (filterSelection.siteScope.includes('onPage') && !filterSelection.siteScope.includes('acrossWholeSite')) {
+      this.setState({
+        filteredAnnotations:
+          this.state.annotations.filter(annotation => {
+            return this.checkSiteScope(annotation, filterSelection.siteScope) &&
+              this.checkUserScope(annotation, filterSelection.userScope) &&
+              this.checkAnnoType(annotation, filterSelection.annoType) &&
+              this.checkTimeRange(annotation, filterSelection.timeRange) &&
+              this.checkTags(annotation, filterSelection.tags);
+          })
+      });
+    }
+    else if (filterSelection.siteScope.includes('acrossWholeSite')) {
+      this.filterAcrossWholeSite(filterSelection);
+    }
   }
 
   requestFilterUpdate() {
     this.setState({
       filteredAnnotations:
         this.state.annotations.filter(annotation => {
-          return this.checkSiteScope(annotation, this.selection.siteScope) &&
-            this.checkUserScope(annotation, this.selection.userScope) &&
-            this.checkAnnoType(annotation, this.selection.annoType) &&
-            this.checkTimeRange(annotation, this.selection.timeRange) &&
-            this.checkTags(annotation, this.selection.tags);
+          return this.checkSiteScope(annotation, this.state.selection.siteScope) &&
+            this.checkUserScope(annotation, this.state.selection.userScope) &&
+            this.checkAnnoType(annotation, this.state.selection.annoType) &&
+            this.checkTimeRange(annotation, this.state.selection.timeRange) &&
+            this.checkTags(annotation, this.state.selection.tags);
         })
     });
   }
 
   // to-do make this work probs race condition where annotationlist requests this be called before
   // this.selection is set
+  // now that we have filter by unique IDs I think we could use that to filter out children annotations
+  // at least when computing length of list
   requestChildAnchorFilterUpdate(annotations) {
     this.setState({
       filteredAnnotations:
         annotations.filter(annotation => {
-          return this.checkSiteScope(annotation, this.selection.siteScope) &&
-            this.checkUserScope(annotation, this.selection.userScope) &&
-            this.checkAnnoType(annotation, this.selection.annoType) &&
-            this.checkTimeRange(annotation, this.selection.timeRange) &&
-            this.checkTags(annotation, this.selection.tags);
+          return this.checkSiteScope(annotation, this.state.selection.siteScope) &&
+            this.checkUserScope(annotation, this.state.selection.userScope) &&
+            this.checkAnnoType(annotation, this.state.selection.annoType) &&
+            this.checkTimeRange(annotation, this.state.selection.timeRange) &&
+            this.checkTags(annotation, this.state.selection.tags);
         })
     });
   }
@@ -342,20 +385,18 @@ class Sidebar extends React.Component {
     const inputText = searchBarInputText.toLowerCase();
     let filteredAnnotationsCopy = [];
     filteredAnnotations.forEach((anno) => {
-      const { content } = anno;
-      if (content.toLowerCase().includes(inputText)) {
+      const { content, anchorContent } = anno;
+      if (content.toLowerCase().includes(inputText) || anchorContent.toLowerCase().includes(inputText)) {
         filteredAnnotationsCopy.push(anno);
       }
     });
 
-    // chrome.storage.local.set({ annotations: filteredAnnotationsCopy });
     filteredAnnotationsCopy = filteredAnnotationsCopy.sort((a, b) =>
       (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
     );
-    // console.log(this.selection);
 
     return (
-      <div className="SidebarContainer">
+      <div className="SidebarContainer" >
         <Title currentUser={currentUser} />
         {currentUser === null && <Authentication />}
         {currentUser !== null && (
@@ -371,11 +412,12 @@ class Sidebar extends React.Component {
               />
             </div>
             <div>
+              {!this.state.showFilter && <FilterSummary filter={this.state.selection} />}
               {this.state.showFilter &&
                 <Filter applyFilter={this.applyFilter}
                   filterAnnotationLength={this.getFilteredAnnotationListLength}
                   getFilteredAnnotations={this.getFilteredAnnotations}
-                  currentFilter={this.selection}
+                  currentFilter={this.state.selection}
                 />}
               {this.state.newSelection !== null &&
                 this.state.newSelection.trim().length > 0 && (
@@ -389,17 +431,6 @@ class Sidebar extends React.Component {
                 )}
             </div>
             <div>
-              {this.selection.tags.length ? (
-                <div className="whoops">
-                  Current tags:
-                  <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
-                    {this.selection.tags.map((tag, idx) => {
-                      return (<li key={idx} style={{ display: "inline" }}>{tag},&nbsp;</li>);
-                    })}
-                  </ul>
-                </div>
-              ) : (null)}
-
               {!filteredAnnotationsCopy.length && this.state.newSelection === null && !this.state.showFilter ? (
                 <div className="whoops">
                   There's nothing here! Try

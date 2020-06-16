@@ -144,7 +144,9 @@ class Annotation extends Component {
     updateAnnotationById(CardWrapperState.id, {
       content: CardWrapperState.annotationContent,
       type: CardWrapperState.annotationType.toLowerCase(),
-      tags: CardWrapperState.tags
+      tags: CardWrapperState.tags,
+      deletedTimestamp: 0,
+      createdTimestamp: new Date().getTime()
     });
     this.setState({ editing: false });
   }
@@ -309,15 +311,12 @@ class Annotation extends Component {
             {collapsed ? (
               <div className="ExpandCollapse">
                 <img src={expand} alt="Expand" onClick={_ => this.handleExpandCollapse('expand')} className="Icon" />
-                {/* <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} className="Icon" /> */}
               </div>
             ) : (
                 <React.Fragment>
                   <div className="ExpandCollapse">
-                    {/* <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} className="Icon" /> */}
                     <img src={expand} id="collapse" alt="Collapse" onClick={_ => this.handleExpandCollapse('collapse')} className="Icon" />
                   </div>
-
                 </React.Fragment>
               )
             }
@@ -1057,11 +1056,7 @@ class Annotation extends Component {
                 Un-archive?
             </button>
             </div>
-          ) : (
-              <div className="whoops">
-                This annotation is private
-              </div>
-            )
+          ) : (null)
           }
         </React.Fragment>
 

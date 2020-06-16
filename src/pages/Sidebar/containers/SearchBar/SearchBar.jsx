@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import classNames from 'classnames';
 import './SearchBar.css';
+import search from '../../../../assets/img/SVGs/search.svg';
 
 const SearchBar = ({
     searchCount,
@@ -16,7 +17,7 @@ const SearchBar = ({
                 className={classNames({
                     SearchBarInput: true,
                 })}
-                placeholder={'🔍 search annotation content here'}
+                placeholder={'Search annotation content here'}
                 value={searchBarInputText}
                 onChange={(e) => handleSearchBarInputText(e)}
             />

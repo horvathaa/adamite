@@ -2,7 +2,8 @@
   "name": "ADAMITE",
   "options_page": "options.html",
   "background": {
-    "page": "background.html"
+    "page": "background.html",
+    "persistent": true
   },
   "browser_action": {},
   "permissions": [

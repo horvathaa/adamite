@@ -77,7 +77,7 @@
 .SiteScopeButtonContainer {
     display: flex;
     justify-content: center;
-    padding: 8px 8px 0px 0px;
+    padding: 4px 8px 0px 0px;
     flex-direction: column;
     width: 100%;
 }
@@ -133,7 +133,7 @@
 .AnnoTypeButtonContainer {
     display: flex;
     justify-content: center;
-    padding: 8px 8px 0px 0px;
+    padding: 0px 8px 0px 0px;
     flex-direction: column;
     /* width: 100%; */
 }
@@ -170,7 +170,7 @@
 .TagButtonPad {
     display: flex;
     justify-content: center;
-    padding: 8px 8px 0px 0px;
+    padding: 4px 8px 0px 0px;
     flex-direction: column;
     /* width: 100%; */
 }

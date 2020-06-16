@@ -1,24 +1,24 @@
 
 //import './AnchorEngine/AnchorCreate';
-import { updateXpaths } from './AnchorEngine/AnchorDestroy';
+import { updateXpaths, removeSpans } from './AnchorEngine/AnchorDestroy';
 import { highlightRange } from './AnchorEngine/AnchorHighlight';
 import { createAnnotation } from './AnchorEngine/AnchorCreate';
 
 
-chrome.runtime.sendMessage(
-    {
-        msg: 'REQUEST_ANNOTATED_TEXT_ON_THIS_PAGE',
-        payload: {
-            url: window.location.href,
-        },
-    },
-    data => {
-        const { annotationsOnPage } = data;
-        if (annotationsOnPage.length) {
-            annotationsOnPage.reverse().forEach(anno => highlightRange(anno));
-        }
-    }
-);
+// chrome.runtime.sendMessage(
+//     {
+//         msg: 'REQUEST_ANNOTATED_TEXT_ON_THIS_PAGE',
+//         payload: {
+//             url: window.location.href,
+//         },
+//     },
+//     data => {
+//         const { annotationsOnPage } = data;
+//         if (annotationsOnPage.length) {
+//             annotationsOnPage.reverse().forEach(anno => highlightRange(anno));
+//         }
+//     }
+// );
 
 document.addEventListener('mouseup', event => {
     createAnnotation();
@@ -30,13 +30,28 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         let collection = document.getElementsByName(request.id);
         updateXpaths(collection, request.id)
     }
+    else if (request.msg === 'HIGHLIGHT_ANNOTATIONS') {
+        console.log("in here", request)
+        const annotationsOnPage = request.payload;
+        if (annotationsOnPage.length) {
+            annotationsOnPage.reverse().forEach(anno => highlightRange(anno));
+        }
+    }
+    else if (request.msg === 'REFRESH_HIGHLIGHTS') {
+        var span = document.getElementsByClassName("highlight-adamite-annotation");
+        removeSpans(span);
+        console.log("in here", request)
+        const annotationsOnPage = request.payload;
+        if (annotationsOnPage.length) {
+            annotationsOnPage.reverse().forEach(anno => highlightRange(anno));
+        }
+    }
     else if (request.msg === 'ANNOTATION_FOCUS_ONCLICK') {
         var findSpan = document.getElementsByName(request.id);
         if (findSpan.length === 0) {
             return;
         }
         findSpan[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
-        //findSpan.forEach(e => e.style.backgroundColor = '#B0B65B')
     }
     else if (request.msg === 'ANNOTATION_FOCUS') {
         var findSpan = document.getElementsByName(request.id);

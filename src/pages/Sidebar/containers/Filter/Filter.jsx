@@ -3,7 +3,7 @@ import './Filter.css';
 import classNames from 'classnames';
 import { Combobox } from 'react-widgets';
 import 'react-widgets/dist/css/react-widgets.css';
-import expand from '../../../../assets/img/SVGs/expand.svg'
+import expand from '../../../../assets/img/SVGs/expand.svg';
 
 class Filter extends React.Component {
     selection = {
@@ -20,7 +20,7 @@ class Filter extends React.Component {
         this.selection = props.currentFilter;
     }
 
-    tagSet = [];
+    tagSet = {};
 
     state = {
         tagSelect: false,
@@ -28,13 +28,18 @@ class Filter extends React.Component {
 
 
     async componentDidMount() {
-        let tagSet = new Set();
+        let tagSet = {};
         await this.props.getFilteredAnnotations().forEach(annotation => {
             annotation.tags.forEach(tag => {
-                tagSet.add(tag);
+                if (tagSet.hasOwnProperty(tag)) {
+                    tagSet[tag] += 1;
+                }
+                else {
+                    tagSet[tag] = 1;
+                }
             });
         })
-        this.tagSet = [...tagSet];
+        this.tagSet = tagSet;
     }
 
     async handleTagSelect() {
@@ -43,13 +48,18 @@ class Filter extends React.Component {
     }
 
     async getTags() {
-        let tagSet = new Set();
+        let tagSet = {};
         await this.props.getFilteredAnnotations().forEach(annotation => {
             annotation.tags.forEach(tag => {
-                tagSet.add(tag);
+                if (tagSet.hasOwnProperty(tag)) {
+                    tagSet[tag] += 1;
+                }
+                else {
+                    tagSet[tag] = 1;
+                }
             });
         })
-        this.tagSet = [...tagSet];
+        this.tagSet = tagSet;
     }
 
     async handleTagClick(event) {
@@ -92,11 +102,12 @@ class Filter extends React.Component {
         } else {
             choice = 'onlyMe';
         }
-        if (this.selection.userScope.includes(choice)) {
-            this.selection.userScope = this.selection.userScope.filter(e => e !== choice);
-        } else {
-            this.selection.userScope.push(choice);
-        }
+        // if (this.selection.userScope.includes(choice)) {
+        //     this.selection.userScope = this.selection.userScope.filter(e => e !== choice);
+        // } else {
+        //     this.selection.userScope.push(choice);
+        // }
+        this.selection.userScope = [choice];
         this.props.applyFilter(this.selection);
         await this.getTags();
     }
@@ -151,6 +162,26 @@ class Filter extends React.Component {
     }
 
     render() {
+        let userScopeDefault = this.selection.userScope.includes('public') ? 'Anyone' : 'Only Me';
+        let timeRangeDefault = "";
+        if (this.selection.timeRange === 'day') {
+            timeRangeDefault = "Past Day";
+        }
+        else if (this.selection.timeRange === 'week') {
+            timeRangeDefault = "Past Week";
+        }
+        else if (this.selection.timeRange === 'month') {
+            timeRangeDefault = "Past Month";
+        }
+        else if (this.selection.timeRange === 'year') {
+            timeRangeDefault = "Past Year";
+        }
+        else if (this.selection.timeRange === 'all') {
+            timeRangeDefault = "All Time";
+        }
+        else if (this.selection.timeRange === 'custom') {
+            timeRangeDefault = "Custom Time Range...";
+        }
         return (
             <div className='FilterContainer'>
                 <div className="UserTime">
@@ -158,7 +189,7 @@ class Filter extends React.Component {
                         Author
                         <Combobox
                             data={['Only me', 'Anyone']}
-                            defaultValue={'Anyone'}
+                            defaultValue={userScopeDefault}
                             onChange={value => this.updateUserScope(value)}
                         />
                     </div>
@@ -166,7 +197,7 @@ class Filter extends React.Component {
                         Time Range
                         <Combobox
                             data={['Past Day', 'Past Week', 'Past Month', 'Past Year', 'All Time', 'Custom Time Range...']}
-                            defaultValue={'All Time'}
+                            defaultValue={timeRangeDefault}
                             onChange={value => this.updateTimeRange(value)}
                         />
                     </div>
@@ -246,7 +277,8 @@ class Filter extends React.Component {
                                     <button value={tag}
                                         className={
                                             classNames({ TagButton: true, selected: this.selection.tags.includes(tag) })}
-                                        onClick={e => this.handleTagClick(e)}>{tag}
+                                        onClick={e => this.handleTagClick(e)}>
+                                        {tag} &nbsp; {this.tagSet[tag]}
                                     </button>
                                 </div>);
                             })
@@ -258,7 +290,19 @@ class Filter extends React.Component {
                             </button>
                             </div>) : (
                                 <React.Fragment>
-                                    {this.tagSet.map(tag => {
+                                    {Object.entries(this.tagSet).map(tagCountPair => {
+                                        if (!this.selection.tags.includes(tagCountPair[0]))
+                                            return (<div className="TagButtonPad">
+                                                <button value={tagCountPair[0]} className={
+                                                    classNames({ TagButton: true, selected: this.selection.tags.includes(tagCountPair[0]) })}
+                                                    onClick={e => this.handleTagClick(e)}>
+                                                    {tagCountPair[0]} &nbsp; {tagCountPair[1]}
+                                                </button>
+                                            </div>);
+                                    })
+
+                                    }
+                                    {/* {this.tagSet.map(tag => {
                                         if (!this.selection.tags.includes(tag))
                                             return (<div className="TagButtonPad">
                                                 <button value={tag} className={
@@ -267,7 +311,7 @@ class Filter extends React.Component {
                                                     {tag}
                                                 </button>
                                             </div>);
-                                    })}
+                                    })} */}
                                     <div className="TagButtonPad">
                                         <button className="TagButton" >
                                             <img src={expand} alt="collapse tag list" id="collapseTagList" onClick={e => this.handleTagSelect(e)} />

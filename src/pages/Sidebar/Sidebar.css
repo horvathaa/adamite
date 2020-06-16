@@ -30,6 +30,7 @@
 
 .TopRow {
   display: flex;
+  background-color: white;
 }
 
 .TopRow.filterOpen {
@@ -67,4 +68,30 @@
 
 .FilterButton {
   padding: 4px 0px 0px 4px;
+}
+
+.FilterSummary {
+  padding: 5px;
+  background: white;
+  /* border: 1px solid #bfbebe; */
+  box-shadow: 2px 2px 2px #88888887;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  /* border-top-left-radius: 8px;
+  border-top-right-radius: 8px; */
+
+  flex: 1;
+  min-width: 0;
+  /* padding: 4px 4px 4px 4px;
+  cursor: default;
+  outline-style: solid;
+  color: rgb(44, 44, 44); */
+  /* border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px; */
+  /* background-color: rgba(255, 255, 255, 0.5); */
+  transition: all 0.1s ease-in;
+  position: relative;
+  /* box-shadow: gray; */
 }
