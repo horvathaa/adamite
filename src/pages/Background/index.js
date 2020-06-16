@@ -117,7 +117,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
   } else if (request.from === 'content' && request.msg === 'SAVE_NEW_ANCHOR') {
     let { newAnno, xpath, url, anchor, offsets } = request.payload;
-    // console.log('somewhow made it here', newAnno, xpath);
     createAnnotation({
       taskId: null,
       childAnchor: null,
@@ -163,43 +162,25 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       annotationsAcrossWholeSite[hostname] = { cursor: undefined, annotations: [] };
     }
     if (cursor === 'DONE') {
-      sendResponse({ annotations: annotationsAcrossWholeSite[hostname].annotations });
+      sendResponse({ annotations: annotationsAcrossWholeSite[hostname].annotations, cursor: "DONE" });
       return;
     }
-    if (cursor !== null && cursor !== undefined) {
-      //do the below query but with startAfter 
+    if (cursor !== undefined) {
+      // use startAfter 
       getAnnotationsAcrossSite(hostname).startAfter(annotationsAcrossWholeSite[hostname].cursor).get().then(function (doc) {
-        // lastVisible.push({ cursor: doc.docs[doc.docs.length - 1], hostname: hostname });
         let currPage = pageannotationsActive.filter(page => page.url === url);
-        // annotationsToTransmit.push(...currPage[0].annotations);
         annotationsAcrossWholeSite[hostname].annotations.push(...currPage[0].annotations);
-        // console.log('current page annos', currPage[0].annotations);
-        // annotationsToTransmit.push(...doc.docs.data());
-        // console.log('page', currPage);
-        // console.log('doc', doc);
-        // console.log('docs', doc.docs);
         if (!doc.empty) {
           doc.docs.forEach(anno => {
-            // console.log('anno im pushin', anno.data());
             annotationsAcrossWholeSite[hostname].annotations.push({ id: anno.id, ...anno.data() });
-            // if (anno.data().url !== url) {
-            //   annotationsToTransmit.push({ id: anno.id, ...anno.data() });
-            // }
-          })
+          });
         }
         else {
-          // console.log('reached end of pagination - send stored annos');
           annotationsAcrossWholeSite[hostname].cursor = 'DONE';
-          sendResponse({ annotations: annotationsAcrossWholeSite[hostname].annotations });
+          sendResponse({ annotations: annotationsAcrossWholeSite[hostname].annotations, cursor: "DONE" });
           return;
-
         }
-        // // annotationsToTransmit.concat(doc.docs);
-        // let setter = new Set(annotationsToTransmit, annotationsAcrossWholeSite[hostname].annotations);
-        // // console.log('set', setter);
-        // annotationsToTransmit = Array.from(setter);
-        // console.log('annos', annotationsToTransmit);
-        // this isn't a perfect check - if the set of annotations happens to be divisible by 15  we will get one last
+        // this isn't a perfect check - if the set of annotations happens to be divisible by 15 we will get one last
         // read from the query with a length of 15 but the next query will return 0
         if (doc.docs.length < 15) {
           annotationsAcrossWholeSite[hostname].cursor = 'DONE';
@@ -207,49 +188,34 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         else {
           annotationsAcrossWholeSite[hostname].cursor = doc.docs[doc.docs.length - 1];
         }
-        // console.log('donezo, sending response', annotationsAcrossWholeSite[hostname]);
         sendResponse({ annotations: annotationsAcrossWholeSite[hostname].annotations });
-        // annotationsToTransmit = [];
       }).catch(function (error) {
         console.log('could not get doc: ', error);
       });
     }
     else {
+      // first time requesting across whole site annotations from this hostname
       getAnnotationsAcrossSite(hostname).get().then(function (doc) {
         let currPage = pageannotationsActive.filter(page => page.url === url);
-        // annotationsToTransmit.push(...currPage[0].annotations);
         annotationsAcrossWholeSite[hostname].annotations.push(...currPage[0].annotations);
-        // console.log('current page annos', currPage[0].annotations);
-        // // annotationsToTransmit.push(...doc.docs.data());
-        // // console.log('page', currPage);
-        // console.log('doc', doc);
-        // console.log('docs', doc.docs);
         if (!doc.empty) {
           doc.docs.forEach(anno => {
-            // console.log('anno im pushin', anno.data());
             annotationsAcrossWholeSite[hostname].annotations.push({ id: anno.id, ...anno.data() });
-            // if (anno.data().url !== url) {
-            //   annotationsToTransmit.push({ id: anno.id, ...anno.data() });
-            // }
-          })
+          });
         }
         else {
-          // console.log('reached end of pagination - send stored annos');
           annotationsAcrossWholeSite[hostname].cursor = 'DONE';
           sendResponse({ annotations: annotationsAcrossWholeSite[hostname].annotations });
           return;
         }
-        // let setter = new Set(annotationsToTransmit, annotationsAcrossWholeSite[hostname].annotations);
-        // annotationsToTransmit = Array.from(setter);
+        // same issue as stated above
         if (doc.docs.length < 15) {
           annotationsAcrossWholeSite[hostname].cursor = 'DONE';
         }
         else {
           annotationsAcrossWholeSite[hostname].cursor = doc.docs[doc.docs.length - 1];
         }
-        // console.log('donezo, sending response', annotationsAcrossWholeSite[hostname]);
-        sendResponse({ annotations: annotationsAcrossWholeSite[hostname].annotations });
-        // annotationsToTransmit = [];
+        sendResponse({ annotations: annotationsAcrossWholeSite[hostname].annotations, cursor: "NOT_DONE" });
       }).catch(function (error) {
         console.log('could not get doc: ', error);
       });

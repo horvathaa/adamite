@@ -10,7 +10,6 @@ class CustomTag extends Component {
     handleTagClick(e) {
         let tagName = e.target.value;
         console.log(tagName);
-
     }
 
     render() {

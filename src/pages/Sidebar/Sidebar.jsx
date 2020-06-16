@@ -26,17 +26,17 @@ class Sidebar extends React.Component {
     selected: undefined,
     dropdownOpen: false,
     searchBarInputText: '',
-    showFilter: false
+    showFilter: false,
+    selection: {
+      siteScope: ['onPage'],
+      userScope: ['public'],
+      annoType: ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'],
+      timeRange: 'all',
+      archive: null,
+      tags: []
+    }
   };
 
-  selection = {
-    siteScope: ['onPage'],
-    userScope: ['public'],
-    annoType: ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'],
-    timeRange: 'all',
-    archive: null,
-    tags: []
-  }
 
   setUpAnnotationsListener = (uid, url) => {
 
@@ -54,11 +54,21 @@ class Sidebar extends React.Component {
     if (this.unsubscribeAnnotations) {
       this.unsubscribeAnnotations();
     }
+  }
 
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this.handleScroll);
+  }
+
+  handleScroll = (event, filterSelection) => {
+    const scrollIsAtTheBottom = (document.documentElement.scrollHeight - window.innerHeight) - 1 <= Math.floor(window.scrollY);
+    if (scrollIsAtTheBottom && filterSelection.siteScope.includes('acrossWholeSite')) {
+      this.filterAcrossWholeSite(filterSelection);
+    }
   }
 
   componentDidMount() {
-    console.log("RERENDER")
+    window.addEventListener('scroll', (event) => this.handleScroll(event, this.state.selection));
     chrome.runtime.sendMessage(
       {
         msg: 'GET_CURRENT_USER',
@@ -162,10 +172,6 @@ class Sidebar extends React.Component {
           }, 500);
         }
       }
-      // else if (request.from === 'background' && request.msg === 'REQUEST_FILTERED_ANNOTATIONS') {
-      //   //chrome.storage.local.set({ annotations: this.state.filteredAnnotations });
-      //   sendResponse({ done: true });
-      // }
       else if (
         request.from === 'background' &&
         request.msg === 'CONTENT_UPDATED'
@@ -200,8 +206,6 @@ class Sidebar extends React.Component {
       flags.add(anno.id);
       return true;
     });
-    console.log('old list', annotationArray);
-    console.log('new list', annotations);
     return annotations;
   }
 
@@ -232,22 +236,12 @@ class Sidebar extends React.Component {
       return true;
     }
     if (siteScope.includes('onPage') && !siteScope.includes('acrossWholeSite')) {
-      // console.log('annotation in filter', annotation);
-      // if (annotation.childAnchors !== undefined) {
-      //   annotation.childAnchors.forEach(anno => {
-      //     if (anno.url === this.state.url) {
-      //       return true;
-      //     }
-      //   });
-      // }
-      // else {
-      // to-do make this check smarter by ignoring parts of the url (#, ?, etc.) - just get substring and compare
+      // to-do make this check smarter by ignoring parts of the url (#, ?, etc.)
+      // - just get substring and compare
       return annotation.url === this.state.url;
-      // }
     }
     else if (siteScope.includes('acrossWholeSite')) {
       return new Promise((resolve, reject) => {
-        console.log('in acrosswholesite');
         let url = new URL(this.state.url);
         chrome.runtime.sendMessage({
           from: 'content',
@@ -255,11 +249,9 @@ class Sidebar extends React.Component {
           payload: { hostname: url.hostname, url: this.state.url }
         },
           response => {
-            console.log('sending response', response);
             resolve(response.annotations);
           });
       });
-      // return annotation.url.includes(url.hostname)
     }
   }
 
@@ -315,8 +307,22 @@ class Sidebar extends React.Component {
     this.setState({ showFilter: true });
   }
 
+  filterAcrossWholeSite = (filterSelection) => {
+    this.checkSiteScope(undefined, filterSelection.siteScope).then(annotations => {
+      annotations = annotations.filter(annotation => {
+        return this.checkUserScope(annotation, filterSelection.userScope) &&
+          this.checkAnnoType(annotation, filterSelection.annoType) &&
+          this.checkTimeRange(annotation, filterSelection.timeRange) &&
+          this.checkTags(annotation, filterSelection.tags)
+      });
+      let newList = annotations.concat(this.state.filteredAnnotations);
+      newList = this.removeDuplicates(newList);
+      this.setState({ filteredAnnotations: newList });
+    });
+  }
+
   applyFilter = (filterSelection) => {
-    this.selection = filterSelection;
+    this.setState({ selection: filterSelection });
     if (filterSelection.siteScope.includes('onPage') && !filterSelection.siteScope.includes('acrossWholeSite')) {
       this.setState({
         filteredAnnotations:
@@ -330,20 +336,7 @@ class Sidebar extends React.Component {
       });
     }
     else if (filterSelection.siteScope.includes('acrossWholeSite')) {
-      // console.log('sitescope', filterSelection.siteScope);
-      this.checkSiteScope(undefined, filterSelection.siteScope).then(annotations => {
-        // console.log('in our then', annotations);
-        annotations = annotations.filter(annotation => {
-          return this.checkUserScope(annotation, filterSelection.userScope) &&
-            this.checkAnnoType(annotation, filterSelection.annoType) &&
-            this.checkTimeRange(annotation, filterSelection.timeRange) &&
-            this.checkTags(annotation, filterSelection.tags)
-        });
-        let newList = annotations.concat(this.state.filteredAnnotations);
-        newList = this.removeDuplicates(newList);
-        this.setState({ filteredAnnotations: newList });
-        // console.log('new annotations', this.state.filteredAnnotations);
-      });
+      this.filterAcrossWholeSite(filterSelection);
     }
   }
 
@@ -351,26 +344,28 @@ class Sidebar extends React.Component {
     this.setState({
       filteredAnnotations:
         this.state.annotations.filter(annotation => {
-          return this.checkSiteScope(annotation, this.selection.siteScope) &&
-            this.checkUserScope(annotation, this.selection.userScope) &&
-            this.checkAnnoType(annotation, this.selection.annoType) &&
-            this.checkTimeRange(annotation, this.selection.timeRange) &&
-            this.checkTags(annotation, this.selection.tags);
+          return this.checkSiteScope(annotation, this.state.selection.siteScope) &&
+            this.checkUserScope(annotation, this.state.selection.userScope) &&
+            this.checkAnnoType(annotation, this.state.selection.annoType) &&
+            this.checkTimeRange(annotation, this.state.selection.timeRange) &&
+            this.checkTags(annotation, this.state.selection.tags);
         })
     });
   }
 
   // to-do make this work probs race condition where annotationlist requests this be called before
   // this.selection is set
+  // now that we have filter by unique IDs I think we could use that to filter out children annotations
+  // at least when computing length of list
   requestChildAnchorFilterUpdate(annotations) {
     this.setState({
       filteredAnnotations:
         annotations.filter(annotation => {
-          return this.checkSiteScope(annotation, this.selection.siteScope) &&
-            this.checkUserScope(annotation, this.selection.userScope) &&
-            this.checkAnnoType(annotation, this.selection.annoType) &&
-            this.checkTimeRange(annotation, this.selection.timeRange) &&
-            this.checkTags(annotation, this.selection.tags);
+          return this.checkSiteScope(annotation, this.state.selection.siteScope) &&
+            this.checkUserScope(annotation, this.state.selection.userScope) &&
+            this.checkAnnoType(annotation, this.state.selection.annoType) &&
+            this.checkTimeRange(annotation, this.state.selection.timeRange) &&
+            this.checkTags(annotation, this.state.selection.tags);
         })
     });
   }
@@ -396,14 +391,12 @@ class Sidebar extends React.Component {
       }
     });
 
-    //chrome.storage.local.set({ annotations: filteredAnnotationsCopy });
     filteredAnnotationsCopy = filteredAnnotationsCopy.sort((a, b) =>
       (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
     );
-    // console.log(this.selection);
 
     return (
-      <div className="SidebarContainer">
+      <div className="SidebarContainer" >
         <Title currentUser={currentUser} />
         {currentUser === null && <Authentication />}
         {currentUser !== null && (
@@ -419,12 +412,12 @@ class Sidebar extends React.Component {
               />
             </div>
             <div>
-              {!this.state.showFilter && <FilterSummary filter={this.selection} />}
+              {!this.state.showFilter && <FilterSummary filter={this.state.selection} />}
               {this.state.showFilter &&
                 <Filter applyFilter={this.applyFilter}
                   filterAnnotationLength={this.getFilteredAnnotationListLength}
                   getFilteredAnnotations={this.getFilteredAnnotations}
-                  currentFilter={this.selection}
+                  currentFilter={this.state.selection}
                 />}
               {this.state.newSelection !== null &&
                 this.state.newSelection.trim().length > 0 && (
