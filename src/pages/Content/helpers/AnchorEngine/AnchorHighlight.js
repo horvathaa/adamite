@@ -54,8 +54,8 @@ function anchorClick(e) {
 export const highlightRange = (anno) => {
 
     var wordPath = [];
-    console.log("ANNO ")
-    console.log(anno)
+    // console.log("ANNO ")
+    // console.log(anno)
     let newRange = xpathRange.toRange(anno.xpath.start, anno.xpath.startOffset, anno.xpath.end, anno.xpath.endOffset, document);
     highlight(newRange, anno.xpath.startOffset, anno.xpath.endOffset, function (node, match, offset) {
 
