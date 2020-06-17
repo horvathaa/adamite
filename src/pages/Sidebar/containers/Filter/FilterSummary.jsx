@@ -7,20 +7,34 @@ import location from '../../../../assets/img/SVGs/location.svg';
 import anno_type from '../../../../assets/img/SVGs/anno_type.svg';
 import tag from '../../../../assets/img/SVGs/tag.svg';
 
-var arraysMatch = function (arr1, arr2) {
-
-    // Check if the arrays are the same length
-    if (arr1.length !== arr2.length) return false;
-
-    // Check if all items exist and are in the same order
-    for (var i = 0; i < arr1.length; i++) {
-        if (arr1[i] !== arr2[i]) return false;
+/** assumes array elements are primitive types
+* check whether 2 arrays are equal sets.
+* @param  {} a1 is an array
+* @param  {} a2 is an array
+*/
+function areArraysEqualSets(a1, a2) {
+    const superSet = {};
+    for (const i of a1) {
+        const e = i + typeof i;
+        superSet[e] = 1;
     }
 
-    // Otherwise, return true
-    return true;
+    for (const i of a2) {
+        const e = i + typeof i;
+        if (!superSet[e]) {
+            return false;
+        }
+        superSet[e] = 2;
+    }
 
-};
+    for (let e in superSet) {
+        if (superSet[e] === 1) {
+            return false;
+        }
+    }
+
+    return true;
+}
 
 class FilterSummary extends React.Component {
 
@@ -31,7 +45,7 @@ class FilterSummary extends React.Component {
 
         let siteScope = "";
         if (filter.siteScope.includes('onPage') && filter.siteScope.includes('acrossWholeSite')) {
-            siteScope = "On Page and Across Whole Site";
+            siteScope = "On Page + Across Whole Site";
         }
         else if (filter.siteScope.includes('onPage')) {
             siteScope = "On Page";
@@ -61,8 +75,8 @@ class FilterSummary extends React.Component {
         }
 
         let annoType = "";
-        if (arraysMatch(filter.annoType, ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'])) {
-            annoType = "All Annotation Types";
+        if (areArraysEqualSets(filter.annoType, ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'])) {
+            annoType = "All Types";
         }
         else {
             filter.annoType.map((type, idx) => {
@@ -109,17 +123,13 @@ class FilterSummary extends React.Component {
                         </div>
                         &nbsp; {siteScope}
                     </div>
-                </div>
-                <div className="FilterSectionRow">
                     <div className="FilterSection">
                         <div className="FilterIconContainer">
                             <img src={anno_type} alt="annotation type icon" />
                         </div>
                         &nbsp; {annoType}
                     </div>
-                </div>
-                {filter.tags.length ? (
-                    <div className="FilterSectionRow">
+                    {filter.tags.length ? (
                         <div className="FilterSection">
                             <div className="FilterIconContainer">
                                 <img src={tag} alt="tag icon" />
@@ -139,8 +149,31 @@ class FilterSummary extends React.Component {
                                 })}
                             </ul>
                         </div>
+                    ) : (null)}
+                </div>
+
+                {/* <div className="FilterSectionRow">
+                    <div className="FilterSection">
+                        <div className="FilterIconContainer">
+                            <img src={tag} alt="tag icon" />
+                        </div>
+                        &nbsp; &nbsp; <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
+                            {filter.tags.map((tag, idx) => {
+                                if (idx !== (filter.tags.length - 1)) {
+                                    return (<li key={idx} style={{ display: "inline" }}>
+                                        {tag},&nbsp;
+                                    </li>);
+                                }
+                                else {
+                                    return (<li key={idx} style={{ display: "inline" }}>
+                                        {tag}
+                                    </li>);
+                                }
+                            })}
+                        </ul>
                     </div>
-                ) : (null)}
+                </div> */}
+
             </div>
 
 
