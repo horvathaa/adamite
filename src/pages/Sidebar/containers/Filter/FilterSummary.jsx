@@ -129,9 +129,7 @@ class FilterSummary extends React.Component {
                         </div>
                         &nbsp; {annoType}
                     </div>
-                </div>
-                {filter.tags.length ? (
-                    <div className="FilterSectionRow">
+                    {filter.tags.length ? (
                         <div className="FilterSection">
                             <div className="FilterIconContainer">
                                 <img src={tag} alt="tag icon" />
@@ -151,8 +149,31 @@ class FilterSummary extends React.Component {
                                 })}
                             </ul>
                         </div>
+                    ) : (null)}
+                </div>
+
+                {/* <div className="FilterSectionRow">
+                    <div className="FilterSection">
+                        <div className="FilterIconContainer">
+                            <img src={tag} alt="tag icon" />
+                        </div>
+                        &nbsp; &nbsp; <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
+                            {filter.tags.map((tag, idx) => {
+                                if (idx !== (filter.tags.length - 1)) {
+                                    return (<li key={idx} style={{ display: "inline" }}>
+                                        {tag},&nbsp;
+                                    </li>);
+                                }
+                                else {
+                                    return (<li key={idx} style={{ display: "inline" }}>
+                                        {tag}
+                                    </li>);
+                                }
+                            })}
+                        </ul>
                     </div>
-                ) : (null)}
+                </div> */}
+
             </div>
 
 
