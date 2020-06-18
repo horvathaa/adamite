@@ -294,11 +294,13 @@ class Annotation extends Component {
               )}
 
             <React.Fragment>
-              <CardWrapper tags={tags}
+              <CardWrapper
+                tags={tags}
                 annotationType={annotationType}
                 annotationContent={content}
                 edit={editing}
-                pageAnnotation={anchor} id={id}
+                pageAnnotation={anchor}
+                id={id}
                 cancelButtonHandler={this.cancelButtonHandler}
                 submitButtonHandler={this.submitButtonHandler}
                 elseContent={content}

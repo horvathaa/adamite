@@ -68,13 +68,13 @@ class Anchor extends Component {
         const { currentUrl, collapsed, url, anchorContent, pageAnchor } = this.props;
         let anchorIcon;
         if (pageAnchor) {
-            anchorIcon = <RiEarthLine className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />
+            anchorIcon = <RiEarthLine className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />;
         }
         else if (url === currentUrl) {
-            anchorIcon = <FaFont className="AnchorIcon" onClick={this.handleOnLocalOnClick} />
+            anchorIcon = <FaFont className="AnchorIcon" onClick={this.handleOnLocalOnClick} />;
         }
         else {
-            anchorIcon = <FaExternalLinkAlt className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />
+            anchorIcon = <FaExternalLinkAlt className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />;
         }
         return (
             <div

@@ -311,7 +311,6 @@ class Sidebar extends React.Component {
         payload: { tag: tag }
       },
         response => {
-          console.log('got this response', response);
           resolve(response.annotations);
         });
     });
