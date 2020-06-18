@@ -11,7 +11,11 @@ export const getAllAnnotationsByUrl = url => {
 
 export const getAnnotationsAcrossSite = hostname => {
   return db.collection(DB_COLLECTIONS.ANNOTATIONS).where('hostname', '==', hostname).limit(15);
-}
+};
+
+export const getAnnotationsByTag = tag => {
+  return db.collection(DB_COLLECTIONS.ANNOTATIONS).where('tags', 'array-contains', tag);
+};
 
 export const getAllAnnotationsByUserIdAndUrl = (uid, url) => {
   return db
@@ -28,7 +32,7 @@ export const getAllAnnotationsByUserUrlAndMaxTime = (url, maxTime) => {
 };
 
 export const getAllAnnotations = () => {
-  return db.collection(DB_COLLECTIONS.ANNOTATIONS)/*.orderBy("createdTimestamp", "desc")*/;
+  return db.collection(DB_COLLECTIONS.ANNOTATIONS);
 };
 
 export const getAnnotationById = id => {

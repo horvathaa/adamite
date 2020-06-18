@@ -216,7 +216,7 @@ class Sidebar extends React.Component {
     });
   };
 
-  handleShowFilter = (event) => {
+  handleShowFilter = () => {
     this.setState({ showFilter: !this.state.showFilter });
   }
 
@@ -293,6 +293,30 @@ class Sidebar extends React.Component {
       return true;
     }
     return tags.some(tag => annotation.tags.includes(tag));
+  }
+
+  sendTagToBackground(tag) {
+    console.log('what');
+    return new Promise((resolve, reject) => {
+      chrome.runtime.sendMessage({
+        from: 'content',
+        msg: 'SEARCH_BY_TAG',
+        payload: { tag: tag }
+      },
+        response => {
+          console.log('got this response', response);
+          resolve(response.annotations);
+        });
+    });
+  }
+
+  searchByTag = (tag) => {
+    console.log('got tag', tag);
+    this.sendTagToBackground(tag).then(annotations => {
+      //should these annos ignore the currently in place filter? not sure
+      // for now, ignoring because of sitewide filters
+      this.setState({ filteredAnnotations: annotations });
+    });
   }
 
   getFilteredAnnotationListLength = () => {
@@ -418,6 +442,7 @@ class Sidebar extends React.Component {
                   filterAnnotationLength={this.getFilteredAnnotationListLength}
                   getFilteredAnnotations={this.getFilteredAnnotations}
                   currentFilter={this.state.selection}
+                  searchByTag={this.searchByTag}
                 />}
               {this.state.newSelection !== null &&
                 this.state.newSelection.trim().length > 0 && (

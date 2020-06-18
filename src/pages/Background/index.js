@@ -7,7 +7,8 @@ import {
   getAllAnnotationsByUrl,
   createAnnotation,
   updateAnnotationById,
-  getAnnotationsAcrossSite
+  getAnnotationsAcrossSite,
+  getAnnotationsByTag
 } from '../../firebase/index';
 
 
@@ -227,19 +228,23 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 
   }
-  // else if (request.msg === 'REQUEST_ANNOTATED_TEXT_ON_THIS_PAGE') {
-  //   const { url } = request.payload;
-  //   //console.log("REQUEST ANNOTATED TEXT ON THIS PAGE", annotations)
-  //   // var test = getAllAnnotationsByUrlCache(url).then(function (cacheAnno) {
-  //   //   var test = cacheAnno.filter(e => e.url === url);
-  //   //   const annotationsOnPage = test // can use this later so we get all annotations that match our filter criterias
-  //   //   console.log("THIS IS HIGHLIGHTS", test)
-  //   //   //sendResponse({ annotationsOnPage });
-  //   // });
-
-  //   // const annotationsOnPage = test // can use this later so we get all annotations that match our filter criterias
-  //   // sendResponse({ annotationsOnPage });
-  // } 
+  else if (request.msg === 'SEARCH_BY_TAG' && request.from === 'content') {
+    console.log('got this tag', request.payload.tag);
+    const { tag } = request.payload;
+    let annotationsWithTag = [];
+    if (tag !== "") {
+      getAnnotationsByTag(tag).get().then(function (doc) {
+        if (!doc.empty) {
+          doc.docs.forEach(anno => {
+            annotationsWithTag.push({ id: anno.id, ...anno.data() });
+          });
+        }
+        sendResponse({ annotations: annotationsWithTag });
+      }).catch(function (error) {
+        console.log('could not get doc: ', error);
+      })
+    }
+  }
   else if (request.msg === 'UPDATE_XPATH_BY_IDS') {
     request.payload.toUpdate.forEach(e =>
       updateAnnotationById(
@@ -256,3 +261,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
   return true;
 });
+
+
+  // else if (request.msg === 'REQUEST_ANNOTATED_TEXT_ON_THIS_PAGE') {
+  //   const { url } = request.payload;
+  //   //console.log("REQUEST ANNOTATED TEXT ON THIS PAGE", annotations)
+  //   // var test = getAllAnnotationsByUrlCache(url).then(function (cacheAnno) {
+  //   //   var test = cacheAnno.filter(e => e.url === url);
+  //   //   const annotationsOnPage = test // can use this later so we get all annotations that match our filter criterias
+  //   //   console.log("THIS IS HIGHLIGHTS", test)
+  //   //   //sendResponse({ annotationsOnPage });
+  //   // });
+
+  //   // const annotationsOnPage = test // can use this later so we get all annotations that match our filter criterias
+  //   // sendResponse({ annotationsOnPage });
+  // } 
