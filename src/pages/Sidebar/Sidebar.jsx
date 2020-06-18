@@ -10,8 +10,6 @@ import NewAnnotation from './containers/NewAnnotation/NewAnnotation';
 import Filter from './containers/Filter/Filter';
 import FilterSummary from './containers/Filter/FilterSummary';
 import SearchBar from './containers/SearchBar/SearchBar';
-import { getAllAnnotationsByUserIdAndUrl, getAllAnnotationsByUrl, getAllAnnotations, trashAnnotationById } from '../../firebase/index';
-import { style } from 'glamor';
 
 class Sidebar extends React.Component {
   state = {
@@ -27,7 +25,7 @@ class Sidebar extends React.Component {
     dropdownOpen: false,
     searchBarInputText: '',
     showFilter: false,
-    selection: {
+    filterSelection: {
       siteScope: ['onPage'],
       userScope: ['public'],
       annoType: ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'],
@@ -68,7 +66,7 @@ class Sidebar extends React.Component {
   }
 
   componentDidMount() {
-    window.addEventListener('scroll', (event) => this.handleScroll(event, this.state.selection));
+    window.addEventListener('scroll', (event) => this.handleScroll(event, this.state.filterSelection));
     chrome.runtime.sendMessage(
       {
         msg: 'GET_CURRENT_USER',
@@ -368,11 +366,11 @@ class Sidebar extends React.Component {
     this.setState({
       filteredAnnotations:
         this.state.annotations.filter(annotation => {
-          return this.checkSiteScope(annotation, this.state.selection.siteScope) &&
-            this.checkUserScope(annotation, this.state.selection.userScope) &&
-            this.checkAnnoType(annotation, this.state.selection.annoType) &&
-            this.checkTimeRange(annotation, this.state.selection.timeRange) &&
-            this.checkTags(annotation, this.state.selection.tags);
+          return this.checkSiteScope(annotation, this.state.filterSelection.siteScope) &&
+            this.checkUserScope(annotation, this.state.filterSelection.userScope) &&
+            this.checkAnnoType(annotation, this.state.filterSelection.annoType) &&
+            this.checkTimeRange(annotation, this.state.filterSelection.timeRange) &&
+            this.checkTags(annotation, this.state.filterSelection.tags);
         })
     });
   }
@@ -385,11 +383,11 @@ class Sidebar extends React.Component {
     this.setState({
       filteredAnnotations:
         annotations.filter(annotation => {
-          return this.checkSiteScope(annotation, this.state.selection.siteScope) &&
-            this.checkUserScope(annotation, this.state.selection.userScope) &&
-            this.checkAnnoType(annotation, this.state.selection.annoType) &&
-            this.checkTimeRange(annotation, this.state.selection.timeRange) &&
-            this.checkTags(annotation, this.state.selection.tags);
+          return this.checkSiteScope(annotation, this.state.filterSelection.siteScope) &&
+            this.checkUserScope(annotation, this.state.filterSelection.userScope) &&
+            this.checkAnnoType(annotation, this.state.filterSelection.annoType) &&
+            this.checkTimeRange(annotation, this.state.filterSelection.timeRange) &&
+            this.checkTags(annotation, this.state.filterSelection.tags);
         })
     });
   }
@@ -436,12 +434,12 @@ class Sidebar extends React.Component {
               />
             </div>
             <div>
-              {!this.state.showFilter && <FilterSummary filter={this.state.selection} />}
+              {!this.state.showFilter && <FilterSummary filter={this.state.filterSelection} />}
               {this.state.showFilter &&
                 <Filter applyFilter={this.applyFilter}
                   filterAnnotationLength={this.getFilteredAnnotationListLength}
                   getFilteredAnnotations={this.getFilteredAnnotations}
-                  currentFilter={this.state.selection}
+                  currentFilter={this.state.filterSelection}
                   searchByTag={this.searchByTag}
                 />}
               {this.state.newSelection !== null &&
