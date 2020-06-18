@@ -198,7 +198,7 @@ class Annotation extends Component {
   }
 
   render() {
-    const { anchor, idx, id, active, authorId, currentUser, trashed, timeStamp, url, currentUrl, childAnchor } = this.props;
+    const { anchor, idx, id, active, authorId, currentUser, trashed, timeStamp, url, currentUrl, childAnchor, xpath } = this.props;
     const { editing, collapsed, tags, content, annotationType, author } = this.state;
     if (annotationType === 'default' && !trashed) {
       return (
@@ -273,10 +273,22 @@ class Annotation extends Component {
               </div>
             ) : (null)}
             {childAnchor === undefined || !childAnchor.length ? (
-              <Anchor id={this.state.id} currentUrl={currentUrl} url={url} collapsed={collapsed} anchorContent={anchor} />
+              <Anchor
+                id={this.state.id}
+                currentUrl={currentUrl}
+                url={url}
+                collapsed={collapsed}
+                anchorContent={anchor}
+                pageAnchor={xpath === null} />
             ) : (
                 <React.Fragment>
-                  <Anchor id={this.state.id} currentUrl={currentUrl} url={url} collapsed={collapsed} anchorContent={anchor} />
+                  <Anchor
+                    id={this.state.id}
+                    currentUrl={currentUrl}
+                    url={url}
+                    collapsed={collapsed}
+                    anchorContent={anchor}
+                    pageAnchor={xpath === null} />
                   <AnchorList childAnchor={childAnchor} currentUrl={currentUrl} collapsed={collapsed} />
                 </React.Fragment>
               )}

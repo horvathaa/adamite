@@ -22,7 +22,14 @@ class AnchorList extends Component {
             <ul className='AnchorList' style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
                 {childAnchor.map((childAnch, idx) => {
                     return (<li key={idx} className='Anchor'>
-                        <Anchor id={childAnch.id} currentUrl={currentUrl} collapsed={collapsed} url={childAnch.url} anchorContent={childAnch.anchorContent} />
+                        <Anchor
+                            id={childAnch.id}
+                            currentUrl={currentUrl}
+                            collapsed={collapsed}
+                            url={childAnch.url}
+                            anchorContent={childAnch.anchorContent}
+                            pageAnchor={childAnch.xpath === null}
+                        />
                     </li>
                     );
                 })}

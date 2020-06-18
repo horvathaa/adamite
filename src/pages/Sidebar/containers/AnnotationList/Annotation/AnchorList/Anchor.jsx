@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
 import { FaFont, FaExternalLinkAlt } from 'react-icons/fa';
+import { RiEarthLine } from 'react-icons/ri';
 import '../Annotation.css';
 import './Anchor.css';
 
@@ -64,7 +65,17 @@ class Anchor extends Component {
     }
 
     render() {
-        const { currentUrl, collapsed, url, anchorContent } = this.props;
+        const { currentUrl, collapsed, url, anchorContent, pageAnchor } = this.props;
+        let anchorIcon;
+        if (pageAnchor) {
+            anchorIcon = <RiEarthLine className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />
+        }
+        else if (url === currentUrl) {
+            anchorIcon = <FaFont className="AnchorIcon" onClick={this.handleOnLocalOnClick} />
+        }
+        else {
+            anchorIcon = <FaExternalLinkAlt className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />
+        }
         return (
             <div
                 className={classNames({
@@ -75,11 +86,9 @@ class Anchor extends Component {
                 onMouseLeave={this.handleOnLocalOnMouseLeave}
             >
                 <div className="AnchorIconContainer">
-                    {currentUrl === url ? (
-                        <FaFont className="AnchorIcon" onClick={this.handleOnLocalOnClick} />
-                    ) : (<FaExternalLinkAlt className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />)}
+                    {anchorIcon}
                 </div>
-                {currentUrl === url ? (
+                {currentUrl === url && !pageAnchor ? (
                     <div className="AnchorTextContainer">
                         {anchorContent}
                     </div>
