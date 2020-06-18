@@ -4,6 +4,8 @@ import classNames from 'classnames';
 import { Combobox } from 'react-widgets';
 import 'react-widgets/dist/css/react-widgets.css';
 import expand from '../../../../assets/img/SVGs/expand.svg';
+// import { Input } from 'semantic-ui-react';
+// import 'semantic-ui-css/semantic.min.css';
 
 class Filter extends React.Component {
     selection = {
@@ -24,6 +26,7 @@ class Filter extends React.Component {
 
     state = {
         tagSelect: false,
+        searchByTag: "",
     }
 
 
@@ -60,6 +63,15 @@ class Filter extends React.Component {
             });
         })
         this.tagSet = tagSet;
+    }
+
+    updateSearchByTag = (event) => {
+        this.setState({ searchByTag: event.target.value });
+    }
+
+    searchByTag = () => {
+        console.log('sending this', this.state.searchByTag);
+        this.props.searchByTag(this.state.searchByTag);
     }
 
     async handleTagClick(event) {
@@ -300,18 +312,7 @@ class Filter extends React.Component {
                                                 </button>
                                             </div>);
                                     })
-
                                     }
-                                    {/* {this.tagSet.map(tag => {
-                                        if (!this.selection.tags.includes(tag))
-                                            return (<div className="TagButtonPad">
-                                                <button value={tag} className={
-                                                    classNames({ TagButton: true, selected: this.selection.tags.includes(tag) })}
-                                                    onClick={e => this.handleTagClick(e)}>
-                                                    {tag}
-                                                </button>
-                                            </div>);
-                                    })} */}
                                     <div className="TagButtonPad">
                                         <button className="TagButton" >
                                             <img src={expand} alt="collapse tag list" id="collapseTagList" onClick={e => this.handleTagSelect(e)} />
@@ -319,6 +320,15 @@ class Filter extends React.Component {
                                     </div>
                                 </React.Fragment>
                             )}
+                    </div>
+                </div>
+                <div className="SearchByTag">
+                    Search by Tag
+                    <div>
+                        <input className="Input" placeholder="Type tag here" onChange={this.updateSearchByTag} />
+                    &nbsp; &nbsp; <button className="RevertFilterButton" onClick={this.searchByTag}>
+                            Search
+                    </button>
                     </div>
                 </div>
                 <div className="Revert">

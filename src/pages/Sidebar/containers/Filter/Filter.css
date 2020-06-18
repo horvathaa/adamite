@@ -144,6 +144,12 @@
     color: #6B778C;
 }
 
+.SearchByTag {
+    padding: 8px;
+    font-size: 0.9rem;
+    color: #6B778C;
+}
+
 .TagButton {
     position: relative;
     background-color: #dcdcdc;
@@ -184,6 +190,30 @@
     transform: rotate(90deg);
     width: 18px;
     height: 18px;
+}
+
+.Input {
+    margin: 0;
+    max-width: 100%;
+    -webkit-box-flex: 1;
+    -ms-flex: 1 0 auto;
+    flex: 1 0 auto;
+    outline: 0;
+    -webkit-tap-highlight-color: rgba(255,255,255,0);
+    text-align: left;
+    line-height: 1.21428571em;
+    font-family: Lato,'Helvetica Neue',Arial,Helvetica,sans-serif;
+    padding: 4px 8px;
+    background: #fff;
+    border: 1px solid rgba(34,36,38,.15);
+    color: rgba(0,0,0,.87);
+    border-radius: .28571429rem;
+    -webkit-transition: border-color .1s ease,-webkit-box-shadow .1s ease;
+    transition: border-color .1s ease,-webkit-box-shadow .1s ease;
+    transition: box-shadow .1s ease,border-color .1s ease;
+    transition: box-shadow .1s ease,border-color .1s ease,-webkit-box-shadow .1s ease;
+    -webkit-box-shadow: none;
+    box-shadow: none;
 }
   
 
