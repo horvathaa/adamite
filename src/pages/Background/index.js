@@ -229,7 +229,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   }
   else if (request.msg === 'SEARCH_BY_TAG' && request.from === 'content') {
-    console.log('got this tag', request.payload.tag);
     const { tag } = request.payload;
     let annotationsWithTag = [];
     if (tag !== "") {

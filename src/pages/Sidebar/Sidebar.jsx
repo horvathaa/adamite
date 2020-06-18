@@ -296,7 +296,6 @@ class Sidebar extends React.Component {
   }
 
   sendTagToBackground(tag) {
-    console.log('what');
     return new Promise((resolve, reject) => {
       chrome.runtime.sendMessage({
         from: 'content',
@@ -311,11 +310,11 @@ class Sidebar extends React.Component {
   }
 
   searchByTag = (tag) => {
-    console.log('got tag', tag);
     this.sendTagToBackground(tag).then(annotations => {
       //should these annos ignore the currently in place filter? not sure
       // for now, ignoring because of sitewide filters
       this.setState({ filteredAnnotations: annotations });
+      this.setState({ annotations: annotations });
     });
   }
 
@@ -345,6 +344,7 @@ class Sidebar extends React.Component {
     });
   }
 
+  // wtf why is there this.state.annotations and this.state.filteredAnnotations? past amber? hello?
   applyFilter = (filterSelection) => {
     this.setState({ selection: filterSelection });
     if (filterSelection.siteScope.includes('onPage') && !filterSelection.siteScope.includes('acrossWholeSite')) {
