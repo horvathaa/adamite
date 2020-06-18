@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import classNames from 'classnames';
 import { FaFont, FaExternalLinkAlt } from 'react-icons/fa';
 import '../Annotation.css';
+import './Anchor.css';
 
 class Anchor extends Component {
     handleOnLocalOnClick = () => {
@@ -78,9 +79,19 @@ class Anchor extends Component {
                         <FaFont className="AnchorIcon" onClick={this.handleOnLocalOnClick} />
                     ) : (<FaExternalLinkAlt className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />)}
                 </div>
-                <div className="AnchorTextContainer">
-                    {anchorContent}
-                </div>
+                {currentUrl === url ? (
+                    <div className="AnchorTextContainer">
+                        {anchorContent}
+                    </div>
+                ) : (
+                        <div className="AnchorTextContainer">
+                            {anchorContent}
+                            <div className="AnchorUrlContainer" onClick={_ => this.handleExternalAnchor(url)}>
+                                {url}
+                            </div>
+                        </div>
+
+                    )}
             </div>
         );
     }
