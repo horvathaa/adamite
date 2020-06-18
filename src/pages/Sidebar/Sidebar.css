@@ -24,6 +24,27 @@
   cursor: pointer;
 }
 
+.AnnotateButtonRow {
+  background-color: white;
+  padding: 8px;
+}
+
+.AnnotatePage {
+  position: relative;
+  background-color: #6B778C;
+  color: whitesmoke ;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  font-weight: bold;
+  line-height: 1.5;
+  border-radius: 0.2rem;
+}
+
+.AnnotatePage.disabled, .AnnotatePage:disabled {
+  /* opacity: 0.65; */
+  filter: brightness(.4);
+}
+
 .Icon.hover, .Icon:hover {
   filter: brightness(.5);
 }
@@ -73,25 +94,12 @@
 .FilterSummary {
   padding: 5px;
   background: white;
-  /* border: 1px solid #bfbebe; */
   box-shadow: 2px 2px 2px #88888887;
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
-  /* border-top-left-radius: 8px;
-  border-top-right-radius: 8px; */
 
   flex: 1;
   min-width: 0;
-  /* padding: 4px 4px 4px 4px;
-  cursor: default;
-  outline-style: solid;
-  color: rgb(44, 44, 44); */
-  /* border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-  border-bottom-left-radius: 8px;
-  border-bottom-right-radius: 8px; */
-  /* background-color: rgba(255, 255, 255, 0.5); */
   transition: all 0.1s ease-in;
   position: relative;
-  /* box-shadow: gray; */
 }

@@ -61,6 +61,7 @@ export const createAnnotation = () => {
                     url: window.location.href,
                     anchor: selection.toString(),
                     offsets: offsets,
+                    hostname: window.location.hostname
                 }
             });
         }

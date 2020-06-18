@@ -117,7 +117,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       });
     });
   } else if (request.from === 'content' && request.msg === 'SAVE_NEW_ANCHOR') {
-    let { newAnno, xpath, url, anchor, offsets } = request.payload;
+    let { newAnno, xpath, url, anchor, offsets, hostname } = request.payload;
     createAnnotation({
       taskId: null,
       childAnchor: null,
@@ -128,7 +128,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       url: url,
       AnnotationTags: newAnno.tags,
       AnnotationAnchorContent: anchor,
-      offsets: offsets
+      offsets: offsets,
+      hostname: hostname
     }).then(value => {
       console.log(value);
       let highlightObj = {

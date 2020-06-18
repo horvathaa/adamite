@@ -25,6 +25,8 @@ class Sidebar extends React.Component {
     dropdownOpen: false,
     searchBarInputText: '',
     showFilter: false,
+    annotatingPage: false,
+    pageName: '',
     filterSelection: {
       siteScope: ['onPage'],
       userScope: ['public'],
@@ -207,6 +209,14 @@ class Sidebar extends React.Component {
     return annotations;
   }
 
+  handleShowAnnotatePage = (event) => {
+    this.setState({ annotatingPage: true });
+    chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+      console.log(tabs[0]);
+      this.setState({ pageName: tabs[0].title });
+    });
+  }
+
   handleSearchBarInputText = (event) => {
     let inputText = event.target.value;
     this.setState({
@@ -301,7 +311,6 @@ class Sidebar extends React.Component {
         payload: { tag: tag }
       },
         response => {
-          console.log('got this response', response);
           resolve(response.annotations);
         });
     });
@@ -395,6 +404,9 @@ class Sidebar extends React.Component {
 
   resetNewSelection = () => {
     this.setState({ newSelection: null });
+    if (this.state.annotatingPage) {
+      this.setState({ annotatingPage: false });
+    }
   };
 
   render() {
@@ -416,7 +428,6 @@ class Sidebar extends React.Component {
     filteredAnnotationsCopy = filteredAnnotationsCopy.sort((a, b) =>
       (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
     );
-
     return (
       <div className="SidebarContainer" >
         <Title currentUser={currentUser} />
@@ -434,6 +445,13 @@ class Sidebar extends React.Component {
               />
             </div>
             <div>
+              <div className="AnnotateButtonRow">
+                {!this.state.showFilter && (
+                  <button className="AnnotatePage" onClick={this.handleShowAnnotatePage} disabled={this.state.newSelection !== null && !this.state.annotatingPage}>
+                    Annotate Page
+                  </button>
+                )}
+              </div>
               {!this.state.showFilter && <FilterSummary filter={this.state.filterSelection} />}
               {this.state.showFilter &&
                 <Filter applyFilter={this.applyFilter}
@@ -443,6 +461,7 @@ class Sidebar extends React.Component {
                   searchByTag={this.searchByTag}
                 />}
               {this.state.newSelection !== null &&
+                !this.state.annotatingPage &&
                 this.state.newSelection.trim().length > 0 && (
                   <NewAnnotation
                     url={this.state.url}
@@ -452,9 +471,18 @@ class Sidebar extends React.Component {
                     xpath={this.state.xpath}
                   />
                 )}
+              {this.state.annotatingPage &&
+                <NewAnnotation
+                  url={this.state.url}
+                  newSelection={this.state.pageName}
+                  resetNewSelection={this.resetNewSelection}
+                  offsets={null}
+                  xpath={null}
+                />
+              }
             </div>
             <div>
-              {!filteredAnnotationsCopy.length && this.state.newSelection === null && !this.state.showFilter ? (
+              {!filteredAnnotationsCopy.length && this.state.newSelection === null && !this.state.annotatingPage && !this.state.showFilter ? (
                 <div className="whoops">
                   There's nothing here! Try
                   <button className="ModifyFilter" onClick={this.openFilter}>
