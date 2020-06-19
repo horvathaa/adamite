@@ -9,10 +9,19 @@ import profile from '../../../../assets/img/SVGs/Profile.svg';
 import { GoThreeBars } from 'react-icons/go';
 // import '../../../Background/test.html';
 import { useState } from 'react';
+import { BsFilePlus } from 'react-icons/bs';
 
 import './Title.css';
 
-
+const addAnnotationToggle = React.forwardRef(({ children, onClick }, ref) => (
+  <a ref={ref}
+    onClick={(e) => {
+      e.preventDefault();
+      onClick(e);
+    }}><BsFilePlus className="profile" />
+    {children}
+  </a>
+));
 
 export default class Title extends React.Component {
   constructor(props) {
@@ -22,7 +31,8 @@ export default class Title extends React.Component {
     this.onMouseEnter = this.onMouseEnter.bind(this);
     this.onMouseLeave = this.onMouseLeave.bind(this);
     this.state = {
-      dropdownOpen: false
+      dropdownOpen: false,
+      newAnnotationDropDownOpen: false
     };
     this.currentUser = this.props.currentUser;
   }
@@ -64,6 +74,19 @@ export default class Title extends React.Component {
               <div className="col">
                 <div className="row2">
                   <div className="col2 ">
+                    <div className="NewAnnotationButtonContainer">
+                      <Dropdown className="Filter" >
+                        <Dropdown.Toggle as={addAnnotationToggle} id="dropdown-basic">
+
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu >
+                          <Dropdown.Item as="button" onSelect={this.props.handleShowAnnotatePage}>
+                            Add Page Annotation
+                        </Dropdown.Item>
+                        </Dropdown.Menu>
+                      </Dropdown>
+                    </div>
+
                     <Dropdown onMouseOver={this.onMouseEnter} onMouseLeave={this.onMouseLeave} show={this.state.dropdownOpen} toggle={this.toggle.toString()}>
                       <Dropdown.Toggle id="dropdown-menu" className="vertical-center">
                         <img src={profile} alt="profile" className="profile" />
@@ -75,6 +98,7 @@ export default class Title extends React.Component {
                       </Dropdown.Menu>
 
                     </Dropdown>
+
 
                   </div>
                 </div>

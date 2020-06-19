@@ -16,6 +16,7 @@
 .env.test.local
 .env.production.local
 /out
+.vscode
 
 # secrets
 secrets.*.js
