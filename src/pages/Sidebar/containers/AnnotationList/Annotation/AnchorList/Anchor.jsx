@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
-import { FaFont, FaExternalLinkAlt } from 'react-icons/fa';
-import { RiEarthLine } from 'react-icons/ri';
+import { FaExternalLinkAlt } from 'react-icons/fa';
+import { GrMap } from 'react-icons/gr';
+import { BsFileEarmarkText } from 'react-icons/bs';
 import '../Annotation.css';
 import './Anchor.css';
 
@@ -68,10 +69,10 @@ class Anchor extends Component {
         const { currentUrl, collapsed, url, anchorContent, pageAnchor } = this.props;
         let anchorIcon;
         if (pageAnchor) {
-            anchorIcon = <RiEarthLine className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />;
+            anchorIcon = <BsFileEarmarkText className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />;
         }
         else if (url === currentUrl) {
-            anchorIcon = <FaFont className="AnchorIcon" onClick={this.handleOnLocalOnClick} />;
+            anchorIcon = <GrMap className="AnchorIcon" onClick={this.handleOnLocalOnClick} />;
         }
         else {
             anchorIcon = <FaExternalLinkAlt className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />;

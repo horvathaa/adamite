@@ -209,10 +209,9 @@ class Sidebar extends React.Component {
     return annotations;
   }
 
-  handleShowAnnotatePage = (event) => {
+  handleShowAnnotatePage = () => {
     this.setState({ annotatingPage: true });
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-      console.log(tabs[0]);
       this.setState({ pageName: tabs[0].title });
     });
   }
@@ -430,7 +429,7 @@ class Sidebar extends React.Component {
     );
     return (
       <div className="SidebarContainer" >
-        <Title currentUser={currentUser} />
+        <Title currentUser={currentUser} handleShowAnnotatePage={this.handleShowAnnotatePage} />
         {currentUser === null && <Authentication />}
         {currentUser !== null && (
           <div>
@@ -445,13 +444,6 @@ class Sidebar extends React.Component {
               />
             </div>
             <div>
-              <div className="AnnotateButtonRow">
-                {!this.state.showFilter && (
-                  <button className="AnnotatePage" onClick={this.handleShowAnnotatePage} disabled={this.state.newSelection !== null && !this.state.annotatingPage}>
-                    Annotate Page
-                  </button>
-                )}
-              </div>
               {!this.state.showFilter && <FilterSummary filter={this.state.filterSelection} />}
               {this.state.showFilter &&
                 <Filter applyFilter={this.applyFilter}
