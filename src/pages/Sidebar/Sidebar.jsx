@@ -178,7 +178,7 @@ class Sidebar extends React.Component {
       ) {
         this.setState({ annotations: request.payload })
         this.requestFilterUpdate();
-        console.log("HERE is johnnnnn", request.payload)
+        // console.log("HERE is johnnnnn", request.payload)
       }
     });
   }
