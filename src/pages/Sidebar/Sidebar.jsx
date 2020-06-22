@@ -214,7 +214,15 @@ class Sidebar extends React.Component {
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
       this.setState({ pageName: tabs[0].title });
     });
-  }
+  };
+
+  handlePinnedAnnotation = (id, pinned) => {
+    let annotation = this.state.annotations.filter(anno => anno.id === id);
+    annotation[0].pinned = pinned;
+    let remainingAnnos = this.state.annotations.filter(anno => anno.id !== id);
+    remainingAnnos.push(...annotation);
+    this.setState({ annotations: remainingAnnos });
+  };
 
   handleSearchBarInputText = (event) => {
     let inputText = event.target.value;
@@ -225,7 +233,7 @@ class Sidebar extends React.Component {
 
   handleShowFilter = () => {
     this.setState({ showFilter: !this.state.showFilter });
-  }
+  };
 
   clearSearchBoxInputText = () => {
     this.setState({ searchBarInputText: '' });
@@ -263,6 +271,7 @@ class Sidebar extends React.Component {
   }
 
   checkTimeRange(annotation, timeRange) {
+    console.log('pinned?', annotation.pinned);
     if (timeRange === null || timeRange === 'all') {
       return true;
     }
@@ -486,7 +495,8 @@ class Sidebar extends React.Component {
                   <AnnotationList annotations={filteredAnnotationsCopy}
                     currentUser={currentUser}
                     url={this.state.url}
-                    requestFilterUpdate={this.requestChildAnchorFilterUpdate} />
+                    requestFilterUpdate={this.requestChildAnchorFilterUpdate}
+                    notifyParentOfPinning={this.handlePinnedAnnotation} />
                 )}
             </div>
           </div>

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
 import { FaExternalLinkAlt } from 'react-icons/fa';
-import { GrMap } from 'react-icons/gr';
+import { FiMapPin } from 'react-icons/fi';
 import { BsFileEarmarkText } from 'react-icons/bs';
 import '../Annotation.css';
 import './Anchor.css';
@@ -72,7 +72,7 @@ class Anchor extends Component {
             anchorIcon = <BsFileEarmarkText className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />;
         }
         else if (url === currentUrl) {
-            anchorIcon = <GrMap className="AnchorIcon" onClick={this.handleOnLocalOnClick} />;
+            anchorIcon = <FiMapPin className="AnchorIcon" onClick={this.handleOnLocalOnClick} />;
         }
         else {
             anchorIcon = <FaExternalLinkAlt className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />;

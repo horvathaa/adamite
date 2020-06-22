@@ -4,6 +4,11 @@ import Annotation from './Annotation/Annotation';
 import './AnnotationList.css';
 
 class AnnotationList extends Component {
+
+  notifyParentOfPinning = (id, pinned) => {
+    this.props.notifyParentOfPinning(id, pinned);
+  }
+
   render() {
     const { annotations, currentUser } = this.props;
 
@@ -45,6 +50,8 @@ class AnnotationList extends Component {
               url={annotation.url}
               currentUrl={this.props.url}
               tags={annotation.tags}
+              pinned={annotation.pinned}
+              notifyParentOfPinning={this.notifyParentOfPinning}
             />
           );
         })}

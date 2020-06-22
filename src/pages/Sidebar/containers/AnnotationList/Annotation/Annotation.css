@@ -339,3 +339,12 @@
   display: flex;
   justify-content: flex-end;
 }
+
+.col2 {
+  display: flex;
+}
+
+.PinContainer {
+  display: inline-flex;
+  padding: 4px 4px 0px 0px;
+}
