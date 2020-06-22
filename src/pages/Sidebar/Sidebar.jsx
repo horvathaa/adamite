@@ -217,11 +217,11 @@ class Sidebar extends React.Component {
   };
 
   handlePinnedAnnotation = (id, pinned) => {
-    let annotation = this.state.annotations.filter(anno => anno.id === id);
+    let annotation = this.state.filteredAnnotations.filter(anno => anno.id === id);
     annotation[0].pinned = pinned;
-    let remainingAnnos = this.state.annotations.filter(anno => anno.id !== id);
+    let remainingAnnos = this.state.filteredAnnotations.filter(anno => anno.id !== id);
     remainingAnnos.push(...annotation);
-    this.setState({ annotations: remainingAnnos });
+    this.setState({ filteredAnnotations: remainingAnnos });
   };
 
   handleSearchBarInputText = (event) => {
@@ -240,14 +240,14 @@ class Sidebar extends React.Component {
   };
 
   checkAnnoType(annotation, annoType) {
-    if (!annoType.length || annoType === 'all') {
+    if (!annoType.length || annoType === 'all' || annotation.pinned) {
       return true;
     }
     return this.containsObject(annotation.type, annoType);
   }
 
   async checkSiteScope(annotation, siteScope) {
-    if (!siteScope.length) {
+    if (!siteScope.length || annotation.pinned) {
       return true;
     }
     if (siteScope.includes('onPage') && !siteScope.includes('acrossWholeSite')) {
@@ -271,8 +271,7 @@ class Sidebar extends React.Component {
   }
 
   checkTimeRange(annotation, timeRange) {
-    console.log('pinned?', annotation.pinned);
-    if (timeRange === null || timeRange === 'all') {
+    if (timeRange === null || timeRange === 'all' || annotation.pinned) {
       return true;
     }
     if (timeRange === 'day') {
@@ -293,7 +292,7 @@ class Sidebar extends React.Component {
   }
 
   checkUserScope(annotation, userScope) {
-    if (!userScope.length) {
+    if (!userScope.length || annotation.pinned) {
       return true;
     }
     if (userScope.includes('onlyMe')) {
@@ -305,7 +304,7 @@ class Sidebar extends React.Component {
   }
 
   checkTags(annotation, tags) {
-    if (!tags.length) {
+    if (!tags.length || annotation.pinned) {
       return true;
     }
     return tags.some(tag => annotation.tags.includes(tag));

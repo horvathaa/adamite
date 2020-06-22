@@ -183,11 +183,21 @@ class Annotation extends Component {
 
   }
 
+  transmitPinToParent = () => {
+    this.handlePin().then(pinState => { this.props.notifyParentOfPinning(this.props.id, pinState) });
+  }
+
   handlePin = () => {
-    this.setState({ pinned: !this.state.pinned });
-    console.log('pinned', this.state.pinned);
-    console.log('id', this.props.id);
-    this.props.notifyParentOfPinning(this.props.id, this.state.pinned);
+    return new Promise((resolve, reject) => {
+      const { pinned } = this.state;
+      if (pinned) {
+        this.setState({ pinned: false });
+      }
+      else {
+        this.setState({ pinned: true });
+      }
+      resolve(!pinned);
+    });
   }
 
   cancelButtonHandler = () => {
@@ -211,7 +221,6 @@ class Annotation extends Component {
     const { anchor, idx, id, active, authorId, currentUser, trashed, timeStamp, url, currentUrl, childAnchor, xpath } = this.props;
     const { editing, collapsed, tags, content, annotationType, author, pinned } = this.state;
     let pin;
-    console.log('pinned in render', pinned);
     if (pinned) {
       pin = <AiFillPushpin />;
     }
@@ -256,7 +265,7 @@ class Annotation extends Component {
                 </div>
                 <div className="row">
                   <div className="col2">
-                    <div className="PinContainer" onClick={this.handlePin}>
+                    <div className="PinContainer" onClick={this.transmitPinToParent}>
                       {pin}
                     </div>
                     {currentUser.uid === authorId ? (
