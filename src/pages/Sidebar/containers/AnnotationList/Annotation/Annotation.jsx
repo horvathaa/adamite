@@ -190,12 +190,7 @@ class Annotation extends Component {
   handlePin = () => {
     return new Promise((resolve, reject) => {
       const { pinned } = this.state;
-      if (pinned) {
-        this.setState({ pinned: false });
-      }
-      else {
-        this.setState({ pinned: true });
-      }
+      this.setState({ pinned: !pinned });
       resolve(!pinned);
     });
   }
