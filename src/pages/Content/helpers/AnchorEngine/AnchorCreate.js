@@ -101,6 +101,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
 });
 
+export const removeAnnotationWidget = (event) => {
+    chrome.runtime.sendMessage({
+        msg: 'CONTENT_NOT_SELECTED',
+        from: 'content',
+    });
+}
+
 export const createAnnotation = (event) => {
     var selection = window.getSelection();
 

@@ -196,6 +196,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       payload: request.payload,
     });
   }
+  else if (request.from === 'content' && request.msg === 'CONTENT_NOT_SELECTED') {
+    chrome.tabs.sendMessage(sender.tab.id, {
+      msg: 'CONTENT_NOT_SELECTED',
+      from: 'background',
+      payload: request.payload,
+    });
+  }
   else if (request.from === 'content' && request.msg === 'REQUEST_PAGINATED_ACROSS_SITE_ANNOTATIONS') {
     const { hostname, url } = request.payload;
     let cursor = undefined;

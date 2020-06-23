@@ -2,7 +2,7 @@
 //import './AnchorEngine/AnchorCreate';
 import { updateXpaths, removeSpans } from './AnchorEngine/AnchorDestroy';
 import { highlightRange } from './AnchorEngine/AnchorHighlight';
-import { createAnnotation } from './AnchorEngine/AnchorCreate';
+import { createAnnotation, removeAnnotationWidget } from './AnchorEngine/AnchorCreate';
 
 
 // chrome.runtime.sendMessage(
@@ -23,6 +23,10 @@ import { createAnnotation } from './AnchorEngine/AnchorCreate';
 document.addEventListener('mouseup', event => {
     createAnnotation(event);
 });
+
+document.addEventListener('mousedown', event => {
+    removeAnnotationWidget(event);
+})
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 

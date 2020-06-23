@@ -124,6 +124,11 @@ class Sidebar extends React.Component {
           xpath: xpath,
         });
       } else if (
+        request.from === 'background' &&
+        request.msg === 'CONTENT_NOT_SELECTED'
+      ) {
+        this.resetNewSelection();
+      } else if (
         request.from === 'content' &&
         request.msg === 'ANCHOR_CLICKED'
       ) {
