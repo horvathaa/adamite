@@ -11,6 +11,19 @@ import {
   getAnnotationsByTag
 } from '../../firebase/index';
 
+// helper method from
+// https://stackoverflow.com/questions/18773778/create-array-of-unique-objects-by-property
+function removeDuplicates(annotationArray) {
+  const flags = new Set();
+  const annotations = annotationArray.filter(anno => {
+    if (flags.has(anno.id)) {
+      return false;
+    }
+    flags.add(anno.id);
+    return true;
+  });
+  return annotations;
+}
 
 let unsubscribeAnnotations = null;
 var pageannotationsActive = [];
@@ -55,7 +68,12 @@ function promiseToComeBack(url) {
         });
       });
       var pos = pageannotationsActive.map(function (e) { return e.url; }).indexOf(url);
-      pageannotationsActive[pos].annotations = annotations;
+      let host = new URL(url).hostname;
+      if (annotationsAcrossWholeSite[host] !== undefined) {
+        annotations.concat(annotationsAcrossWholeSite[host].annotations);
+        annotations = removeDuplicates(annotations);
+      }
+      pageannotationsActive[pos].annotations = annotations.filter(anno => anno.url === url);
       broadcastAnnotationsUpdated("CONTENT_UPDATED", annotations)
       chrome.tabs.query({}, tabs => {
 
@@ -108,6 +126,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       AnnotationType: content.annotationType, // could be other types (string)
       url,
       hostname,
+      pinned: false,
       AnnotationTags: content.tags,
       childAnchor: []
     }).then(value => {
@@ -129,6 +148,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       AnnotationTags: newAnno.tags,
       AnnotationAnchorContent: anchor,
       offsets: offsets,
+      pinned: false,
       hostname: hostname
     }).then(value => {
       console.log(value);

@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
-import { FaCaretDown, FaCaretUp, FaTrash, FaEdit, FaFont, FaExternalLinkAlt, FaHamburger } from 'react-icons/fa';
+import { FaFont, FaExternalLinkAlt } from 'react-icons/fa';
+import { AiFillPushpin, AiOutlinePushpin } from 'react-icons/ai';
 import { GoThreeBars } from 'react-icons/go';
 import './Annotation.css';
 import { Dropdown } from 'react-bootstrap';
-import { checkPropTypes, string } from 'prop-types';
 import CustomTag from '../../CustomTag/CustomTag';
 import profile from '../../../../../assets/img/SVGs/Profile.svg';
 import expand from '../../../../../assets/img/SVGs/expand.svg'
@@ -32,17 +32,20 @@ class Annotation extends Component {
     annotationType: this.props.type,
     editing: false,
     id: this.props.id,
-    authorId: this.props.authorId
+    authorId: this.props.authorId,
+    pinned: this.props.pinned
   };
 
   updateData = () => {
-    let { tags, content, type, authorId } = this.props;
+    let { tags, content, type, authorId, pinned } = this.props;
     this.setState({
-      tags, content, annotationType: type, authorId
+      tags, content, annotationType: type, authorId, pinned
     });
 
   }
 
+  // probably switch to just storing text version of username in the annotation table so we cut down
+  // on this read
   async componentDidMount() {
     document.addEventListener('keydown', this.keydown, false);
     this.updateData();
@@ -58,7 +61,6 @@ class Annotation extends Component {
     }).catch(function (error) {
       console.log('could not get doc:', error);
     });
-
     this.setState({ author: user });
   }
 
@@ -66,7 +68,8 @@ class Annotation extends Component {
     if (prevProps.tags !== this.props.tags ||
       prevProps.content !== this.props.content ||
       prevProps.type !== this.props.type ||
-      prevProps.authorId !== this.props.authorId) {
+      prevProps.authorId !== this.props.authorId ||
+      prevProps.pinned !== this.props.pinned) {
       this.updateData();
     }
   }
@@ -180,6 +183,18 @@ class Annotation extends Component {
 
   }
 
+  transmitPinToParent = () => {
+    this.handlePin().then(pinState => { this.props.notifyParentOfPinning(this.props.id, pinState) });
+  }
+
+  handlePin = () => {
+    return new Promise((resolve, reject) => {
+      const { pinned } = this.state;
+      this.setState({ pinned: !pinned });
+      resolve(!pinned);
+    });
+  }
+
   cancelButtonHandler = () => {
     this.setState({ editing: false });
   }
@@ -199,7 +214,14 @@ class Annotation extends Component {
 
   render() {
     const { anchor, idx, id, active, authorId, currentUser, trashed, timeStamp, url, currentUrl, childAnchor, xpath } = this.props;
-    const { editing, collapsed, tags, content, annotationType, author } = this.state;
+    const { editing, collapsed, tags, content, annotationType, author, pinned } = this.state;
+    let pin;
+    if (pinned) {
+      pin = <AiFillPushpin />;
+    }
+    else {
+      pin = <AiOutlinePushpin />;
+    }
     if (annotationType === 'default' && !trashed) {
       return (
         <li key={idx} id={id} className={classNames({ AnnotationItem: true })}>
@@ -226,7 +248,6 @@ class Annotation extends Component {
               })}>
                 <div className="profileContainer">
                   <img src={profile} alt="profile" className="profile" />
-                  {/* <Profile className="profile" /> */}
                 </div>
                 <div className="userProfileContainer">
 
@@ -238,23 +259,24 @@ class Annotation extends Component {
                   </div>
                 </div>
                 <div className="row">
-                  {/* <div className="col">
-
-                  </div> */}
                   <div className="col2">
+                    <div className="PinContainer" onClick={this.transmitPinToParent}>
+                      {pin}
+                    </div>
                     {currentUser.uid === authorId ? (
                       <Dropdown className="HamburgerMenu">
                         <Dropdown.Toggle as={HamburgerToggle}></Dropdown.Toggle>
                         <Dropdown.Menu>
+                          <Dropdown.Item as="button" eventKey={id} onSelect={eventKey => this.handleNewAnchor(id)}>
+                            Add new anchor
+                        </Dropdown.Item>
                           <Dropdown.Item as="button" eventKey={id} onSelect={eventKey => this.handleEditClick(id)}>
                             Edit
                         </Dropdown.Item>
                           <Dropdown.Item as="button" eventKey={id} onSelect={eventKey => this.handleTrashClick(id)}>
                             Delete
                         </Dropdown.Item>
-                          <Dropdown.Item as="button" eventKey={id} onSelect={eventKey => this.handleNewAnchor(id)}>
-                            Add new anchor
-                        </Dropdown.Item>
+
                         </Dropdown.Menu>
                       </Dropdown>
                     ) : (

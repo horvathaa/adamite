@@ -63,7 +63,8 @@ export const createAnnotation = async ({
   AnnotationTags,
   offsets,
   xpath,
-  childAnchor
+  childAnchor,
+  pinned
 }) => {
   authorId = authorId ? authorId : getCurrentUserId();
   if (!authorId) {
@@ -86,7 +87,8 @@ export const createAnnotation = async ({
     tags: AnnotationTags,
     offsets,
     xpath,
-    childAnchor
+    childAnchor,
+    pinned
   };
   return db.collection(DB_COLLECTIONS.ANNOTATIONS).add(newAnnotation);
 };

@@ -298,7 +298,7 @@ class Filter extends React.Component {
                         {!this.state.tagSelect ? (
                             <div className="TagButtonPad">
                                 <button value="chooseTag" className="TagButton" onClick={e => this.handleTagSelect(e)}>
-                                    Choose tag(s) >
+                                    Choose tag(s)
                             </button>
                             </div>) : (
                                 <React.Fragment>

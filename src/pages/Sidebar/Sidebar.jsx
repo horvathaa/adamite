@@ -214,7 +214,15 @@ class Sidebar extends React.Component {
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
       this.setState({ pageName: tabs[0].title });
     });
-  }
+  };
+
+  handlePinnedAnnotation = (id, pinned) => {
+    let annotation = this.state.filteredAnnotations.filter(anno => anno.id === id);
+    annotation[0].pinned = pinned;
+    let remainingAnnos = this.state.filteredAnnotations.filter(anno => anno.id !== id);
+    remainingAnnos.push(...annotation);
+    this.setState({ filteredAnnotations: remainingAnnos });
+  };
 
   handleSearchBarInputText = (event) => {
     let inputText = event.target.value;
@@ -225,21 +233,21 @@ class Sidebar extends React.Component {
 
   handleShowFilter = () => {
     this.setState({ showFilter: !this.state.showFilter });
-  }
+  };
 
   clearSearchBoxInputText = () => {
     this.setState({ searchBarInputText: '' });
   };
 
   checkAnnoType(annotation, annoType) {
-    if (!annoType.length || annoType === 'all') {
+    if (!annoType.length || annoType === 'all' || annotation.pinned) {
       return true;
     }
     return this.containsObject(annotation.type, annoType);
   }
 
   async checkSiteScope(annotation, siteScope) {
-    if (!siteScope.length) {
+    if (!siteScope.length || annotation.pinned) {
       return true;
     }
     if (siteScope.includes('onPage') && !siteScope.includes('acrossWholeSite')) {
@@ -263,7 +271,7 @@ class Sidebar extends React.Component {
   }
 
   checkTimeRange(annotation, timeRange) {
-    if (timeRange === null || timeRange === 'all') {
+    if (timeRange === null || timeRange === 'all' || annotation.pinned) {
       return true;
     }
     if (timeRange === 'day') {
@@ -284,7 +292,7 @@ class Sidebar extends React.Component {
   }
 
   checkUserScope(annotation, userScope) {
-    if (!userScope.length) {
+    if (!userScope.length || annotation.pinned) {
       return true;
     }
     if (userScope.includes('onlyMe')) {
@@ -296,7 +304,7 @@ class Sidebar extends React.Component {
   }
 
   checkTags(annotation, tags) {
-    if (!tags.length) {
+    if (!tags.length || annotation.pinned) {
       return true;
     }
     return tags.some(tag => annotation.tags.includes(tag));
@@ -486,7 +494,8 @@ class Sidebar extends React.Component {
                   <AnnotationList annotations={filteredAnnotationsCopy}
                     currentUser={currentUser}
                     url={this.state.url}
-                    requestFilterUpdate={this.requestChildAnchorFilterUpdate} />
+                    requestFilterUpdate={this.requestChildAnchorFilterUpdate}
+                    notifyParentOfPinning={this.handlePinnedAnnotation} />
                 )}
             </div>
           </div>
