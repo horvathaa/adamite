@@ -109,6 +109,28 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         });
     }
   }
+  else if (request.msg === 'SAVE_HIGHLIGHT') {
+    let { url, anchor, xpath, offsets } = request.payload;
+    const hostname = new URL(url).hostname;
+
+    // firebase: in action
+    //content = JSON.parse(content); // consider just pass content as an object
+    createAnnotation({
+      taskId: null,
+      SharedId: null,
+      AnnotationContent: "",
+      AnnotationAnchorContent: anchor,
+      AnnotationAnchorPath: null,
+      offsets: offsets,
+      xpath: xpath,
+      AnnotationType: "highlight", // could be other types (string)
+      url,
+      hostname,
+      pinned: false,
+      AnnotationTags: [],
+      childAnchor: []
+    });
+  }
   else if (request.msg === 'SAVE_ANNOTATED_TEXT') {
     let { url, content } = request.payload;
     const hostname = new URL(url).hostname;

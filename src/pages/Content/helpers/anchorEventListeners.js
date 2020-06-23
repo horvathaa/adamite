@@ -21,7 +21,7 @@ import { createAnnotation } from './AnchorEngine/AnchorCreate';
 // );
 
 document.addEventListener('mouseup', event => {
-    createAnnotation();
+    createAnnotation(event);
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
