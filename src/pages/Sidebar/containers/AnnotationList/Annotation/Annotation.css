@@ -360,3 +360,24 @@
   display: inline-flex;
   padding: 4px 4px 0px 0px;
 }
+
+.ReplyField {
+  padding: 4px;
+}
+
+.Publish-Button{
+  position: relative;
+  background-color: #484848d9 ;
+  color: whitesmoke ;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  font-weight: bold;
+  line-height: 1.5;
+  border-radius: 0.2rem;
+  
+}
+
+.Publish-Button.disabled, .Publish-Button:disabled {
+  /* opacity: 0.65; */
+  filter: brightness(.4);
+}

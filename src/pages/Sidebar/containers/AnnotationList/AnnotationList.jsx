@@ -52,6 +52,7 @@ class AnnotationList extends Component {
               tags={annotation.tags}
               pinned={annotation.pinned}
               notifyParentOfPinning={this.notifyParentOfPinning}
+              replies={annotation.replies}
             />
           );
         })}

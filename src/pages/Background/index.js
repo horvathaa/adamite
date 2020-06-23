@@ -8,8 +8,10 @@ import {
   createAnnotation,
   updateAnnotationById,
   getAnnotationsAcrossSite,
-  getAnnotationsByTag
+  getAnnotationsByTag,
+  getCurrentUser
 } from '../../firebase/index';
+import firebase from '../../firebase/firebase';
 
 // helper method from
 // https://stackoverflow.com/questions/18773778/create-array-of-unique-objects-by-property
@@ -74,6 +76,7 @@ function promiseToComeBack(url) {
         annotations = removeDuplicates(annotations);
       }
       pageannotationsActive[pos].annotations = annotations.filter(anno => anno.url === url);
+      console.log('when is this getting called', annotations);
       broadcastAnnotationsUpdated("CONTENT_UPDATED", annotations)
       chrome.tabs.query({}, tabs => {
 
@@ -189,7 +192,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       //   );
       // });
     });
-  } else if (request.from === 'content' && request.msg === 'CONTENT_SELECTED') {
+  } else if (request.msg === 'ADD_NEW_REPLY') {
+    const { id, reply } = request.payload;
+    const replies = Object.assign({}, {
+      replyContent: reply,
+      author: getCurrentUser().email,
+      timestamp: new Date().getTime(),
+      answer: false
+    });
+    updateAnnotationById(id, {
+      replies: firebase.firestore.FieldValue.arrayUnion({
+        ...replies
+      })
+    });
+  }
+  else if (request.from === 'content' && request.msg === 'CONTENT_SELECTED') {
     chrome.tabs.sendMessage(sender.tab.id, {
       msg: 'CONTENT_SELECTED',
       from: 'background',

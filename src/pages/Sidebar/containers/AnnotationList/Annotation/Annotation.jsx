@@ -1,33 +1,13 @@
 import React, { Component } from 'react';
-import classNames from 'classnames';
-import { FaFont, FaExternalLinkAlt } from 'react-icons/fa';
 import { AiFillPushpin, AiOutlinePushpin } from 'react-icons/ai';
-import { GoThreeBars } from 'react-icons/go';
 import './Annotation.css';
-import { Dropdown } from 'react-bootstrap';
-import CustomTag from '../../CustomTag/CustomTag';
-import profile from '../../../../../assets/img/SVGs/Profile.svg';
-import expand from '../../../../../assets/img/SVGs/expand.svg'
 import { deleteAnnotationForeverById, updateAnnotationById, getUserProfileById } from '../../../../../firebase';
-import CardWrapper from '../../CardWrapper/CardWrapper'
-import AnchorList from './AnchorList/AnchorList';
-import Anchor from './AnchorList/Anchor';
 import DefaultAnnotation from './DefaultAnnotation';
 import ToDoAnnotation from './ToDoAnnotation';
 import HighlightAnnotation from './HighlightAnnnotation';
 import IssueAnnotation from './IssueAnnotation';
 import QuestionAnswerAnnotation from './QuestionAnswerAnnotation';
 
-
-const HamburgerToggle = React.forwardRef(({ children, onClick }, ref) => (
-  <a ref={ref}
-    onClick={(e) => {
-      e.preventDefault();
-      onClick(e);
-    }}><GoThreeBars className="Icon" />
-    {children}
-  </a>
-));
 
 class Annotation extends Component {
 
@@ -234,7 +214,7 @@ class Annotation extends Component {
   }
 
   render() {
-    const { anchor, idx, id, active, authorId, currentUser, trashed, timeStamp, url, currentUrl, childAnchor, xpath } = this.props;
+    const { anchor, idx, id, active, authorId, currentUser, trashed, timeStamp, url, currentUrl, childAnchor, xpath, replies } = this.props;
     const { editing, collapsed, tags, content, annotationType, author, pinned } = this.state;
     let pin;
     if (pinned) {
@@ -357,6 +337,7 @@ class Annotation extends Component {
           annotationType={annotationType}
           annotationContent={content}
           editing={editing}
+          replies={replies}
           cancelButtonHandler={this.cancelButtonHandler}
           submitButtonHandler={this.submitButtonHandler}
           handleExpandCollapse={this.handleExpandCollapse}

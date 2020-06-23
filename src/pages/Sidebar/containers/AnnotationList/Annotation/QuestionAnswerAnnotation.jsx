@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
 import { GoThreeBars } from 'react-icons/go';
+import { BsReply } from 'react-icons/bs';
 import './Annotation.css';
 import { Dropdown } from 'react-bootstrap';
 import CustomTag from '../../CustomTag/CustomTag';
@@ -9,7 +10,8 @@ import expand from '../../../../../assets/img/SVGs/expand.svg'
 import CardWrapper from '../../CardWrapper/CardWrapper'
 import AnchorList from './AnchorList/AnchorList';
 import Anchor from './AnchorList/Anchor';
-
+import RichTextEditor from '../../RichTextEditor/RichTextEditor';
+import Reply from './Reply/Reply';
 
 const HamburgerToggle = React.forwardRef(({ children, onClick }, ref) => (
     <a ref={ref}
@@ -23,10 +25,40 @@ const HamburgerToggle = React.forwardRef(({ children, onClick }, ref) => (
 
 class QuestionAnswerAnnotation extends Component {
 
+    constructor(props) {
+        super(props);
+        this.replyChangeHandler = this.replyChangeHandler.bind(this);
+    }
+
+    state = {
+        replying: false,
+        reply: ""
+    }
+
+    replyChangeHandler = (value) => {
+        this.setState({ reply: value });
+    }
+
+    handleReply = () => {
+        this.setState({ replying: true });
+    }
+
+    submitReply = () => {
+        chrome.runtime.sendMessage({
+            msg: 'ADD_NEW_REPLY',
+            payload: {
+                id: this.props.id,
+                reply: this.state.reply,
+            }
+        });
+        this.setState({ replying: false });
+    }
+
     render() {
         const { idx, id, collapsed, author, pin, currentUser, authorId,
             childAnchor, currentUrl, url, anchor, xpath, tags, annotationType,
-            annotationContent, editing } = this.props;
+            annotationContent, editing, replies } = this.props;
+        const { replying } = this.state;
         return (
             <li key={idx} id={id} className={classNames({ AnnotationItem: true })}>
                 <div
@@ -64,6 +96,9 @@ class QuestionAnswerAnnotation extends Component {
                             </div>
                             <div className="row">
                                 <div className="col2">
+                                    <div className="ReplyContainer" onClick={this.handleReply}>
+                                        <BsReply />
+                                    </div>
                                     <div className="PinContainer" onClick={this.props.transmitPinToParent}>
                                         {pin}
                                     </div>
@@ -133,7 +168,7 @@ class QuestionAnswerAnnotation extends Component {
                             collapsed={collapsed} />
                     </React.Fragment>
 
-                    {tags.length && !collapsed && !editing ? (
+                    {tags.length && !collapsed && !editing && !replying ? (
                         <div className={classNames({
                             TagRow: true
                         })}>
@@ -148,7 +183,7 @@ class QuestionAnswerAnnotation extends Component {
 
                         </div>
                     ) : (null)}
-                    {collapsed ? (
+                    {collapsed && !replying ? (
                         <div className="ExpandCollapse">
                             <img src={expand} alt="Expand" onClick={_ => this.props.handleExpandCollapse('expand')} className="Icon" />
                         </div>
@@ -160,7 +195,27 @@ class QuestionAnswerAnnotation extends Component {
                             </React.Fragment>
                         )
                     }
+                    {replying &&
+                        <div className="ReplyField">
+                            <RichTextEditor annotationContent={undefined} annotationChangeHandler={this.replyChangeHandler} />
+                            <button onClick={this.submitReply} className="Publish-Button">Submit</button>
+                        </div>
+                    }
+                    {replies !== undefined && replies.length && !collapsed && !editing && !replying ? (
+                        <div className="Replies">
+                            <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
+                                {replies.map((reply, idx) => {
+                                    return (
+                                        <Reply idx={idx} content={reply.replyContent} author={reply.author} timeStamp={reply.timestamp} />
+                                    )
+                                }
+                                )}
+                            </ul>
+
+                        </div>
+                    ) : (null)}
                 </div>
+
 
                 <div
                     className={classNames({
