@@ -15,6 +15,8 @@ import Anchor from './AnchorList/Anchor';
 import DefaultAnnotation from './DefaultAnnotation';
 import ToDoAnnotation from './ToDoAnnotation';
 import HighlightAnnotation from './HighlightAnnnotation';
+import IssueAnnotation from './IssueAnnotation';
+import QuestionAnswerAnnotation from './QuestionAnswerAnnotation';
 
 
 const HamburgerToggle = React.forwardRef(({ children, onClick }, ref) => (
@@ -107,6 +109,14 @@ class Annotation extends Component {
       trashed: true
     }
     );
+  }
+
+  handleExpertReview = () => {
+    // could imagine having user's who are deemed "experts" in certain APIs or are documentation writers
+    // sort of like how Google had code reviewers with "readability" in certain languages and could provide
+    // expert opinion - this would require us to know a bit more about the current API we're looking at (may be able to ascertain
+    // from URL + anchor content)
+    console.log('handled');
   }
 
   handleUnArchive(e) {
@@ -325,282 +335,63 @@ class Annotation extends Component {
     }
     else if (annotationType === 'question') {
       return (
-        <li key={idx} id={id} className={classNames({ AnnotationItem: true })}>
-          <div
-            className={classNames({
-              AnnotationContainerPad: true,
-              AnnotationPadActive: true,
-            })}
-          >
-            <div
-              className={classNames({ AnnotationContainerLeftPad: true })}
-            ></div>
-          </div>
-          <div id={id}
-            className={classNames({
-              AnnotationContainer: true,
-              ActiveAnnotationContainer: active,
-            })}
-          >
-            {!this.state.collapsed ? (
-              <div className={" container " + classNames({
-                Header: true,
-                Truncated: collapsed,
-              })}>
-                <div className="profileContainer">
-                  <img src={profile} alt="profile" className="profile" />
-                  {/* <Profile className="profile" /> */}
-                </div>
-                <div className="userProfileContainer">
-
-                  <div className="author">
-                    {author}
-                  </div>
-                  <div className="timestamp">
-                    {this.formatTimestamp(timeStamp)}
-                  </div>
-                </div>
-                <div className="row">
-                  {/* <div className="col">
-
-                  </div> */}
-                  <div className="col2">
-
-                    {currentUser.uid === authorId && !collapsed ? (
-                      <Dropdown className="HamburgerMenu">
-                        <Dropdown.Toggle as={HamburgerToggle}></Dropdown.Toggle>
-                        <Dropdown.Menu>
-                          <Dropdown.Item as="button" eventKey={id} onSelect={eventKey => this.handleEditClick(id)}>
-                            Edit
-                        </Dropdown.Item>
-                          <Dropdown.Item as="button" eventKey={id} onSelect={eventKey => this.handleTrashClick(id)}>
-                            Delete
-                        </Dropdown.Item>
-                        </Dropdown.Menu>
-                      </Dropdown>
-                    ) : (null)}
-                  </div>
-                </div>
-              </div>
-            ) : (null)}
-            <div
-              className={classNames({
-                AnchorContainer: true,
-                Truncated: collapsed
-              })}
-            >
-              <div className="AnchorIconContainer">
-                {currentUrl === url ? (
-                  <FaFont className="AnchorIcon" />
-                ) : (<FaExternalLinkAlt className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />)}
-              </div>
-              <div className="AnchorTextContainer">
-                {anchor}
-              </div>
-            </div>
-
-            <React.Fragment>
-              <CardWrapper tags={tags}
-                annotationType={annotationType}
-                annotationContent={content}
-                edit={editing}
-                pageAnnotation={anchor} id={id}
-                cancelButtonHandler={this.cancelButtonHandler}
-                submitButtonHandler={this.submitButtonHandler}
-                elseContent={content}
-                collapsed={collapsed} />
-            </React.Fragment>
-
-            {tags.length && !collapsed && !editing ? (
-              <div className={classNames({
-                TagRow: true
-              })}>
-                <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
-                  {tags.map((tagContent, idx) => {
-                    return (
-                      <CustomTag idx={idx} content={tagContent} deleteTag={this.deleteTag} editing={editing} />
-                    )
-                  }
-                  )}
-                </ul>
-
-              </div>
-            ) : (null)}
-            {collapsed ? (
-              <div className="ExpandCollapse">
-                <img src={expand} alt="Expand" onClick={_ => this.handleExpandCollapse('expand')} className="Icon" />
-                {/* <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} className="Icon" /> */}
-              </div>
-            ) : (
-                <React.Fragment>
-                  <div className="ExpandCollapse">
-                    {/* <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} className="Icon" /> */}
-                    <img src={expand} id="collapse" alt="Collapse" onClick={_ => this.handleExpandCollapse('collapse')} className="Icon" />
-                  </div>
-
-                </React.Fragment>
-              )
-            }
-          </div>
-
-          <div
-            className={classNames({
-              AnnotationContainerPad: true,
-              AnnotationPadActive: true,
-            })}
-          >
-
-            <div
-              className={classNames({ AnnotationContainerRightPad: true })}
-            ></div>
-          </div>
-          <div
-            className={classNames({
-              AnnotationContainerPad: true,
-              AnnotationPadActive: true,
-            })}
-          ></div>
-        </li>
+        <QuestionAnswerAnnotation
+          idx={idx}
+          id={id}
+          collapsed={collapsed}
+          author={author}
+          formatTimestamp={this.formatTimestamp}
+          pin={pin}
+          transmitPinToParent={this.transmitPinToParent}
+          currentUser={currentUser}
+          authorId={authorId}
+          handleNewAnchor={this.handleNewAnchor}
+          handleEditClick={this.handleEditClick}
+          handleTrashClick={this.handleTrashClick}
+          childAnchor={childAnchor}
+          currentUrl={currentUrl}
+          url={url}
+          anchor={anchor}
+          xpath={xpath}
+          tags={tags}
+          annotationType={annotationType}
+          annotationContent={content}
+          editing={editing}
+          cancelButtonHandler={this.cancelButtonHandler}
+          submitButtonHandler={this.submitButtonHandler}
+          handleExpandCollapse={this.handleExpandCollapse}
+        />
       );
     }
     else if (annotationType === 'issue') {
       return (
-        <li key={idx} id={id} className={classNames({ AnnotationItem: true })}>
-          <div
-            className={classNames({
-              AnnotationContainerPad: true,
-              AnnotationPadActive: true,
-            })}
-          >
-            <div
-              className={classNames({ AnnotationContainerLeftPad: true })}
-            ></div>
-          </div>
-          <div id={id}
-            className={classNames({
-              AnnotationContainer: true,
-              ActiveAnnotationContainer: active,
-            })}
-          >
-            {!this.state.collapsed ? (
-              <div className={" container " + classNames({
-                Header: true,
-                Truncated: collapsed,
-              })}>
-                <div className="profileContainer">
-                  <img src={profile} alt="profile" className="profile" />
-                  {/* <Profile className="profile" /> */}
-                </div>
-                <div className="userProfileContainer">
-
-                  <div className="author">
-                    {author}
-                  </div>
-                  <div className="timestamp">
-                    {this.formatTimestamp(timeStamp)}
-                  </div>
-                </div>
-                <div className="row">
-                  {/* <div className="col">
-
-                </div> */}
-                  <div className="col2">
-
-                    {currentUser.uid === authorId && !collapsed ? (
-                      <Dropdown className="HamburgerMenu">
-                        <Dropdown.Toggle as={HamburgerToggle}></Dropdown.Toggle>
-                        <Dropdown.Menu>
-                          <Dropdown.Item as="button" eventKey={id} onSelect={eventKey => this.handleEditClick(id)}>
-                            Edit
-                      </Dropdown.Item>
-                          <Dropdown.Item as="button" eventKey={id} onSelect={eventKey => this.handleTrashClick(id)}>
-                            Delete
-                      </Dropdown.Item>
-                        </Dropdown.Menu>
-                      </Dropdown>
-                    ) : (null)}
-                  </div>
-                </div>
-              </div>
-            ) : (null)}
-            <div
-              className={classNames({
-                AnchorContainer: true,
-                Truncated: collapsed
-              })}
-            >
-              <div className="AnchorIconContainer">
-                {currentUrl === url ? (
-                  <FaFont className="AnchorIcon" />
-                ) : (<FaExternalLinkAlt className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />)}
-              </div>
-              <div className="AnchorTextContainer">
-                {anchor}
-              </div>
-            </div>
-
-            <React.Fragment>
-              <CardWrapper tags={tags}
-                annotationType={annotationType}
-                annotationContent={content}
-                edit={editing}
-                pageAnnotation={anchor} id={id}
-                cancelButtonHandler={this.cancelButtonHandler}
-                submitButtonHandler={this.submitButtonHandler}
-                elseContent={content}
-                collapsed={collapsed} />
-            </React.Fragment>
-
-            {tags.length && !collapsed && !editing ? (
-              <div className={classNames({
-                TagRow: true
-              })}>
-                <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
-                  {tags.map((tagContent, idx) => {
-                    return (
-                      <CustomTag idx={idx} content={tagContent} deleteTag={this.deleteTag} editing={editing} />
-                    )
-                  }
-                  )}
-                </ul>
-
-              </div>
-            ) : (null)}
-            {collapsed ? (
-              <div className="ExpandCollapse">
-                <img src={expand} alt="Expand" onClick={_ => this.handleExpandCollapse('expand')} className="Icon" />
-                {/* <FaCaretDown onClick={_ => this.handleExpandCollapse('expand')} className="Icon" /> */}
-              </div>
-            ) : (
-                <React.Fragment>
-                  <div className="ExpandCollapse">
-                    {/* <FaCaretUp onClick={_ => this.handleExpandCollapse('collapse')} className="Icon" /> */}
-                    <img src={expand} id="collapse" alt="Collapse" onClick={_ => this.handleExpandCollapse('collapse')} className="Icon" />
-                  </div>
-
-                </React.Fragment>
-              )
-            }
-          </div>
-
-          <div
-            className={classNames({
-              AnnotationContainerPad: true,
-              AnnotationPadActive: true,
-            })}
-          >
-
-            <div
-              className={classNames({ AnnotationContainerRightPad: true })}
-            ></div>
-          </div>
-          <div
-            className={classNames({
-              AnnotationContainerPad: true,
-              AnnotationPadActive: true,
-            })}
-          ></div>
-        </li>
+        <IssueAnnotation
+          idx={idx}
+          id={id}
+          collapsed={collapsed}
+          author={author}
+          formatTimestamp={this.formatTimestamp}
+          pin={pin}
+          transmitPinToParent={this.transmitPinToParent}
+          currentUser={currentUser}
+          authorId={authorId}
+          handleNewAnchor={this.handleNewAnchor}
+          handleEditClick={this.handleEditClick}
+          handleTrashClick={this.handleTrashClick}
+          childAnchor={childAnchor}
+          currentUrl={currentUrl}
+          url={url}
+          anchor={anchor}
+          xpath={xpath}
+          tags={tags}
+          annotationType={annotationType}
+          annotationContent={content}
+          editing={editing}
+          handleExpertReview={this.handleExpertReview}
+          cancelButtonHandler={this.cancelButtonHandler}
+          submitButtonHandler={this.submitButtonHandler}
+          handleExpandCollapse={this.handleExpandCollapse}
+        />
       );
     }
     else {
@@ -616,7 +407,6 @@ class Annotation extends Component {
           ) : (null)
           }
         </React.Fragment>
-
       );
     }
   }

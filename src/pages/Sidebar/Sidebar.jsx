@@ -2,7 +2,6 @@ import React from 'react';
 import './Sidebar.css';
 import filter from '../../assets/img/SVGs/filter.svg';
 import classNames from 'classnames';
-// import { FaFilter } from 'react-icons/fa';
 import Title from './containers/Title/Title';
 import Authentication from './containers//Authentication//Authentication';
 import AnnotationList from './containers/AnnotationList/AnnotationList';
@@ -127,6 +126,8 @@ class Sidebar extends React.Component {
         request.from === 'background' &&
         request.msg === 'CONTENT_NOT_SELECTED'
       ) {
+        // should check whether annotation has user-added content or not - will need to request
+        // child annotation's state
         this.resetNewSelection();
       } else if (
         request.from === 'content' &&
