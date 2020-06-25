@@ -249,6 +249,7 @@ class Annotation extends Component {
         cancelButtonHandler={this.cancelButtonHandler}
         submitButtonHandler={this.submitButtonHandler}
         handleExpandCollapse={this.handleExpandCollapse}
+        replies={replies}
       />);
     }
     else if (annotationType === 'to-do' && !trashed && currentUser.uid === authorId) {
@@ -278,6 +279,7 @@ class Annotation extends Component {
         cancelButtonHandler={this.cancelButtonHandler}
         submitButtonHandler={this.submitButtonHandler}
         handleExpandCollapse={this.handleExpandCollapse}
+        replies={replies}
       />);
     }
     else if (annotationType === 'navigation') {
@@ -310,6 +312,7 @@ class Annotation extends Component {
           cancelButtonHandler={this.cancelButtonHandler}
           submitButtonHandler={this.submitButtonHandler}
           handleExpandCollapse={this.handleExpandCollapse}
+          replies={replies}
         />
       );
     }
@@ -372,6 +375,7 @@ class Annotation extends Component {
           cancelButtonHandler={this.cancelButtonHandler}
           submitButtonHandler={this.submitButtonHandler}
           handleExpandCollapse={this.handleExpandCollapse}
+          replies={replies}
         />
       );
     }

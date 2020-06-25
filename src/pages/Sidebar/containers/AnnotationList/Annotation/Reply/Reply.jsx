@@ -1,5 +1,8 @@
 import React, { Component } from 'react';
+import profile from '../../../../../../assets/img/SVGs/Profile.svg';
+import CustomTag from '../../../CustomTag/CustomTag';
 import '../Annotation.css';
+import './Reply.css';
 
 class Reply extends Component {
 
@@ -17,22 +20,43 @@ class Reply extends Component {
     }
 
     render() {
-        const { content, author } = this.props;
+        const { content, author, idx, tags } = this.props;
         const displayAuthor = author.substring(0, author.indexOf('@'));
         return (
-            <div>
-                <div className="userProfileContainer">
-                    <div className="author">
-                        {displayAuthor}
+            <React.Fragment>
+                {idx !== 0 && <hr className="divider" />}
+                <li key={idx} className="ReplyContent">
+                    <div className=" container Header">
+                        <div className="profileContainer">
+                            <img src={profile} alt="profile" className="profile" />
+                        </div>
+                        <div className="userProfileContainer">
+                            <div className="author">
+                                {displayAuthor}
+                            </div>
+                            <div className="timestamp">
+                                {this.formatTimestamp()}
+                            </div>
+                        </div>
                     </div>
-                    <div className="timestamp">
-                        {this.formatTimestamp()}
+                    <div className="annotationContent">
+                        {content}
                     </div>
-                </div>
-                <div className="annotationContent">
-                    {content}
-                </div>
-            </div>
+                    {tags.length ? (
+                        <div className="TagRow">
+                            <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
+                                {tags.map((tagContent, idx) => {
+                                    return (
+                                        <CustomTag idx={idx} content={tagContent} />
+                                    )
+                                }
+                                )}
+                            </ul>
+                        </div>
+                    ) : (null)}
+
+                </li>
+            </React.Fragment>
         );
     }
 }

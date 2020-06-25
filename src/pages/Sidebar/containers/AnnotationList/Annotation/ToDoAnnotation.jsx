@@ -9,6 +9,9 @@ import expand from '../../../../../assets/img/SVGs/expand.svg'
 import CardWrapper from '../../CardWrapper/CardWrapper'
 import AnchorList from './AnchorList/AnchorList';
 import Anchor from './AnchorList/Anchor';
+import Reply from './Reply/Reply';
+import ReplyEditor from './Reply/ReplyEditor';
+import { BsReply } from 'react-icons/bs';
 
 
 const HamburgerToggle = React.forwardRef(({ children, onClick }, ref) => (
@@ -23,10 +26,37 @@ const HamburgerToggle = React.forwardRef(({ children, onClick }, ref) => (
 
 class ToDoAnnotation extends Component {
 
+    state = {
+        replying: false,
+        showReplies: false
+    }
+
+    handleReply = () => {
+        this.setState({ replying: true });
+    }
+
+    finishReply = () => {
+        this.setState({ replying: false });
+    }
+
+    handleShowReplies = () => {
+        this.setState({ showReplies: !this.state.showReplies });
+    }
+
     render() {
         const { idx, id, collapsed, author, pin, currentUser, authorId,
             childAnchor, currentUrl, url, anchor, xpath, tags, annotationType,
-            annotationContent, editing } = this.props;
+            annotationContent, editing, replies } = this.props;
+        const { replying, showReplies } = this.state;
+        let replyCountString = "";
+        if (replies !== undefined) {
+            if (replies.length > 1) {
+                replyCountString = " replies";
+            }
+            else {
+                replyCountString = " reply";
+            }
+        }
         return (
             <li key={idx} id={id} className={classNames({ AnnotationItem: true })}>
                 <div
@@ -64,6 +94,9 @@ class ToDoAnnotation extends Component {
                             </div>
                             <div className="row">
                                 <div className="col2">
+                                    <div className="ReplyContainer" onClick={this.handleReply}>
+                                        <BsReply />
+                                    </div>
                                     <div className="PinContainer" onClick={this.props.transmitPinToParent}>
                                         {pin}
                                     </div>
@@ -149,9 +182,43 @@ class ToDoAnnotation extends Component {
                         </div>
                     ) : (null)}
                     {currentUser.uid === authorId && !editing && (
-                        <button className="ToDo-Button"
-                            onClick={_ => this.props.handleDoneToDo(id)}>Done?</button>
+                        <div>
+                            <button className="ToDo-Button"
+                                onClick={_ => this.props.handleDoneToDo(id)}>Done?</button>
+                        </div>
                     )}
+                    {replying &&
+                        <ReplyEditor id={id} finishReply={this.finishReply} />
+                    }
+                    {replies !== undefined && showReplies && replies.length && !collapsed && !editing ? (
+                        <div className="Replies">
+                            <div className="SeparationRow">
+                                <div className="ShowHideReplies">
+                                    <div className="ExpandCollapse">
+                                        <img src={expand} className="Icon" alt="Show replies" onClick={this.handleShowReplies} />
+                                    </div>
+                                    {replies.length} {replyCountString}
+                                </div>
+                                <hr className="divider" />
+                            </div>
+                            <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
+                                {replies.map((reply, idx) => {
+                                    return (
+                                        <Reply key={idx} idx={idx} content={reply.replyContent} author={reply.author} timeStamp={reply.timestamp} tags={reply.tags} />
+                                    )
+                                }
+                                )}
+                            </ul>
+                        </div>
+                    ) : (null)}
+                    {replies !== undefined && !showReplies && replies.length ? (
+                        <div className="ShowHideReplies">
+                            <div className="ExpandCollapse">
+                                <img src={expand} className="Icon" id="ShowReplies" alt="Show replies" onClick={this.handleShowReplies} />
+                            </div>
+                            {replies.length} {replyCountString}
+                        </div>
+                    ) : (null)}
                     {collapsed ? (
                         <div className="ExpandCollapse">
                             <img src={expand} alt="Expand" onClick={_ => this.props.handleExpandCollapse('expand')} className="Icon" />

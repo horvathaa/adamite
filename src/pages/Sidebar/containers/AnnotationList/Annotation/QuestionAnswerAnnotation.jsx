@@ -12,6 +12,8 @@ import AnchorList from './AnchorList/AnchorList';
 import Anchor from './AnchorList/Anchor';
 import RichTextEditor from '../../RichTextEditor/RichTextEditor';
 import Reply from './Reply/Reply';
+import ReplyEditor from './Reply/ReplyEditor';
+import TagsInput from 'react-tagsinput';
 
 const HamburgerToggle = React.forwardRef(({ children, onClick }, ref) => (
     <a ref={ref}
@@ -25,40 +27,39 @@ const HamburgerToggle = React.forwardRef(({ children, onClick }, ref) => (
 
 class QuestionAnswerAnnotation extends Component {
 
-    constructor(props) {
-        super(props);
-        this.replyChangeHandler = this.replyChangeHandler.bind(this);
-    }
-
     state = {
         replying: false,
-        reply: ""
-    }
-
-    replyChangeHandler = (value) => {
-        this.setState({ reply: value });
+        showReplies: false
     }
 
     handleReply = () => {
         this.setState({ replying: true });
     }
 
-    submitReply = () => {
-        chrome.runtime.sendMessage({
-            msg: 'ADD_NEW_REPLY',
-            payload: {
-                id: this.props.id,
-                reply: this.state.reply,
-            }
-        });
+    finishReply = () => {
         this.setState({ replying: false });
     }
+
+    handleShowReplies = () => {
+        this.setState({ showReplies: !this.state.showReplies });
+    }
+
 
     render() {
         const { idx, id, collapsed, author, pin, currentUser, authorId,
             childAnchor, currentUrl, url, anchor, xpath, tags, annotationType,
             annotationContent, editing, replies } = this.props;
-        const { replying } = this.state;
+        const { replying, showReplies } = this.state;
+        let replyCountString = "";
+        if (replies !== undefined) {
+            if (replies.length > 1) {
+                replyCountString = " replies";
+            }
+            else {
+                replyCountString = " reply";
+            }
+        }
+
         return (
             <li key={idx} id={id} className={classNames({ AnnotationItem: true })}>
                 <div
@@ -168,19 +169,51 @@ class QuestionAnswerAnnotation extends Component {
                             collapsed={collapsed} />
                     </React.Fragment>
 
-                    {tags.length && !collapsed && !editing && !replying ? (
+                    {tags.length && !collapsed && !editing ? (
                         <div className={classNames({
                             TagRow: true
                         })}>
                             <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
                                 {tags.map((tagContent, idx) => {
                                     return (
-                                        <CustomTag idx={idx} content={tagContent} deleteTag={this.deleteTag} editing={editing} />
+                                        <CustomTag key={idx} content={tagContent} deleteTag={this.deleteTag} editing={editing} />
                                     )
                                 }
                                 )}
                             </ul>
 
+                        </div>
+                    ) : (null)}
+                    {replying &&
+                        <ReplyEditor id={id} finishReply={this.finishReply} />
+                    }
+                    {replies !== undefined && showReplies && replies.length && !collapsed && !editing ? (
+                        <div className="Replies">
+                            <div className="SeparationRow">
+                                <div className="ShowHideReplies">
+                                    <div className="ExpandCollapse">
+                                        <img src={expand} className="Icon" alt="Show replies" onClick={this.handleShowReplies} />
+                                    </div>
+                                    {replies.length} {replyCountString}
+                                </div>
+                                <hr className="divider" />
+                            </div>
+                            <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
+                                {replies.map((reply, idx) => {
+                                    return (
+                                        <Reply key={idx} idx={idx} content={reply.replyContent} author={reply.author} timeStamp={reply.timestamp} tags={reply.tags} />
+                                    )
+                                }
+                                )}
+                            </ul>
+                        </div>
+                    ) : (null)}
+                    {replies !== undefined && !showReplies && replies.length ? (
+                        <div className="ShowHideReplies">
+                            <div className="ExpandCollapse">
+                                <img src={expand} className="Icon" id="ShowReplies" alt="Show replies" onClick={this.handleShowReplies} />
+                            </div>
+                            {replies.length} {replyCountString}
                         </div>
                     ) : (null)}
                     {collapsed && !replying ? (
@@ -195,25 +228,6 @@ class QuestionAnswerAnnotation extends Component {
                             </React.Fragment>
                         )
                     }
-                    {replying &&
-                        <div className="ReplyField">
-                            <RichTextEditor annotationContent={undefined} annotationChangeHandler={this.replyChangeHandler} />
-                            <button onClick={this.submitReply} className="Publish-Button">Submit</button>
-                        </div>
-                    }
-                    {replies !== undefined && replies.length && !collapsed && !editing && !replying ? (
-                        <div className="Replies">
-                            <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
-                                {replies.map((reply, idx) => {
-                                    return (
-                                        <Reply idx={idx} content={reply.replyContent} author={reply.author} timeStamp={reply.timestamp} />
-                                    )
-                                }
-                                )}
-                            </ul>
-
-                        </div>
-                    ) : (null)}
                 </div>
 
 
