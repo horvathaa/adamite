@@ -402,6 +402,21 @@
   filter: brightness(.4);
 }
 
+#pin {
+  width: 25px;
+  height: 25px;
+}
+
+.AnnotationIconContainer {
+  display: flex;
+  align-items: center;
+  align-self: baseline;
+}
+
+.TopIconContainer {
+  padding-right: 4px;
+}
+
 
 .divider {
   background-color: #6B778C;
@@ -484,12 +499,22 @@
   transform: rotate(270deg)
 }
 
-.division {
-  flex-grow: 1;
-  border-bottom: 1px solid black;
-  margin: 5px
-}
-
 .SeparationRow {
   display: flex;
+}
+
+#newAnchor {
+  width: 18px;
+  height: 18px;
+}
+
+#edit {
+  width: 18px;
+  height: 18px;
+}
+
+#trash {
+    width: 22px;
+    height: 22px;
+  
 }

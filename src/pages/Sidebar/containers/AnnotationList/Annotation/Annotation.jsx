@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import { AiFillPushpin, AiOutlinePushpin } from 'react-icons/ai';
+import outlinepin from '../../../../../assets/img/SVGs/pin.svg';
+import fillpin from '../../../../../assets/img/SVGs/pin_2.svg';
 import './Annotation.css';
 import { deleteAnnotationForeverById, updateAnnotationById, getUserProfileById } from '../../../../../firebase';
 import DefaultAnnotation from './DefaultAnnotation';
@@ -167,7 +169,7 @@ class Annotation extends Component {
     this.setState({ editing: false });
   }
 
-  handleNewAnchor(id) {
+  handleNewAnchor = (id) => {
     alert('Select the text you want to anchor this annotation to!')
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
       chrome.tabs.sendMessage(tabs[0].id, {
@@ -216,13 +218,13 @@ class Annotation extends Component {
   render() {
     const { anchor, idx, id, active, authorId, currentUser, trashed, timeStamp, url, currentUrl, childAnchor, xpath, replies } = this.props;
     const { editing, collapsed, tags, content, annotationType, author, pinned } = this.state;
-    let pin;
-    if (pinned) {
-      pin = <AiFillPushpin />;
-    }
-    else {
-      pin = <AiOutlinePushpin />;
-    }
+    // let pin;
+    // if (pinned) {
+    //   pin = fillpin;
+    // }
+    // else {
+    //   pin = outlinepin;
+    // }
     if (annotationType === 'default' && !trashed) {
       return (<DefaultAnnotation
         idx={idx}
@@ -230,7 +232,7 @@ class Annotation extends Component {
         collapsed={collapsed}
         author={author}
         formatTimestamp={this.formatTimestamp}
-        pin={pin}
+        pin={pinned}
         transmitPinToParent={this.transmitPinToParent}
         currentUser={currentUser}
         authorId={authorId}
@@ -259,7 +261,7 @@ class Annotation extends Component {
         collapsed={collapsed}
         author={author}
         formatTimestamp={this.formatTimestamp}
-        pin={pin}
+        pin={pinned}
         transmitPinToParent={this.transmitPinToParent}
         currentUser={currentUser}
         authorId={authorId}
@@ -293,7 +295,7 @@ class Annotation extends Component {
           collapsed={collapsed}
           author={author}
           formatTimestamp={this.formatTimestamp}
-          pin={pin}
+          pin={pinned}
           transmitPinToParent={this.transmitPinToParent}
           currentUser={currentUser}
           authorId={authorId}
@@ -324,7 +326,7 @@ class Annotation extends Component {
           collapsed={collapsed}
           author={author}
           formatTimestamp={this.formatTimestamp}
-          pin={pin}
+          pin={pinned}
           transmitPinToParent={this.transmitPinToParent}
           currentUser={currentUser}
           authorId={authorId}
@@ -355,7 +357,7 @@ class Annotation extends Component {
           collapsed={collapsed}
           author={author}
           formatTimestamp={this.formatTimestamp}
-          pin={pin}
+          pin={pinned}
           transmitPinToParent={this.transmitPinToParent}
           currentUser={currentUser}
           authorId={authorId}

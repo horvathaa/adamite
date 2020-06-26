@@ -1,35 +1,39 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
-import { GoThreeBars } from 'react-icons/go';
-import { BsReply } from 'react-icons/bs';
 import './Annotation.css';
-import { Dropdown } from 'react-bootstrap';
 import CustomTag from '../../CustomTag/CustomTag';
 import profile from '../../../../../assets/img/SVGs/Profile.svg';
+import reply from '../../../../../assets/img/SVGs/Reply.svg';
+import outlinepin from '../../../../../assets/img/SVGs/pin.svg';
+import fillpin from '../../../../../assets/img/SVGs/pin_2.svg';
+import newAnchor from '../../../../../assets/img/SVGs/Add_anchor.svg';
+import edit from '../../../../../assets/img/SVGs/edit.svg';
+import trash from '../../../../../assets/img/SVGs/delet.svg';
 import expand from '../../../../../assets/img/SVGs/expand.svg'
 import CardWrapper from '../../CardWrapper/CardWrapper'
 import AnchorList from './AnchorList/AnchorList';
 import Anchor from './AnchorList/Anchor';
-import RichTextEditor from '../../RichTextEditor/RichTextEditor';
 import Reply from './Reply/Reply';
 import ReplyEditor from './Reply/ReplyEditor';
-import TagsInput from 'react-tagsinput';
 
-const HamburgerToggle = React.forwardRef(({ children, onClick }, ref) => (
-    <a ref={ref}
-        onClick={(e) => {
-            e.preventDefault();
-            onClick(e);
-        }}><GoThreeBars className="Icon" />
-        {children}
-    </a>
-));
 
 class QuestionAnswerAnnotation extends Component {
 
     state = {
         replying: false,
         showReplies: false
+    }
+
+    handleNewAnchorRequest = () => {
+        this.props.handleNewAnchor(this.props.id);
+    }
+
+    handleEditRequest = () => {
+        this.props.handleEditClick(this.props.id);
+    }
+
+    handleDeleteRequest = () => {
+        this.props.handleTrashClick(this.props.id);
     }
 
     handleReply = () => {
@@ -96,40 +100,30 @@ class QuestionAnswerAnnotation extends Component {
                                 </div>
                             </div>
                             <div className="row">
-                                <div className="col2">
-                                    <div className="ReplyContainer" onClick={this.handleReply}>
-                                        <BsReply />
+                                <div className="AnnotationIconContainer">
+                                    <div className="TopIconContainer" onClick={this.handleReply}>
+                                        <img src={reply} alt="reply" className="profile" />
                                     </div>
-                                    <div className="PinContainer" onClick={this.props.transmitPinToParent}>
-                                        {pin}
+                                    <div className="TopIconContainer" onClick={this.props.transmitPinToParent}>
+                                        {pin ? (
+                                            <img src={fillpin} id="pin" alt="pin" className="profile" />
+                                        ) : (
+                                                <img src={outlinepin} id="pin" alt="pin" className="profile" />
+                                            )}
+                                    </div>
+                                    <div className="TopIconContainer" >
+                                        <img src={newAnchor} alt="add new anchor" id="newAnchor" className="profile" onClick={this.handleNewAnchorRequest} />
                                     </div>
                                     {currentUser.uid === authorId ? (
-                                        <Dropdown className="HamburgerMenu">
-                                            <Dropdown.Toggle as={HamburgerToggle}></Dropdown.Toggle>
-                                            <Dropdown.Menu>
-                                                <Dropdown.Item as="button" eventKey={id} onSelect={eventKey => this.props.handleNewAnchor(id)}>
-                                                    Add new anchor
-                            </Dropdown.Item>
-                                                <Dropdown.Item as="button" eventKey={id} onSelect={eventKey => this.props.handleEditClick(id)}>
-                                                    Edit
-                            </Dropdown.Item>
-                                                <Dropdown.Item as="button" eventKey={id} onSelect={eventKey => this.props.handleTrashClick(id)}>
-                                                    Delete
-                            </Dropdown.Item>
-
-                                            </Dropdown.Menu>
-                                        </Dropdown>
-                                    ) : (
-                                            <Dropdown className="HamburgerMenu">
-                                                <Dropdown.Toggle as={HamburgerToggle}></Dropdown.Toggle>
-                                                <Dropdown.Menu>
-                                                    <Dropdown.Item as="button" eventKey={id} onSelect={eventKey => this.props.handleNewAnchor(id)}>
-                                                        Add new anchor
-                            </Dropdown.Item>
-                                                </Dropdown.Menu>
-                                            </Dropdown>
-                                        )}
-
+                                        <React.Fragment>
+                                            <div className="TopIconContainer" >
+                                                <img src={edit} alt="edit annotation" className="profile" id="edit" onClick={this.handleEditRequest} />
+                                            </div>
+                                            <div className="TopIconContainer" >
+                                                <img src={trash} alt="delete annotation" className="profile" id="trash" onClick={this.handleDeleteRequest} />
+                                            </div>
+                                        </React.Fragment>
+                                    ) : (null)}
                                 </div>
                             </div>
                         </div>
