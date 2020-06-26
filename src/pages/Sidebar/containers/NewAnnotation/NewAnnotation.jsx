@@ -129,7 +129,7 @@ class NewAnnotation extends React.Component {
   };
 
   render() {
-    const { newSelection } = this.props;
+    const { newSelection, type } = this.props;
 
     const options = [
       'Default', 'To-do', 'Highlight', 'Navigation', 'Issue'
@@ -155,6 +155,7 @@ class NewAnnotation extends React.Component {
           tags={tags} annotationContent={annotationContent}
           edit={!submitted}
           pageAnnotation={newSelection}
+          annotationType={type}
 
           cancelButtonHandler={this.cancelButtonHandler}
           submitButtonHandler={this.submitButtonHandler}

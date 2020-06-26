@@ -2,6 +2,7 @@
 import { xpathConversion, getNodesInRange } from './AnchorHelpers';
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
+import './anchor-box.css';
 
 var queue = [];
 
@@ -28,20 +29,62 @@ const Popover = ({ selection, xpathToNode, offsets, removePopover }) => {
         }
     };
 
+    const defaultButtonClickedHandler = (event) => {
+        event.stopPropagation();
+        alertBackgroundOfNewSelection(selection.toString(), offsets, xpathToNode, "default");
+        removePopover();
+    };
+
+    const todoButtonClickedHandler = (event) => {
+        event.stopPropagation();
+        alertBackgroundOfNewSelection(selection.toString(), offsets, xpathToNode, "to-do");
+        removePopover();
+    };
+
+    const questionButtonClickedHandler = (event) => {
+        event.stopPropagation();
+        alertBackgroundOfNewSelection(selection.toString(), offsets, xpathToNode, "question");
+        removePopover();
+    };
+
+    const issueButtonClickedHandler = (event) => {
+        event.stopPropagation();
+        alertBackgroundOfNewSelection(selection.toString(), offsets, xpathToNode, "issue");
+        removePopover();
+    };
+
     return (
-        <div
-            style={{
-                background: 'gray',
-                color: 'white',
-                fontSize: 12,
-                fontFamily: 'Arial',
-                padding: 5,
-                borderRadius: 5,
-                cursor: 'pointer',
-            }}
-            onClick={highlightButtonClickedHandler}
-        >
-            Highlight
+        <div className="buttonRow">
+            <div className="onHoverCreateAnnotation" onClick={defaultButtonClickedHandler} >
+                <div className="buttonIconContainer">
+                    <img src={chrome.extension.getURL('Default.svg')} alt="default annotation" />
+                </div>
+                 Default
+            </div>
+            <div className="onHoverCreateAnnotation" onClick={highlightButtonClickedHandler} >
+                <div className="buttonIconContainer">
+                    <img src={chrome.extension.getURL('Highlight.svg')} alt="highlight" />
+                </div>
+                Highlight
+            </div>
+            <div className="onHoverCreateAnnotation" onClick={todoButtonClickedHandler} >
+                <div className="buttonIconContainer">
+                    <img src={chrome.extension.getURL('Todo.svg')} alt="to-do annnotation" />
+                </div>
+                To-do
+            </div>
+            <div className="onHoverCreateAnnotation" onClick={questionButtonClickedHandler} >
+                <div className="buttonIconContainer">
+                    <img src={chrome.extension.getURL('Question.svg')} alt="question annnotation" />
+                </div>
+                Question
+            </div>
+            <div className="onHoverCreateAnnotation" onClick={issueButtonClickedHandler} >
+                <div className="buttonIconContainer">
+                    <img src={chrome.extension.getURL('Issue.svg')} alt="issue annnotation" />
+                </div>
+                Issue
+            </div>
         </div>
     );
 };
@@ -82,7 +125,7 @@ function displayPopoverBasedOnRectPosition(rect, props) {
     popOverAnchor.style.left = `${leftPosition}px`;
 }
 
-const alertBackgroundOfNewSelection = (selection, offsets, xpath) => {
+const alertBackgroundOfNewSelection = (selection, offsets, xpath, type) => {
     // supporting creation of annotations in sidebar
     chrome.runtime.sendMessage({
         msg: 'CONTENT_SELECTED',
@@ -91,6 +134,7 @@ const alertBackgroundOfNewSelection = (selection, offsets, xpath) => {
             selection,
             offsets,
             xpath,
+            type
         },
     });
 };
@@ -152,7 +196,7 @@ export const createAnnotation = (event) => {
             });
         }
         else {
-            alertBackgroundOfNewSelection(selection.toString(), offsets, xpathToNode);
+
             const rectPopover = selection.getRangeAt(0).getBoundingClientRect();
             displayPopoverBasedOnRectPosition(rectPopover, { selection, xpathToNode, offsets });
         }

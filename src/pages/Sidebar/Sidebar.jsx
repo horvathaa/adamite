@@ -19,6 +19,7 @@ class Sidebar extends React.Component {
     rect: null,
     offsets: null,
     xpath: null,
+    newAnnotationType: 'default',
     currentUser: undefined,
     selected: undefined,
     dropdownOpen: false,
@@ -116,11 +117,12 @@ class Sidebar extends React.Component {
         request.from === 'background' &&
         request.msg === 'CONTENT_SELECTED'
       ) {
-        const { selection, offsets, xpath } = request.payload;
+        const { selection, offsets, xpath, type } = request.payload;
         this.setState({
           newSelection: selection,
           offsets: offsets,
           xpath: xpath,
+          newAnnotationType: type
         });
       } else if (
         request.from === 'background' &&
@@ -475,6 +477,7 @@ class Sidebar extends React.Component {
                     resetNewSelection={this.resetNewSelection}
                     offsets={this.state.offsets}
                     xpath={this.state.xpath}
+                    type={this.state.newAnnotationType}
                   />
                 )}
               {this.state.annotatingPage &&
