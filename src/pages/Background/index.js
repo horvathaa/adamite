@@ -8,8 +8,10 @@ import {
   createAnnotation,
   updateAnnotationById,
   getAnnotationsAcrossSite,
-  getAnnotationsByTag
+  getAnnotationsByTag,
+  getCurrentUser
 } from '../../firebase/index';
+import firebase from '../../firebase/firebase';
 
 // helper method from
 // https://stackoverflow.com/questions/18773778/create-array-of-unique-objects-by-property
@@ -74,6 +76,7 @@ function promiseToComeBack(url) {
         annotations = removeDuplicates(annotations);
       }
       pageannotationsActive[pos].annotations = annotations.filter(anno => anno.url === url);
+      console.log('when is this getting called', annotations);
       broadcastAnnotationsUpdated("CONTENT_UPDATED", annotations)
       chrome.tabs.query({}, tabs => {
 
@@ -108,6 +111,28 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           pageannotationsActive[pageannotationsActive.length - 1].unsubscribe = e;
         });
     }
+  }
+  else if (request.msg === 'SAVE_HIGHLIGHT') {
+    let { url, anchor, xpath, offsets } = request.payload;
+    const hostname = new URL(url).hostname;
+
+    // firebase: in action
+    //content = JSON.parse(content); // consider just pass content as an object
+    createAnnotation({
+      taskId: null,
+      SharedId: null,
+      AnnotationContent: "",
+      AnnotationAnchorContent: anchor,
+      AnnotationAnchorPath: null,
+      offsets: offsets,
+      xpath: xpath,
+      AnnotationType: "highlight", // could be other types (string)
+      url,
+      hostname,
+      pinned: false,
+      AnnotationTags: [],
+      childAnchor: []
+    });
   }
   else if (request.msg === 'SAVE_ANNOTATED_TEXT') {
     let { url, content } = request.payload;
@@ -167,9 +192,31 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       //   );
       // });
     });
-  } else if (request.from === 'content' && request.msg === 'CONTENT_SELECTED') {
+  } else if (request.msg === 'ADD_NEW_REPLY') {
+    const { id, reply, replyTags } = request.payload;
+    const replies = Object.assign({}, {
+      replyContent: reply,
+      author: getCurrentUser().email,
+      timestamp: new Date().getTime(),
+      answer: false,
+      tags: replyTags
+    });
+    updateAnnotationById(id, {
+      replies: firebase.firestore.FieldValue.arrayUnion({
+        ...replies
+      })
+    });
+  }
+  else if (request.from === 'content' && request.msg === 'CONTENT_SELECTED') {
     chrome.tabs.sendMessage(sender.tab.id, {
       msg: 'CONTENT_SELECTED',
+      from: 'background',
+      payload: request.payload,
+    });
+  }
+  else if (request.from === 'content' && request.msg === 'CONTENT_NOT_SELECTED') {
+    chrome.tabs.sendMessage(sender.tab.id, {
+      msg: 'CONTENT_NOT_SELECTED',
       from: 'background',
       payload: request.payload,
     });

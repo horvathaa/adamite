@@ -2,7 +2,6 @@ import React from 'react';
 import './Sidebar.css';
 import filter from '../../assets/img/SVGs/filter.svg';
 import classNames from 'classnames';
-// import { FaFilter } from 'react-icons/fa';
 import Title from './containers/Title/Title';
 import Authentication from './containers//Authentication//Authentication';
 import AnnotationList from './containers/AnnotationList/AnnotationList';
@@ -20,6 +19,7 @@ class Sidebar extends React.Component {
     rect: null,
     offsets: null,
     xpath: null,
+    newAnnotationType: 'default',
     currentUser: undefined,
     selected: undefined,
     dropdownOpen: false,
@@ -117,12 +117,20 @@ class Sidebar extends React.Component {
         request.from === 'background' &&
         request.msg === 'CONTENT_SELECTED'
       ) {
-        const { selection, offsets, xpath } = request.payload;
+        const { selection, offsets, xpath, type } = request.payload;
         this.setState({
           newSelection: selection,
           offsets: offsets,
           xpath: xpath,
+          newAnnotationType: type
         });
+      } else if (
+        request.from === 'background' &&
+        request.msg === 'CONTENT_NOT_SELECTED'
+      ) {
+        // should check whether annotation has user-added content or not - will need to request
+        // child annotation's state
+        this.resetNewSelection();
       } else if (
         request.from === 'content' &&
         request.msg === 'ANCHOR_CLICKED'
@@ -469,6 +477,7 @@ class Sidebar extends React.Component {
                     resetNewSelection={this.resetNewSelection}
                     offsets={this.state.offsets}
                     xpath={this.state.xpath}
+                    type={this.state.newAnnotationType}
                   />
                 )}
               {this.state.annotatingPage &&

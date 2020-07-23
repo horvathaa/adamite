@@ -2,7 +2,7 @@
 //import './AnchorEngine/AnchorCreate';
 import { updateXpaths, removeSpans } from './AnchorEngine/AnchorDestroy';
 import { highlightRange } from './AnchorEngine/AnchorHighlight';
-import { createAnnotation } from './AnchorEngine/AnchorCreate';
+import { createAnnotation, removeAnnotationWidget } from './AnchorEngine/AnchorCreate';
 
 
 // chrome.runtime.sendMessage(
@@ -21,8 +21,12 @@ import { createAnnotation } from './AnchorEngine/AnchorCreate';
 // );
 
 document.addEventListener('mouseup', event => {
-    createAnnotation();
+    createAnnotation(event);
 });
+
+document.addEventListener('mousedown', event => {
+    removeAnnotationWidget(event);
+})
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
@@ -31,7 +35,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         updateXpaths(collection, request.id)
     }
     else if (request.msg === 'HIGHLIGHT_ANNOTATIONS') {
-        console.log("in here", request)
         const annotationsOnPage = request.payload;
         if (annotationsOnPage.length) {
             annotationsOnPage.reverse().forEach(anno => highlightRange(anno));

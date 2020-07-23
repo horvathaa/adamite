@@ -125,3 +125,47 @@
     display: block;
     z-index: 50;
 }
+
+.onHoverCreateAnnotation {
+    all: initial;
+    -webkit-animation-duration: 80ms;
+    animation-duration: 80ms;
+    -webkit-animation-timing-function: ease-in;
+    animation-timing-function: ease-in;
+    -webkit-animation-fill-mode: forwards;
+    animation-fill-mode: forwards;
+    box-sizing: border-box;
+    /* direction: ltr; */
+    background: #fff;
+    color: #6B778C;
+    font-size: 9pt;
+    font-family: 'Arial';
+    padding: 5px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.buttonIconContainer {
+    padding: 5px;
+    margin: auto;
+    width: 2.5em;
+    height: 2.5em;
+}
+
+.buttonRow {
+    width: 100%;
+    text-align: center;
+    flex-direction: row;
+    display:flex;
+    overflow: auto;
+    background: #fff;
+    box-shadow: 0px 2px 10px 0px rgba(0,0,0,.13);
+    border: 1px solid rgba(0,0,0,.2);
+    border-radius: 0.5rem;
+}
+
+.buttonIconContainer:hover {
+    filter: brightness(.8);
+  }
