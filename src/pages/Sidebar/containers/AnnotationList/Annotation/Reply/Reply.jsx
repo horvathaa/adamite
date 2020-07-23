@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import profile from '../../../../../../assets/img/SVGs/Profile.svg';
 import CustomTag from '../../../CustomTag/CustomTag';
+import { FcCheckmark } from 'react-icons/fc';
 import '../Annotation.css';
 import './Reply.css';
 
@@ -20,7 +21,7 @@ class Reply extends Component {
     }
 
     render() {
-        const { content, author, idx, tags } = this.props;
+        const { content, author, idx, tags, answer } = this.props;
         const displayAuthor = author.substring(0, author.indexOf('@'));
         return (
             <React.Fragment>
@@ -40,7 +41,9 @@ class Reply extends Component {
                         </div>
                     </div>
                     <div className="annotationContent">
+                        {answer !== undefined && answer ? <FcCheckmark /> : (null)}
                         {content}
+
                     </div>
                     {tags.length ? (
                         <div className="TagRow">
@@ -54,7 +57,6 @@ class Reply extends Component {
                             </ul>
                         </div>
                     ) : (null)}
-
                 </li>
             </React.Fragment>
         );

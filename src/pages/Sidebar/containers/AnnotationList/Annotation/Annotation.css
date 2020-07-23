@@ -379,6 +379,10 @@
   padding-left: 60%;
 }
 
+.buttonCol.question {
+  padding-left: 40%;
+}
+
 .HorizontalLine {
   color: #6B778C;
   background-color: #6B778C;

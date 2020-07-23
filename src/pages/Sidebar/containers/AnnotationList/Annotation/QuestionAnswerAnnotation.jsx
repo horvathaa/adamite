@@ -21,7 +21,8 @@ class QuestionAnswerAnnotation extends Component {
 
     state = {
         replying: false,
-        showReplies: false
+        showReplies: false,
+        answered: false
     }
 
     handleNewAnchorRequest = () => {
@@ -179,7 +180,7 @@ class QuestionAnswerAnnotation extends Component {
                         </div>
                     ) : (null)}
                     {replying &&
-                        <ReplyEditor id={id} finishReply={this.finishReply} />
+                        <ReplyEditor id={id} finishReply={this.finishReply} showQuestionAnswerInterface={true} />
                     }
                     {replies !== undefined && showReplies && replies.length && !collapsed && !editing ? (
                         <div className="Replies">
@@ -195,7 +196,15 @@ class QuestionAnswerAnnotation extends Component {
                             <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
                                 {replies.map((reply, idx) => {
                                     return (
-                                        <Reply key={idx} idx={idx} content={reply.replyContent} author={reply.author} timeStamp={reply.timestamp} tags={reply.tags} />
+                                        <Reply
+                                            key={idx}
+                                            idx={idx}
+                                            content={reply.replyContent}
+                                            author={reply.author}
+                                            timeStamp={reply.timestamp}
+                                            tags={reply.tags}
+                                            answer={reply.answer}
+                                        />
                                     )
                                 }
                                 )}

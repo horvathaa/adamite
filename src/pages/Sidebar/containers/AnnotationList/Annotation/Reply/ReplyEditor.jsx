@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import RichTextEditor from '../../../RichTextEditor/RichTextEditor';
 import TagsInput from 'react-tagsinput';
+import classNames from 'classnames';
 import '../Annotation.css';
 import './ReplyEditor.css';
 
@@ -13,7 +14,8 @@ class ReplyEditor extends Component {
 
     state = {
         reply: "",
-        replyTags: []
+        replyTags: [],
+        answer: false
     }
 
     replyChangeHandler = (value) => {
@@ -29,19 +31,25 @@ class ReplyEditor extends Component {
         this.setState({ replyTags: newTag })
     }
 
+    markAnswer = () => {
+        this.setState({ answer: !this.state.answer });
+    }
+
     submitReply = () => {
         chrome.runtime.sendMessage({
             msg: 'ADD_NEW_REPLY',
             payload: {
                 id: this.props.id,
                 reply: this.state.reply,
-                replyTags: this.state.replyTags
+                replyTags: this.state.replyTags,
+                answer: this.state.answer
             }
         });
         this.props.finishReply();
     }
 
     render() {
+        const { showQuestionAnswerInterface } = this.props;
         const { replyTags } = this.state;
         return (
             <React.Fragment>
@@ -58,9 +66,12 @@ class ReplyEditor extends Component {
                         </div>
                     </div>
                     <div className="ReplyButtonRow">
-                        <div className="buttonCol">
+                        <div className={classNames({ buttonCol: true, question: showQuestionAnswerInterface })}>
                             <button onClick={this.cancelReply} className="Cancel-Button">Cancel</button> &nbsp; &nbsp;
-                                <button onClick={this.submitReply} className="Publish-Button">Submit</button>
+                                <button onClick={this.submitReply} className="Publish-Button">Submit</button> &nbsp; &nbsp;
+                                {showQuestionAnswerInterface && (
+                                <button onClick={this.markAnswer} className={classNames({ answerButton: true, answered: this.state.answer })} >Answer?</button>
+                            )}
                         </div>
                     </div>
                 </div>

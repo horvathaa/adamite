@@ -193,12 +193,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       // });
     });
   } else if (request.msg === 'ADD_NEW_REPLY') {
-    const { id, reply, replyTags } = request.payload;
+    const { id, reply, replyTags, answer } = request.payload;
     const replies = Object.assign({}, {
       replyContent: reply,
       author: getCurrentUser().email,
       timestamp: new Date().getTime(),
-      answer: false,
+      answer: answer,
       tags: replyTags
     });
     updateAnnotationById(id, {
