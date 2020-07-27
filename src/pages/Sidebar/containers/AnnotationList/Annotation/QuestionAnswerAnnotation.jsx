@@ -204,6 +204,7 @@ class QuestionAnswerAnnotation extends Component {
                                             timeStamp={reply.timestamp}
                                             tags={reply.tags}
                                             answer={reply.answer}
+                                            question={reply.question}
                                         />
                                     )
                                 }

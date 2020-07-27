@@ -21,8 +21,8 @@ class Reply extends Component {
     }
 
     render() {
-        const { content, author, idx, tags, answer } = this.props;
-        const displayAuthor = author.substring(0, author.indexOf('@'));
+        const { content, author, idx, tags, answer, question } = this.props;
+        // const displayAuthor = author.substring(0, author.indexOf('@'));
         return (
             <React.Fragment>
                 {idx !== 0 && <hr className="divider" />}
@@ -33,7 +33,7 @@ class Reply extends Component {
                         </div>
                         <div className="userProfileContainer">
                             <div className="author">
-                                {displayAuthor}
+                                {author}
                             </div>
                             <div className="timestamp">
                                 {this.formatTimestamp()}
@@ -41,8 +41,13 @@ class Reply extends Component {
                         </div>
                     </div>
                     <div className="annotationContent">
-                        {answer !== undefined && answer ? <FcCheckmark /> : (null)}
-                        {content}
+                        <div className="QuestionAnswerMarker">
+                            {answer !== undefined && answer ? "A" : (null)}
+                            {question !== undefined && question ? "Q" : (null)}
+                        </div>
+                        <div className="contentBody">
+                            {content}
+                        </div>
 
                     </div>
                     {tags.length ? (

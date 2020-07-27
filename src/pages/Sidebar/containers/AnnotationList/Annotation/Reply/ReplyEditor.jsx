@@ -15,7 +15,8 @@ class ReplyEditor extends Component {
     state = {
         reply: "",
         replyTags: [],
-        answer: false
+        answer: false,
+        question: false
     }
 
     replyChangeHandler = (value) => {
@@ -33,6 +34,12 @@ class ReplyEditor extends Component {
 
     markAnswer = () => {
         this.setState({ answer: !this.state.answer });
+        this.setState({ question: false });
+    }
+
+    markQuestion = () => {
+        this.setState({ question: !this.state.question });
+        this.setState({ answer: false });
     }
 
     submitReply = () => {
@@ -42,7 +49,8 @@ class ReplyEditor extends Component {
                 id: this.props.id,
                 reply: this.state.reply,
                 replyTags: this.state.replyTags,
-                answer: this.state.answer
+                answer: this.state.answer,
+                question: this.state.question
             }
         });
         this.props.finishReply();
@@ -67,11 +75,16 @@ class ReplyEditor extends Component {
                     </div>
                     <div className="ReplyButtonRow">
                         <div className={classNames({ buttonCol: true, question: showQuestionAnswerInterface })}>
-                            <button onClick={this.cancelReply} className="Cancel-Button">Cancel</button> &nbsp; &nbsp;
-                                <button onClick={this.submitReply} className="Publish-Button">Submit</button> &nbsp; &nbsp;
-                                {showQuestionAnswerInterface && (
-                                <button onClick={this.markAnswer} className={classNames({ answerButton: true, answered: this.state.answer })} >Answer?</button>
+                            {showQuestionAnswerInterface && (
+                                <div className="buttonRow">
+                                    <div onClick={this.markQuestion} className={classNames({ MarkQuestionAnswer: true, question: this.state.question })}>Q</div>
+                                    <div onClick={this.markAnswer} className={classNames({ MarkQuestionAnswer: true, answered: this.state.answer })} >A</div>
+                                </div>
                             )}
+                            &nbsp; &nbsp;
+                            <button onClick={this.cancelReply} className="Cancel-Button">Cancel</button> &nbsp; &nbsp;
+                                <button onClick={this.submitReply} className="Publish-Button">Submit</button>
+
                         </div>
                     </div>
                 </div>
