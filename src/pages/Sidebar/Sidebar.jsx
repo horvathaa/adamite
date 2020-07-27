@@ -1,6 +1,7 @@
 import React from 'react';
 import './Sidebar.css';
 import filter from '../../assets/img/SVGs/filter.svg';
+import Question from '../../assets/img/SVGs/Question.svg';
 import classNames from 'classnames';
 import Title from './containers/Title/Title';
 import Authentication from './containers//Authentication//Authentication';
@@ -243,11 +244,24 @@ class Sidebar extends React.Component {
     this.setState({ showFilter: !this.state.showFilter });
   };
 
+  sendRequestForQuestions = () => {
+    console.log('yep this was clicked');
+    chrome.runtime.sendMessage({
+      from: 'content',
+      msg: 'GET_USER_QUESTIONS'
+    },
+      response => {
+        console.log(response);
+        this.setState({ filteredAnnotations: response.annotations });
+      });
+  }
+
   clearSearchBoxInputText = () => {
     this.setState({ searchBarInputText: '' });
   };
 
   checkAnnoType(annotation, annoType) {
+    // console.log('annotation type', annotation, annoType);
     if (!annoType.length || annoType === 'all' || annotation.pinned) {
       return true;
     }
@@ -255,8 +269,10 @@ class Sidebar extends React.Component {
   }
 
   async checkSiteScope(annotation, siteScope) {
-    if (!siteScope.length || annotation.pinned) {
-      return true;
+    if (annotation !== undefined) {
+      if (!siteScope.length || annotation.pinned) {
+        return true;
+      }
     }
     if (siteScope.includes('onPage') && !siteScope.includes('acrossWholeSite')) {
       // to-do make this check smarter by ignoring parts of the url (#, ?, etc.)
@@ -272,7 +288,10 @@ class Sidebar extends React.Component {
           payload: { hostname: url.hostname, url: this.state.url }
         },
           response => {
+            // do something with cursor done here idk
+            // if(response.cursor === 'DONE'){
             resolve(response.annotations);
+            // }
           });
       });
     }
@@ -360,9 +379,12 @@ class Sidebar extends React.Component {
           this.checkTimeRange(annotation, filterSelection.timeRange) &&
           this.checkTags(annotation, filterSelection.tags)
       });
-      let newList = annotations.concat(this.state.filteredAnnotations);
-      newList = this.removeDuplicates(newList);
-      this.setState({ filteredAnnotations: newList });
+      // console.log('wtf is happening lmao', annotations);
+      // let newList = annotations.concat(this.state.filteredAnnotations);
+      // newList = this.removeDuplicates(newList); - for now commenting this out but for pagination
+      // purposes, will probably need this back - should have background transmit whether or not we're still paginating
+      // or whether all annotations across site have been received
+      this.setState({ filteredAnnotations: annotations });
     });
   }
 
@@ -372,7 +394,7 @@ class Sidebar extends React.Component {
     if (filterSelection.siteScope.includes('onPage') && !filterSelection.siteScope.includes('acrossWholeSite')) {
       this.setState({
         filteredAnnotations:
-          this.state.annotations.filter(annotation => {
+          this.state.filteredAnnotations.filter(annotation => {
             return this.checkSiteScope(annotation, filterSelection.siteScope) &&
               this.checkUserScope(annotation, filterSelection.userScope) &&
               this.checkAnnoType(annotation, filterSelection.annoType) &&
@@ -425,7 +447,7 @@ class Sidebar extends React.Component {
   };
 
   render() {
-    const { currentUser, annotations, dropdownOpen, filteredAnnotations, searchBarInputText } = this.state;
+    const { currentUser, filteredAnnotations, searchBarInputText } = this.state;
 
     if (currentUser === undefined) {
       return null;
@@ -460,6 +482,11 @@ class Sidebar extends React.Component {
               />
             </div>
             <div>
+              <div className="ShowMyQuestionsButtonContainer">
+                <div className="showMyQuestions" onClick={this.sendRequestForQuestions}>
+                  <img src={Question} className="Filter" alt="Question icon" /> &nbsp; My Questions
+                </div>
+              </div>
               {!this.state.showFilter && <FilterSummary filter={this.state.filterSelection} />}
               {this.state.showFilter &&
                 <Filter applyFilter={this.applyFilter}

@@ -9,7 +9,8 @@ import {
   updateAnnotationById,
   getAnnotationsAcrossSite,
   getAnnotationsByTag,
-  getCurrentUser
+  getCurrentUser,
+  getAllQuestionAnnotationsByUserId
 } from '../../firebase/index';
 import firebase from '../../firebase/firebase';
 
@@ -215,6 +216,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       from: 'background',
       payload: request.payload,
     });
+  }
+  else if (request.from === 'content' && request.msg === 'GET_USER_QUESTIONS') {
+    console.log('in background listening to this message');
+    getAllQuestionAnnotationsByUserId(getCurrentUser().uid).get().then(function (doc) {
+      console.log(doc.docs);
+      let annotations = [];
+      doc.docs.forEach(anno => {
+        annotations.push({ id: anno.id, ...anno.data() });
+      })
+      console.log(annotations);
+
+      sendResponse({ annotations: annotations });
+    });
+
   }
   else if (request.from === 'content' && request.msg === 'CONTENT_NOT_SELECTED') {
     chrome.tabs.sendMessage(sender.tab.id, {
