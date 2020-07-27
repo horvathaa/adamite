@@ -82,8 +82,12 @@ class ReplyEditor extends Component {
                                 </div>
                             )}
                             &nbsp; &nbsp;
-                            <button onClick={this.cancelReply} className="Cancel-Button">Cancel</button> &nbsp; &nbsp;
+                            <div className="cancelButtonContainer">
+                                <button onClick={this.cancelReply} className="Cancel-Button">Cancel</button> &nbsp; &nbsp;
+                            </div>
+                            <div className="publishButtonContainer">
                                 <button onClick={this.submitReply} className="Publish-Button">Submit</button>
+                            </div>
 
                         </div>
                     </div>

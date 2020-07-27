@@ -376,12 +376,10 @@
 }
 
 .buttonCol {
-  padding-left: 60%;
   display: flex;
 }
 
 .buttonCol.question {
-  padding-left: 40%;
   display: flex;
 }
 
