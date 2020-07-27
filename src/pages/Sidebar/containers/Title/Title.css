@@ -17,6 +17,7 @@
 .TitleContainer .container .row .col .Header {
   display: flex;
   padding: 5px;
+  background-color: white;
 }
 
 .TitleContainer .row {
@@ -26,6 +27,7 @@
   flex-wrap: inherit;
   margin-right: -15px;
   margin-left: -15px;
+  background-color: white;
 }
 
 .TitleContainer .row2 {
@@ -33,7 +35,7 @@
   display: table-cell;
   -ms-flex-wrap: auto;
   flex-wrap: inherit;
-  float: right;
+  /* float: right; */
   margin-right: -15px;
   margin-left: -15px;
 }
@@ -45,12 +47,14 @@
   padding-right: 15px;
   padding-left: 0px;
   display: inline-flex;
+  background-color: white;
 }
 
 .TitleContainer .container {
   width: 100%;
   margin-right: auto;
   margin-left: auto;
+  background-color: white;
 }
 
 .TitleContainer .col {
@@ -59,6 +63,7 @@
   padding-right: 15px;
   padding-left: 0px;
   margin: auto;
+  background-color: white;
 }
 
 .TitleContainer .Title {

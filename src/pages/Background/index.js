@@ -217,25 +217,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       payload: request.payload,
     });
   }
-  else if (request.from === 'content' && request.msg === 'GET_USER_QUESTIONS') {
-    console.log('in background listening to this message');
-    getAllQuestionAnnotationsByUserId(getCurrentUser().uid).get().then(function (doc) {
-      console.log(doc.docs);
-      let annotations = [];
-      doc.docs.forEach(anno => {
-        annotations.push({ id: anno.id, ...anno.data() });
-      })
-      console.log(annotations);
-
-      sendResponse({ annotations: annotations });
-    });
-
-  }
   else if (request.from === 'content' && request.msg === 'CONTENT_NOT_SELECTED') {
     chrome.tabs.sendMessage(sender.tab.id, {
       msg: 'CONTENT_NOT_SELECTED',
       from: 'background',
       payload: request.payload,
+    });
+  }
+  else if (request.from === 'content' && request.msg === 'GET_USER_QUESTIONS') {
+    getAllQuestionAnnotationsByUserId(getCurrentUser().uid).get().then(function (doc) {
+      let annotations = [];
+      doc.docs.forEach(anno => {
+        annotations.push({ id: anno.id, ...anno.data() });
+      });
+      sendResponse({ annotations: annotations });
     });
   }
   else if (request.from === 'content' && request.msg === 'REQUEST_PAGINATED_ACROSS_SITE_ANNOTATIONS') {

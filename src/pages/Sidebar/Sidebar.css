@@ -1,8 +1,29 @@
-.SidebarContainer {
+.WholeSidebar {
+  display: flex;
   background-color: whitesmoke;
   height: 100vh;
   background-repeat: repeat;
 }
+
+#SidebarContainer {
+  background-color: whitesmoke;
+  height: 100vh;
+  background-repeat: repeat;
+  /* display: inline-flex */
+}
+
+#QuestionList {
+  background-color: whitesmoke;
+  height: 100vh;
+  background-repeat: repeat;
+}
+
+.col {
+  background-color: whitesmoke;
+  background-repeat: repeat;
+  display: block;
+}
+
 .AnnotationTextContainer {
   text-align: center;
 }

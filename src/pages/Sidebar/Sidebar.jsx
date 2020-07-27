@@ -10,6 +10,8 @@ import NewAnnotation from './containers/NewAnnotation/NewAnnotation';
 import Filter from './containers/Filter/Filter';
 import FilterSummary from './containers/Filter/FilterSummary';
 import SearchBar from './containers/SearchBar/SearchBar';
+import QuestionList from './containers/QuestionList/QuestionList';
+import { updateSidebarWidth } from '../Background/helpers/sidebarHelper';
 
 class Sidebar extends React.Component {
   state = {
@@ -26,6 +28,8 @@ class Sidebar extends React.Component {
     dropdownOpen: false,
     searchBarInputText: '',
     showFilter: false,
+    showQuestions: false,
+    userQuestions: [],
     annotatingPage: false,
     pageName: '',
     filterSelection: {
@@ -245,14 +249,15 @@ class Sidebar extends React.Component {
   };
 
   sendRequestForQuestions = () => {
-    console.log('yep this was clicked');
+    // updateSidebarWidth(800);
     chrome.runtime.sendMessage({
       from: 'content',
       msg: 'GET_USER_QUESTIONS'
     },
       response => {
-        console.log(response);
         this.setState({ filteredAnnotations: response.annotations });
+        this.setState({ showQuestions: !this.state.showQuestions });
+        this.setState({ userQuestions: response.annotations });
       });
   }
 
@@ -466,76 +471,83 @@ class Sidebar extends React.Component {
       (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
     );
     return (
-      <div className="SidebarContainer" >
-        <Title currentUser={currentUser} handleShowAnnotatePage={this.handleShowAnnotatePage} />
-        {currentUser === null && <Authentication />}
-        {currentUser !== null && (
-          <div>
-            <div className={classNames({ TopRow: true, filterOpen: this.state.showFilter })}>
-              <div className="FilterButton">
-                <img src={filter} alt="Filter icon" onClick={this.handleShowFilter} className="Filter" />
-              </div>
-              <SearchBar
-                searchBarInputText={searchBarInputText}
-                handleSearchBarInputText={this.handleSearchBarInputText}
-                searchCount={filteredAnnotationsCopy.length}
-              />
-            </div>
+      <div className="row">
+        {this.state.showQuestions ? (
+          <div id='QuestionList' className="col">
+            <QuestionList questions={this.state.userQuestions} />
+          </div>
+        ) : (null)}
+        <div id='SidebarContainer' className={classNames({ 'col-8': this.state.showQuestions, 'col': !this.state.showQuestions })} >
+          <Title currentUser={currentUser} handleShowAnnotatePage={this.handleShowAnnotatePage} />
+          {currentUser === null && <Authentication />}
+          {currentUser !== null && (
             <div>
-              <div className="ShowMyQuestionsButtonContainer">
-                <div className="showMyQuestions" onClick={this.sendRequestForQuestions}>
-                  <img src={Question} className="Filter" alt="Question icon" /> &nbsp; My Questions
+              <div className={classNames({ TopRow: true, filterOpen: this.state.showFilter })}>
+                <div className="FilterButton">
+                  <img src={filter} alt="Filter icon" onClick={this.handleShowFilter} className="Filter" />
                 </div>
+                <SearchBar
+                  searchBarInputText={searchBarInputText}
+                  handleSearchBarInputText={this.handleSearchBarInputText}
+                  searchCount={filteredAnnotationsCopy.length}
+                />
               </div>
-              {!this.state.showFilter && <FilterSummary filter={this.state.filterSelection} />}
-              {this.state.showFilter &&
-                <Filter applyFilter={this.applyFilter}
-                  filterAnnotationLength={this.getFilteredAnnotationListLength}
-                  getFilteredAnnotations={this.getFilteredAnnotations}
-                  currentFilter={this.state.filterSelection}
-                  searchByTag={this.searchByTag}
-                />}
-              {this.state.newSelection !== null &&
-                !this.state.annotatingPage &&
-                this.state.newSelection.trim().length > 0 && (
+              <div>
+                {!this.state.showFilter && <div className="ShowMyQuestionsButtonContainer">
+                  <div className="showMyQuestions" onClick={this.sendRequestForQuestions}>
+                    <img src={Question} className="Filter" alt="Question icon" /> &nbsp; My Questions
+                </div>
+                </div>}
+                {!this.state.showFilter && <FilterSummary filter={this.state.filterSelection} />}
+                {this.state.showFilter &&
+                  <Filter applyFilter={this.applyFilter}
+                    filterAnnotationLength={this.getFilteredAnnotationListLength}
+                    getFilteredAnnotations={this.getFilteredAnnotations}
+                    currentFilter={this.state.filterSelection}
+                    searchByTag={this.searchByTag}
+                  />}
+                {this.state.newSelection !== null &&
+                  !this.state.annotatingPage &&
+                  this.state.newSelection.trim().length > 0 && (
+                    <NewAnnotation
+                      url={this.state.url}
+                      newSelection={this.state.newSelection}
+                      resetNewSelection={this.resetNewSelection}
+                      offsets={this.state.offsets}
+                      xpath={this.state.xpath}
+                      type={this.state.newAnnotationType}
+                    />
+                  )}
+                {this.state.annotatingPage &&
                   <NewAnnotation
                     url={this.state.url}
-                    newSelection={this.state.newSelection}
+                    newSelection={this.state.pageName}
                     resetNewSelection={this.resetNewSelection}
-                    offsets={this.state.offsets}
-                    xpath={this.state.xpath}
-                    type={this.state.newAnnotationType}
+                    offsets={null}
+                    xpath={null}
                   />
-                )}
-              {this.state.annotatingPage &&
-                <NewAnnotation
-                  url={this.state.url}
-                  newSelection={this.state.pageName}
-                  resetNewSelection={this.resetNewSelection}
-                  offsets={null}
-                  xpath={null}
-                />
-              }
-            </div>
-            <div>
-              {!filteredAnnotationsCopy.length && this.state.newSelection === null && !this.state.annotatingPage && !this.state.showFilter ? (
-                <div className="whoops">
-                  There's nothing here! Try
-                  <button className="ModifyFilter" onClick={this.openFilter}>
-                    modifying your filter,
+                }
+              </div>
+              <div>
+                {!filteredAnnotationsCopy.length && this.state.newSelection === null && !this.state.annotatingPage && !this.state.showFilter ? (
+                  <div className="whoops">
+                    There's nothing here! Try
+                    <button className="ModifyFilter" onClick={this.openFilter}>
+                      modifying your filter,
                   </button>
                   or creating a new annotation
-                </div>
-              ) : (
-                  <AnnotationList annotations={filteredAnnotationsCopy}
-                    currentUser={currentUser}
-                    url={this.state.url}
-                    requestFilterUpdate={this.requestChildAnchorFilterUpdate}
-                    notifyParentOfPinning={this.handlePinnedAnnotation} />
-                )}
+                  </div>
+                ) : (
+                    <AnnotationList annotations={filteredAnnotationsCopy}
+                      currentUser={currentUser}
+                      url={this.state.url}
+                      requestFilterUpdate={this.requestChildAnchorFilterUpdate}
+                      notifyParentOfPinning={this.handlePinnedAnnotation} />
+                  )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     );
   }
