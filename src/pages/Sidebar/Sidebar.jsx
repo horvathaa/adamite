@@ -249,16 +249,35 @@ class Sidebar extends React.Component {
   };
 
   sendRequestForQuestions = () => {
-    // updateSidebarWidth(800);
-    chrome.runtime.sendMessage({
-      from: 'content',
-      msg: 'GET_USER_QUESTIONS'
-    },
-      response => {
-        this.setState({ filteredAnnotations: response.annotations });
-        this.setState({ showQuestions: !this.state.showQuestions });
-        this.setState({ userQuestions: response.annotations });
+    let width;
+    chrome.storage.sync.get(['doc-annotator-sidebar-width'], result => {
+      console.log(result['doc-annotator-sidebar-width']);
+      width = JSON.parse(result['doc-annotator-sidebar-width']).width;
+    });
+    if (!this.state.showQuestions) {
+      width *= 1.3333;
+      updateSidebarWidth(width);
+      chrome.storage.sync.set({
+        'doc-annotator-sidebar-width': JSON.stringify({ width: width }),
       });
+      chrome.runtime.sendMessage({
+        from: 'content',
+        msg: 'GET_USER_QUESTIONS'
+      },
+        response => {
+          this.setState({ filteredAnnotations: response.annotations });
+          this.setState({ userQuestions: response.annotations });
+          this.setState({ showQuestions: true });
+        });
+    }
+    else {
+      width *= .666;
+      updateSidebarWidth(width);
+      chrome.storage.sync.set({
+        'doc-annotator-sidebar-width': JSON.stringify({ width: width }),
+      });
+      this.setState({ showQuestions: false });
+    }
   }
 
   clearSearchBoxInputText = () => {
@@ -474,7 +493,7 @@ class Sidebar extends React.Component {
       <div className="row">
         {this.state.showQuestions ? (
           <div id='QuestionList' className="col">
-            <QuestionList questions={this.state.userQuestions} />
+            <QuestionList questions={this.state.userQuestions} currentURL={this.state.url} />
           </div>
         ) : (null)}
         <div id='SidebarContainer' className={classNames({ 'col-8': this.state.showQuestions, 'col': !this.state.showQuestions })} >
