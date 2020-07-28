@@ -1,7 +1,6 @@
 import React from 'react';
 import './Sidebar.css';
 import filter from '../../assets/img/SVGs/filter.svg';
-import Question from '../../assets/img/SVGs/Question.svg';
 import classNames from 'classnames';
 import Title from './containers/Title/Title';
 import Authentication from './containers//Authentication//Authentication';
@@ -10,8 +9,6 @@ import NewAnnotation from './containers/NewAnnotation/NewAnnotation';
 import Filter from './containers/Filter/Filter';
 import FilterSummary from './containers/Filter/FilterSummary';
 import SearchBar from './containers/SearchBar/SearchBar';
-import QuestionList from './containers/QuestionList/QuestionList';
-import { updateSidebarWidth } from '../Background/helpers/sidebarHelper';
 
 class Sidebar extends React.Component {
   state = {
@@ -248,37 +245,6 @@ class Sidebar extends React.Component {
     this.setState({ showFilter: !this.state.showFilter });
   };
 
-  sendRequestForQuestions = () => {
-    let width;
-    chrome.storage.sync.get(['doc-annotator-sidebar-width'], result => {
-      console.log(result['doc-annotator-sidebar-width']);
-      width = JSON.parse(result['doc-annotator-sidebar-width']).width;
-    });
-    if (!this.state.showQuestions) {
-      width *= 1.3333;
-      updateSidebarWidth(width);
-      chrome.storage.sync.set({
-        'doc-annotator-sidebar-width': JSON.stringify({ width: width }),
-      });
-      chrome.runtime.sendMessage({
-        from: 'content',
-        msg: 'GET_USER_QUESTIONS'
-      },
-        response => {
-          this.setState({ filteredAnnotations: response.annotations });
-          this.setState({ userQuestions: response.annotations });
-          this.setState({ showQuestions: true });
-        });
-    }
-    else {
-      width *= .666;
-      updateSidebarWidth(width);
-      chrome.storage.sync.set({
-        'doc-annotator-sidebar-width': JSON.stringify({ width: width }),
-      });
-      this.setState({ showQuestions: false });
-    }
-  }
 
   clearSearchBoxInputText = () => {
     this.setState({ searchBarInputText: '' });
@@ -404,11 +370,11 @@ class Sidebar extends React.Component {
           this.checkTags(annotation, filterSelection.tags)
       });
       // console.log('wtf is happening lmao', annotations);
-      // let newList = annotations.concat(this.state.filteredAnnotations);
-      // newList = this.removeDuplicates(newList); - for now commenting this out but for pagination
+      let newList = annotations.concat(this.state.filteredAnnotations);
+      newList = this.removeDuplicates(newList); // - for now commenting this out but for pagination
       // purposes, will probably need this back - should have background transmit whether or not we're still paginating
       // or whether all annotations across site have been received
-      this.setState({ filteredAnnotations: annotations });
+      this.setState({ filteredAnnotations: newList });
     });
   }
 
@@ -490,83 +456,71 @@ class Sidebar extends React.Component {
       (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
     );
     return (
-      <div className="row">
-        {this.state.showQuestions ? (
-          <div id='QuestionList' className="col">
-            <QuestionList questions={this.state.userQuestions} currentURL={this.state.url} />
-          </div>
-        ) : (null)}
-        <div id='SidebarContainer' className={classNames({ 'col-8': this.state.showQuestions, 'col': !this.state.showQuestions })} >
-          <Title currentUser={currentUser} handleShowAnnotatePage={this.handleShowAnnotatePage} />
-          {currentUser === null && <Authentication />}
-          {currentUser !== null && (
-            <div>
-              <div className={classNames({ TopRow: true, filterOpen: this.state.showFilter })}>
-                <div className="FilterButton">
-                  <img src={filter} alt="Filter icon" onClick={this.handleShowFilter} className="Filter" />
-                </div>
-                <SearchBar
-                  searchBarInputText={searchBarInputText}
-                  handleSearchBarInputText={this.handleSearchBarInputText}
-                  searchCount={filteredAnnotationsCopy.length}
-                />
+      <div className="SidebarContainer" >
+        <Title currentUser={currentUser} handleShowAnnotatePage={this.handleShowAnnotatePage} />
+        {currentUser === null && <Authentication />}
+        {currentUser !== null && (
+          <div>
+            <div className={classNames({ TopRow: true, filterOpen: this.state.showFilter })}>
+              <div className="FilterButton">
+                <img src={filter} alt="Filter icon" onClick={this.handleShowFilter} className="Filter" />
               </div>
-              <div>
-                {!this.state.showFilter && <div className="ShowMyQuestionsButtonContainer">
-                  <div className="showMyQuestions" onClick={this.sendRequestForQuestions}>
-                    <img src={Question} className="Filter" alt="Question icon" /> &nbsp; My Questions
-                </div>
-                </div>}
-                {!this.state.showFilter && <FilterSummary filter={this.state.filterSelection} />}
-                {this.state.showFilter &&
-                  <Filter applyFilter={this.applyFilter}
-                    filterAnnotationLength={this.getFilteredAnnotationListLength}
-                    getFilteredAnnotations={this.getFilteredAnnotations}
-                    currentFilter={this.state.filterSelection}
-                    searchByTag={this.searchByTag}
-                  />}
-                {this.state.newSelection !== null &&
-                  !this.state.annotatingPage &&
-                  this.state.newSelection.trim().length > 0 && (
-                    <NewAnnotation
-                      url={this.state.url}
-                      newSelection={this.state.newSelection}
-                      resetNewSelection={this.resetNewSelection}
-                      offsets={this.state.offsets}
-                      xpath={this.state.xpath}
-                      type={this.state.newAnnotationType}
-                    />
-                  )}
-                {this.state.annotatingPage &&
+              <SearchBar
+                searchBarInputText={searchBarInputText}
+                handleSearchBarInputText={this.handleSearchBarInputText}
+                searchCount={filteredAnnotationsCopy.length}
+              />
+            </div>
+            <div>
+              {!this.state.showFilter && <FilterSummary filter={this.state.filterSelection} />}
+              {this.state.showFilter &&
+                <Filter applyFilter={this.applyFilter}
+                  filterAnnotationLength={this.getFilteredAnnotationListLength}
+                  getFilteredAnnotations={this.getFilteredAnnotations}
+                  currentFilter={this.state.filterSelection}
+                  searchByTag={this.searchByTag}
+                />}
+              {this.state.newSelection !== null &&
+                !this.state.annotatingPage &&
+                this.state.newSelection.trim().length > 0 && (
                   <NewAnnotation
                     url={this.state.url}
-                    newSelection={this.state.pageName}
+                    newSelection={this.state.newSelection}
                     resetNewSelection={this.resetNewSelection}
-                    offsets={null}
-                    xpath={null}
+                    offsets={this.state.offsets}
+                    xpath={this.state.xpath}
+                    type={this.state.newAnnotationType}
                   />
-                }
-              </div>
-              <div>
-                {!filteredAnnotationsCopy.length && this.state.newSelection === null && !this.state.annotatingPage && !this.state.showFilter ? (
-                  <div className="whoops">
-                    There's nothing here! Try
-                    <button className="ModifyFilter" onClick={this.openFilter}>
-                      modifying your filter,
+                )}
+              {this.state.annotatingPage &&
+                <NewAnnotation
+                  url={this.state.url}
+                  newSelection={this.state.pageName}
+                  resetNewSelection={this.resetNewSelection}
+                  offsets={null}
+                  xpath={null}
+                />
+              }
+            </div>
+            <div>
+              {!filteredAnnotationsCopy.length && this.state.newSelection === null && !this.state.annotatingPage && !this.state.showFilter ? (
+                <div className="whoops">
+                  There's nothing here! Try
+                  <button className="ModifyFilter" onClick={this.openFilter}>
+                    modifying your filter,
                   </button>
                   or creating a new annotation
-                  </div>
-                ) : (
-                    <AnnotationList annotations={filteredAnnotationsCopy}
-                      currentUser={currentUser}
-                      url={this.state.url}
-                      requestFilterUpdate={this.requestChildAnchorFilterUpdate}
-                      notifyParentOfPinning={this.handlePinnedAnnotation} />
-                  )}
-              </div>
+                </div>
+              ) : (
+                  <AnnotationList annotations={filteredAnnotationsCopy}
+                    currentUser={currentUser}
+                    url={this.state.url}
+                    requestFilterUpdate={this.requestChildAnchorFilterUpdate}
+                    notifyParentOfPinning={this.handlePinnedAnnotation} />
+                )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     );
   }

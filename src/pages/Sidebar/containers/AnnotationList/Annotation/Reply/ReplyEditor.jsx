@@ -43,6 +43,7 @@ class ReplyEditor extends Component {
     }
 
     submitReply = () => {
+        console.log('submitting reply', this.props.id, this.state.reply, this.state.answer, this.state.question);
         chrome.runtime.sendMessage({
             msg: 'ADD_NEW_REPLY',
             payload: {

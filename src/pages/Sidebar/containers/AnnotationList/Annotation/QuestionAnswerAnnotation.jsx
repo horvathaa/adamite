@@ -55,6 +55,7 @@ class QuestionAnswerAnnotation extends Component {
             childAnchor, currentUrl, url, anchor, xpath, tags, annotationType,
             annotationContent, editing, replies } = this.props;
         const { replying, showReplies } = this.state;
+        // console.log('this annotation has id', id);
         let replyCountString = "";
         if (replies !== undefined) {
             if (replies.length > 1) {
