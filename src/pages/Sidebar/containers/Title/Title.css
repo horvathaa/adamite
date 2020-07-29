@@ -17,6 +17,7 @@
 .TitleContainer .container .row .col .Header {
   display: flex;
   padding: 5px;
+  background: white;
 }
 
 .TitleContainer .row {
@@ -56,9 +57,10 @@
 .TitleContainer .col {
   position: relative;
   width: 100%;
-  padding-right: 15px;
-  padding-left: 0px;
+  /* padding-right: 15px;
+  padding-left: 0px; */
   margin: auto;
+  background: white;
 }
 
 .TitleContainer .Title {

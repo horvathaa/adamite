@@ -9,7 +9,8 @@ import {
   updateAnnotationById,
   getAnnotationsAcrossSite,
   getAnnotationsByTag,
-  getCurrentUser
+  getCurrentUser,
+  getAllQuestionAnnotationsByUserId
 } from '../../firebase/index';
 import firebase from '../../firebase/firebase';
 
@@ -76,7 +77,6 @@ function promiseToComeBack(url) {
         annotations = removeDuplicates(annotations);
       }
       pageannotationsActive[pos].annotations = annotations.filter(anno => anno.url === url);
-      console.log('when is this getting called', annotations);
       broadcastAnnotationsUpdated("CONTENT_UPDATED", annotations)
       chrome.tabs.query({}, tabs => {
 
@@ -221,6 +221,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       msg: 'CONTENT_NOT_SELECTED',
       from: 'background',
       payload: request.payload,
+    });
+  }
+  else if (request.from === 'content' && request.msg === 'GET_USER_QUESTIONS') {
+    getAllQuestionAnnotationsByUserId(getCurrentUser().uid).get().then(function (doc) {
+      let annotations = [];
+      doc.docs.forEach(anno => {
+        annotations.push({ id: anno.id, ...anno.data() });
+      });
+      sendResponse({ annotations: annotations });
     });
   }
   else if (request.from === 'content' && request.msg === 'REQUEST_PAGINATED_ACROSS_SITE_ANNOTATIONS') {
