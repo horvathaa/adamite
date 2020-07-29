@@ -95,7 +95,8 @@ export const createAnnotation = async ({
     offsets,
     xpath,
     childAnchor,
-    pinned
+    pinned: AnnotationType === 'question',
+    replies: []
   };
   return db.collection(DB_COLLECTIONS.ANNOTATIONS).add(newAnnotation);
 };

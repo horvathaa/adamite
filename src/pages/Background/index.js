@@ -77,7 +77,6 @@ function promiseToComeBack(url) {
         annotations = removeDuplicates(annotations);
       }
       pageannotationsActive[pos].annotations = annotations.filter(anno => anno.url === url);
-      console.log('when is this getting called', annotations);
       broadcastAnnotationsUpdated("CONTENT_UPDATED", annotations)
       chrome.tabs.query({}, tabs => {
 

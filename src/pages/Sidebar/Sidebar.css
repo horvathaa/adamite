@@ -90,12 +90,22 @@
   padding: 8px 8px 8px 8px;
 }
 
+.userQuestions {
+  /* text-align: center; */
+  font-family: Arial, Helvetica, sans-serif;
+}
+
 .whoops {
   text-align: center;
   font-family: Helvetica;
   font-size: 0.9rem;
   padding: 4px 4px 4px 4px;
   color: #6B778C;
+}
+
+.userQuestionButtonContainer {
+  text-align: center;
+  padding-top: 1.5%;
 }
 
 .ModifyFilter {
@@ -107,7 +117,23 @@
   line-height: 1.5;
   border-radius: 0.2rem;
   border: none;
+  cursor: pointer;
 }
+
+.ModifyFilter.userQuestions {
+  background-color: white;
+  color: #6B778C;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  font-weight: bold;
+  line-height: 1.5;
+  border-radius: 0.2rem;
+  border: none;
+  cursor: pointer;
+  display: inline-block;
+  box-shadow: 2px 2px 2px #8888;
+}
+
 
 .FilterButton {
   padding: 4px 0px 0px 4px;

@@ -99,6 +99,13 @@ class Sidebar extends React.Component {
       }
     );
 
+    chrome.runtime.sendMessage({
+      from: 'content',
+      msg: 'GET_USER_QUESTIONS'
+    }, response => {
+      this.setState({ userQuestions: response.annotations });
+    })
+
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       if (
         request.from === 'background' &&
@@ -437,7 +444,7 @@ class Sidebar extends React.Component {
   };
 
   render() {
-    const { currentUser, filteredAnnotations, searchBarInputText } = this.state;
+    const { currentUser, filteredAnnotations, searchBarInputText, userQuestions } = this.state;
 
     if (currentUser === undefined) {
       return null;
@@ -455,6 +462,14 @@ class Sidebar extends React.Component {
     filteredAnnotationsCopy = filteredAnnotationsCopy.sort((a, b) =>
       (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
     );
+
+    let searchCount;
+    if (this.state.showQuestions) {
+      searchCount = filteredAnnotationsCopy.length + userQuestions.length;
+    }
+    else {
+      searchCount = filteredAnnotationsCopy.length;
+    }
     return (
       <div className="SidebarContainer" >
         <Title currentUser={currentUser} handleShowAnnotatePage={this.handleShowAnnotatePage} />
@@ -468,7 +483,7 @@ class Sidebar extends React.Component {
               <SearchBar
                 searchBarInputText={searchBarInputText}
                 handleSearchBarInputText={this.handleSearchBarInputText}
-                searchCount={filteredAnnotationsCopy.length}
+                searchCount={searchCount}
               />
             </div>
             <div>
@@ -502,6 +517,28 @@ class Sidebar extends React.Component {
                 />
               }
             </div>
+            <div className="userQuestions">
+              <div className="userQuestionButtonContainer">
+                <div className="ModifyFilter userQuestions" onClick={_ => { this.setState({ showQuestions: !this.state.showQuestions }) }}>
+                  {this.state.showQuestions ? ("Hide Questions") : ("Show Questions")}
+                </div>
+              </div>
+              {this.state.showQuestions ? (
+                <React.Fragment><AnnotationList annotations={userQuestions}
+                  currentUser={currentUser}
+                  url={this.state.url}
+                  requestFilterUpdate={this.requestChildAnchorFilterUpdate}
+                  notifyParentOfPinning={this.handlePinnedAnnotation} />
+                  <div className="userQuestionButtonContainer">
+                    <div className="ModifyFilter userQuestions" onClick={_ => { this.setState({ showQuestions: !this.state.showQuestions }) }}>
+                      {this.state.showQuestions ? ("Hide Questions") : ("Show Questions")}
+                    </div>
+                  </div>
+                </React.Fragment>
+              ) : (null)
+              }
+
+            </div>
             <div>
               {!filteredAnnotationsCopy.length && this.state.newSelection === null && !this.state.annotatingPage && !this.state.showFilter ? (
                 <div className="whoops">
@@ -520,7 +557,8 @@ class Sidebar extends React.Component {
                 )}
             </div>
           </div>
-        )}
+        )
+        }
       </div>
     );
   }
