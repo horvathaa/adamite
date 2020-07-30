@@ -129,7 +129,7 @@ class NewAnnotation extends React.Component {
   };
 
   render() {
-    const { newSelection, type } = this.props;
+    const { newSelection, type, annoContent } = this.props;
 
     const options = [
       'Default', 'To-do', 'Highlight', 'Navigation', 'Issue'
@@ -149,10 +149,12 @@ class NewAnnotation extends React.Component {
 
     const { annotationContent, submitted, tags } = this.state;
 
+    const annoBody = annoContent === "" ? annotationContent : annoContent;
+
     return (
       <React.Fragment>
         <CardWrapper
-          tags={tags} annotationContent={annotationContent}
+          tags={tags} annotationContent={annoBody}
           edit={!submitted}
           pageAnnotation={newSelection}
           annotationType={type}

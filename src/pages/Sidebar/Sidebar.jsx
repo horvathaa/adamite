@@ -126,12 +126,13 @@ class Sidebar extends React.Component {
         request.from === 'background' &&
         request.msg === 'CONTENT_SELECTED'
       ) {
-        const { selection, offsets, xpath, type } = request.payload;
+        const { selection, offsets, xpath, type, annoContent } = request.payload;
         this.setState({
           newSelection: selection,
           offsets: offsets,
           xpath: xpath,
-          newAnnotationType: type
+          newAnnotationType: type,
+          newAnnotationContent: annoContent
         });
       } else if (
         request.from === 'background' &&
@@ -505,6 +506,7 @@ class Sidebar extends React.Component {
                     offsets={this.state.offsets}
                     xpath={this.state.xpath}
                     type={this.state.newAnnotationType}
+                    annoContent={this.state.newAnnotationContent}
                   />
                 )}
               {this.state.annotatingPage &&

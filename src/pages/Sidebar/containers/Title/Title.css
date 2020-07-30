@@ -119,9 +119,9 @@
   border-bottom-width: 0; 
 }
 
-.dropdown-toggle::after {
+/* .dropdown-toggle::after {
   display:none !important;
-}
+} */
 
 .TitleContainer .container .row .btn {
   padding: 0px;
