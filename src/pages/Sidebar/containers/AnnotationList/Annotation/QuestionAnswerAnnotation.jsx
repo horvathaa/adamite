@@ -59,7 +59,7 @@ class QuestionAnswerAnnotation extends Component {
     render() {
         const { idx, id, collapsed, author, pin, currentUser, authorId,
             childAnchor, currentUrl, url, anchor, xpath, tags, annotationType,
-            annotationContent, editing, replies } = this.props;
+            annotationContent, editing, replies, isPrivate } = this.props;
         const { replying, showReplies } = this.state;
         let replyCountString = "";
         if (replies !== undefined) {
@@ -113,6 +113,7 @@ class QuestionAnswerAnnotation extends Component {
                                 <div className="userProfileContainer">
 
                                     <div className="author">
+                                        {isPrivate ? (<span role="img" aria-label="lock symbol">&#128274;</span>) : (null)}
                                         {author}
                                     </div>
                                     <div className="timestamp">

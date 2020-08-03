@@ -97,6 +97,7 @@ class NewAnnotation extends React.Component {
       offsets: offsets,
       tags: CardWrapperState.tags,
       annotationType: CardWrapperState.annotationType.toLowerCase(),
+      private: CardWrapperState.private
     };
     chrome.runtime.sendMessage(
       {

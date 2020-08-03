@@ -6,7 +6,16 @@ export const getAllAnnotationsByUserId = uid => {
 };
 
 export const getAllAnnotationsByUrl = url => {
-  return db.collection(DB_COLLECTIONS.ANNOTATIONS).where('url', '==', url);
+  return db.collection(DB_COLLECTIONS.ANNOTATIONS)
+    .where('url', '==', url)
+    .where('private', '==', false);
+};
+
+export const getPrivateAnnotationsByUrl = (url, uid) => {
+  return db.collection(DB_COLLECTIONS.ANNOTATIONS)
+    .where('url', '==', url)
+    .where('authorId', '==', uid)
+    .where('private', '==', true);
 };
 
 export const getAnnotationsAcrossSite = hostname => {
@@ -39,7 +48,16 @@ export const getAllQuestionAnnotationsByUserId = (uid) => {
   return db
     .collection(DB_COLLECTIONS.ANNOTATIONS)
     .where('authorId', '==', uid)
-    .where('type', '==', 'question');
+    .where('type', '==', 'question')
+    .where('private', '==', false);
+};
+
+export const getAllPrivateQuestionAnnotationsByUserId = (uid) => {
+  return db
+    .collection(DB_COLLECTIONS.ANNOTATIONS)
+    .where('authorId', '==', uid)
+    .where('type', '==', 'question')
+    .where('private', '==', true);
 };
 
 export const getAnnotationById = id => {
@@ -58,6 +76,16 @@ export const updateAnnotationById = (id, newAnnotationFields = {}) => {
   return getAnnotationById(id).update({ ...newAnnotationFields });
 };
 
+export const updateAllAnnotations = () => {
+  db.collection(DB_COLLECTIONS.ANNOTATIONS).get().then(function (querySnapshot) {
+    querySnapshot.forEach(function (doc) {
+      doc.ref.update({
+        // fill in here what needs updating
+      });
+    });
+  });
+}
+
 export const createAnnotation = async ({
   authorId,
   taskId,
@@ -71,7 +99,8 @@ export const createAnnotation = async ({
   offsets,
   xpath,
   childAnchor,
-  pinned
+  pinned,
+  isPrivate
 }) => {
   authorId = authorId ? authorId : getCurrentUserId();
   if (!authorId) {
@@ -96,7 +125,8 @@ export const createAnnotation = async ({
     xpath,
     childAnchor,
     pinned: AnnotationType === 'question',
-    replies: []
+    replies: [],
+    private: isPrivate
   };
   return db.collection(DB_COLLECTIONS.ANNOTATIONS).add(newAnnotation);
 };

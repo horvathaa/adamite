@@ -13,7 +13,6 @@ var queue = [];
 
 const QuestionMenu = ({ selection, xpathToNode, offsets, removePopover }) => {
     const [selected, setSelected] = useState(null);
-    console.log('creating question menu');
 
     useEffect(() => {
         setSelected(selection.toString());

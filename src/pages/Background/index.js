@@ -5,12 +5,14 @@ import './helpers/sidebarHelper';
 import { clean } from './helpers/objectCleaner';
 import {
   getAllAnnotationsByUrl,
+  getPrivateAnnotationsByUrl,
   createAnnotation,
   updateAnnotationById,
   getAnnotationsAcrossSite,
   getAnnotationsByTag,
   getCurrentUser,
-  getAllQuestionAnnotationsByUserId
+  getAllQuestionAnnotationsByUserId,
+  getAllPrivateQuestionAnnotationsByUserId
 } from '../../firebase/index';
 import firebase from '../../firebase/firebase';
 
@@ -33,6 +35,7 @@ var pageannotationsActive = [];
 let annotationsAcrossWholeSite = [];
 
 const broadcastAnnotationsUpdated = (message, annotations) => {
+  console.log('annos in broadcast', annotations);
   chrome.runtime.sendMessage({
     msg: message,
     from: 'background',
@@ -62,32 +65,51 @@ function promiseToComeBack(url) {
     unsubscribe: null
   });
   return new Promise((resolve, reject) => {
+    let annotations = [];
     resolve(getAllAnnotationsByUrl(url).onSnapshot(querySnapshot => {
-      let annotations = [];
       querySnapshot.forEach(snapshot => {
         annotations.push({
           id: snapshot.id,
           ...snapshot.data(),
         });
       });
-      var pos = pageannotationsActive.map(function (e) { return e.url; }).indexOf(url);
-      let host = new URL(url).hostname;
-      if (annotationsAcrossWholeSite[host] !== undefined) {
-        annotations.concat(annotationsAcrossWholeSite[host].annotations);
-        annotations = removeDuplicates(annotations);
-      }
-      pageannotationsActive[pos].annotations = annotations.filter(anno => anno.url === url);
-      broadcastAnnotationsUpdated("CONTENT_UPDATED", annotations)
-      chrome.tabs.query({}, tabs => {
-
-        tabs = tabs.filter(e => e.url === pageannotationsActive[pos].url)
-        tabs.forEach(function (tab) {
-          chrome.tabs.sendMessage(tab.id, {
-            msg: 'REFRESH_HIGHLIGHTS',
-            payload: annotations,
+      console.log('annotations', annotations);
+      getPrivateAnnotationsByUrl(url, getCurrentUser().uid).get().then(querySnapshot => {
+        if (querySnapshot.empty) {
+          console.log('is empty');
+        }
+        else {
+          querySnapshot.forEach(snapshot => {
+            console.log(snapshot.data());
+            annotations.push({
+              id: snapshot.id,
+              ...snapshot.data(),
+            });
           });
-        });
-        console.log("these are changed tabs", tabs)
+        }
+        console.log('meh', annotations);
+        console.log('annos', annotations);
+        var pos = pageannotationsActive.map(function (e) { return e.url; }).indexOf(url);
+        let host = new URL(url).hostname;
+        if (annotationsAcrossWholeSite[host] !== undefined) {
+          annotations.concat(annotationsAcrossWholeSite[host].annotations);
+          annotations = removeDuplicates(annotations);
+        }
+        pageannotationsActive[pos].annotations = annotations.filter(anno => anno.url === url);
+        console.log('about to broadcast to sidebar', annotations);
+        annotations = removeDuplicates(annotations);
+        broadcastAnnotationsUpdated("CONTENT_UPDATED", annotations)
+        chrome.tabs.query({}, tabs => {
+          tabs = tabs.filter(e => e.url === pageannotationsActive[pos].url)
+          tabs.forEach(function (tab) {
+            chrome.tabs.sendMessage(tab.id, {
+              msg: 'REFRESH_HIGHLIGHTS',
+              payload: annotations,
+            });
+          });
+          console.log("these are changed tabs", tabs)
+        })
+
       });
     }));
   });
@@ -102,10 +124,23 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   else if (request.msg === 'GET_ANNOTATIONS_PAGE_LOAD') {
     var findActiveUrl = pageannotationsActive.filter(e => e.url === request.url)
     if (findActiveUrl.length !== 0) {
-      broadcastAnnotationsUpdatedTab("CONTENT_UPDATED", findActiveUrl[0].annotations, sender.tab.id);
-      broadcastAnnotationsUpdatedTab("HIGHLIGHT_ANNOTATIONS", findActiveUrl[0].annotations, sender.tab.id);
+      let annotationsToTransmit = findActiveUrl[0].annotations.filter(anno => {
+        if (anno.private && anno.authorId === getCurrentUser().uid) {
+          return true;
+        }
+        else if (!anno.private) {
+          return true;
+        }
+        else {
+          return false;
+        }
+      });
+      annotationsToTransmit = removeDuplicates(annotationsToTransmit);
+      broadcastAnnotationsUpdatedTab("CONTENT_UPDATED", annotationsToTransmit, sender.tab.id);
+      broadcastAnnotationsUpdatedTab("HIGHLIGHT_ANNOTATIONS", annotationsToTransmit, sender.tab.id);
     }
     else {
+      console.log('in else');
       promiseToComeBack(request.url)
         .then(function (e) {
           pageannotationsActive[pageannotationsActive.length - 1].unsubscribe = e;
@@ -153,7 +188,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       hostname,
       pinned: false,
       AnnotationTags: content.tags,
-      childAnchor: []
+      childAnchor: [],
+      isPrivate: content.private
     }).then(value => {
       sendResponse({
         msg: 'DONE',
@@ -224,12 +260,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
   }
   else if (request.from === 'content' && request.msg === 'GET_USER_QUESTIONS') {
+    let annotations = [];
     getAllQuestionAnnotationsByUserId(getCurrentUser().uid).get().then(function (doc) {
-      let annotations = [];
       doc.docs.forEach(anno => {
         annotations.push({ id: anno.id, ...anno.data() });
       });
-      sendResponse({ annotations: annotations });
+      getAllPrivateQuestionAnnotationsByUserId(getCurrentUser().uid).get().then(function (doc) {
+        doc.docs.forEach(anno => {
+          annotations.push({ id: anno.id, ...anno.data() });
+        });
+        console.log('annotations', annotations);
+        sendResponse({ annotations: annotations });
+      })
     });
   }
   else if (request.from === 'content' && request.msg === 'REQUEST_PAGINATED_ACROSS_SITE_ANNOTATIONS') {
