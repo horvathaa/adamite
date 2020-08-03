@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getElasticApiKey } from '../../../firebase/index';
 
-const path = 'https://f1a4257d658c481787cc581e18b9c97e.us-central1.gcp.cloud.es.io:9243/annotations/_search?size=50';
+const path = 'https://f1a4257d658c481787cc581e18b9c97e.us-central1.gcp.cloud.es.io:9243/annotations/_search';
 
 function getAuthKeyElastic() {
     return
@@ -25,21 +25,33 @@ function keyWrapper(passedFunction, args) {
     });
 }
 
+function findWhereMatched(res, value) {
+    if (res["anchorContent"].toLowerCase().indexOf(value) >= 0) return "Anchor Content";
+    if (res["content"].toLowerCase().indexOf(value) >= 0) return "User Description";
+    if (res["hostname"] !== undefined && res["hostname"].toLowerCase().indexOf(value) >= 0) return "Hostname";
+    if (res["tags"].length !== 0 && res["tags"].indexOf(value) >= 0) return "Tag";
+}
+
 function search(key, userSearch) {
     return new Promise((resolve, reject) => {
         var query = {
             "query": {
-                "match_phrase": {
-                    "anchorContent": userSearch
-                },
-                "match_phrase": {
-                    "content": userSearch
-                },
+                "match": {
+                    "partialSearch": userSearch,
+                }
             }
+            // "query": {
+            //     "match_phrase": {
+            //         "anchorContent": userSearch
+            //     },
+            //     "match_phrase": {
+            //         "content": userSearch
+            //     },
+            // }
         };
         console.log("in test run")
         const AuthStr = 'ApiKey ' + key;
-        axios.get(path,
+        axios.get(path + '?size=10',
             {
                 params: {
                     source: JSON.stringify(query),
@@ -56,14 +68,18 @@ function search(key, userSearch) {
                 console.log("this is the res")
                 if (res.data.hits.hits.length !== 0) {
                     res.data.hits.hits.forEach(function (element) {
+                        console.log(element._source)
+                        userSearch = userSearch.toLowerCase();
+                        element._source["matchedAt"] = findWhereMatched(element._source, userSearch)
                         var obj = element._source
                         obj["id"] = element._id
+
                         finalArray.push(obj)
                     });
                 }
                 console.log(res);
                 console.log("this is the res array", finalArray)
-                resolve(finalArray);
+                resolve(res);
             })
             .catch((err) => {
                 console.log('err', err);
