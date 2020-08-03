@@ -1,8 +1,30 @@
-.SidebarContainer {
+.WholeSidebar {
+  display: flex;
   background-color: whitesmoke;
   height: 100vh;
   background-repeat: repeat;
 }
+
+.SidebarContainer {
+  background-color: whitesmoke;
+  height: 100vh;
+  background-repeat: repeat;
+  /* display: inline-flex */
+}
+
+#QuestionList {
+  background-color: whitesmoke;
+  height: 100vh;
+  background-repeat: repeat;
+  background: white;
+}
+
+.col {
+  background-color: whitesmoke;
+  background-repeat: repeat;
+  display: block;
+}
+
 .AnnotationTextContainer {
   text-align: center;
 }
@@ -68,12 +90,22 @@
   padding: 8px 8px 8px 8px;
 }
 
+.userQuestions {
+  /* text-align: center; */
+  font-family: Arial, Helvetica, sans-serif;
+}
+
 .whoops {
   text-align: center;
   font-family: Helvetica;
   font-size: 0.9rem;
   padding: 4px 4px 4px 4px;
   color: #6B778C;
+}
+
+.userQuestionButtonContainer {
+  text-align: center;
+  padding-top: 1.5%;
 }
 
 .ModifyFilter {
@@ -85,10 +117,42 @@
   line-height: 1.5;
   border-radius: 0.2rem;
   border: none;
+  cursor: pointer;
 }
+
+.ModifyFilter.userQuestions {
+  background-color: white;
+  color: #6B778C;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  font-weight: bold;
+  line-height: 1.5;
+  border-radius: 0.2rem;
+  border: none;
+  cursor: pointer;
+  display: inline-block;
+  box-shadow: 2px 2px 2px #8888;
+}
+
 
 .FilterButton {
   padding: 4px 0px 0px 4px;
+}
+
+.ShowMyQuestionsButtonContainer {
+  padding: 5px;
+  background: white;
+  color: #6B778C;
+  cursor: pointer;
+
+  flex: 1;
+  min-width: 0;
+  transition: all 0.1s ease-in;
+  position: relative;
+}
+
+.showMyQuestions {
+  display: flex;
 }
 
 .FilterSummary {

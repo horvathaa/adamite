@@ -3,6 +3,11 @@ import { xpathConversion, getNodesInRange } from './AnchorHelpers';
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import './anchor-box.css';
+import '../../../../assets/img/SVGs/Default.svg';
+import '../../../../assets/img/SVGs/Highlight.svg';
+import '../../../../assets/img/SVGs/Todo.svg';
+import '../../../../assets/img/SVGs/Question.svg';
+import '../../../../assets/img/SVGs/Issue.svg';
 
 var queue = [];
 

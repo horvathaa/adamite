@@ -26,6 +26,8 @@ class Sidebar extends React.Component {
     dropdownOpen: false,
     searchBarInputText: '',
     showFilter: false,
+    showQuestions: false,
+    userQuestions: [],
     annotatingPage: false,
     pageName: '',
     filterSelection: {
@@ -97,6 +99,13 @@ class Sidebar extends React.Component {
         );
       }
     );
+
+    chrome.runtime.sendMessage({
+      from: 'content',
+      msg: 'GET_USER_QUESTIONS'
+    }, response => {
+      this.setState({ userQuestions: response.annotations });
+    })
 
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       if (
@@ -280,11 +289,13 @@ class Sidebar extends React.Component {
     this.setState({ showFilter: !this.state.showFilter });
   };
 
+
   clearSearchBoxInputText = () => {
     this.setState({ searchBarInputText: '' });
   };
 
   checkAnnoType(annotation, annoType) {
+    // console.log('annotation type', annotation, annoType);
     if (!annoType.length || annoType === 'all' || annotation.pinned) {
       return true;
     }
@@ -292,8 +303,10 @@ class Sidebar extends React.Component {
   }
 
   async checkSiteScope(annotation, siteScope) {
-    if (!siteScope.length || annotation.pinned) {
-      return true;
+    if (annotation !== undefined) {
+      if (!siteScope.length || annotation.pinned) {
+        return true;
+      }
     }
     if (siteScope.includes('onPage') && !siteScope.includes('acrossWholeSite')) {
       // to-do make this check smarter by ignoring parts of the url (#, ?, etc.)
@@ -309,7 +322,10 @@ class Sidebar extends React.Component {
           payload: { hostname: url.hostname, url: this.state.url }
         },
           response => {
+            // do something with cursor done here idk
+            // if(response.cursor === 'DONE'){
             resolve(response.annotations);
+            // }
           });
       });
     }
@@ -397,8 +413,11 @@ class Sidebar extends React.Component {
           this.checkTimeRange(annotation, filterSelection.timeRange) &&
           this.checkTags(annotation, filterSelection.tags)
       });
+      // console.log('wtf is happening lmao', annotations);
       let newList = annotations.concat(this.state.filteredAnnotations);
-      newList = this.removeDuplicates(newList);
+      newList = this.removeDuplicates(newList); // - for now commenting this out but for pagination
+      // purposes, will probably need this back - should have background transmit whether or not we're still paginating
+      // or whether all annotations across site have been received
       this.setState({ filteredAnnotations: newList });
     });
   }
@@ -409,7 +428,7 @@ class Sidebar extends React.Component {
     if (filterSelection.siteScope.includes('onPage') && !filterSelection.siteScope.includes('acrossWholeSite')) {
       this.setState({
         filteredAnnotations:
-          this.state.annotations.filter(annotation => {
+          this.state.filteredAnnotations.filter(annotation => {
             return this.checkSiteScope(annotation, filterSelection.siteScope) &&
               this.checkUserScope(annotation, filterSelection.userScope) &&
               this.checkAnnoType(annotation, filterSelection.annoType) &&
@@ -462,7 +481,7 @@ class Sidebar extends React.Component {
   };
 
   render() {
-    const { currentUser, annotations, dropdownOpen, filteredAnnotations, searchBarInputText, searchedAnnotations } = this.state;
+    const { currentUser, filteredAnnotations, searchBarInputText, searchedAnnotations } = this.state;
 
     if (currentUser === undefined) {
       return null;
@@ -481,6 +500,14 @@ class Sidebar extends React.Component {
     filteredAnnotationsCopy = filteredAnnotationsCopy.sort((a, b) =>
       (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
     );
+
+    let searchCount;
+    if (this.state.showQuestions) {
+      searchCount = filteredAnnotationsCopy.length + userQuestions.length;
+    }
+    else {
+      searchCount = filteredAnnotationsCopy.length;
+    }
     return (
       <div className="SidebarContainer" >
         <Title currentUser={currentUser} handleShowAnnotatePage={this.handleShowAnnotatePage} />
@@ -494,7 +521,7 @@ class Sidebar extends React.Component {
               <SearchBar
                 searchBarInputText={searchBarInputText}
                 handleSearchBarInputText={this.handleSearchBarInputText}
-                searchCount={filteredAnnotationsCopy.length}
+                searchCount={searchCount}
               />
             </div>
             <div>
@@ -528,6 +555,28 @@ class Sidebar extends React.Component {
                 />
               }
             </div>
+            <div className="userQuestions">
+              <div className="userQuestionButtonContainer">
+                <div className="ModifyFilter userQuestions" onClick={_ => { this.setState({ showQuestions: !this.state.showQuestions }) }}>
+                  {this.state.showQuestions ? ("Hide Questions") : ("Show Questions")}
+                </div>
+              </div>
+              {this.state.showQuestions ? (
+                <React.Fragment><AnnotationList annotations={userQuestions}
+                  currentUser={currentUser}
+                  url={this.state.url}
+                  requestFilterUpdate={this.requestChildAnchorFilterUpdate}
+                  notifyParentOfPinning={this.handlePinnedAnnotation} />
+                  <div className="userQuestionButtonContainer">
+                    <div className="ModifyFilter userQuestions" onClick={_ => { this.setState({ showQuestions: !this.state.showQuestions }) }}>
+                      {this.state.showQuestions ? ("Hide Questions") : ("Show Questions")}
+                    </div>
+                  </div>
+                </React.Fragment>
+              ) : (null)
+              }
+
+            </div>
             <div>
               {!filteredAnnotationsCopy.length && this.state.newSelection === null && !this.state.annotatingPage && !this.state.showFilter ? (
                 <div className="whoops">
@@ -546,7 +595,8 @@ class Sidebar extends React.Component {
                 )}
             </div>
           </div>
-        )}
+        )
+        }
       </div>
     );
   }

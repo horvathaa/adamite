@@ -81,7 +81,7 @@ const toggleSidebar = (toStatus = null) => {
   );
 };
 
-const updateSidebarWidth = (width) => {
+export const updateSidebarWidth = (width) => {
   chrome.tabs.query(
     {
       currentWindow: true,

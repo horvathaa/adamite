@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import RichTextEditor from '../../../RichTextEditor/RichTextEditor';
 import TagsInput from 'react-tagsinput';
+import classNames from 'classnames';
 import '../Annotation.css';
 import './ReplyEditor.css';
 
@@ -13,7 +14,9 @@ class ReplyEditor extends Component {
 
     state = {
         reply: "",
-        replyTags: []
+        replyTags: [],
+        answer: false,
+        question: false
     }
 
     replyChangeHandler = (value) => {
@@ -29,19 +32,33 @@ class ReplyEditor extends Component {
         this.setState({ replyTags: newTag })
     }
 
+    markAnswer = () => {
+        this.setState({ answer: !this.state.answer });
+        this.setState({ question: false });
+    }
+
+    markQuestion = () => {
+        this.setState({ question: !this.state.question });
+        this.setState({ answer: false });
+    }
+
     submitReply = () => {
+        console.log('submitting reply', this.props.id, this.state.reply, this.state.answer, this.state.question);
         chrome.runtime.sendMessage({
             msg: 'ADD_NEW_REPLY',
             payload: {
                 id: this.props.id,
                 reply: this.state.reply,
-                replyTags: this.state.replyTags
+                replyTags: this.state.replyTags,
+                answer: this.state.answer,
+                question: this.state.question
             }
         });
         this.props.finishReply();
     }
 
     render() {
+        const { showQuestionAnswerInterface } = this.props;
         const { replyTags } = this.state;
         return (
             <React.Fragment>
@@ -58,9 +75,21 @@ class ReplyEditor extends Component {
                         </div>
                     </div>
                     <div className="ReplyButtonRow">
-                        <div className="buttonCol">
-                            <button onClick={this.cancelReply} className="Cancel-Button">Cancel</button> &nbsp; &nbsp;
+                        <div className={classNames({ buttonCol: true, question: showQuestionAnswerInterface })}>
+                            {showQuestionAnswerInterface && (
+                                <div className="buttonRow">
+                                    <div onClick={this.markQuestion} className={classNames({ MarkQuestionAnswer: true, question: this.state.question })}>Q</div>
+                                    <div onClick={this.markAnswer} className={classNames({ MarkQuestionAnswer: true, answered: this.state.answer })} >A</div>
+                                </div>
+                            )}
+                            &nbsp; &nbsp;
+                            <div className="cancelButtonContainer">
+                                <button onClick={this.cancelReply} className="Cancel-Button">Cancel</button> &nbsp; &nbsp;
+                            </div>
+                            <div className="publishButtonContainer">
                                 <button onClick={this.submitReply} className="Publish-Button">Submit</button>
+                            </div>
+
                         </div>
                     </div>
                 </div>

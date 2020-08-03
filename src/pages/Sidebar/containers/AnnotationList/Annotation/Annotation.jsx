@@ -218,13 +218,6 @@ class Annotation extends Component {
   render() {
     const { anchor, idx, id, active, authorId, currentUser, trashed, timeStamp, url, currentUrl, childAnchor, xpath, replies } = this.props;
     const { editing, collapsed, tags, content, annotationType, author, pinned } = this.state;
-    // let pin;
-    // if (pinned) {
-    //   pin = fillpin;
-    // }
-    // else {
-    //   pin = outlinepin;
-    // }
     if (annotationType === 'default' && !trashed) {
       return (<DefaultAnnotation
         idx={idx}

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import profile from '../../../../../../assets/img/SVGs/Profile.svg';
 import CustomTag from '../../../CustomTag/CustomTag';
+import { FcCheckmark } from 'react-icons/fc';
 import '../Annotation.css';
 import './Reply.css';
 
@@ -20,8 +21,8 @@ class Reply extends Component {
     }
 
     render() {
-        const { content, author, idx, tags } = this.props;
-        const displayAuthor = author.substring(0, author.indexOf('@'));
+        const { content, author, idx, tags, answer, question } = this.props;
+        // const displayAuthor = author.substring(0, author.indexOf('@'));
         return (
             <React.Fragment>
                 {idx !== 0 && <hr className="divider" />}
@@ -32,7 +33,7 @@ class Reply extends Component {
                         </div>
                         <div className="userProfileContainer">
                             <div className="author">
-                                {displayAuthor}
+                                {author}
                             </div>
                             <div className="timestamp">
                                 {this.formatTimestamp()}
@@ -40,7 +41,14 @@ class Reply extends Component {
                         </div>
                     </div>
                     <div className="annotationContent">
-                        {content}
+                        <div className="QuestionAnswerMarker">
+                            {answer !== undefined && answer ? "A" : (null)}
+                            {question !== undefined && question ? "Q" : (null)}
+                        </div>
+                        <div className="contentBody">
+                            {content}
+                        </div>
+
                     </div>
                     {tags.length ? (
                         <div className="TagRow">
@@ -54,7 +62,6 @@ class Reply extends Component {
                             </ul>
                         </div>
                     ) : (null)}
-
                 </li>
             </React.Fragment>
         );

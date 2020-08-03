@@ -43,7 +43,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     else if (request.msg === 'REFRESH_HIGHLIGHTS') {
         var span = document.getElementsByClassName("highlight-adamite-annotation");
         removeSpans(span);
-        console.log("in here", request)
+        // console.log("in here", request)
         const annotationsOnPage = request.payload;
         if (annotationsOnPage.length) {
             annotationsOnPage.reverse().forEach(anno => highlightRange(anno));

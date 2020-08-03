@@ -66,7 +66,7 @@ export default class Title extends React.Component {
           <div className="row">
             <div className="col">
               <div className="Header">
-                <img className="TitleIcon" src={chrome.extension.getURL('Adamite.png')}></img>
+                <img className="TitleIcon" src={chrome.extension.getURL('Adamite.png')} alt="Adamite logo"></img>
                 <div className="Title">{APP_NAME_FULL}</div>
               </div>
             </div>

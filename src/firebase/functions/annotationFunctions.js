@@ -35,6 +35,13 @@ export const getAllAnnotations = () => {
   return db.collection(DB_COLLECTIONS.ANNOTATIONS);
 };
 
+export const getAllQuestionAnnotationsByUserId = (uid) => {
+  return db
+    .collection(DB_COLLECTIONS.ANNOTATIONS)
+    .where('authorId', '==', uid)
+    .where('type', '==', 'question');
+};
+
 export const getAnnotationById = id => {
   return db.collection(DB_COLLECTIONS.ANNOTATIONS).doc(id);
 };
@@ -88,7 +95,8 @@ export const createAnnotation = async ({
     offsets,
     xpath,
     childAnchor,
-    pinned
+    pinned: AnnotationType === 'question',
+    replies: []
   };
   return db.collection(DB_COLLECTIONS.ANNOTATIONS).add(newAnnotation);
 };

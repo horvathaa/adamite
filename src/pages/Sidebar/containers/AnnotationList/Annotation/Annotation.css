@@ -376,7 +376,11 @@
 }
 
 .buttonCol {
-  padding-left: 60%;
+  display: flex;
+}
+
+.buttonCol.question {
+  display: flex;
 }
 
 .HorizontalLine {
