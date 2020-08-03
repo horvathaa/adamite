@@ -2,6 +2,7 @@ import '../../assets/img/Adamite.png';
 import '../../assets/img/icon-128.png';
 import './helpers/authHelper';
 import './helpers/sidebarHelper';
+import './helpers/elasticSearchWrapper';
 import { clean } from './helpers/objectCleaner';
 import {
   getAllAnnotationsByUrl,
@@ -69,6 +70,7 @@ function promiseToComeBack(url) {
           ...snapshot.data(),
         });
       });
+      console.log("annotationsssss", annotations)
       var pos = pageannotationsActive.map(function (e) { return e.url; }).indexOf(url);
       let host = new URL(url).hostname;
       if (annotationsAcrossWholeSite[host] !== undefined) {

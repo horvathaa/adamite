@@ -15,6 +15,7 @@ class Sidebar extends React.Component {
     url: '',
     annotations: [],
     filteredAnnotations: [],
+    searchedAnnotations: [],
     newSelection: null,
     rect: null,
     offsets: null,
@@ -232,11 +233,47 @@ class Sidebar extends React.Component {
     this.setState({ filteredAnnotations: remainingAnnos });
   };
 
+  ElasticSearch = (inputText) => {
+    return new Promise((resolve, reject) => {
+      chrome.runtime.sendMessage({
+        msg: 'SEARCH_ELASTIC',
+        userSearch: inputText
+      },
+        response => {
+          resolve(response.response);
+        });
+    });
+  }
+
+
   handleSearchBarInputText = (event) => {
     let inputText = event.target.value;
-    this.setState({
-      searchBarInputText: inputText,
+
+    console.log("handlebar", inputText)
+    this.ElasticSearch(inputText).then((searchAnnotations) => {
+      //console.log("here is the result", searchAnnotations)
+      this.setState({
+        searchBarInputText: inputText,
+        searchedAnnotations: searchAnnotations
+      });
     });
+    // chrome.runtime.sendMessage(
+    //   {
+    //     msg: 'SEARCH_ELASTIC',
+    //     userSearch: inputText
+    //   },
+    //   function (response) {
+    //     this.setState({
+    //       searchBarInputText: inputText,
+    //       searchedAnnotations: response.response
+    //     });
+    //     console.log("here is the response", response.response)
+    //   });
+
+
+    // this.setState({
+    //   searchBarInputText: inputText,
+    // });
   };
 
   handleShowFilter = () => {
@@ -425,20 +462,21 @@ class Sidebar extends React.Component {
   };
 
   render() {
-    const { currentUser, annotations, dropdownOpen, filteredAnnotations, searchBarInputText } = this.state;
+    const { currentUser, annotations, dropdownOpen, filteredAnnotations, searchBarInputText, searchedAnnotations } = this.state;
 
     if (currentUser === undefined) {
       return null;
     }
-
+    console.log("this is the annotations", filteredAnnotations)
     const inputText = searchBarInputText.toLowerCase();
-    let filteredAnnotationsCopy = [];
-    filteredAnnotations.forEach((anno) => {
-      const { content, anchorContent } = anno;
-      if (content.toLowerCase().includes(inputText) || anchorContent.toLowerCase().includes(inputText)) {
-        filteredAnnotationsCopy.push(anno);
-      }
-    });
+    let filteredAnnotationsCopy = searchedAnnotations.length === 0 ? filteredAnnotations : searchedAnnotations;
+    //let filteredAnnotationsCopy = [];
+    // filteredAnnotations.forEach((anno) => {
+    //   const { content, anchorContent } = anno;
+    //   if (content.toLowerCase().includes(inputText) || anchorContent.toLowerCase().includes(inputText)) {
+    //     filteredAnnotationsCopy.push(anno);
+    //   }
+    // });
 
     filteredAnnotationsCopy = filteredAnnotationsCopy.sort((a, b) =>
       (a.createdTimestamp < b.createdTimestamp) ? 1 : -1

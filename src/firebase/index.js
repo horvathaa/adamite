@@ -1,4 +1,5 @@
 import firebase from './firebase';
+require("firebase/functions")
 
 export const DB_COLLECTIONS = {
   USERS: 'users',
@@ -16,6 +17,10 @@ export const getCurrentUserId = () => {
     return null;
   }
 };
+
+export const getElasticApiKey = () => {
+  return firebase.functions().httpsCallable('elasticApiAuth')({}).then((result) => { return result });
+}
 
 export * from './functions/userFunctions';
 export * from './functions/annotationFunctions';

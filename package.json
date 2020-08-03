@@ -13,7 +13,7 @@
     "@hot-loader/react-dom": "^16.13.0",
     "@ideaconsult/anno-tip": "^1.0.0",
     "@types/react": "^16.9.26",
-    "annotator": "^2.0.0-alpha.3",
+    "axios": "^0.19.2",
     "bootstrap": "^4.5.0",
     "classnames": "^2.2.6",
     "dom-highlight-range": "^3.0.1",
