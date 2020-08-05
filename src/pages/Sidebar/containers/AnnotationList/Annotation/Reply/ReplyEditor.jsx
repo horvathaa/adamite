@@ -42,8 +42,9 @@ class ReplyEditor extends Component {
         this.setState({ answer: false });
     }
 
+    // when submitting reply on annotation that is not on current page, uses cache so reply isn't represented
+    // probably not good solution
     submitReply = () => {
-        console.log('submitting reply', this.props.id, this.state.reply, this.state.answer, this.state.question);
         chrome.runtime.sendMessage({
             msg: 'ADD_NEW_REPLY',
             payload: {

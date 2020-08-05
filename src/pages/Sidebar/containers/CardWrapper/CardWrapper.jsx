@@ -2,9 +2,10 @@ import React from 'react';
 import './CardWrapper.css';
 import classNames from 'classnames';
 import { GiCancel } from 'react-icons/gi';
-import RichEditor from '../RichTextEditor/RichTextEditor'
-import TagsInput from 'react-tagsinput'
+import RichEditor from '../RichTextEditor/RichTextEditor';
+import TagsInput from 'react-tagsinput';
 import Dropdown from 'react-dropdown';
+import { SplitButton, Dropdown as BootstrapDropdown } from 'react-bootstrap';
 
 export default class CardWrapper extends React.Component {
 
@@ -28,7 +29,8 @@ export default class CardWrapper extends React.Component {
         tags: this.props.tags.length === 0 ? [] : this.props.tags,
         elseContent: this.props.elseContent,
         pageAnnotation: this.props.pageAnnotation,
-        collapsed: this.props.collapsed
+        collapsed: this.props.collapsed,
+        private: true
     };
 
     updateData = () => {
@@ -95,6 +97,7 @@ export default class CardWrapper extends React.Component {
 
 
         const { annotationContent, tags, elseContent, id, annotationType } = this.state;
+        const splitButtonText = this.state.private ? "Post to Only Me" : "Post to Public";
 
         const CardEditor = (<React.Fragment>
             {this.props.edit ? (
@@ -121,9 +124,16 @@ export default class CardWrapper extends React.Component {
                                     <GiCancel /> Cancel
                                     </button>
                                     &nbsp; &nbsp;
-                                    <button id="NewAnnotation" className="Publish-Button SubmitButton " onClick={this.submitPassthrough} disabled={annotationContent.trim().length === 0}>
-                                    Publish
-                                    </button>
+                                <SplitButton
+                                    key="publicPrivate"
+                                    id="dropdown-split-variants-secondary"
+                                    variant="secondary"
+                                    title={splitButtonText}
+                                    onClick={this.submitPassthrough}
+                                >
+                                    <BootstrapDropdown.Item onClick={_ => this.setState({ private: true })} eventKey="1">Only Me</BootstrapDropdown.Item>
+                                    <BootstrapDropdown.Item onClick={_ => this.setState({ private: false })} eventKey="2">Public</BootstrapDropdown.Item>
+                                </SplitButton>
                             </div>
                         </div>
                     </div>

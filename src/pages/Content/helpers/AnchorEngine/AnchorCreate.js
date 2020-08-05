@@ -11,6 +11,39 @@ import '../../../../assets/img/SVGs/Issue.svg';
 
 var queue = [];
 
+const QuestionMenu = ({ selection, xpathToNode, offsets, removePopover }) => {
+    const [selected, setSelected] = useState(null);
+
+    useEffect(() => {
+        setSelected(selection.toString());
+    }, []);
+
+    const whatQuestionClickedHandler = (event) => {
+        event.stopPropagation();
+        const questionContent = "What is this?";
+        alertBackgroundOfNewSelection(selected, offsets, xpathToNode, "question", questionContent);
+        removePopover();
+    };
+
+    const howQuestionClickedHandler = (event) => {
+        event.stopPropagation();
+        const questionContent = "How do I use this?";
+        alertBackgroundOfNewSelection(selected, offsets, xpathToNode, "question", questionContent);
+        removePopover();
+    };
+
+    return (
+        <div className="buttonColumn">
+            <div className="onHoverCreateQuestionAnnotation" onClick={whatQuestionClickedHandler} >
+                What is this?
+            </div>
+            <div className="onHoverCreateAnnotation" onClick={howQuestionClickedHandler} >
+                How do I use this?
+            </div>
+        </div>
+    );
+};
+
 const Popover = ({ selection, xpathToNode, offsets, removePopover }) => {
     const [selected, setSelected] = useState(null);
 
@@ -112,14 +145,22 @@ const removePopover = () => {
     }
 };
 
-function displayPopoverBasedOnRectPosition(rect, props) {
+function displayPopoverBasedOnRectPosition(shift, rect, props) {
     popOverAnchor.top = '0px';
     popOverAnchor.style.left = `0px`;
 
-    ReactDOM.render(
-        <Popover removePopover={removePopover} {...props} />,
-        popOverAnchor
-    );
+    if (shift) {
+        ReactDOM.render(
+            <QuestionMenu removePopover={removePopover} {...props} />,
+            popOverAnchor
+        );
+    }
+    else {
+        ReactDOM.render(
+            <Popover removePopover={removePopover} {...props} />,
+            popOverAnchor
+        );
+    }
 
     // adjusting position of popover box after mounting
     popOverAnchor.style.top = `${rect.bottom + 5 + window.scrollY}px`;
@@ -130,8 +171,9 @@ function displayPopoverBasedOnRectPosition(rect, props) {
     popOverAnchor.style.left = `${leftPosition}px`;
 }
 
-const alertBackgroundOfNewSelection = (selection, offsets, xpath, type) => {
+const alertBackgroundOfNewSelection = (selection, offsets, xpath, type, content) => {
     // supporting creation of annotations in sidebar
+    const annoContent = content === undefined ? "" : content;
     chrome.runtime.sendMessage({
         msg: 'CONTENT_SELECTED',
         from: 'content',
@@ -139,7 +181,8 @@ const alertBackgroundOfNewSelection = (selection, offsets, xpath, type) => {
             selection,
             offsets,
             xpath,
-            type
+            type,
+            annoContent
         },
     });
 };
@@ -200,10 +243,15 @@ export const createAnnotation = (event) => {
                 }
             });
         }
-        else {
-
+        else if (event.shiftKey) {
             const rectPopover = selection.getRangeAt(0).getBoundingClientRect();
-            displayPopoverBasedOnRectPosition(rectPopover, { selection, xpathToNode, offsets });
+            displayPopoverBasedOnRectPosition(true, rectPopover, { selection, xpathToNode, offsets });
+            return;
+        }
+        else {
+            const rectPopover = selection.getRangeAt(0).getBoundingClientRect();
+            displayPopoverBasedOnRectPosition(false, rectPopover, { selection, xpathToNode, offsets });
+            return;
         }
     }
     else {

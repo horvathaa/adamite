@@ -152,7 +152,8 @@ class Annotation extends Component {
       type: CardWrapperState.annotationType.toLowerCase(),
       tags: CardWrapperState.tags,
       deletedTimestamp: 0,
-      createdTimestamp: new Date().getTime()
+      createdTimestamp: new Date().getTime(),
+      private: CardWrapperState.private
     });
     this.setState({ editing: false });
   }
@@ -216,7 +217,7 @@ class Annotation extends Component {
   }
 
   render() {
-    const { anchor, idx, id, active, authorId, currentUser, trashed, timeStamp, url, currentUrl, childAnchor, xpath, replies } = this.props;
+    const { anchor, idx, id, active, authorId, currentUser, trashed, timeStamp, url, currentUrl, childAnchor, xpath, replies, isPrivate } = this.props;
     const { editing, collapsed, tags, content, annotationType, author, pinned } = this.state;
     if (annotationType === 'default' && !trashed) {
       return (<DefaultAnnotation
@@ -339,6 +340,7 @@ class Annotation extends Component {
           cancelButtonHandler={this.cancelButtonHandler}
           submitButtonHandler={this.submitButtonHandler}
           handleExpandCollapse={this.handleExpandCollapse}
+          isPrivate={isPrivate}
         />
       );
     }

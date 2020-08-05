@@ -101,15 +101,46 @@
   /* background-color: rgba(255, 255, 255, 0.5); */
   transition: all 0.1s ease-in;
   position: relative;
+  cursor: pointer;
   /* box-shadow: gray; */
 }
 
+.AnnotationContainer.SelectedAnnotationContainer {
+  border: 1px solid #2c64ca;
+}
 
-.ActiveAnnotationContainer {
+.annotationTypeBadge.row2 {
+  display: table-cell;
+  -ms-flex-wrap: auto;
+  flex-wrap: inherit;
+  float: right;
+  margin-right: -15px;
+  margin-left: -15px;
+}
+
+.badgeContainer {
+  width: 24px;
+  height: 24px;
+}
+
+.annotationTypeBadge .col2 {
+  padding: 3px 3px 3px 3px;
+  /* display: inline-flex; */
+  position: absolute;
+  background: white;
+  top: -15px;
+  right: -15px;
+  box-shadow: 2px 2px 2px #88888887;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+/* .ActiveAnnotationContainer {
   background-color: rgb(255,255,255);
   outline-style: bold;
   outline: burlywood;
-}
+} */
 
 .InactiveAnnotationContainerHovering {
   background-color: rgb(255, 248, 155);

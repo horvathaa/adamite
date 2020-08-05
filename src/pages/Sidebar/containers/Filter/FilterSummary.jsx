@@ -100,7 +100,7 @@ class FilterSummary extends React.Component {
         }
 
         return (
-            <div className="FilterSummaryContainer">
+            <div className="FilterSummaryContainer" onClick={this.props.openFilter} style={{ cursor: 'pointer' }}>
                 <div className="FilterSectionRow" id="Header">
                     Currently Selected Filter
                 </div>
