@@ -19,7 +19,18 @@ export const getPrivateAnnotationsByUrl = (url, uid) => {
 };
 
 export const getAnnotationsAcrossSite = hostname => {
-  return db.collection(DB_COLLECTIONS.ANNOTATIONS).where('hostname', '==', hostname).limit(15);
+  return db.collection(DB_COLLECTIONS.ANNOTATIONS)
+    .where('hostname', '==', hostname)
+    .where('private', '==', false)
+    .limit(15);
+};
+
+export const getPrivateAnnotationsAcrossSite = (hostname, uid) => {
+  return db.collection(DB_COLLECTIONS.ANNOTATIONS)
+    .where('hostname', '==', hostname)
+    .where('private', '==', true)
+    .where('authorId', '==', uid)
+    .limit(15);
 };
 
 export const getAnnotationsByTag = tag => {

@@ -488,7 +488,7 @@ class Sidebar extends React.Component {
               />
             </div>
             <div>
-              {!this.state.showFilter && <FilterSummary filter={this.state.filterSelection} />}
+              {!this.state.showFilter && <FilterSummary filter={this.state.filterSelection} openFilter={this.openFilter} />}
               {this.state.showFilter &&
                 <Filter applyFilter={this.applyFilter}
                   filterAnnotationLength={this.getFilteredAnnotationListLength}
@@ -514,6 +514,7 @@ class Sidebar extends React.Component {
                   url={this.state.url}
                   newSelection={this.state.pageName}
                   resetNewSelection={this.resetNewSelection}
+                  annoContent={''}
                   offsets={null}
                   xpath={null}
                 />

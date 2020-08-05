@@ -45,6 +45,7 @@ const broadcastAnnotationsUpdated = (message, annotations) => {
 
 const broadcastAnnotationsUpdatedTab = (message, annotations, tabId) => {
   chrome.tabs.query({ active: true }, tabs => {
+    console.log('annos updated', annotations);
     console.log("here are the tabs you cuck", tabs)
     chrome.tabs.sendMessage(
       tabId,
@@ -57,7 +58,8 @@ const broadcastAnnotationsUpdatedTab = (message, annotations, tabId) => {
   });
 };
 
-function promiseToComeBack(url) {
+
+function setUpGetAllAnnotationsByUrlListener(url, annotations) {
   pageannotationsActive.push({
     url: url,
     annotations: null,
@@ -65,54 +67,88 @@ function promiseToComeBack(url) {
     unsubscribe: null
   });
   return new Promise((resolve, reject) => {
-    let annotations = [];
-    resolve(getAllAnnotationsByUrl(url).onSnapshot(querySnapshot => {
-      querySnapshot.forEach(snapshot => {
+    // let annotations = [];
+    // let snapshotSubscriptions = [];
+    resolve(getAllAnnotationsByUrl(url, getCurrentUser().uid).onSnapshot(querySnapshot2 => {
+      querySnapshot2.forEach(snapshot => {
         annotations.push({
           id: snapshot.id,
           ...snapshot.data(),
         });
-      });
-      console.log('annotations', annotations);
-      getPrivateAnnotationsByUrl(url, getCurrentUser().uid).get().then(querySnapshot => {
-        if (querySnapshot.empty) {
-          console.log('is empty');
-        }
-        else {
-          querySnapshot.forEach(snapshot => {
-            console.log(snapshot.data());
-            annotations.push({
-              id: snapshot.id,
-              ...snapshot.data(),
-            });
-          });
-        }
-        console.log('meh', annotations);
-        console.log('annos', annotations);
-        var pos = pageannotationsActive.map(function (e) { return e.url; }).indexOf(url);
-        let host = new URL(url).hostname;
-        if (annotationsAcrossWholeSite[host] !== undefined) {
-          annotations.concat(annotationsAcrossWholeSite[host].annotations);
-          annotations = removeDuplicates(annotations);
-        }
-        pageannotationsActive[pos].annotations = annotations.filter(anno => anno.url === url);
-        console.log('about to broadcast to sidebar', annotations);
+      })
+      var pos = pageannotationsActive.map(function (e) { return e.url; }).indexOf(url);
+      let host = new URL(url).hostname;
+      if (annotationsAcrossWholeSite[host] !== undefined) {
+        annotations.concat(annotationsAcrossWholeSite[host].annotations);
         annotations = removeDuplicates(annotations);
-        broadcastAnnotationsUpdated("CONTENT_UPDATED", annotations)
-        chrome.tabs.query({}, tabs => {
-          tabs = tabs.filter(e => e.url === pageannotationsActive[pos].url)
-          tabs.forEach(function (tab) {
-            chrome.tabs.sendMessage(tab.id, {
-              msg: 'REFRESH_HIGHLIGHTS',
-              payload: annotations,
-            });
+      }
+      // console.log('before concat pageannoactive', pageannotationsActive[pos].annotations);
+      pageannotationsActive[pos].annotations = annotations;
+      annotations = annotations.sort((a, b) =>
+        (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
+      );
+      // console.log('about to broadcast to sidebar', annotations);
+      // console.log('pageannotationsActive annos in private', pageannotationsActive[pos].annotations);
+      pageannotationsActive[pos].annotations = removeDuplicates(pageannotationsActive[pos].annotations);
+      broadcastAnnotationsUpdated("CONTENT_UPDATED", pageannotationsActive[pos].annotations)
+      chrome.tabs.query({}, tabs => {
+        tabs = tabs.filter(e => e.url === pageannotationsActive[pos].url)
+        tabs.forEach(function (tab) {
+          chrome.tabs.sendMessage(tab.id, {
+            msg: 'REFRESH_HIGHLIGHTS',
+            payload: annotations,
           });
-          console.log("these are changed tabs", tabs)
-        })
-
+        });
+        console.log("these are changed tabs", tabs)
       });
-    }));
-  });
+    }))
+  })
+}
+
+function promiseToComeBack(url, annotations) {
+  // pageannotationsActive.push({
+  //   url: url,
+  //   annotations: null,
+  //   timeout: 500,
+  //   unsubscribe: null
+  // });
+  return new Promise((resolve, reject) => {
+    // let annotations = [];
+    // let snapshotSubscriptions = [];
+    resolve(getPrivateAnnotationsByUrl(url, getCurrentUser().uid).onSnapshot(querySnapshot2 => {
+      querySnapshot2.forEach(snapshot => {
+        annotations.push({
+          id: snapshot.id,
+          ...snapshot.data(),
+        });
+      })
+      var pos = pageannotationsActive.map(function (e) { return e.url; }).indexOf(url);
+      let host = new URL(url).hostname;
+      if (annotationsAcrossWholeSite[host] !== undefined) {
+        annotations.concat(annotationsAcrossWholeSite[host].annotations);
+        annotations = removeDuplicates(annotations);
+      }
+      // console.log('before concat pageannoactive', pageannotationsActive[pos].annotations);
+      pageannotationsActive[pos].annotations = annotations;
+      annotations = annotations.sort((a, b) =>
+        (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
+      );
+      // console.log('about to broadcast to sidebar', annotations);
+      // console.log('pageannotationsActive annos in private', pageannotationsActive[pos].annotations);
+      pageannotationsActive[pos].annotations = removeDuplicates(pageannotationsActive[pos].annotations);
+      broadcastAnnotationsUpdated("CONTENT_UPDATED", pageannotationsActive[pos].annotations)
+      chrome.tabs.query({}, tabs => {
+        tabs = tabs.filter(e => e.url === pageannotationsActive[pos].url)
+        tabs.forEach(function (tab) {
+          chrome.tabs.sendMessage(tab.id, {
+            msg: 'REFRESH_HIGHLIGHTS',
+            payload: annotations,
+          });
+        });
+        console.log("these are changed tabs", tabs)
+      });
+    }))
+  })
 }
 
 
@@ -141,10 +177,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
     else {
       console.log('in else');
-      promiseToComeBack(request.url)
-        .then(function (e) {
-          pageannotationsActive[pageannotationsActive.length - 1].unsubscribe = e;
-        });
+      let snapshotSubscriptions = [];
+      let annotations = [];
+      setUpGetAllAnnotationsByUrlListener(request.url, annotations).then(function (e) {
+        snapshotSubscriptions.push(e);
+        promiseToComeBack(request.url, annotations)
+          .then(function (f) {
+            // console.log('at end of then', annotations);
+            snapshotSubscriptions.push(f);
+            pageannotationsActive[pageannotationsActive.length - 1].unsubscribe = snapshotSubscriptions;
+          });
+      })
+
     }
   }
   else if (request.msg === 'SAVE_HIGHLIGHT') {
@@ -166,7 +210,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       hostname,
       pinned: false,
       AnnotationTags: [],
-      childAnchor: []
+      childAnchor: [],
+      isPrivate: false
     });
   }
   else if (request.msg === 'SAVE_ANNOTATED_TEXT') {
@@ -269,7 +314,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         doc.docs.forEach(anno => {
           annotations.push({ id: anno.id, ...anno.data() });
         });
-        console.log('annotations', annotations);
         sendResponse({ annotations: annotations });
       })
     });
