@@ -255,34 +255,19 @@ class Sidebar extends React.Component {
   }
 
 
-  handleSearchBarInputText = (event) => {
-    let inputText = event.target.value;
-
-    console.log("handlebar", inputText)
-    this.ElasticSearch(inputText).then((searchAnnotations) => {
-      //console.log("here is the result", searchAnnotations)
-      this.setState({
-        searchBarInputText: inputText,
-        searchedAnnotations: searchAnnotations
-      });
+  // handleSearchBarInputText = (event) => {
+  handleSearchBarInputText = (searchAnnotations) => {
+    // let inputText = event.target.value;
+    console.log("IN HERE!", searchAnnotations)
+    // console.log("handlebar", inputText)
+    // this.ElasticSearch(inputText).then((searchAnnotations) => {
+    //console.log("here is the result", searchAnnotations)
+    this.setState({
+      // searchBarInputText: inputText,
+      searchedAnnotations: searchAnnotations
     });
-    // chrome.runtime.sendMessage(
-    //   {
-    //     msg: 'SEARCH_ELASTIC',
-    //     userSearch: inputText
-    //   },
-    //   function (response) {
-    //     this.setState({
-    //       searchBarInputText: inputText,
-    //       searchedAnnotations: response.response
-    //     });
-    //     console.log("here is the response", response.response)
-    //   });
-
-
-    // this.setState({
-    //   searchBarInputText: inputText,
     // });
+
   };
 
   handleShowFilter = () => {
@@ -486,7 +471,7 @@ class Sidebar extends React.Component {
     if (currentUser === undefined) {
       return null;
     }
-    console.log("this is the annotations", filteredAnnotations)
+    console.log("this is the annotations", searchedAnnotations.length)
     const inputText = searchBarInputText.toLowerCase();
     let filteredAnnotationsCopy = searchedAnnotations.length === 0 ? filteredAnnotations : searchedAnnotations;
     //let filteredAnnotationsCopy = [];

@@ -179,8 +179,16 @@
   }
 
   .react-autosuggest__icon {
-    margin-left: 1em;
+    margin-left: .25em;
     width: 2em;
+    color: #7f8080;
+    height: 2em;
+    cursor: pointer;
+  }
+
+  .react-autosuggest__anchor-content-icon {
+    margin-right: 1%;
+    width: 1.5em;
     color: #7f8080;
     height: 2em;
     cursor: pointer;
@@ -194,10 +202,14 @@
     margin-right: -15px;
     margin-left: -15px;
   }
+
+  .autosuggest-row-inner{
+    display: flex;
+  }
   
   .autosuggest-col-sm{
     position: relative;
-    padding-right: 15px;
+    padding-right: 10px;
   }
 
   .autosuggest-col-6{
@@ -207,6 +219,34 @@
     padding-right: 15px;
 
   }
+  .autosuggest-col-6-icon{
+    white-space: initial;
+    position: relative;
+    width: auto;
+    padding-right: 15px;
+    display: flex;
+    align-items: center;
+  }
+  .react-autosuggest__user-content{
+    margin-left: 1%;
+    margin-top: 2%;
+    width: 85%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .react-autosuggest__tags{
+    margin-top: 4%;
+    margin-bottom: 2%;
+  }
+
+  .vr {
+    width: 1px;
+    margin-right: 10px;
+    background-color: #6c757d;
+    padding-top: 1%;
+    padding-bottom: 1%;
+}
 
   .result {
     display: flex;
@@ -216,12 +256,18 @@
   }
   
   .shortCode {
-    background-color: #4696ec;
+    margin: 5px;
+    display: inline-block;
+    background-color: #0278BF;
     color: #fff;
     padding: 4px;
     border-radius: 2px;
   }
   
+
+  .YourHighlightClass{
+    background-color: yellow; 
+  }
   .highlight {
     background-color: yellow; 
     padding: 4px;

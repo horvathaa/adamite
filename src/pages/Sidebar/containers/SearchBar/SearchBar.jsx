@@ -1,7 +1,4 @@
-
-
 import React from 'react'
-import ReactDOM from 'react-dom'
 import Autosuggest from 'react-autosuggest'
 import { debounce } from 'throttle-debounce'
 import '../../../../assets/img/SVGs/search.svg';
@@ -11,6 +8,8 @@ import '../../../../assets/img/SVGs/Highlight.svg';
 import '../../../../assets/img/SVGs/Todo.svg';
 import '../../../../assets/img/SVGs/Question.svg';
 import '../../../../assets/img/SVGs/Issue.svg';
+import '../../../../assets/img/SVGs/location.svg';
+import Highlighter from "react-highlight-words";
 
 
 class SearchBar extends React.Component {
@@ -36,36 +35,83 @@ class SearchBar extends React.Component {
     }
 
     iconSelector = (type) => {
-        console.log("iconselector", type)
         if (type === undefined) return 'search.svg';
         if (type === 'default') return 'Default.svg';
         if (type === 'question') return 'Question.svg';
         if (type === 'to-do') return 'Todo.svg';
         if (type === 'highlight') return 'Highlight.svg';
         if (type === 'issue') return 'Issue.svg';
-        console.log("i got nothing")
     }
 
     renderSuggestion = suggestion => {
+
         return (
-            <div className="result">
-                <div className="autosuggest-row">
-                    <div className="autosuggest-col-sm">
-                        <img className="react-autosuggest__icon" src={chrome.extension.getURL(this.iconSelector(suggestion.type))} alt="question annnotation" />
-                    </div>
-                    <div className="autosuggest-col-6">
-                        <div>{suggestion.content.length > 50 ? suggestion.content.substring(0, 50) + '...' : suggestion.content}</div>
-                    </div>
-                    <div className="autosuggest-col-sm">
-                        <div className="shortCode">{suggestion.matchedAt}</div>
+            <React.Fragment>
+                <div className="result">
+                    <div className="autosuggest-row">
+                        <div className="autosuggest-col-sm">
+                            <img className="react-autosuggest__icon" src={chrome.extension.getURL(this.iconSelector(suggestion.type))} alt="question annnotation" />
+                        </div>
+                        <div className="vr">&nbsp;</div>
+                        <div className="autosuggest-col-6">
+                            <div className="autosuggest-row-inner">
+                                <div className="autosuggest-col-6-icon">
+                                    <img className="react-autosuggest__anchor-content-icon" src={chrome.extension.getURL("location.svg")} alt="question annnotation" />
+                                </div>
+                                <div className="autosuggest-col-6">
+                                    <em>
+
+                                        <Highlighter
+                                            highlightClassName="YourHighlightClass"
+                                            searchWords={this.state.value.split(" ")}
+                                            autoEscape={true}
+                                            textToHighlight={suggestion.anchorContent}
+                                        />
+                                    </em>
+                                </div>
+                            </div>
+                            <div className="react-autosuggest__user-content">
+                                <Highlighter
+                                    highlightClassName="YourHighlightClass"
+                                    searchWords={this.state.value.split(" ")}
+                                    autoEscape={true}
+                                    textToHighlight={suggestion.content}
+                                />
+                            </div>
+                            <div className="react-autosuggest__tags">
+                                {suggestion.tags.map((items) => {
+                                    return <div className="shortCode">{items}</div>
+                                })}
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </React.Fragment >
         )
     }
 
-    onChange = (event, { newValue }) => {
+    onChange = (event, { newValue, suggestion, suggestionValue, suggestionIndex, sectionIndex, method }) => {
+        // console.log("this is the event", event.typeArg, method)
+        // if (method === 'click') {
+
+        //     console.log("THERE IS THE CLICK!", suggestion, suggestionValue, suggestionIndex, sectionIndex, method)
+        // }
         this.setState({ value: newValue })
+    }
+
+    onKeyDown = (event) => {
+        if (event.keyCode === 13 /* enter */) {
+            console.log("this was an enter")
+        }
+    };
+
+    onClick = () => {
+        console.log("this on click")
+    }
+
+    onSuggestionSelected = (event, { suggestion, suggestionValue, suggestionIndex, sectionIndex, method }) => {
+        console.log("suggestions selected", suggestion, event.target.value, method)
+        this.props.handleSearchBarInputText([suggestion])
     }
 
 
@@ -100,22 +146,21 @@ class SearchBar extends React.Component {
         const inputProps = {
             placeholder: 'Search annotation content here',
             value,
+            // onSuggestionClick: this.onClick,
+            // onClick: this.onClick,
+            onKeyDown: this.onKeyDown,
             onChange: this.onChange
         }
-        const renderInputComponent = inputProps => (
-            <div>
-                <input {...inputProps} />
-                <div>custom stuff</div>
-            </div>
-        );
 
         return (
             <div className="SearchBarContainer">
                 <Autosuggest
                     suggestions={suggestions}
+                    // onSuggestionClick={this.onClick}
                     onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
                     onSuggestionsClearRequested={this.onSuggestionsClearRequested}
-                    getSuggestionValue={suggestion => suggestion.fullName}
+                    onSuggestionSelected={this.onSuggestionSelected}
+                    getSuggestionValue={suggestion => suggestion.content}
                     renderSuggestion={this.renderSuggestion}
                     inputProps={inputProps}
                 />

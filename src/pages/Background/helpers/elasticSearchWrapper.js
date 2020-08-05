@@ -11,7 +11,8 @@ function getAuthKeyElastic() {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log("SEARCH ELASTIC RR")
     if (request.msg === 'SEARCH_ELASTIC') {
-        keyWrapper(search, request.userSearch).then(e => sendResponse({ response: e }));
+        keyWrapper(search, { userSearch: request.userSearch, query: searhBarQuery(request.userSearch) })
+            .then(e => sendResponse({ response: e }));
         //sendResponse({ response: keyWrapper(search, request.userSearch) });
     }
 });
@@ -32,23 +33,43 @@ function findWhereMatched(res, value) {
     if (res["tags"].length !== 0 && res["tags"].indexOf(value) >= 0) return "Tag";
 }
 
-function search(key, userSearch) {
-    return new Promise((resolve, reject) => {
-        var query = {
+function searhBarQuery(userSearch) {
+    return (
+        {
             "query": {
-                "match": {
-                    "partialSearch": userSearch,
+                "bool": {
+                    "should": [
+                        {
+                            "multi_match": {
+                                "query": userSearch,
+                                "type": "phrase",
+                                "fields": [
+                                    "content", "tags", "anchorContent"
+                                ],
+                                "boost": 10
+                            }
+                        },
+                        {
+                            "multi_match": {
+                                "query": userSearch,
+                                "type": "most_fields",
+                                "fields": [
+                                    "partialSearch"
+                                ],
+                                "fuzziness": "0"
+                            }
+                        }
+                    ]
                 }
             }
-            // "query": {
-            //     "match_phrase": {
-            //         "anchorContent": userSearch
-            //     },
-            //     "match_phrase": {
-            //         "content": userSearch
-            //     },
-            // }
-        };
+        });
+}
+
+
+function search(key, args) {
+    return new Promise((resolve, reject) => {
+        var userSearch = args.userSearch;
+        var query = args.query;
         console.log("in test run")
         const AuthStr = 'ApiKey ' + key;
         axios.get(path + '?size=10',
@@ -73,6 +94,7 @@ function search(key, userSearch) {
                         element._source["matchedAt"] = findWhereMatched(element._source, userSearch)
                         var obj = element._source
                         obj["id"] = element._id
+                        element._source["id"] = element._id
 
                         finalArray.push(obj)
                     });
