@@ -35,7 +35,6 @@ var pageannotationsActive = [];
 let annotationsAcrossWholeSite = [];
 
 const broadcastAnnotationsUpdated = (message, annotations) => {
-  console.log('annos in broadcast', annotations);
   chrome.runtime.sendMessage({
     msg: message,
     from: 'background',
@@ -45,8 +44,6 @@ const broadcastAnnotationsUpdated = (message, annotations) => {
 
 const broadcastAnnotationsUpdatedTab = (message, annotations, tabId) => {
   chrome.tabs.query({ active: true }, tabs => {
-    console.log('annos updated', annotations);
-    console.log("here are the tabs you cuck", tabs)
     chrome.tabs.sendMessage(
       tabId,
       {
@@ -67,7 +64,6 @@ function setUpGetAllAnnotationsByUrlListener(url, annotations) {
     unsubscribe: null
   });
   return new Promise((resolve, reject) => {
-    // let annotations = [];
     // let snapshotSubscriptions = [];
     resolve(getAllAnnotationsByUrl(url, getCurrentUser().uid).onSnapshot(querySnapshot2 => {
       querySnapshot2.forEach(snapshot => {
@@ -82,13 +78,10 @@ function setUpGetAllAnnotationsByUrlListener(url, annotations) {
         annotations.concat(annotationsAcrossWholeSite[host].annotations);
         annotations = removeDuplicates(annotations);
       }
-      // console.log('before concat pageannoactive', pageannotationsActive[pos].annotations);
       pageannotationsActive[pos].annotations = annotations;
-      annotations = annotations.sort((a, b) =>
+      pageannotationsActive[pos].annotations = pageannotationsActive[pos].annotations.sort((a, b) =>
         (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
       );
-      // console.log('about to broadcast to sidebar', annotations);
-      // console.log('pageannotationsActive annos in private', pageannotationsActive[pos].annotations);
       pageannotationsActive[pos].annotations = removeDuplicates(pageannotationsActive[pos].annotations);
       broadcastAnnotationsUpdated("CONTENT_UPDATED", pageannotationsActive[pos].annotations)
       chrome.tabs.query({}, tabs => {
@@ -113,7 +106,6 @@ function promiseToComeBack(url, annotations) {
   //   unsubscribe: null
   // });
   return new Promise((resolve, reject) => {
-    // let annotations = [];
     // let snapshotSubscriptions = [];
     resolve(getPrivateAnnotationsByUrl(url, getCurrentUser().uid).onSnapshot(querySnapshot2 => {
       querySnapshot2.forEach(snapshot => {
@@ -128,13 +120,10 @@ function promiseToComeBack(url, annotations) {
         annotations.concat(annotationsAcrossWholeSite[host].annotations);
         annotations = removeDuplicates(annotations);
       }
-      // console.log('before concat pageannoactive', pageannotationsActive[pos].annotations);
       pageannotationsActive[pos].annotations = annotations;
-      annotations = annotations.sort((a, b) =>
+      pageannotationsActive[pos].annotations = pageannotationsActive[pos].annotations.sort((a, b) =>
         (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
       );
-      // console.log('about to broadcast to sidebar', annotations);
-      // console.log('pageannotationsActive annos in private', pageannotationsActive[pos].annotations);
       pageannotationsActive[pos].annotations = removeDuplicates(pageannotationsActive[pos].annotations);
       broadcastAnnotationsUpdated("CONTENT_UPDATED", pageannotationsActive[pos].annotations)
       chrome.tabs.query({}, tabs => {
@@ -171,6 +160,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           return false;
         }
       });
+      annotationsToTransmit = annotationsToTransmit.sort((a, b) =>
+        (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
+      );
       annotationsToTransmit = removeDuplicates(annotationsToTransmit);
       broadcastAnnotationsUpdatedTab("CONTENT_UPDATED", annotationsToTransmit, sender.tab.id);
       broadcastAnnotationsUpdatedTab("HIGHLIGHT_ANNOTATIONS", annotationsToTransmit, sender.tab.id);
@@ -285,6 +277,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       tags: replyTags
     });
     updateAnnotationById(id, {
+      createdTimestamp: new Date().getTime(),
       replies: firebase.firestore.FieldValue.arrayUnion({
         ...replies
       })

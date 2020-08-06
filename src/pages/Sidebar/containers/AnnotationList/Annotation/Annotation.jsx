@@ -88,6 +88,7 @@ class Annotation extends Component {
 
   handleDoneToDo(id) {
     updateAnnotationById(id, {
+      createdTimestamp: new Date().getTime(),
       trashed: true
     }
     );
@@ -104,6 +105,7 @@ class Annotation extends Component {
   handleUnArchive(e) {
     let id = e.target.value;
     updateAnnotationById(id, {
+      createdTimestamp: new Date().getTime(),
       trashed: false
     }
     );
