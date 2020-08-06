@@ -125,9 +125,14 @@ class Annotation extends Component {
             }
           );
         }
-        deleteAnnotationForeverById(id);
+        chrome.runtime.sendMessage({
+          msg: "ANNOTATION_DELETED",
+          from: "content",
+          payload: {
+            id: id
+          }
+        })
       });
-
     } else {
       return;
     }

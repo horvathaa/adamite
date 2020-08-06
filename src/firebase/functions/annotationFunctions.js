@@ -79,8 +79,8 @@ export const trashAnnotationById = id => {
   getAnnotationById(id).update({ trashed: true });
 };
 
-export const deleteAnnotationForeverById = id => {
-  getAnnotationById(id).delete();
+export const deleteAnnotationForeverById = (id) => {
+  return getAnnotationById(id).delete();
 };
 
 export const updateAnnotationById = (id, newAnnotationFields = {}) => {

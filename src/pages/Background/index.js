@@ -12,7 +12,8 @@ import {
   getAnnotationsByTag,
   getCurrentUser,
   getAllQuestionAnnotationsByUserId,
-  getAllPrivateQuestionAnnotationsByUserId
+  getAllPrivateQuestionAnnotationsByUserId,
+  deleteAnnotationForeverById
 } from '../../firebase/index';
 import firebase from '../../firebase/firebase';
 
@@ -83,6 +84,7 @@ function setUpGetAllAnnotationsByUrlListener(url, annotations) {
         (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
       );
       pageannotationsActive[pos].annotations = removeDuplicates(pageannotationsActive[pos].annotations);
+      console.log('bout to broadcast sigh', pageannotationsActive[pos].annotations);
       broadcastAnnotationsUpdated("CONTENT_UPDATED", pageannotationsActive[pos].annotations)
       chrome.tabs.query({}, tabs => {
         tabs = tabs.filter(e => e.url === pageannotationsActive[pos].url)
@@ -125,6 +127,7 @@ function promiseToComeBack(url, annotations) {
         (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
       );
       pageannotationsActive[pos].annotations = removeDuplicates(pageannotationsActive[pos].annotations);
+      console.log('bout to broadcast in private sigh', pageannotationsActive[pos].annotations);
       broadcastAnnotationsUpdated("CONTENT_UPDATED", pageannotationsActive[pos].annotations)
       chrome.tabs.query({}, tabs => {
         tabs = tabs.filter(e => e.url === pageannotationsActive[pos].url)
@@ -168,7 +171,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       broadcastAnnotationsUpdatedTab("HIGHLIGHT_ANNOTATIONS", annotationsToTransmit, sender.tab.id);
     }
     else {
-      console.log('in else');
       let snapshotSubscriptions = [];
       let annotations = [];
       setUpGetAllAnnotationsByUrlListener(request.url, annotations).then(function (e) {
@@ -182,6 +184,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       })
 
     }
+  }
+  else if (request.msg === 'ANNOTATION_DELETED' && request.from === 'content') {
+    deleteAnnotationForeverById(request.payload.id).then(function () {
+      pageannotationsActive[pageannotationsActive.length - 1].annotations = pageannotationsActive[pageannotationsActive.length - 1].annotations.filter(anno => anno.id !== request.payload.id);
+      broadcastAnnotationsUpdated("CONTENT_UPDATED", pageannotationsActive[pageannotationsActive.length - 1].annotations);
+    });
   }
   else if (request.msg === 'SAVE_HIGHLIGHT') {
     let { url, anchor, xpath, offsets } = request.payload;
