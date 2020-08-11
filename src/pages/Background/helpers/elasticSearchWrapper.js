@@ -3,17 +3,26 @@ import { getElasticApiKey } from '../../../firebase/index';
 
 const path = 'https://f1a4257d658c481787cc581e18b9c97e.us-central1.gcp.cloud.es.io:9243/annotations/_search';
 
-function getAuthKeyElastic() {
-    return
+function regenKey() {
+    return new Promise((resolve, reject) => {
+        getElasticApiKey().then(function (e) {
+            chrome.storage.sync.set({
+                'ElasticAPIKey': e,
+            }, function () {
+                resolve();
+            });
+        })
+    });
 }
-
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log("SEARCH ELASTIC RR")
     if (request.msg === 'SEARCH_ELASTIC') {
         keyWrapper(search, { userSearch: request.userSearch, query: searhBarQuery(request.userSearch) })
-            .then(e => sendResponse({ response: e }));
-        //sendResponse({ response: keyWrapper(search, request.userSearch) });
+            .then(e => sendResponse({ response: e }))
+            .catch(function (err) {
+                console.log("wrapper error", err.response.status)
+            });
     }
 });
 
@@ -21,7 +30,16 @@ function keyWrapper(passedFunction, args) {
     return new Promise((resolve, reject) => {
         chrome.storage.sync.get(['ElasticAPIKey'], storedKey => {
             console.log("this is the key", storedKey);
-            passedFunction(storedKey.ElasticAPIKey.data, args).then(e => resolve(e));
+            passedFunction(storedKey.ElasticAPIKey.data, args)
+                .then(e => resolve(e))
+                .catch(function (err) {
+                    if (err.response.status === 401) {
+                        regenKey().then(e => keyWrapper(passedFunction, args));
+                    }
+                    else {
+                        reject(err);
+                    }
+                });
         })
     });
 }
@@ -70,7 +88,6 @@ function search(key, args) {
     return new Promise((resolve, reject) => {
         var userSearch = args.userSearch;
         var query = args.query;
-        console.log("in test run")
         const AuthStr = 'ApiKey ' + key;
         axios.get(path + '?size=10',
             {
@@ -99,12 +116,11 @@ function search(key, args) {
                         finalArray.push(obj)
                     });
                 }
-                console.log(res);
-                console.log("this is the res array", finalArray)
+                console.log("Final Array", finalArray)
                 resolve(res);
             })
             .catch((err) => {
-                console.log('err', err);
+                console.log('this is the err', err);
                 reject(err);
             });;
     });

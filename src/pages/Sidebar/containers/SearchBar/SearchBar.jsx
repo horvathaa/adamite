@@ -15,6 +15,7 @@ import Highlighter from "react-highlight-words";
 class SearchBar extends React.Component {
     constructor(props) {
         super(props);
+        this.inputRef = React.createRef();
     }
     state = {
         value: '',
@@ -100,8 +101,20 @@ class SearchBar extends React.Component {
     }
 
     onKeyDown = (event) => {
-        if (event.keyCode === 13 /* enter */) {
-            console.log("this was an enter")
+        const input = event.target
+        /* enter */
+        if (event.keyCode === 13 && input.value.length > 0) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            console.log("this was an enter", input.value);
+            this.inputRef.current.blur();
+            this.ElasticSearch2(input.value)
+                .then(res => {
+                    const results = res.data.hits.hits.map(h => h._source)
+                    this.props.handleSearchBarInputText(results)
+                    //this.setState({ suggestions: results })
+                })
         }
     };
 
@@ -144,10 +157,9 @@ class SearchBar extends React.Component {
         const { value, suggestions } = this.state
 
         const inputProps = {
+            ref: this.inputRef,
             placeholder: 'Search annotation content here',
             value,
-            // onSuggestionClick: this.onClick,
-            // onClick: this.onClick,
             onKeyDown: this.onKeyDown,
             onChange: this.onChange
         }
@@ -156,7 +168,6 @@ class SearchBar extends React.Component {
             <div className="SearchBarContainer">
                 <Autosuggest
                     suggestions={suggestions}
-                    // onSuggestionClick={this.onClick}
                     onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
                     onSuggestionsClearRequested={this.onSuggestionsClearRequested}
                     onSuggestionSelected={this.onSuggestionSelected}

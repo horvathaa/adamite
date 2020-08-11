@@ -474,6 +474,7 @@ class Sidebar extends React.Component {
     console.log("this is the annotations", searchedAnnotations.length)
     const inputText = searchBarInputText.toLowerCase();
     let filteredAnnotationsCopy = searchedAnnotations.length === 0 ? filteredAnnotations : searchedAnnotations;
+    console.log("filterannos", filteredAnnotationsCopy)
     //let filteredAnnotationsCopy = [];
     // filteredAnnotations.forEach((anno) => {
     //   const { content, anchorContent } = anno;
