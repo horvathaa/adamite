@@ -12,7 +12,8 @@ import {
   getAnnotationsByTag,
   getCurrentUser,
   getAllQuestionAnnotationsByUserId,
-  getAllPrivateQuestionAnnotationsByUserId
+  getAllPrivateQuestionAnnotationsByUserId,
+  deleteAnnotationForeverById
 } from '../../firebase/index';
 import firebase from '../../firebase/firebase';
 
@@ -35,7 +36,6 @@ var pageannotationsActive = [];
 let annotationsAcrossWholeSite = [];
 
 const broadcastAnnotationsUpdated = (message, annotations) => {
-  console.log('annos in broadcast', annotations);
   chrome.runtime.sendMessage({
     msg: message,
     from: 'background',
@@ -45,8 +45,6 @@ const broadcastAnnotationsUpdated = (message, annotations) => {
 
 const broadcastAnnotationsUpdatedTab = (message, annotations, tabId) => {
   chrome.tabs.query({ active: true }, tabs => {
-    console.log('annos updated', annotations);
-    console.log("here are the tabs you cuck", tabs)
     chrome.tabs.sendMessage(
       tabId,
       {
@@ -67,7 +65,6 @@ function setUpGetAllAnnotationsByUrlListener(url, annotations) {
     unsubscribe: null
   });
   return new Promise((resolve, reject) => {
-    // let annotations = [];
     // let snapshotSubscriptions = [];
     resolve(getAllAnnotationsByUrl(url, getCurrentUser().uid).onSnapshot(querySnapshot2 => {
       querySnapshot2.forEach(snapshot => {
@@ -82,14 +79,12 @@ function setUpGetAllAnnotationsByUrlListener(url, annotations) {
         annotations.concat(annotationsAcrossWholeSite[host].annotations);
         annotations = removeDuplicates(annotations);
       }
-      // console.log('before concat pageannoactive', pageannotationsActive[pos].annotations);
       pageannotationsActive[pos].annotations = annotations;
-      annotations = annotations.sort((a, b) =>
+      pageannotationsActive[pos].annotations = pageannotationsActive[pos].annotations.sort((a, b) =>
         (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
       );
-      // console.log('about to broadcast to sidebar', annotations);
-      // console.log('pageannotationsActive annos in private', pageannotationsActive[pos].annotations);
       pageannotationsActive[pos].annotations = removeDuplicates(pageannotationsActive[pos].annotations);
+      console.log('bout to broadcast sigh', pageannotationsActive[pos].annotations);
       broadcastAnnotationsUpdated("CONTENT_UPDATED", pageannotationsActive[pos].annotations)
       chrome.tabs.query({}, tabs => {
         tabs = tabs.filter(e => e.url === pageannotationsActive[pos].url)
@@ -113,7 +108,6 @@ function promiseToComeBack(url, annotations) {
   //   unsubscribe: null
   // });
   return new Promise((resolve, reject) => {
-    // let annotations = [];
     // let snapshotSubscriptions = [];
     resolve(getPrivateAnnotationsByUrl(url, getCurrentUser().uid).onSnapshot(querySnapshot2 => {
       querySnapshot2.forEach(snapshot => {
@@ -128,14 +122,12 @@ function promiseToComeBack(url, annotations) {
         annotations.concat(annotationsAcrossWholeSite[host].annotations);
         annotations = removeDuplicates(annotations);
       }
-      // console.log('before concat pageannoactive', pageannotationsActive[pos].annotations);
       pageannotationsActive[pos].annotations = annotations;
-      annotations = annotations.sort((a, b) =>
+      pageannotationsActive[pos].annotations = pageannotationsActive[pos].annotations.sort((a, b) =>
         (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
       );
-      // console.log('about to broadcast to sidebar', annotations);
-      // console.log('pageannotationsActive annos in private', pageannotationsActive[pos].annotations);
       pageannotationsActive[pos].annotations = removeDuplicates(pageannotationsActive[pos].annotations);
+      console.log('bout to broadcast in private sigh', pageannotationsActive[pos].annotations);
       broadcastAnnotationsUpdated("CONTENT_UPDATED", pageannotationsActive[pos].annotations)
       chrome.tabs.query({}, tabs => {
         tabs = tabs.filter(e => e.url === pageannotationsActive[pos].url)
@@ -171,12 +163,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           return false;
         }
       });
+      annotationsToTransmit = annotationsToTransmit.sort((a, b) =>
+        (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
+      );
       annotationsToTransmit = removeDuplicates(annotationsToTransmit);
       broadcastAnnotationsUpdatedTab("CONTENT_UPDATED", annotationsToTransmit, sender.tab.id);
       broadcastAnnotationsUpdatedTab("HIGHLIGHT_ANNOTATIONS", annotationsToTransmit, sender.tab.id);
     }
     else {
-      console.log('in else');
       let snapshotSubscriptions = [];
       let annotations = [];
       setUpGetAllAnnotationsByUrlListener(request.url, annotations).then(function (e) {
@@ -190,6 +184,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       })
 
     }
+  }
+  else if (request.msg === 'ANNOTATION_DELETED' && request.from === 'content') {
+    deleteAnnotationForeverById(request.payload.id).then(function () {
+      pageannotationsActive[pageannotationsActive.length - 1].annotations = pageannotationsActive[pageannotationsActive.length - 1].annotations.filter(anno => anno.id !== request.payload.id);
+      broadcastAnnotationsUpdated("CONTENT_UPDATED", pageannotationsActive[pageannotationsActive.length - 1].annotations);
+    });
   }
   else if (request.msg === 'SAVE_HIGHLIGHT') {
     let { url, anchor, xpath, offsets } = request.payload;
@@ -285,6 +285,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       tags: replyTags
     });
     updateAnnotationById(id, {
+      createdTimestamp: new Date().getTime(),
       replies: firebase.firestore.FieldValue.arrayUnion({
         ...replies
       })

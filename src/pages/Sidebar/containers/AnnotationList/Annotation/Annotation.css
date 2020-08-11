@@ -393,6 +393,11 @@
   padding: 4px 4px 0px 0px;
 }
 
+#DefaultBadgeContainer {
+  width: 18px;
+  height: 18px;
+}
+
 .ReplyHeader {
   color: #6B778C;
   padding: 0px 8px;
