@@ -54,6 +54,8 @@ class AnnotationList extends Component {
               notifyParentOfPinning={this.notifyParentOfPinning}
               replies={annotation.replies}
               isPrivate={annotation.private}
+              isClosed={annotation.isClosed}
+              howClosed={annotation.howClosed}
             />
           );
         })}

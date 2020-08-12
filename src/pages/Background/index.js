@@ -214,6 +214,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       isPrivate: false
     });
   }
+  else if (request.from === 'content' && request.msg === 'UPDATE_QUESTION') {
+    const { id, isClosed, howClosed } = request.payload;
+    updateAnnotationById(id, {
+      isClosed,
+      howClosed
+    });
+  }
   else if (request.msg === 'SAVE_ANNOTATED_TEXT') {
     let { url, content } = request.payload;
     const hostname = new URL(url).hostname;

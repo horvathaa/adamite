@@ -224,7 +224,7 @@ class Annotation extends Component {
   }
 
   render() {
-    const { anchor, idx, id, active, authorId, currentUser, trashed, timeStamp, url, currentUrl, childAnchor, xpath, replies, isPrivate } = this.props;
+    const { anchor, idx, id, active, authorId, currentUser, trashed, timeStamp, url, currentUrl, childAnchor, xpath, replies, isPrivate, isClosed, howClosed } = this.props;
     const { editing, collapsed, tags, content, annotationType, author, pinned } = this.state;
     if (annotationType === 'default' && !trashed) {
       return (<DefaultAnnotation
@@ -348,6 +348,8 @@ class Annotation extends Component {
           submitButtonHandler={this.submitButtonHandler}
           handleExpandCollapse={this.handleExpandCollapse}
           isPrivate={isPrivate}
+          isClosed={isClosed}
+          howClosed={howClosed}
         />
       );
     }
