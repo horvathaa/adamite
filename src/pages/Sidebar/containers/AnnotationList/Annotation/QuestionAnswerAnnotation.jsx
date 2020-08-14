@@ -60,13 +60,20 @@ class QuestionAnswerAnnotation extends Component {
 
     closeOut = (selection) => {
         const closedQuestion = selection !== 'Open Question';
+        const closedToClosed = (
+            (selection === 'Answered' && this.props.howClosed === 'No Longer Relevant') ||
+            (selection === 'No Longer Relevant' && this.props.howClosed === 'Answered')
+        );
+        if (!closedToClosed) {
+            this.props.transmitPinToParent();
+        }
         chrome.runtime.sendMessage({
             msg: 'UPDATE_QUESTION',
             from: 'content',
             payload: {
                 id: this.props.id,
                 isClosed: closedQuestion,
-                howClosed: closedQuestion ? selection : ""
+                howClosed: closedQuestion ? selection : "",
             }
         });
     }
@@ -139,7 +146,7 @@ class QuestionAnswerAnnotation extends Component {
                                         </div>
                                         <div className="badgeContainer">
                                             {isPrivate ? (
-                                                <img src={view} alt='privatebadge' />
+                                                <img src={view} alt='private badge' />
                                             ) :
                                                 (<img src={viewPublic} alt='public badge' />)}
 

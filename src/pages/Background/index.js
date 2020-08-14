@@ -11,9 +11,10 @@ import {
   getAnnotationsAcrossSite,
   getAnnotationsByTag,
   getCurrentUser,
-  getAllQuestionAnnotationsByUserId,
-  getAllPrivateQuestionAnnotationsByUserId,
-  deleteAnnotationForeverById
+  getAllPinnedAnnotationsByUserId,
+  getAllPrivatePinnedAnnotationsByUserId,
+  deleteAnnotationForeverById,
+  getCurrentUserId
 } from '../../firebase/index';
 import firebase from '../../firebase/firebase';
 
@@ -262,23 +263,25 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       AnnotationAnchorContent: anchor,
       offsets: offsets,
       pinned: false,
-      hostname: hostname
+      hostname: hostname,
+      AnnotationTags: [],
+      childAnchor: [],
+      isPrivate: false
     }).then(value => {
-      console.log(value);
       let highlightObj = {
         id: value.id,
         content: newAnno.content,
         xpath: xpath
       }
-      // chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-      //   chrome.tabs.sendMessage(
-      //     tabs[0].id,
-      //     {
-      //       msg: 'ANNOTATION_ADDED',
-      //       newAnno: highlightObj,
-      //     }
-      //   );
-      // });
+      chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+        chrome.tabs.sendMessage(
+          tabs[0].id,
+          {
+            msg: 'ANNOTATION_ADDED',
+            newAnno: highlightObj,
+          }
+        );
+      });
     });
   } else if (request.msg === 'ADD_NEW_REPLY') {
     const { id, reply, replyTags, answer, question } = request.payload;
@@ -312,19 +315,24 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       payload: request.payload,
     });
   }
-  else if (request.from === 'content' && request.msg === 'GET_USER_QUESTIONS') {
+  else if (request.from === 'content' && request.msg === 'GET_PINNED_ANNOTATIONS') {
     let annotations = [];
-    getAllQuestionAnnotationsByUserId(getCurrentUser().uid).get().then(function (doc) {
+    getAllPinnedAnnotationsByUserId(getCurrentUserId()).get().then(function (doc) {
       doc.docs.forEach(anno => {
         annotations.push({ id: anno.id, ...anno.data() });
       });
-      getAllPrivateQuestionAnnotationsByUserId(getCurrentUser().uid).get().then(function (doc) {
+      getAllPrivatePinnedAnnotationsByUserId(getCurrentUserId()).get().then(function (doc) {
         doc.docs.forEach(anno => {
           annotations.push({ id: anno.id, ...anno.data() });
         });
+        // annotations = annotations.filter(anno => anno.isClosed === false);
         sendResponse({ annotations: annotations });
       })
     });
+  }
+  else if (request.from === 'content' && request.msg === 'REQUEST_PIN_UPDATE') {
+    const { id, pinned } = request.payload;
+    updateAnnotationById(id, { pinned: pinned });
   }
   else if (request.from === 'content' && request.msg === 'REQUEST_PAGINATED_ACROSS_SITE_ANNOTATIONS') {
     const { hostname, url } = request.payload;

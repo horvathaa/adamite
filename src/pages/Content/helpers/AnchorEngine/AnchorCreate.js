@@ -217,6 +217,7 @@ export const createAnnotation = (event) => {
 
         if (queue.length) {
             let newAnno = queue.pop();
+            console.log('bleh', newAnno);
             chrome.runtime.sendMessage({
                 msg: 'SAVE_NEW_ANCHOR',
                 from: 'content',

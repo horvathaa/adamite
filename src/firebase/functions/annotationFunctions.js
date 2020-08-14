@@ -55,19 +55,19 @@ export const getAllAnnotations = () => {
   return db.collection(DB_COLLECTIONS.ANNOTATIONS);
 };
 
-export const getAllQuestionAnnotationsByUserId = (uid) => {
+export const getAllPinnedAnnotationsByUserId = (uid) => {
   return db
     .collection(DB_COLLECTIONS.ANNOTATIONS)
     .where('authorId', '==', uid)
-    .where('type', '==', 'question')
+    .where('pinned', '==', true)
     .where('private', '==', false);
 };
 
-export const getAllPrivateQuestionAnnotationsByUserId = (uid) => {
+export const getAllPrivatePinnedAnnotationsByUserId = (uid) => {
   return db
     .collection(DB_COLLECTIONS.ANNOTATIONS)
     .where('authorId', '==', uid)
-    .where('type', '==', 'question')
+    .where('pinned', '==', true)
     .where('private', '==', true);
 };
 
