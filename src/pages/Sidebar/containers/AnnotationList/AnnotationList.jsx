@@ -56,6 +56,7 @@ class AnnotationList extends Component {
               isPrivate={annotation.private}
               isClosed={annotation.isClosed}
               howClosed={annotation.howClosed}
+              adopted={annotation.adopted}
             />
           );
         })}

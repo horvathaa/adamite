@@ -10,7 +10,7 @@ import outlinepin from '../../../../../assets/img/SVGs/pin.svg';
 import fillpin from '../../../../../assets/img/SVGs/pin_2.svg';
 import view from '../../../../../assets/img/SVGs/view.svg';
 import viewPublic from '../../../../../assets/img/SVGs/view_public.svg';
-import newAnchor from '../../../../../assets/img/SVGs/Add_anchor.svg';
+import newAnchor from '../../../../../assets/img/SVGs/NewAnchor2.svg';
 import edit from '../../../../../assets/img/SVGs/edit.svg';
 import trash from '../../../../../assets/img/SVGs/delet.svg';
 import expand from '../../../../../assets/img/SVGs/expand.svg'
@@ -85,7 +85,7 @@ class QuestionAnswerAnnotation extends Component {
     render() {
         const { idx, id, collapsed, author, pin, currentUser, authorId,
             childAnchor, currentUrl, url, anchor, xpath, tags, annotationType,
-            annotationContent, editing, replies, isPrivate, isClosed, howClosed } = this.props;
+            annotationContent, editing, replies, isPrivate, isClosed, howClosed, adopted } = this.props;
         const { replying, showReplies } = this.state;
         const closedStrings = ['Open Question', 'No Longer Relevant', 'Answered'];
         let replyCountString = "";
@@ -108,6 +108,15 @@ class QuestionAnswerAnnotation extends Component {
             }
         } else {
             closeOutText = "Open Question";
+        }
+        let adoptedContent, showAdoptedAnchor;
+        if (adopted === 0 || adopted) {
+            replies.forEach(reply => {
+                if (reply.replyId === adopted) {
+                    adoptedContent = reply.replyContent;
+                    showAdoptedAnchor = reply.xpath !== null;
+                }
+            });
         }
 
         const closeoutOptions = closedStrings.filter(str => str !== closeOutText);
@@ -271,6 +280,29 @@ class QuestionAnswerAnnotation extends Component {
                     {replying &&
                         <ReplyEditor id={id} idx={replies.length !== undefined ? replies.length : 0} replies={replies} finishReply={this.finishReply} showQuestionAnswerInterface={true} />
                     }
+                    {adopted === 0 || adopted ? (
+                        <React.Fragment>
+                            <div className="SeparationRow">
+                                <div className="ShowHideReplies" >
+                                    <div className="ExpandCollapse">
+                                        <img src={expand} id="ShowReplies" className="Icon" alt="Adopted reply" />
+                                    </div>
+                            Adopted Reply
+                        </div>
+                                <hr className="divider" />
+                            </div>
+                            {showAdoptedAnchor && <Anchor
+                                id={replies[adopted].replyId}
+                                currentUrl={currentUrl}
+                                url={replies[adopted].url}
+                                collapsed={collapsed}
+                                anchorContent={replies[adopted].anchor}
+                            />}
+                            <div className="annotationContent">
+                                {adoptedContent}
+                            </div>
+                        </React.Fragment>
+                    ) : (null)}
                     {replies !== undefined && showReplies && replies.length && !collapsed && !editing ? (
                         <div className="Replies">
                             <div className="SeparationRow">
@@ -307,6 +339,8 @@ class QuestionAnswerAnnotation extends Component {
                                             url={reply.url}
                                             offsets={reply.offsets}
                                             currentUrl={currentUrl}
+                                            notifyParentOfAdopted={this.props.notifyParentOfAdopted}
+                                            adopted={this.props.adopted === reply.replyId}
                                         />
                                     )
                                 }

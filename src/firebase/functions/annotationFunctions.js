@@ -137,7 +137,8 @@ export const createAnnotation = async ({
     childAnchor,
     pinned: AnnotationType === 'question',
     replies: [],
-    private: isPrivate
+    private: isPrivate,
+    adopted: false
   };
   return db.collection(DB_COLLECTIONS.ANNOTATIONS).add(newAnnotation);
 };

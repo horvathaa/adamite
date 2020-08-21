@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import profile from '../../../../../../assets/img/SVGs/Profile.svg';
 import CustomTag from '../../../CustomTag/CustomTag';
 import Anchor from '../AnchorList/Anchor';
-import { FcCheckmark } from 'react-icons/fc';
+import { FaStar, FaRegStar } from 'react-icons/fa';
 import '../Annotation.css';
 import './Reply.css';
 import ReplyEditor from './ReplyEditor';
@@ -12,7 +12,8 @@ import trash from '../../../../../../assets/img/SVGs/delet.svg';
 class Reply extends Component {
 
     state = {
-        editing: false
+        editing: false,
+        adopted: this.props.adopted !== undefined ? this.props.adopted : false
     }
 
     finishReply = () => {
@@ -28,6 +29,18 @@ class Reply extends Component {
                 id: this.props.annoId,
                 replies: repliesToTransmit
             }
+        });
+    }
+
+    transmitAdoptedToParent = () => {
+        this.handleAdopted().then(adoptedState => { this.props.notifyParentOfAdopted(this.props.annoId, this.props.replyId, adoptedState) })
+    }
+
+    handleAdopted = () => {
+        return new Promise((resolve, reject) => {
+            const { adopted } = this.state;
+            this.setState({ adopted: !adopted });
+            resolve(!adopted);
         });
     }
 
@@ -47,7 +60,9 @@ class Reply extends Component {
     render() {
         const { content, author, currentUser, authorId, idx, tags, answer, question,
             showQuestionAnswerInterface, xpath, anchor, hostname, url, offsets } = this.props;
-        // const displayAuthor = author.substring(0, author.indexOf('@'));
+        const adoptedStar = this.state.adopted ?
+            <FaStar className="profile" onClick={this.transmitAdoptedToParent} /> :
+            <FaRegStar className="profile" onClick={this.transmitAdoptedToParent} />;
         const reply = (<React.Fragment>
             {this.state.editing ?
                 (<ReplyEditor
@@ -89,6 +104,7 @@ class Reply extends Component {
                                     <div className="AnnotationIconContainer">
                                         {currentUser.uid === authorId ? (
                                             <React.Fragment>
+                                                {adoptedStar}
                                                 <div className="TopIconContainer" >
                                                     <img src={edit} alt="edit reply" className="profile" id="edit" onClick={_ => this.setState({ editing: true })} />
                                                 </div>
@@ -117,7 +133,6 @@ class Reply extends Component {
                                 <div className="contentBody">
                                     {content}
                                 </div>
-
                             </div>
                             {tags.length ? (
                                 <div className="TagRow">

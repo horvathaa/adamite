@@ -27,7 +27,6 @@ class ReplyEditor extends Component {
 
     componentDidMount() {
         chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-            console.log('listening', request.msg);
             if (request.msg === 'TRANSMIT_REPLY_ANCHOR' && request.from === 'content') {
                 const { xpath, url, anchor, offsets, hostname } = request.payload;
                 this.setState({

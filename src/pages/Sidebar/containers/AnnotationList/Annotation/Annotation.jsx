@@ -210,6 +210,16 @@ class Annotation extends Component {
     });
   }
 
+  notifyParentOfAdopted = (annoId, replyId, adoptedState) => {
+    chrome.runtime.sendMessage({
+      msg: 'REQUEST_ADOPTED_UPDATE',
+      from: 'content',
+      payload: {
+        annoId, replyId, adoptedState
+      }
+    })
+  }
+
   cancelButtonHandler = () => {
     this.setState({ editing: false });
   }
@@ -228,7 +238,7 @@ class Annotation extends Component {
   }
 
   render() {
-    const { anchor, idx, id, active, authorId, currentUser, trashed, timeStamp, url, currentUrl, childAnchor, xpath, replies, isPrivate } = this.props;
+    const { anchor, idx, id, active, authorId, currentUser, trashed, timeStamp, url, currentUrl, childAnchor, xpath, replies, isPrivate, adopted } = this.props;
     const { editing, collapsed, tags, content, annotationType, author, pinned, isClosed, howClosed } = this.state;
     if (annotationType === 'default' && !trashed) {
       return (<DefaultAnnotation
@@ -354,6 +364,8 @@ class Annotation extends Component {
           isPrivate={isPrivate}
           isClosed={isClosed}
           howClosed={howClosed}
+          adopted={adopted}
+          notifyParentOfAdopted={this.notifyParentOfAdopted}
         />
       );
     }

@@ -295,11 +295,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       answer: answer,
       question: question,
       tags: replyTags,
-      xpath: xpath,
-      anchor: anchor,
-      hostname: hostname,
-      url: url,
-      offsets: offsets
+      xpath: xpath !== undefined ? xpath : null,
+      anchor: anchor !== undefined ? anchor : "",
+      hostname: hostname !== undefined ? hostname : "",
+      url: url !== undefined ? url : "",
+      offsets: offsets !== undefined ? offsets : null
     });
     updateAnnotationById(id, {
       createdTimestamp: new Date().getTime(),
@@ -346,6 +346,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   else if (request.from === 'content' && request.msg === 'REQUEST_PIN_UPDATE') {
     const { id, pinned } = request.payload;
     updateAnnotationById(id, { pinned: pinned });
+  }
+  else if (request.from === 'content' && request.msg === 'REQUEST_ADOPTED_UPDATE') {
+    const { annoId, replyId, adoptedState } = request.payload;
+    if (adoptedState) {
+      updateAnnotationById(annoId, { adopted: replyId });
+    } else {
+      updateAnnotationById(annoId, { adopted: false });
+    }
   }
   else if (request.from === 'content' && request.msg === 'REQUEST_PAGINATED_ACROSS_SITE_ANNOTATIONS') {
     const { hostname, url } = request.payload;
