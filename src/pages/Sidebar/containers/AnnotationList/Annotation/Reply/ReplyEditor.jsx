@@ -17,7 +17,28 @@ class ReplyEditor extends Component {
         reply: this.props.edit ? this.props.replyContent : "",
         replyTags: this.props.edit && this.props.tags !== undefined ? this.props.tags : [],
         answer: this.props.edit ? this.props.answer : false,
-        question: this.props.edit ? this.props.question : false
+        question: this.props.edit ? this.props.question : false,
+        xpath: this.props.xpath ? this.props.xpath : undefined,
+        url: this.props.url ? this.props.url : "",
+        anchor: this.props.anchor ? this.props.anchor : "",
+        offsets: this.props.offsets ? this.props.offsets : undefined,
+        hostname: this.props.hostname ? this.props.hostname : ""
+    }
+
+    componentDidMount() {
+        chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+            console.log('listening', request.msg);
+            if (request.msg === 'TRANSMIT_REPLY_ANCHOR' && request.from === 'content') {
+                const { xpath, url, anchor, offsets, hostname } = request.payload;
+                this.setState({
+                    xpath,
+                    url,
+                    anchor,
+                    offsets,
+                    hostname
+                });
+            }
+        });
     }
 
     replyChangeHandler = (value) => {
@@ -45,13 +66,25 @@ class ReplyEditor extends Component {
 
     requestNewAnchor = () => {
         alert('Select the text you want to anchor this answer to!');
-        const { idx, id } = this.props;
+        const { id, replies } = this.props;
+        let replyId;
+        if (this.props.replyId === undefined) {
+            if (replies === undefined) {
+                replyId = 0;
+            }
+            else {
+                replyId = replies.length;
+            }
+        } else {
+            replyId = this.props.replyId;
+        }
         chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
             chrome.tabs.sendMessage(tabs[0].id, {
                 msg: 'ADD_REPLY_ANCHOR',
                 payload: {
-                    replyIdx: idx,
-                    id
+                    replyId,
+                    id,
+                    replies
                 }
             });
         });
@@ -69,7 +102,12 @@ class ReplyEditor extends Component {
                 tags: this.state.replyTags,
                 answer: this.state.answer,
                 question: this.state.question,
-                timestamp: new Date().getTime()
+                timestamp: new Date().getTime(),
+                xpath: this.state.xpath,
+                anchor: this.state.anchor,
+                hostname: this.state.hostname,
+                url: this.state.url,
+                offsets: this.state.offsets
             };
             let replies = this.props.replies.filter(reply => reply.replyId !== this.props.replyId);
             const repliesToTransmit = replies.concat(newReply);
@@ -90,7 +128,12 @@ class ReplyEditor extends Component {
                     reply: this.state.reply,
                     replyTags: this.state.replyTags,
                     answer: this.state.answer,
-                    question: this.state.question
+                    question: this.state.question,
+                    xpath: this.state.xpath,
+                    anchor: this.state.anchor,
+                    hostname: this.state.hostname,
+                    url: this.state.url,
+                    offsets: this.state.offsets
                 }
             });
         }

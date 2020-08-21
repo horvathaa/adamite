@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import profile from '../../../../../../assets/img/SVGs/Profile.svg';
 import CustomTag from '../../../CustomTag/CustomTag';
+import Anchor from '../AnchorList/Anchor';
 import { FcCheckmark } from 'react-icons/fc';
 import '../Annotation.css';
 import './Reply.css';
@@ -44,7 +45,8 @@ class Reply extends Component {
     }
 
     render() {
-        const { content, author, currentUser, authorId, idx, tags, answer, question, showQuestionAnswerInterface } = this.props;
+        const { content, author, currentUser, authorId, idx, tags, answer, question,
+            showQuestionAnswerInterface, xpath, anchor, hostname, url, offsets } = this.props;
         // const displayAuthor = author.substring(0, author.indexOf('@'));
         const reply = (<React.Fragment>
             {this.state.editing ?
@@ -61,6 +63,11 @@ class Reply extends Component {
                     answer={answer}
                     question={question}
                     tags={tags}
+                    xpath={xpath}
+                    anchor={anchor}
+                    hostname={hostname}
+                    url={url}
+                    offsets={offsets}
                     showQuestionAnswerInterface={showQuestionAnswerInterface}
                 />) : (
                     <React.Fragment>
@@ -93,6 +100,15 @@ class Reply extends Component {
                                     </div>
                                 </div>
                             </div>
+                            {xpath !== null && xpath !== undefined ? (
+                                <Anchor
+                                    annoId={this.props.annoId}
+                                    replyId={this.props.replyId}
+                                    currentUrl={this.props.currentUrl}
+                                    url={url}
+                                    anchorContent={anchor}
+                                    pageAnchor={xpath === null}
+                                />) : (null)}
                             <div className="annotationContent">
                                 <div className="QuestionAnswerMarker">
                                     {answer !== undefined && answer ? "A" : (null)}

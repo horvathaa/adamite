@@ -301,6 +301,12 @@ class QuestionAnswerAnnotation extends Component {
                                             finishReply={this.finishReply}
                                             showQuestionAnswerInterface={true}
                                             currentUser={currentUser}
+                                            xpath={reply.xpath}
+                                            anchor={reply.anchor}
+                                            hostname={reply.hostname}
+                                            url={reply.url}
+                                            offsets={reply.offsets}
+                                            currentUrl={currentUrl}
                                         />
                                     )
                                 }

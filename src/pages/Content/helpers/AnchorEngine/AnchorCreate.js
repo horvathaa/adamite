@@ -180,7 +180,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         queue.push(request.payload);
     }
     else if (request.msg === 'ADD_REPLY_ANCHOR') {
-        queue.push(request.payload);
+        replyQueue.push(request.payload);
     }
 });
 
@@ -236,13 +236,11 @@ export const createAnnotation = (event) => {
             });
         }
         else if (replyQueue.length) {
-            let reply = replyQueue.pop();
-            console.log('this is absurd', reply);
+            replyQueue.pop();
             chrome.runtime.sendMessage({
-                msg: 'SAVE_REPLY_ANCHOR',
+                msg: 'TRANSMIT_REPLY_ANCHOR',
                 from: 'content',
                 payload: {
-                    reply: reply,
                     xpath: xpathToNode,
                     url: window.location.href,
                     anchor: selection.toString(),
@@ -250,7 +248,6 @@ export const createAnnotation = (event) => {
                     hostname: window.location.hostname
                 }
             });
-
         }
         else {
             const rectPopover = selection.getRangeAt(0).getBoundingClientRect();
