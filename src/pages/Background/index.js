@@ -284,11 +284,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       });
     });
   } else if (request.msg === 'ADD_NEW_REPLY') {
-    const { id, reply, replyTags, answer, question } = request.payload;
+    const { id, reply, replyTags, answer, question, replyId } = request.payload;
     const author = getCurrentUser().email.substring(0, getCurrentUser().email.indexOf('@'));
     const replies = Object.assign({}, {
+      replyId: replyId,
       replyContent: reply,
       author: author,
+      authorId: getCurrentUserId(),
       timestamp: new Date().getTime(),
       answer: answer,
       question: question,
@@ -299,6 +301,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       replies: firebase.firestore.FieldValue.arrayUnion({
         ...replies
       })
+    });
+  }
+  else if (request.msg === 'UPDATE_REPLIES') {
+    updateAnnotationById(request.payload.id, {
+      createdTimestamp: new Date().getTime(),
+      replies: request.payload.replies
     });
   }
   else if (request.from === 'content' && request.msg === 'CONTENT_SELECTED') {

@@ -10,6 +10,7 @@ import '../../../../assets/img/SVGs/Question.svg';
 import '../../../../assets/img/SVGs/Issue.svg';
 
 var queue = [];
+var replyQueue = [];
 
 const Popover = ({ selection, xpathToNode, offsets, removePopover }) => {
     const [selected, setSelected] = useState(null);
@@ -178,6 +179,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.msg === 'ADD_NEW_ANCHOR') {
         queue.push(request.payload);
     }
+    else if (request.msg === 'ADD_REPLY_ANCHOR') {
+        queue.push(request.payload);
+    }
 });
 
 export const removeAnnotationWidget = (event) => {
@@ -230,6 +234,23 @@ export const createAnnotation = (event) => {
                     hostname: window.location.hostname
                 }
             });
+        }
+        else if (replyQueue.length) {
+            let reply = replyQueue.pop();
+            console.log('this is absurd', reply);
+            chrome.runtime.sendMessage({
+                msg: 'SAVE_REPLY_ANCHOR',
+                from: 'content',
+                payload: {
+                    reply: reply,
+                    xpath: xpathToNode,
+                    url: window.location.href,
+                    anchor: selection.toString(),
+                    offsets: offsets,
+                    hostname: window.location.hostname
+                }
+            });
+
         }
         else {
             const rectPopover = selection.getRangeAt(0).getBoundingClientRect();

@@ -51,6 +51,7 @@ class QuestionAnswerAnnotation extends Component {
     }
 
     finishReply = () => {
+
         this.setState({ replying: false });
     }
 
@@ -268,7 +269,7 @@ class QuestionAnswerAnnotation extends Component {
                         </div>
                     ) : (null)}
                     {replying &&
-                        <ReplyEditor id={id} finishReply={this.finishReply} showQuestionAnswerInterface={true} />
+                        <ReplyEditor id={id} idx={replies.length !== undefined ? replies.length : 0} replies={replies} finishReply={this.finishReply} showQuestionAnswerInterface={true} />
                     }
                     {replies !== undefined && showReplies && replies.length && !collapsed && !editing ? (
                         <div className="Replies">
@@ -287,12 +288,19 @@ class QuestionAnswerAnnotation extends Component {
                                         <Reply
                                             key={idx}
                                             idx={idx}
+                                            replyId={reply.replyId}
+                                            annoId={id}
+                                            replies={replies}
                                             content={reply.replyContent}
                                             author={reply.author}
+                                            authorId={reply.authorId}
                                             timeStamp={reply.timestamp}
                                             tags={reply.tags}
                                             answer={reply.answer}
                                             question={reply.question}
+                                            finishReply={this.finishReply}
+                                            showQuestionAnswerInterface={true}
+                                            currentUser={currentUser}
                                         />
                                     )
                                 }
