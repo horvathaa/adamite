@@ -239,6 +239,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       AnnotationType: content.annotationType, // could be other types (string)
       url,
       hostname,
+      isClosed: false,
       pinned: false,
       AnnotationTags: content.tags,
       childAnchor: [],

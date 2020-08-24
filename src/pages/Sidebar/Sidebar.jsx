@@ -9,6 +9,7 @@ import NewAnnotation from './containers/NewAnnotation/NewAnnotation';
 import Filter from './containers/Filter/Filter';
 import FilterSummary from './containers/Filter/FilterSummary';
 import SearchBar from './containers/SearchBar/SearchBar';
+import { Button } from 'react-bootstrap';
 
 class Sidebar extends React.Component {
   state = {
@@ -28,6 +29,8 @@ class Sidebar extends React.Component {
     showPinned: false,
     pinnedAnnos: [],
     annotatingPage: false,
+    askAboutRelatedAnnos: false,
+    relatedQuestions: [],
     pageName: '',
     filterSelection: {
       siteScope: ['onPage'],
@@ -195,6 +198,17 @@ class Sidebar extends React.Component {
         request.msg === 'CONTENT_UPDATED'
       ) {
         this.setState({ annotations: request.payload })
+        let mostRecentAnno, secondMostRecentAnno;
+        const filteredAnnotationsCopy = request.payload.sort((a, b) =>
+          (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
+        );
+        if (this.state.filteredAnnotations.length) {
+          mostRecentAnno = filteredAnnotationsCopy[0];
+          secondMostRecentAnno = filteredAnnotationsCopy[1];
+          if (mostRecentAnno.type === 'question' && secondMostRecentAnno.type === 'question' && !secondMostRecentAnno.isClosed) {
+            this.setState({ askAboutRelatedAnnos: true });
+          }
+        }
         this.requestFilterUpdate();
         // console.log("HERE is johnnnnn", request.payload)
       }
@@ -244,6 +258,17 @@ class Sidebar extends React.Component {
   handleUnanchoredAnnotation = () => {
     // this.setState({ annotatingPage: true });
     this.setState({ unanchored: true });
+  }
+
+  handleRelatedQuestions = () => {
+    this.setState({ askAboutRelatedAnnos: false });
+    const annotations = this.state.annotations.sort((a, b) =>
+      (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
+    );
+    const related = [annotations[0], annotations[1]];
+    let boilerplate = this.state.relatedQuestions;
+    boilerplate.push(related);
+    this.setState({ relatedQuestions: boilerplate });
   }
 
   handlePinnedAnnotation = (id, pinned) => {
@@ -490,6 +515,7 @@ class Sidebar extends React.Component {
       return null;
     }
 
+    console.log('bad bad', this.state.relatedQuestions);
     const inputText = searchBarInputText.toLowerCase();
     let filteredAnnotationsCopy = [];
     filteredAnnotations.forEach((anno) => {
@@ -506,7 +532,6 @@ class Sidebar extends React.Component {
     const pinnedAnnosCopy = pinnedAnnos.sort((a, b) =>
       (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
     );
-
 
     let searchCount;
     if (this.state.showPinned) {
@@ -536,6 +561,16 @@ class Sidebar extends React.Component {
             </div>
             <div>
               {!this.state.showFilter && <FilterSummary filter={this.state.filterSelection} openFilter={this.openFilter} />}
+              {this.state.askAboutRelatedAnnos && !this.state.showFilter ? (
+                <React.Fragment>
+                  <div className="FilterSummaryContainer">
+                    I noticed that you have an open question and you just created a new question - are they related? &nbsp;
+                    <Button variant="outline-info" size='sm' onClick={this.handleRelatedQuestions}>Yes</Button> &nbsp; &nbsp;
+                    <Button variant="outline-info" size='sm' onClick={_ => this.setState({ askAboutRelatedAnnos: false })}>No</Button>
+                  </div>
+
+                </React.Fragment>
+              ) : (null)}
               {this.state.showFilter &&
                 <Filter applyFilter={this.applyFilter}
                   filterAnnotationLength={this.getFilteredAnnotationListLength}
@@ -576,6 +611,7 @@ class Sidebar extends React.Component {
                   xpath={null}
                 />
               }
+
             </div>
             <div className="userQuestions">
               <div className="userQuestionButtonContainer">

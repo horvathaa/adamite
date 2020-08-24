@@ -39,6 +39,20 @@
   color: #6B778C;
 }
 
+.FilterSummaryContainer{
+  padding: 5px;
+  background: white;
+  box-shadow: 2px 2px 2px #88888887;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  flex: 1;
+  min-width: 0;
+  transition: all 0.1s ease-in;
+  position: relative;
+  font-size: 0.9rem;
+  color: #6B778C;
+}
+
 .Icon {
   width: 1.4em;
   color: #7f8080;
