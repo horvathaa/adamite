@@ -10,42 +10,11 @@ import '../../../../assets/img/SVGs/Question.svg';
 import '../../../../assets/img/SVGs/Issue.svg';
 
 var queue = [];
-
-const QuestionMenu = ({ selection, xpathToNode, offsets, removePopover }) => {
-    const [selected, setSelected] = useState(null);
-
-    useEffect(() => {
-        setSelected(selection.toString());
-    }, []);
-
-    const whatQuestionClickedHandler = (event) => {
-        event.stopPropagation();
-        const questionContent = "What is this?";
-        alertBackgroundOfNewSelection(selected, offsets, xpathToNode, "question", questionContent);
-        removePopover();
-    };
-
-    const howQuestionClickedHandler = (event) => {
-        event.stopPropagation();
-        const questionContent = "How do I use this?";
-        alertBackgroundOfNewSelection(selected, offsets, xpathToNode, "question", questionContent);
-        removePopover();
-    };
-
-    return (
-        <div className="buttonColumn">
-            <div className="onHoverCreateQuestionAnnotation" onClick={whatQuestionClickedHandler} >
-                What is this?
-            </div>
-            <div className="onHoverCreateAnnotation" onClick={howQuestionClickedHandler} >
-                How do I use this?
-            </div>
-        </div>
-    );
-};
+var replyQueue = [];
 
 const Popover = ({ selection, xpathToNode, offsets, removePopover }) => {
     const [selected, setSelected] = useState(null);
+    const [showQuestionMenu, setShowQuestionMenu] = useState(false);
 
     useEffect(() => {
         setSelected(selection.toString());
@@ -91,6 +60,21 @@ const Popover = ({ selection, xpathToNode, offsets, removePopover }) => {
         removePopover();
     };
 
+    const whatQuestionClickedHandler = (event) => {
+        event.stopPropagation();
+        const questionContent = "What is this?";
+        alertBackgroundOfNewSelection(selected, offsets, xpathToNode, "question", questionContent);
+        removePopover();
+    };
+
+    const howQuestionClickedHandler = (event) => {
+        event.stopPropagation();
+        const questionContent = "How do I use this?";
+        alertBackgroundOfNewSelection(selected, offsets, xpathToNode, "question", questionContent);
+        removePopover();
+    };
+
+
     return (
         <div className="buttonRow">
             <div className="onHoverCreateAnnotation" onClick={defaultButtonClickedHandler} >
@@ -111,11 +95,23 @@ const Popover = ({ selection, xpathToNode, offsets, removePopover }) => {
                 </div>
                 To-do
             </div>
-            <div className="onHoverCreateAnnotation" onClick={questionButtonClickedHandler} >
+            <div className="onHoverCreateAnnotation" onClick={questionButtonClickedHandler}
+                onMouseEnter={() => setShowQuestionMenu(true)}
+                onMouseLeave={() => setShowQuestionMenu(false)}>
                 <div className="buttonIconContainer">
                     <img src={chrome.extension.getURL('Question.svg')} alt="question annnotation" />
                 </div>
                 Question
+                {showQuestionMenu && (
+                    <div className="buttonColumn">
+                        <div className="onHoverCreateQuestionAnnotation" onClick={whatQuestionClickedHandler} >
+                            What is this?
+                    </div>
+                        <div className="onHoverCreateAnnotation" onClick={howQuestionClickedHandler} >
+                            How do I use this?
+                     </div>
+                    </div>
+                )}
             </div>
             <div className="onHoverCreateAnnotation" onClick={issueButtonClickedHandler} >
                 <div className="buttonIconContainer">
@@ -145,22 +141,14 @@ const removePopover = () => {
     }
 };
 
-function displayPopoverBasedOnRectPosition(shift, rect, props) {
+function displayPopoverBasedOnRectPosition(rect, props) {
     popOverAnchor.top = '0px';
     popOverAnchor.style.left = `0px`;
 
-    if (shift) {
-        ReactDOM.render(
-            <QuestionMenu removePopover={removePopover} {...props} />,
-            popOverAnchor
-        );
-    }
-    else {
-        ReactDOM.render(
-            <Popover removePopover={removePopover} {...props} />,
-            popOverAnchor
-        );
-    }
+    ReactDOM.render(
+        <Popover removePopover={removePopover} {...props} />,
+        popOverAnchor
+    );
 
     // adjusting position of popover box after mounting
     popOverAnchor.style.top = `${rect.bottom + 5 + window.scrollY}px`;
@@ -190,6 +178,9 @@ const alertBackgroundOfNewSelection = (selection, offsets, xpath, type, content)
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.msg === 'ADD_NEW_ANCHOR') {
         queue.push(request.payload);
+    }
+    else if (request.msg === 'ADD_REPLY_ANCHOR') {
+        replyQueue.push(request.payload);
     }
 });
 
@@ -230,6 +221,7 @@ export const createAnnotation = (event) => {
 
         if (queue.length) {
             let newAnno = queue.pop();
+            console.log('bleh', newAnno);
             chrome.runtime.sendMessage({
                 msg: 'SAVE_NEW_ANCHOR',
                 from: 'content',
@@ -243,14 +235,23 @@ export const createAnnotation = (event) => {
                 }
             });
         }
-        else if (event.shiftKey) {
-            const rectPopover = selection.getRangeAt(0).getBoundingClientRect();
-            displayPopoverBasedOnRectPosition(true, rectPopover, { selection, xpathToNode, offsets });
-            return;
+        else if (replyQueue.length) {
+            replyQueue.pop();
+            chrome.runtime.sendMessage({
+                msg: 'TRANSMIT_REPLY_ANCHOR',
+                from: 'content',
+                payload: {
+                    xpath: xpathToNode,
+                    url: window.location.href,
+                    anchor: selection.toString(),
+                    offsets: offsets,
+                    hostname: window.location.hostname
+                }
+            });
         }
         else {
             const rectPopover = selection.getRangeAt(0).getBoundingClientRect();
-            displayPopoverBasedOnRectPosition(false, rectPopover, { selection, xpathToNode, offsets });
+            displayPopoverBasedOnRectPosition(rectPopover, { selection, xpathToNode, offsets });
             return;
         }
     }

@@ -4,10 +4,13 @@ import './Annotation.css';
 import CustomTag from '../../CustomTag/CustomTag';
 import profile from '../../../../../assets/img/SVGs/Profile.svg';
 import Question from '../../../../../assets/img/SVGs/Question.svg';
+import openQuestion from '../../../../../assets/img/SVGs/Question_open.svg';
 import reply from '../../../../../assets/img/SVGs/Reply.svg';
 import outlinepin from '../../../../../assets/img/SVGs/pin.svg';
 import fillpin from '../../../../../assets/img/SVGs/pin_2.svg';
-import newAnchor from '../../../../../assets/img/SVGs/Add_anchor.svg';
+import view from '../../../../../assets/img/SVGs/view.svg';
+import viewPublic from '../../../../../assets/img/SVGs/view_public.svg';
+import newAnchor from '../../../../../assets/img/SVGs/NewAnchor2.svg';
 import edit from '../../../../../assets/img/SVGs/edit.svg';
 import trash from '../../../../../assets/img/SVGs/delet.svg';
 import expand from '../../../../../assets/img/SVGs/expand.svg'
@@ -16,6 +19,7 @@ import AnchorList from './AnchorList/AnchorList';
 import Anchor from './AnchorList/Anchor';
 import Reply from './Reply/Reply';
 import ReplyEditor from './Reply/ReplyEditor';
+import { SplitButton, Dropdown as BootstrapDropdown } from 'react-bootstrap';
 
 
 class QuestionAnswerAnnotation extends Component {
@@ -23,7 +27,6 @@ class QuestionAnswerAnnotation extends Component {
     state = {
         replying: false,
         showReplies: false,
-        answered: false,
         selected: false
     }
 
@@ -48,6 +51,7 @@ class QuestionAnswerAnnotation extends Component {
     }
 
     finishReply = () => {
+
         this.setState({ replying: false });
     }
 
@@ -55,12 +59,35 @@ class QuestionAnswerAnnotation extends Component {
         this.setState({ showReplies: !this.state.showReplies });
     }
 
+    closeOut = (selection) => {
+        const closedQuestion = selection !== 'Open Question';
+        const closedToClosed = (
+            (selection === 'Answered' && this.props.howClosed === 'No Longer Relevant') ||
+            (selection === 'No Longer Relevant' && this.props.howClosed === 'Answered')
+        );
+        if (!closedToClosed) {
+            this.props.transmitPinToParent();
+        }
+        chrome.runtime.sendMessage({
+            msg: 'UPDATE_QUESTION',
+            from: 'content',
+            payload: {
+                id: this.props.id,
+                isClosed: closedQuestion,
+                howClosed: closedQuestion ? selection : "",
+            }
+        });
+    }
+
+
+
 
     render() {
         const { idx, id, collapsed, author, pin, currentUser, authorId,
             childAnchor, currentUrl, url, anchor, xpath, tags, annotationType,
-            annotationContent, editing, replies, isPrivate } = this.props;
+            annotationContent, editing, replies, isPrivate, isClosed, howClosed, adopted } = this.props;
         const { replying, showReplies } = this.state;
+        const closedStrings = ['Open Question', 'No Longer Relevant', 'Answered'];
         let replyCountString = "";
         if (replies !== undefined) {
             if (replies.length > 1) {
@@ -70,6 +97,29 @@ class QuestionAnswerAnnotation extends Component {
                 replyCountString = " reply";
             }
         }
+
+        let closeOutText = "";
+        if (isClosed !== undefined) {
+            if (!isClosed) {
+                closeOutText = "Open Question";
+            }
+            else {
+                closeOutText = howClosed;
+            }
+        } else {
+            closeOutText = "Open Question";
+        }
+        let adoptedContent, showAdoptedAnchor;
+        if (adopted === 0 || adopted) {
+            replies.forEach(reply => {
+                if (reply.replyId === adopted) {
+                    adoptedContent = reply.replyContent;
+                    showAdoptedAnchor = reply.xpath !== null;
+                }
+            });
+        }
+
+        const closeoutOptions = closedStrings.filter(str => str !== closeOutText);
 
         return (
             <li key={idx} onClick={this.setSelected} id={id} className={classNames({ AnnotationItem: true })}>
@@ -96,10 +146,23 @@ class QuestionAnswerAnnotation extends Component {
                                 <div className="annotationTypeBadge row2">
                                     <div className="annotationTypeBadge col2">
                                         <div className="badgeContainer">
-                                            <img src={Question} alt='question type badge' />
-                                        </div>
+                                            {isClosed ? (
+                                                <img src={Question} alt='closed question badge' />
+                                            ) : (
+                                                    <img src={openQuestion} alt='open question type badge' />
+                                                )
+                                            }
 
+                                        </div>
+                                        <div className="badgeContainer">
+                                            {isPrivate ? (
+                                                <img src={view} alt='private badge' />
+                                            ) :
+                                                (<img src={viewPublic} alt='public badge' />)}
+
+                                        </div>
                                     </div>
+
                                 </div>
                             </div>
                             <div className={" container " + classNames({
@@ -113,7 +176,6 @@ class QuestionAnswerAnnotation extends Component {
                                 <div className="userProfileContainer">
 
                                     <div className="author">
-                                        {isPrivate ? (<span role="img" aria-label="lock symbol">&#128274;</span>) : (null)}
                                         {author}
                                     </div>
                                     <div className="timestamp">
@@ -184,6 +246,22 @@ class QuestionAnswerAnnotation extends Component {
                             collapsed={collapsed} />
                     </React.Fragment>
 
+                    {!collapsed &&
+                        <div className="openCloseQuestionRow">
+                            <SplitButton
+                                key="openCloseQuestion"
+                                id="openCloseQuestion"
+                                variant="secondary"
+                                size="sm"
+                                title={closeOutText}
+                                onSelect={eventKey => this.closeOut(eventKey)}
+                            >
+                                <BootstrapDropdown.Item className="dropdown-link" onSelect={eventKey => this.closeOut(eventKey)} eventKey={closeoutOptions[0]}>{closeoutOptions[0]}</BootstrapDropdown.Item>
+                                <BootstrapDropdown.Item className="dropdown-link" onSelect={eventKey => this.closeOut(eventKey)} eventKey={closeoutOptions[1]}>{closeoutOptions[1]}</BootstrapDropdown.Item>
+                            </SplitButton>
+                        </div>
+                    }
+
                     {tags.length && !collapsed && !editing ? (
                         <div className={classNames({
                             TagRow: true
@@ -200,8 +278,31 @@ class QuestionAnswerAnnotation extends Component {
                         </div>
                     ) : (null)}
                     {replying &&
-                        <ReplyEditor id={id} finishReply={this.finishReply} showQuestionAnswerInterface={true} />
+                        <ReplyEditor id={id} idx={replies.length !== undefined ? replies.length : 0} replies={replies} finishReply={this.finishReply} showQuestionAnswerInterface={true} />
                     }
+                    {adopted === 0 || adopted ? (
+                        <React.Fragment>
+                            <div className="SeparationRow">
+                                <div className="ShowHideReplies" >
+                                    <div className="ExpandCollapse">
+                                        <img src={expand} id="ShowReplies" className="Icon" alt="Adopted reply" />
+                                    </div>
+                            Adopted Reply
+                        </div>
+                                <hr className="divider" />
+                            </div>
+                            {showAdoptedAnchor && <Anchor
+                                id={replies[adopted].replyId}
+                                currentUrl={currentUrl}
+                                url={replies[adopted].url}
+                                collapsed={collapsed}
+                                anchorContent={replies[adopted].anchor}
+                            />}
+                            <div className="annotationContent">
+                                {adoptedContent}
+                            </div>
+                        </React.Fragment>
+                    ) : (null)}
                     {replies !== undefined && showReplies && replies.length && !collapsed && !editing ? (
                         <div className="Replies">
                             <div className="SeparationRow">
@@ -219,12 +320,27 @@ class QuestionAnswerAnnotation extends Component {
                                         <Reply
                                             key={idx}
                                             idx={idx}
+                                            replyId={reply.replyId}
+                                            annoId={id}
+                                            replies={replies}
                                             content={reply.replyContent}
                                             author={reply.author}
+                                            authorId={reply.authorId}
                                             timeStamp={reply.timestamp}
                                             tags={reply.tags}
                                             answer={reply.answer}
                                             question={reply.question}
+                                            finishReply={this.finishReply}
+                                            showQuestionAnswerInterface={true}
+                                            currentUser={currentUser}
+                                            xpath={reply.xpath}
+                                            anchor={reply.anchor}
+                                            hostname={reply.hostname}
+                                            url={reply.url}
+                                            offsets={reply.offsets}
+                                            currentUrl={currentUrl}
+                                            notifyParentOfAdopted={this.props.notifyParentOfAdopted}
+                                            adopted={this.props.adopted === reply.replyId}
                                         />
                                     )
                                 }
@@ -272,7 +388,7 @@ class QuestionAnswerAnnotation extends Component {
                         AnnotationPadActive: true,
                     })}
                 ></div>
-            </li>
+            </li >
         );
     }
 }

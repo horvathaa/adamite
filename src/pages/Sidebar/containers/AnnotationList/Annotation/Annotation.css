@@ -118,9 +118,37 @@
   margin-left: -15px;
 }
 
+.dropdown-link a {
+  font-size: small !important;
+}
+
+.dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 0.25rem 1.5rem;
+  clear: both;
+  font-weight: 400;
+  color: #212529;
+  font-size: small;
+  text-align: inherit;
+  white-space: nowrap;
+  background-color: transparent;
+  border: 0;
+}
+
+.openCloseQuestionRow {
+  padding-bottom: 5px;
+}
+
 .badgeContainer {
   width: 24px;
   height: 24px;
+}
+
+.btn-openCloseQuestion {
+  font-size: small;
+  color: #6B778C;
+  background-color: #bfbebe;
 }
 
 .annotationTypeBadge .col2 {
@@ -128,12 +156,13 @@
   /* display: inline-flex; */
   position: absolute;
   background: white;
-  top: -15px;
+  top: -20px;
   right: -15px;
   box-shadow: 2px 2px 2px #88888887;
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
   border-top-left-radius: 8px;
+  
   border-top-right-radius: 8px;
 }
 /* .ActiveAnnotationContainer {

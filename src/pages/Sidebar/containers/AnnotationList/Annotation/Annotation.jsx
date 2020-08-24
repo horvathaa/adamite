@@ -28,13 +28,15 @@ class Annotation extends Component {
     editing: false,
     id: this.props.id,
     authorId: this.props.authorId,
-    pinned: this.props.pinned
+    pinned: this.props.pinned,
+    isClosed: this.props.isClosed,
+    howClosed: this.props.howClosed
   };
 
   updateData = () => {
-    let { tags, content, type, authorId, pinned } = this.props;
+    let { tags, content, type, authorId, pinned, isClosed, howClosed } = this.props;
     this.setState({
-      tags, content, annotationType: type, authorId, pinned
+      tags, content, annotationType: type, authorId, pinned, isClosed, howClosed
     });
 
   }
@@ -64,7 +66,9 @@ class Annotation extends Component {
       prevProps.content !== this.props.content ||
       prevProps.type !== this.props.type ||
       prevProps.authorId !== this.props.authorId ||
-      prevProps.pinned !== this.props.pinned) {
+      prevProps.pinned !== this.props.pinned ||
+      prevProps.isClosed !== this.props.isClosed ||
+      prevProps.howClosed !== this.props.howClosed) {
       this.updateData();
     }
   }
@@ -206,6 +210,16 @@ class Annotation extends Component {
     });
   }
 
+  notifyParentOfAdopted = (annoId, replyId, adoptedState) => {
+    chrome.runtime.sendMessage({
+      msg: 'REQUEST_ADOPTED_UPDATE',
+      from: 'content',
+      payload: {
+        annoId, replyId, adoptedState
+      }
+    })
+  }
+
   cancelButtonHandler = () => {
     this.setState({ editing: false });
   }
@@ -224,8 +238,8 @@ class Annotation extends Component {
   }
 
   render() {
-    const { anchor, idx, id, active, authorId, currentUser, trashed, timeStamp, url, currentUrl, childAnchor, xpath, replies, isPrivate } = this.props;
-    const { editing, collapsed, tags, content, annotationType, author, pinned } = this.state;
+    const { anchor, idx, id, active, authorId, currentUser, trashed, timeStamp, url, currentUrl, childAnchor, xpath, replies, isPrivate, adopted } = this.props;
+    const { editing, collapsed, tags, content, annotationType, author, pinned, isClosed, howClosed } = this.state;
     if (annotationType === 'default' && !trashed) {
       return (<DefaultAnnotation
         idx={idx}
@@ -348,6 +362,10 @@ class Annotation extends Component {
           submitButtonHandler={this.submitButtonHandler}
           handleExpandCollapse={this.handleExpandCollapse}
           isPrivate={isPrivate}
+          isClosed={isClosed}
+          howClosed={howClosed}
+          adopted={adopted}
+          notifyParentOfAdopted={this.notifyParentOfAdopted}
         />
       );
     }

@@ -144,9 +144,9 @@ class NewAnnotation extends React.Component {
 
     const defaultOption = options[0];
 
-    if (!newSelection) {
-      return null;
-    }
+    // if (!newSelection) {
+    //   return null;
+    // }
 
     const { annotationContent, submitted, tags } = this.state;
 

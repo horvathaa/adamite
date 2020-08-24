@@ -9,6 +9,7 @@ import NewAnnotation from './containers/NewAnnotation/NewAnnotation';
 import Filter from './containers/Filter/Filter';
 import FilterSummary from './containers/Filter/FilterSummary';
 import SearchBar from './containers/SearchBar/SearchBar';
+import { Button } from 'react-bootstrap';
 
 class Sidebar extends React.Component {
   state = {
@@ -25,9 +26,11 @@ class Sidebar extends React.Component {
     dropdownOpen: false,
     searchBarInputText: '',
     showFilter: false,
-    showQuestions: false,
-    userQuestions: [],
+    showPinned: false,
+    pinnedAnnos: [],
     annotatingPage: false,
+    askAboutRelatedAnnos: false,
+    relatedQuestions: [],
     pageName: '',
     filterSelection: {
       siteScope: ['onPage'],
@@ -101,9 +104,9 @@ class Sidebar extends React.Component {
 
     chrome.runtime.sendMessage({
       from: 'content',
-      msg: 'GET_USER_QUESTIONS'
+      msg: 'GET_PINNED_ANNOTATIONS'
     }, response => {
-      this.setState({ userQuestions: response.annotations });
+      this.setState({ pinnedAnnos: response.annotations });
     })
 
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -195,10 +198,28 @@ class Sidebar extends React.Component {
         request.msg === 'CONTENT_UPDATED'
       ) {
         this.setState({ annotations: request.payload })
+        let mostRecentAnno, secondMostRecentAnno;
+        const filteredAnnotationsCopy = request.payload.sort((a, b) =>
+          (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
+        );
+        if (this.state.filteredAnnotations.length) {
+          mostRecentAnno = filteredAnnotationsCopy[0];
+          secondMostRecentAnno = filteredAnnotationsCopy[1];
+          if (mostRecentAnno.type === 'question' && secondMostRecentAnno.type === 'question' && !secondMostRecentAnno.isClosed) {
+            this.setState({ askAboutRelatedAnnos: true });
+          }
+        }
         this.requestFilterUpdate();
         // console.log("HERE is johnnnnn", request.payload)
       }
     });
+  }
+
+  // if length is 0 does not contain object, else does contain object
+  // stupid helper method made out of necessity
+  containsObjectWithId(id, list) {
+    const test = list.filter(obj => obj.id === id);
+    return test.length !== 0;
   }
 
   // helper method from 
@@ -234,12 +255,52 @@ class Sidebar extends React.Component {
     });
   };
 
+  handleUnanchoredAnnotation = () => {
+    // this.setState({ annotatingPage: true });
+    this.setState({ unanchored: true });
+  }
+
+  handleRelatedQuestions = () => {
+    this.setState({ askAboutRelatedAnnos: false });
+    const annotations = this.state.annotations.sort((a, b) =>
+      (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
+    );
+    const related = [annotations[0], annotations[1]];
+    let boilerplate = this.state.relatedQuestions;
+    boilerplate.push(related);
+    this.setState({ relatedQuestions: boilerplate });
+  }
+
   handlePinnedAnnotation = (id, pinned) => {
     let annotation = this.state.filteredAnnotations.filter(anno => anno.id === id);
-    annotation[0].pinned = pinned;
-    let remainingAnnos = this.state.filteredAnnotations.filter(anno => anno.id !== id);
-    remainingAnnos.push(...annotation);
-    this.setState({ filteredAnnotations: remainingAnnos });
+    if (this.containsObjectWithId(id, this.state.filteredAnnotations)) {
+      annotation[0].pinned = pinned;
+      let remainingAnnos = this.state.filteredAnnotations.filter(anno => anno.id !== id);
+      remainingAnnos.push(...annotation);
+      this.setState({ filteredAnnotations: remainingAnnos });
+      this.state.pinnedAnnos.push(annotation[0]);
+    }
+    if (!pinned) {
+      if (annotation[0].childAnchor.length) {
+        const idArray = [];
+        annotation[0].childAnchor.forEach(anno => {
+          idArray.push(anno.id);
+        });
+        this.setState({ pinnedAnnos: this.state.pinnedAnnos.filter(anno => anno.id !== id && !idArray.includes(anno.id)) });
+      }
+      else {
+        this.setState({ pinnedAnnos: this.state.pinnedAnnos.filter(anno => anno.id !== id) });
+      }
+    }
+    chrome.runtime.sendMessage({
+      msg: 'REQUEST_PIN_UPDATE',
+      from: 'content',
+      payload: {
+        id: id,
+        pinned: pinned
+      }
+    })
+
   };
 
   handleSearchBarInputText = (event) => {
@@ -442,15 +503,19 @@ class Sidebar extends React.Component {
     if (this.state.annotatingPage) {
       this.setState({ annotatingPage: false });
     }
+    if (this.state.unanchored) {
+      this.setState({ unanchored: false });
+    }
   };
 
   render() {
-    const { currentUser, filteredAnnotations, searchBarInputText, userQuestions } = this.state;
+    const { currentUser, filteredAnnotations, searchBarInputText, pinnedAnnos } = this.state;
 
     if (currentUser === undefined) {
       return null;
     }
 
+    console.log('bad bad', this.state.relatedQuestions);
     const inputText = searchBarInputText.toLowerCase();
     let filteredAnnotationsCopy = [];
     filteredAnnotations.forEach((anno) => {
@@ -464,16 +529,23 @@ class Sidebar extends React.Component {
       (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
     );
 
+    const pinnedAnnosCopy = pinnedAnnos.sort((a, b) =>
+      (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
+    );
+
     let searchCount;
-    if (this.state.showQuestions) {
-      searchCount = filteredAnnotationsCopy.length + userQuestions.length;
+    if (this.state.showPinned) {
+      searchCount = filteredAnnotationsCopy.length + pinnedAnnos.length;
     }
     else {
       searchCount = filteredAnnotationsCopy.length;
     }
     return (
       <div className="SidebarContainer" >
-        <Title currentUser={currentUser} handleShowAnnotatePage={this.handleShowAnnotatePage} />
+        <Title currentUser={currentUser}
+          handleShowAnnotatePage={this.handleShowAnnotatePage}
+          handleUnanchoredAnnotation={this.handleUnanchoredAnnotation}
+        />
         {currentUser === null && <Authentication />}
         {currentUser !== null && (
           <div>
@@ -489,6 +561,16 @@ class Sidebar extends React.Component {
             </div>
             <div>
               {!this.state.showFilter && <FilterSummary filter={this.state.filterSelection} openFilter={this.openFilter} />}
+              {this.state.askAboutRelatedAnnos && !this.state.showFilter ? (
+                <React.Fragment>
+                  <div className="FilterSummaryContainer">
+                    I noticed that you have an open question and you just created a new question - are they related? &nbsp;
+                    <Button variant="outline-info" size='sm' onClick={this.handleRelatedQuestions}>Yes</Button> &nbsp; &nbsp;
+                    <Button variant="outline-info" size='sm' onClick={_ => this.setState({ askAboutRelatedAnnos: false })}>No</Button>
+                  </div>
+
+                </React.Fragment>
+              ) : (null)}
               {this.state.showFilter &&
                 <Filter applyFilter={this.applyFilter}
                   filterAnnotationLength={this.getFilteredAnnotationListLength}
@@ -519,22 +601,33 @@ class Sidebar extends React.Component {
                   xpath={null}
                 />
               }
+              {this.state.unanchored &&
+                <NewAnnotation
+                  url={this.state.url}
+                  newSelection={''}
+                  resetNewSelection={this.resetNewSelection}
+                  annoContent={''}
+                  offsets={null}
+                  xpath={null}
+                />
+              }
+
             </div>
             <div className="userQuestions">
               <div className="userQuestionButtonContainer">
-                <div className="ModifyFilter userQuestions" onClick={_ => { this.setState({ showQuestions: !this.state.showQuestions }) }}>
-                  {this.state.showQuestions ? ("Hide Questions") : ("Show Questions")}
+                <div className="ModifyFilter userQuestions" onClick={_ => { this.setState({ showPinned: !this.state.showPinned }) }}>
+                  {this.state.showPinned ? ("Hide Pinned Annotations") : ("Show Pinned Annotations")}
                 </div>
               </div>
-              {this.state.showQuestions ? (
-                <React.Fragment><AnnotationList annotations={userQuestions}
+              {this.state.showPinned ? (
+                <React.Fragment><AnnotationList annotations={pinnedAnnosCopy}
                   currentUser={currentUser}
                   url={this.state.url}
                   requestFilterUpdate={this.requestChildAnchorFilterUpdate}
                   notifyParentOfPinning={this.handlePinnedAnnotation} />
                   <div className="userQuestionButtonContainer">
-                    <div className="ModifyFilter userQuestions" onClick={_ => { this.setState({ showQuestions: !this.state.showQuestions }) }}>
-                      {this.state.showQuestions ? ("Hide Questions") : ("Show Questions")}
+                    <div className="ModifyFilter userQuestions" onClick={_ => { this.setState({ showPinned: !this.state.showPinned }) }}>
+                      {this.state.showPinned ? ("Hide Pinned Annotations") : ("Show Pinned Annotations")}
                     </div>
                   </div>
                 </React.Fragment>
