@@ -87,7 +87,7 @@ class QuestionAnswerAnnotation extends Component {
             childAnchor, currentUrl, url, anchor, xpath, tags, annotationType,
             annotationContent, editing, replies, isPrivate, isClosed, howClosed, adopted } = this.props;
         const { replying, showReplies } = this.state;
-        const closedStrings = ['Open Question', 'No Longer Relevant', 'Answered'];
+        const closedStrings = ['Unanswered Question', 'No Longer Relevant', 'Answered'];
         let replyCountString = "";
         if (replies !== undefined) {
             if (replies.length > 1) {
@@ -101,13 +101,13 @@ class QuestionAnswerAnnotation extends Component {
         let closeOutText = "";
         if (isClosed !== undefined) {
             if (!isClosed) {
-                closeOutText = "Open Question";
+                closeOutText = "Unanswered Question";
             }
             else {
                 closeOutText = howClosed;
             }
         } else {
-            closeOutText = "Open Question";
+            closeOutText = "Unanswered Question";
         }
         let adoptedContent, showAdoptedAnchor;
         if (adopted === 0 || adopted) {
@@ -140,31 +140,32 @@ class QuestionAnswerAnnotation extends Component {
                         SelectedAnnotationContainer: this.state.selected,
                     })}
                 >
-                    {!collapsed ? (
-                        <React.Fragment>
-                            <div className="annotationTypeBadgeContainer">
-                                <div className="annotationTypeBadge row2">
-                                    <div className="annotationTypeBadge col2">
-                                        <div className="badgeContainer">
-                                            {isClosed ? (
-                                                <img src={Question} alt='closed question badge' />
-                                            ) : (
-                                                    <img src={openQuestion} alt='open question type badge' />
-                                                )
-                                            }
+                    <div className="annotationTypeBadgeContainer">
+                        <div className="annotationTypeBadge row2">
+                            <div className="annotationTypeBadge col2">
+                                <div className="badgeContainer">
+                                    {isClosed ? (
+                                        <img src={Question} alt='closed question badge' />
+                                    ) : (
+                                            <img src={openQuestion} alt='open question type badge' />
+                                        )
+                                    }
 
-                                        </div>
-                                        <div className="badgeContainer">
-                                            {isPrivate ? (
-                                                <img src={view} alt='private badge' />
-                                            ) :
-                                                (<img src={viewPublic} alt='public badge' />)}
-
-                                        </div>
-                                    </div>
+                                </div>
+                                <div className="badgeContainer">
+                                    {isPrivate ? (
+                                        <img src={view} alt='private badge' />
+                                    ) :
+                                        (<img src={viewPublic} alt='public badge' />)}
 
                                 </div>
                             </div>
+
+                        </div>
+                    </div>
+                    {!collapsed ? (
+                        <React.Fragment>
+
                             <div className={" container " + classNames({
                                 Header: true,
                                 Truncated: collapsed,

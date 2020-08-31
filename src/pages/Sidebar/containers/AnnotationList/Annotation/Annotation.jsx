@@ -158,13 +158,16 @@ class Annotation extends Component {
   };
 
   submitButtonHandler = (CardWrapperState, id) => {
-    updateAnnotationById(CardWrapperState.id, {
-      content: CardWrapperState.annotationContent,
-      type: CardWrapperState.annotationType.toLowerCase(),
-      tags: CardWrapperState.tags,
-      deletedTimestamp: 0,
-      createdTimestamp: new Date().getTime(),
-      private: CardWrapperState.private
+    chrome.runtime.sendMessage({
+      msg: 'ANNOTATION_UPDATED',
+      from: 'content',
+      payload: {
+        id: CardWrapperState.id,
+        type: CardWrapperState.annotationType.toLowerCase(),
+        content: CardWrapperState.annotationContent,
+        tags: CardWrapperState.tags,
+        isPrivate: CardWrapperState.private
+      }
     });
     this.setState({ editing: false });
   }
@@ -266,6 +269,7 @@ class Annotation extends Component {
         cancelButtonHandler={this.cancelButtonHandler}
         submitButtonHandler={this.submitButtonHandler}
         handleExpandCollapse={this.handleExpandCollapse}
+        isPrivate={isPrivate}
         replies={replies}
       />);
     }
@@ -297,6 +301,7 @@ class Annotation extends Component {
         submitButtonHandler={this.submitButtonHandler}
         handleExpandCollapse={this.handleExpandCollapse}
         replies={replies}
+        isPrivate={isPrivate}
       />);
     }
     else if (annotationType === 'navigation') {
@@ -330,6 +335,7 @@ class Annotation extends Component {
           submitButtonHandler={this.submitButtonHandler}
           handleExpandCollapse={this.handleExpandCollapse}
           replies={replies}
+          isPrivate={isPrivate}
         />
       );
     }
@@ -398,6 +404,7 @@ class Annotation extends Component {
           submitButtonHandler={this.submitButtonHandler}
           handleExpandCollapse={this.handleExpandCollapse}
           replies={replies}
+          isPrivate={isPrivate}
         />
       );
     }

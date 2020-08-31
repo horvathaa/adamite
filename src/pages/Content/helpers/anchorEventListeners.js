@@ -39,12 +39,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         if (annotationsOnPage.length) {
             annotationsOnPage.reverse().forEach(anno => {
                 if (anno.xpath !== undefined && anno.xpath !== null) {
+                    console.log(anno);
                     highlightRange(anno)
                 }
                 if (anno.replies !== undefined && anno.replies.length) {
                     anno.replies.forEach(reply => {
                         if (reply.xpath !== undefined) {
-                            console.log('u broke', reply)
                             highlightRange(reply, anno.id);
                         }
                     })

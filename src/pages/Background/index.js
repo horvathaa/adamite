@@ -35,6 +35,9 @@ function removeDuplicates(annotationArray) {
 let unsubscribeAnnotations = null;
 var pageannotationsActive = [];
 let annotationsAcrossWholeSite = [];
+let annotations = [];
+let publicAnnotations = [];
+let privateAnnotations = [];
 
 const broadcastAnnotationsUpdated = (message, annotations) => {
   chrome.runtime.sendMessage({
@@ -59,40 +62,44 @@ const broadcastAnnotationsUpdatedTab = (message, annotations, tabId) => {
 
 
 function setUpGetAllAnnotationsByUrlListener(url, annotations) {
-  pageannotationsActive.push({
-    url: url,
-    annotations: null,
-    timeout: 500,
-    unsubscribe: null
-  });
+  // pageannotationsActive.push({
+  //   url: url,
+  //   annotations: null,
+  //   timeout: 500,
+  //   unsubscribe: null
+  // });
   return new Promise((resolve, reject) => {
-    // let snapshotSubscriptions = [];
+    let tempPublicAnnotations = [];
     resolve(getAllAnnotationsByUrl(url, getCurrentUser().uid).onSnapshot(querySnapshot2 => {
       querySnapshot2.forEach(snapshot => {
-        annotations.push({
+        tempPublicAnnotations.push({
           id: snapshot.id,
           ...snapshot.data(),
         });
       })
-      var pos = pageannotationsActive.map(function (e) { return e.url; }).indexOf(url);
-      let host = new URL(url).hostname;
-      if (annotationsAcrossWholeSite[host] !== undefined) {
-        annotations.concat(annotationsAcrossWholeSite[host].annotations);
-        annotations = removeDuplicates(annotations);
-      }
-      pageannotationsActive[pos].annotations = annotations;
-      pageannotationsActive[pos].annotations = pageannotationsActive[pos].annotations.sort((a, b) =>
-        (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
-      );
-      pageannotationsActive[pos].annotations = removeDuplicates(pageannotationsActive[pos].annotations);
-      console.log('bout to broadcast sigh', pageannotationsActive[pos].annotations);
-      broadcastAnnotationsUpdated("CONTENT_UPDATED", pageannotationsActive[pos].annotations)
+      console.log('public annos', tempPublicAnnotations);
+      // var pos = pageannotationsActive.map(function (e) { return e.url; }).indexOf(url);
+      // let host = new URL(url).hostname;
+      // if (annotationsAcrossWholeSite[host] !== undefined) {
+      //   annotations.concat(annotationsAcrossWholeSite[host].annotations);
+      let annotationsToBroadcast = tempPublicAnnotations.concat(privateAnnotations);
+      annotationsToBroadcast = removeDuplicates(annotationsToBroadcast);
+      // annotations = removeDuplicates(annotations);
+      // }
+      // pageannotationsActive[pos].annotations = annotations;
+      // pageannotationsActive[pos].annotations = pageannotationsActive[pos].annotations.sort((a, b) =>
+      //   (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
+      // );
+      // pageannotationsActive[pos].annotations = removeDuplicates(pageannotationsActive[pos].annotations);
+      // console.log('bout to broadcast sigh', annotations);
+      broadcastAnnotationsUpdated("CONTENT_UPDATED", annotationsToBroadcast);
+      publicAnnotations = tempPublicAnnotations;
       chrome.tabs.query({}, tabs => {
-        tabs = tabs.filter(e => e.url === pageannotationsActive[pos].url)
+        tabs = tabs.filter(e => e.url === url)
         tabs.forEach(function (tab) {
           chrome.tabs.sendMessage(tab.id, {
             msg: 'REFRESH_HIGHLIGHTS',
-            payload: annotations,
+            payload: annotationsToBroadcast,
           });
         });
         console.log("these are changed tabs", tabs)
@@ -109,29 +116,33 @@ function promiseToComeBack(url, annotations) {
   //   unsubscribe: null
   // });
   return new Promise((resolve, reject) => {
-    // let snapshotSubscriptions = [];
+    let tempPrivateAnnotations = [];
     resolve(getPrivateAnnotationsByUrl(url, getCurrentUser().uid).onSnapshot(querySnapshot2 => {
       querySnapshot2.forEach(snapshot => {
-        annotations.push({
+        tempPrivateAnnotations.push({
           id: snapshot.id,
           ...snapshot.data(),
         });
-      })
-      var pos = pageannotationsActive.map(function (e) { return e.url; }).indexOf(url);
-      let host = new URL(url).hostname;
-      if (annotationsAcrossWholeSite[host] !== undefined) {
-        annotations.concat(annotationsAcrossWholeSite[host].annotations);
-        annotations = removeDuplicates(annotations);
-      }
-      pageannotationsActive[pos].annotations = annotations;
-      pageannotationsActive[pos].annotations = pageannotationsActive[pos].annotations.sort((a, b) =>
-        (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
-      );
-      pageannotationsActive[pos].annotations = removeDuplicates(pageannotationsActive[pos].annotations);
-      console.log('bout to broadcast in private sigh', pageannotationsActive[pos].annotations);
-      broadcastAnnotationsUpdated("CONTENT_UPDATED", pageannotationsActive[pos].annotations)
+      });
+
+      // var pos = pageannotationsActive.map(function (e) { return e.url; }).indexOf(url);
+      // let host = new URL(url).hostname;
+      // if (annotationsAcrossWholeSite[host] !== undefined) {
+      //   annotations.concat(annotationsAcrossWholeSite[host].annotations);
+
+      let annotationsToBroadcast = tempPrivateAnnotations.concat(publicAnnotations);
+      annotationsToBroadcast = removeDuplicates(annotationsToBroadcast);
+      // }
+      // pageannotationsActive[pos].annotations = annotations;
+      // pageannotationsActive[pos].annotations = pageannotationsActive[pos].annotations.sort((a, b) =>
+      //   (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
+      // );
+      // pageannotationsActive[pos].annotations = removeDuplicates(pageannotationsActive[pos].annotations);
+      console.log('bout to broadcast in private sigh', annotationsToBroadcast);
+      broadcastAnnotationsUpdated("CONTENT_UPDATED", annotationsToBroadcast);
+      privateAnnotations = tempPrivateAnnotations;
       chrome.tabs.query({}, tabs => {
-        tabs = tabs.filter(e => e.url === pageannotationsActive[pos].url)
+        tabs = tabs.filter(e => e.url === url)
         tabs.forEach(function (tab) {
           chrome.tabs.sendMessage(tab.id, {
             msg: 'REFRESH_HIGHLIGHTS',
@@ -151,45 +162,68 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     sendResponse({ url: sender.tab.url });
   }
   else if (request.msg === 'GET_ANNOTATIONS_PAGE_LOAD') {
-    var findActiveUrl = pageannotationsActive.filter(e => e.url === request.url)
-    if (findActiveUrl.length !== 0) {
-      let annotationsToTransmit = findActiveUrl[0].annotations.filter(anno => {
-        if (anno.private && anno.authorId === getCurrentUser().uid) {
-          return true;
-        }
-        else if (!anno.private) {
-          return true;
-        }
-        else {
-          return false;
-        }
-      });
-      annotationsToTransmit = annotationsToTransmit.sort((a, b) =>
-        (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
-      );
-      annotationsToTransmit = removeDuplicates(annotationsToTransmit);
-      broadcastAnnotationsUpdatedTab("CONTENT_UPDATED", annotationsToTransmit, sender.tab.id);
-      broadcastAnnotationsUpdatedTab("HIGHLIGHT_ANNOTATIONS", annotationsToTransmit, sender.tab.id);
-    }
-    else {
-      let snapshotSubscriptions = [];
-      let annotations = [];
-      setUpGetAllAnnotationsByUrlListener(request.url, annotations).then(function (e) {
-        snapshotSubscriptions.push(e);
-        promiseToComeBack(request.url, annotations)
-          .then(function (f) {
-            // console.log('at end of then', annotations);
-            snapshotSubscriptions.push(f);
-            pageannotationsActive[pageannotationsActive.length - 1].unsubscribe = snapshotSubscriptions;
-          });
-      })
+    // var findActiveUrl = pageannotationsActive.filter(e => e.url === request.url)
+    // if (findActiveUrl.length !== 0) {
+    //   let annotationsToTransmit = findActiveUrl[0].annotations.filter(anno => {
+    //     if (anno.private && anno.authorId === getCurrentUser().uid) {
+    //       return true;
+    //     }
+    //     else if (!anno.private) {
+    //       return true;
+    //     }
+    //     else {
+    //       return false;
+    //     }
+    //   });
+    //   annotationsToTransmit = annotationsToTransmit.sort((a, b) =>
+    //     (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
+    //   );
+    //   annotationsToTransmit = removeDuplicates(annotationsToTransmit);
+    //   broadcastAnnotationsUpdatedTab("CONTENT_UPDATED", annotationsToTransmit, sender.tab.id);
+    //   broadcastAnnotationsUpdatedTab("HIGHLIGHT_ANNOTATIONS", annotationsToTransmit, sender.tab.id);
+    // }
+    // else {
+    let snapshotSubscriptions = [];
+    console.log('global annotations?', annotations);
+    // let annotations = [];
+    let publicListener = setUpGetAllAnnotationsByUrlListener(request.url, annotations);
+    let privateListener = promiseToComeBack(request.url, annotations);
+    // setUpGetAllAnnotationsByUrlListener(request.url, annotations).then(function (e) {
+    //   snapshotSubscriptions.push(e);
+    //   promiseToComeBack(request.url, annotations)
+    //     .then(function (f) {
+    //       // console.log('at end of then', annotations);
+    //       snapshotSubscriptions.push(f);
+    //       // snapshotSubscriptions.forEach(sub => sub());
+    //     });
+    // })
 
-    }
+    // }
+  }
+  else if (request.msg === 'ANNOTATION_UPDATED' && request.from === 'content') {
+    const { id, content, type, tags, isPrivate } = request.payload;
+    updateAnnotationById(id, {
+      content, type, tags, isPrivate,
+      createdTimestamp: new Date().getTime(),
+      deletedTimestamp: 0
+    }).then(function () {
+      let temp = publicAnnotations.concat(privateAnnotations);
+      let anno = temp.filter(anno => id === anno.id);
+      let updatedAnno = anno[0];
+      Object.assign(updatedAnno, { id, content, type, tags, isPrivate });
+      let temp2 = temp.filter(anno => anno.id !== id);
+      temp2.push(updatedAnno);
+      temp2 = removeDuplicates(temp2);
+      broadcastAnnotationsUpdated('CONTENT_UPDATED', temp2);
+    })
   }
   else if (request.msg === 'ANNOTATION_DELETED' && request.from === 'content') {
     deleteAnnotationForeverById(request.payload.id).then(function () {
-      pageannotationsActive[pageannotationsActive.length - 1].annotations = pageannotationsActive[pageannotationsActive.length - 1].annotations.filter(anno => anno.id !== request.payload.id);
-      broadcastAnnotationsUpdated("CONTENT_UPDATED", pageannotationsActive[pageannotationsActive.length - 1].annotations);
+      annotations = publicAnnotations.concat(privateAnnotations);
+      annotations = annotations.filter(anno => anno.id !== request.payload.id);
+      annotations = removeDuplicates(annotations);
+      // pageannotationsActive[pageannotationsActive.length - 1].annotations = pageannotationsActive[pageannotationsActive.length - 1].annotations.filter(anno => anno.id !== request.payload.id);
+      broadcastAnnotationsUpdated("CONTENT_UPDATED", annotations);
     });
   }
   else if (request.msg === 'SAVE_HIGHLIGHT') {
@@ -220,6 +254,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     updateAnnotationById(id, {
       isClosed,
       howClosed
+    }).then(function () {
+      let temp = publicAnnotations.concat(privateAnnotations);
+      let anno = temp.filter(anno => id === anno.id);
+      let updatedAnno = anno[0];
+      updatedAnno.isClosed = isClosed;
+      updatedAnno.howClosed = howClosed;
+      let temp2 = temp.filter(anno => anno.id !== id);
+      temp2.push(updatedAnno);
+      temp2 = removeDuplicates(temp2);
+      broadcastAnnotationsUpdated('CONTENT_UPDATED', temp2);
     });
   }
   else if (request.msg === 'SAVE_ANNOTATED_TEXT') {
@@ -307,12 +351,36 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       replies: firebase.firestore.FieldValue.arrayUnion({
         ...replies
       })
+    }).then(function () {
+      let temp = publicAnnotations.concat(privateAnnotations);
+      let anno = temp.filter(anno => id === anno.id);
+      let updatedAnno = anno[0];
+      if (updatedAnno.replies.length) {
+        updatedAnno.replies = updatedAnno.replies.concat(replies);
+      } else {
+        updatedAnno.replies = [replies];
+      }
+      let temp2 = temp.filter(anno => anno.id !== id);
+      temp2.push(updatedAnno);
+      temp2 = removeDuplicates(temp2);
+      broadcastAnnotationsUpdated('CONTENT_UPDATED', temp2);
     });
   }
   else if (request.msg === 'UPDATE_REPLIES') {
     updateAnnotationById(request.payload.id, {
       createdTimestamp: new Date().getTime(),
       replies: request.payload.replies
+    }).then(function () {
+      let temp = publicAnnotations.concat(privateAnnotations);
+      let anno = temp.filter(anno => request.payload.id === anno.id);
+      let updatedAnno = anno[0];
+      if (updatedAnno.replies.length) {
+        updatedAnno.replies = request.payload.replies;
+      }
+      let temp2 = temp.filter(anno => anno.id !== request.payload.id);
+      temp2.push(updatedAnno);
+      temp2 = removeDuplicates(temp2);
+      broadcastAnnotationsUpdated('CONTENT_UPDATED', temp2);
     });
   }
   else if (request.from === 'content' && request.msg === 'CONTENT_SELECTED') {
@@ -346,14 +414,41 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
   else if (request.from === 'content' && request.msg === 'REQUEST_PIN_UPDATE') {
     const { id, pinned } = request.payload;
-    updateAnnotationById(id, { pinned: pinned });
+    updateAnnotationById(id, { pinned: pinned }).then(function () {
+      let temp = publicAnnotations.concat(privateAnnotations);
+      let anno = temp.filter(anno => id === anno.id);
+      let updatedAnno = anno[0];
+      updatedAnno.pinned = pinned;
+      let temp2 = temp.filter(anno => anno.id !== id);
+      temp2.push(updatedAnno);
+      temp2 = removeDuplicates(temp2);
+      broadcastAnnotationsUpdated('CONTENT_UPDATED', temp2);
+    });
   }
   else if (request.from === 'content' && request.msg === 'REQUEST_ADOPTED_UPDATE') {
     const { annoId, replyId, adoptedState } = request.payload;
     if (adoptedState) {
-      updateAnnotationById(annoId, { adopted: replyId });
+      updateAnnotationById(annoId, { adopted: replyId }).then(function () {
+        let temp = publicAnnotations.concat(privateAnnotations);
+        let anno = temp.filter(anno => annoId === anno.id);
+        let updatedAnno = anno[0];
+        updatedAnno.adopted = replyId;
+        let temp2 = temp.filter(anno => anno.id !== annoId);
+        temp2.push(updatedAnno);
+        temp2 = removeDuplicates(temp2);
+        broadcastAnnotationsUpdated('CONTENT_UPDATED', temp2);
+      });;
     } else {
-      updateAnnotationById(annoId, { adopted: false });
+      updateAnnotationById(annoId, { adopted: false }).then(function () {
+        let temp = publicAnnotations.concat(privateAnnotations);
+        let anno = temp.filter(anno => annoId === anno.id);
+        let updatedAnno = anno[0];
+        updatedAnno.adopted = false;
+        let temp2 = temp.filter(anno => anno.id !== annoId);
+        temp2.push(updatedAnno);
+        temp2 = removeDuplicates(temp2);
+        broadcastAnnotationsUpdated('CONTENT_UPDATED', temp2);
+      });;
     }
   }
   else if (request.from === 'content' && request.msg === 'REQUEST_PAGINATED_ACROSS_SITE_ANNOTATIONS') {

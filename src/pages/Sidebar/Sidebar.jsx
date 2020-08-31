@@ -198,17 +198,17 @@ class Sidebar extends React.Component {
         request.msg === 'CONTENT_UPDATED'
       ) {
         this.setState({ annotations: request.payload })
-        let mostRecentAnno, secondMostRecentAnno;
-        const filteredAnnotationsCopy = request.payload.sort((a, b) =>
-          (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
-        );
-        if (this.state.filteredAnnotations.length) {
-          mostRecentAnno = filteredAnnotationsCopy[0];
-          secondMostRecentAnno = filteredAnnotationsCopy[1];
-          if (mostRecentAnno.type === 'question' && secondMostRecentAnno.type === 'question' && !secondMostRecentAnno.isClosed) {
-            this.setState({ askAboutRelatedAnnos: true });
-          }
-        }
+        // let mostRecentAnno, secondMostRecentAnno;
+        // const filteredAnnotationsCopy = request.payload.sort((a, b) =>
+        //   (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
+        // );
+        // if (this.state.filteredAnnotations.length) {
+        //   mostRecentAnno = filteredAnnotationsCopy[0];
+        //   secondMostRecentAnno = filteredAnnotationsCopy[1];
+        //   if (mostRecentAnno.type === 'question' && secondMostRecentAnno.type === 'question' && !secondMostRecentAnno.isClosed) {
+        //     this.setState({ askAboutRelatedAnnos: true });
+        //   }
+        // }
         this.requestFilterUpdate();
         // console.log("HERE is johnnnnn", request.payload)
       }
@@ -453,7 +453,7 @@ class Sidebar extends React.Component {
     if (filterSelection.siteScope.includes('onPage') && !filterSelection.siteScope.includes('acrossWholeSite')) {
       this.setState({
         filteredAnnotations:
-          this.state.filteredAnnotations.filter(annotation => {
+          this.state.annotations.filter(annotation => {
             return this.checkSiteScope(annotation, filterSelection.siteScope) &&
               this.checkUserScope(annotation, filterSelection.userScope) &&
               this.checkAnnoType(annotation, filterSelection.annoType) &&
@@ -515,7 +515,7 @@ class Sidebar extends React.Component {
       return null;
     }
 
-    console.log('bad bad', this.state.relatedQuestions);
+    // console.log('bad bad', this.state.relatedQuestions);
     const inputText = searchBarInputText.toLowerCase();
     let filteredAnnotationsCopy = [];
     filteredAnnotations.forEach((anno) => {

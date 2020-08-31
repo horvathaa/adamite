@@ -1,6 +1,6 @@
 import './anchor-box.css';
 import { xpathConversion, xpathToNode, flatten, getDescendants, getNodesInRange, pullXpathfromLocal } from './AnchorHelpers';
-import $ from 'jquery';
+// import $ from 'jquery';
 var xpathRange = require('xpath-range');
 
 function anchorClick(e) {
@@ -57,6 +57,7 @@ export const highlightRange = (anno, annoId) => {
     // console.log("ANNO ")
     // console.log(anno)
     let newRange = xpathRange.toRange(anno.xpath.start, anno.xpath.startOffset, anno.xpath.end, anno.xpath.endOffset, document);
+    // console.log('range', newRange);
     highlight(newRange, anno.xpath.startOffset, anno.xpath.endOffset, function (node, match, offset) {
 
         var span = document.createElement("span");

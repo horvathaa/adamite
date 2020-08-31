@@ -122,7 +122,7 @@ class ReplyEditor extends Component {
             chrome.runtime.sendMessage({
                 msg: 'ADD_NEW_REPLY',
                 payload: {
-                    replyId: this.props.replies.length !== undefined ? this.props.replies.length : 0,
+                    replyId: this.props.replies !== undefined ? this.props.replies.length : 0,
                     id: this.props.id,
                     reply: this.state.reply,
                     replyTags: this.state.replyTags,
