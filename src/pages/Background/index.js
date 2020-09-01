@@ -14,7 +14,8 @@ import {
   getAllPinnedAnnotationsByUserId,
   getAllPrivatePinnedAnnotationsByUserId,
   deleteAnnotationForeverById,
-  getCurrentUserId
+  getCurrentUserId,
+  getPrivateAnnotationsAcrossSite
 } from '../../firebase/index';
 import firebase from '../../firebase/firebase';
 
@@ -146,7 +147,7 @@ function promiseToComeBack(url, annotations) {
         tabs.forEach(function (tab) {
           chrome.tabs.sendMessage(tab.id, {
             msg: 'REFRESH_HIGHLIGHTS',
-            payload: annotations,
+            payload: annotationsToBroadcast,
           });
         });
         console.log("these are changed tabs", tabs)
@@ -184,7 +185,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // }
     // else {
     let snapshotSubscriptions = [];
-    console.log('global annotations?', annotations);
     // let annotations = [];
     let publicListener = setUpGetAllAnnotationsByUrlListener(request.url, annotations);
     let privateListener = promiseToComeBack(request.url, annotations);
@@ -247,6 +247,40 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       AnnotationTags: [],
       childAnchor: [],
       isPrivate: false
+    });
+  }
+  else if (request.from === 'content' && request.msg === 'UNARCHIVE') {
+    const { id } = request.payload;
+    updateAnnotationById(id, {
+      createdTimestamp: new Date().getTime(),
+      trashed: false
+    }).then(function () {
+      let temp = publicAnnotations.concat(privateAnnotations);
+      let anno = temp.filter(anno => id === anno.id);
+      let updatedAnno = anno[0];
+      updatedAnno.trashed = false;
+      updatedAnno.createdTimestamp = new Date().getTime();
+      let temp2 = temp.filter(anno => anno.id !== id);
+      temp2.push(updatedAnno);
+      temp2 = removeDuplicates(temp2);
+      broadcastAnnotationsUpdated('CONTENT_UPDATED', temp2);
+    });
+  }
+  else if (request.from === 'content' && request.msg === 'FINISH_TODO') {
+    const { id } = request.payload;
+    updateAnnotationById(id, {
+      createdTimestamp: new Date().getTime(),
+      trashed: true
+    }).then(function () {
+      let temp = publicAnnotations.concat(privateAnnotations);
+      let anno = temp.filter(anno => id === anno.id);
+      let updatedAnno = anno[0];
+      updatedAnno.trashed = true;
+      updatedAnno.createdTimestamp = new Date().getTime();
+      let temp2 = temp.filter(anno => anno.id !== id);
+      temp2.push(updatedAnno);
+      temp2 = removeDuplicates(temp2);
+      broadcastAnnotationsUpdated('CONTENT_UPDATED', temp2);
     });
   }
   else if (request.from === 'content' && request.msg === 'UPDATE_QUESTION') {
@@ -398,17 +432,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
   }
   else if (request.from === 'content' && request.msg === 'GET_PINNED_ANNOTATIONS') {
-    let annotations = [];
+    let pinnedAnnotations = [];
     getAllPinnedAnnotationsByUserId(getCurrentUserId()).get().then(function (doc) {
       doc.docs.forEach(anno => {
-        annotations.push({ id: anno.id, ...anno.data() });
+        pinnedAnnotations.push({ id: anno.id, ...anno.data() });
       });
       getAllPrivatePinnedAnnotationsByUserId(getCurrentUserId()).get().then(function (doc) {
         doc.docs.forEach(anno => {
-          annotations.push({ id: anno.id, ...anno.data() });
+          pinnedAnnotations.push({ id: anno.id, ...anno.data() });
         });
         // annotations = annotations.filter(anno => anno.isClosed === false);
-        sendResponse({ annotations: annotations });
+        sendResponse({ annotations: pinnedAnnotations });
       })
     });
   }
@@ -459,6 +493,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
     else {
       annotationsAcrossWholeSite[hostname] = { cursor: undefined, annotations: [] };
+      console.log(annotationsAcrossWholeSite);
     }
     if (cursor === 'DONE') {
       sendResponse({ annotations: annotationsAcrossWholeSite[hostname].annotations, cursor: "DONE" });
@@ -467,8 +502,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (cursor !== undefined) {
       // use startAfter 
       getAnnotationsAcrossSite(hostname).startAfter(annotationsAcrossWholeSite[hostname].cursor).get().then(function (doc) {
-        let currPage = pageannotationsActive.filter(page => page.url === url);
-        annotationsAcrossWholeSite[hostname].annotations.push(...currPage[0].annotations);
+        // let currPage = pageannotationsActive.filter(page => page.url === url);
+        // annotationsAcrossWholeSite[hostname].annotations.push(...currPage[0].annotations);
         if (!doc.empty) {
           doc.docs.forEach(anno => {
             annotationsAcrossWholeSite[hostname].annotations.push({ id: anno.id, ...anno.data() });
@@ -495,36 +530,47 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     else {
       // first time requesting across whole site annotations from this hostname
       getAnnotationsAcrossSite(hostname).get().then(function (doc) {
-        let currPage = pageannotationsActive.filter(page => page.url === url);
-        annotationsAcrossWholeSite[hostname].annotations.push(...currPage[0].annotations);
-        if (!doc.empty) {
-          doc.docs.forEach(anno => {
-            annotationsAcrossWholeSite[hostname].annotations.push({ id: anno.id, ...anno.data() });
-          });
-        }
-        else {
-          annotationsAcrossWholeSite[hostname].cursor = 'DONE';
-          sendResponse({ annotations: annotationsAcrossWholeSite[hostname].annotations });
-          return;
-        }
-        // same issue as stated above
-        if (doc.docs.length < 15) {
-          annotationsAcrossWholeSite[hostname].cursor = 'DONE';
-        }
-        else {
-          annotationsAcrossWholeSite[hostname].cursor = doc.docs[doc.docs.length - 1];
-        }
-        sendResponse({ annotations: annotationsAcrossWholeSite[hostname].annotations, cursor: "NOT_DONE" });
-      }).catch(function (error) {
-        console.log('could not get doc: ', error);
+        getPrivateAnnotationsAcrossSite(hostname, getCurrentUserId()).get().then(function (doc2) {
+          // let currPage = pageannotationsActive.filter(page => page.url === url);
+          // annotationsAcrossWholeSite[hostname].annotations.push(...currPage[0].annotations);
+          if (!doc.empty) {
+            doc.docs.forEach(anno => {
+              annotationsAcrossWholeSite[hostname].annotations.push({ id: anno.id, ...anno.data() });
+            });
+          }
+          else {
+            annotationsAcrossWholeSite[hostname].cursor = 'DONE';
+            sendResponse({ annotations: annotationsAcrossWholeSite[hostname].annotations });
+            return;
+          }
+          if (!doc2.empty) {
+            doc2.docs.forEach(anno => {
+              annotationsAcrossWholeSite[hostname].annotations.push({ id: anno.id, ...anno.data() });
+            });
+          }
+          else {
+            annotationsAcrossWholeSite[hostname].cursor = 'DONE';
+            sendResponse({ annotations: annotationsAcrossWholeSite[hostname].annotations });
+            return;
+          }
+          // same issue as stated above
+          if (doc.docs.length < 15) {
+            annotationsAcrossWholeSite[hostname].cursor = 'DONE';
+          }
+          else {
+            annotationsAcrossWholeSite[hostname].cursor = doc.docs[doc.docs.length - 1];
+          }
+          sendResponse({ annotations: annotationsAcrossWholeSite[hostname].annotations, cursor: "NOT_DONE" });
+        }).catch(function (error) {
+          console.log('could not get doc: ', error);
+        });
+
       });
+      // need to think about use case where user's current URL has the majority of annotations on it - pagination will result
+      // in many duplicate annotations that need to be filtered out and then keep reading to find unique annotations?
+      // it seems like we need to do the comparison locally which sucks ass fuck u firebase
 
     }
-    // need to think about use case where user's current URL has the majority of annotations on it - pagination will result
-    // in many duplicate annotations that need to be filtered out and then keep reading to find unique annotations?
-    // it seems like we need to do the comparison locally which sucks ass fuck u firebase
-
-
   }
   else if (request.msg === 'SEARCH_BY_TAG' && request.from === 'content') {
     const { tag } = request.payload;

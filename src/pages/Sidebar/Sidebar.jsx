@@ -280,8 +280,14 @@ class Sidebar extends React.Component {
       this.setState({ filteredAnnotations: remainingAnnos });
       this.state.pinnedAnnos.push(annotation[0]);
     }
+    else if (this.containsObjectWithId(id, this.state.pinnedAnnos)) {
+      console.log(annotation);
+      this.setState({ pinnedAnnos: this.state.pinnedAnnos.filter(anno => anno.id !== id) });
+      return;
+    }
     if (!pinned) {
-      if (annotation[0].childAnchor.length) {
+      console.log(annotation);
+      if (annotation[0].childAnchor !== undefined && annotation[0].childAnchor.length) {
         const idArray = [];
         annotation[0].childAnchor.forEach(anno => {
           idArray.push(anno.id);

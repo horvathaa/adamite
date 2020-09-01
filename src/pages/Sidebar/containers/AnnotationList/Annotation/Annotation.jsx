@@ -91,11 +91,11 @@ class Annotation extends Component {
   }
 
   handleDoneToDo(id) {
-    updateAnnotationById(id, {
-      createdTimestamp: new Date().getTime(),
-      trashed: true
-    }
-    );
+    chrome.runtime.sendMessage({
+      msg: 'FINISH_TODO',
+      from: 'content',
+      payload: { id }
+    });
   }
 
   handleExpertReview = () => {
@@ -108,11 +108,11 @@ class Annotation extends Component {
 
   handleUnArchive(e) {
     let id = e.target.value;
-    updateAnnotationById(id, {
-      createdTimestamp: new Date().getTime(),
-      trashed: false
-    }
-    );
+    chrome.runtime.sendMessage({
+      msg: 'UNARCHIVE',
+      from: 'content',
+      payload: { id }
+    });
   }
 
   handleTrashClick(id) {

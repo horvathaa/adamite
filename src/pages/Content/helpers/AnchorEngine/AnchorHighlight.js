@@ -56,8 +56,19 @@ export const highlightRange = (anno, annoId) => {
     var wordPath = [];
     // console.log("ANNO ")
     // console.log(anno)
-    let newRange = xpathRange.toRange(anno.xpath.start, anno.xpath.startOffset, anno.xpath.end, anno.xpath.endOffset, document);
-    // console.log('range', newRange);
+    let newRange;
+    // console.log('sending in this anno', anno);
+    try {
+        if (anno.xpath instanceof Array) {
+            newRange = xpathRange.toRange(anno.xpath[0].start, anno.xpath[0].startOffset, anno.xpath[0].end, anno.xpath[0].endOffset, document);
+        } else {
+            newRange = xpathRange.toRange(anno.xpath.start, anno.xpath.startOffset, anno.xpath.end, anno.xpath.endOffset, document);
+        }
+    } catch (err) {
+        console.log('got error- ', err);
+        return;
+    }
+    // console.log('anno', anno, 'range', newRange);
     highlight(newRange, anno.xpath.startOffset, anno.xpath.endOffset, function (node, match, offset) {
 
         var span = document.createElement("span");

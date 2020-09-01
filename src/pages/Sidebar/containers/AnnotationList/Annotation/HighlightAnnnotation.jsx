@@ -7,7 +7,7 @@ import profile from '../../../../../assets/img/SVGs/Profile.svg';
 import reply from '../../../../../assets/img/SVGs/Reply.svg';
 import outlinepin from '../../../../../assets/img/SVGs/pin.svg';
 import fillpin from '../../../../../assets/img/SVGs/pin_2.svg';
-import newAnchor from '../../../../../assets/img/SVGs/Add_anchor.svg';
+import newAnchor from '../../../../../assets/img/SVGs/NewAnchor2.svg';
 import edit from '../../../../../assets/img/SVGs/edit.svg';
 import trash from '../../../../../assets/img/SVGs/delet.svg';
 import expand from '../../../../../assets/img/SVGs/expand.svg'

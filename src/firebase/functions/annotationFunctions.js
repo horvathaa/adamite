@@ -135,7 +135,7 @@ export const createAnnotation = async ({
     offsets,
     xpath,
     childAnchor,
-    pinned: AnnotationType === 'question',
+    pinned: AnnotationType === 'question' || AnnotationType === 'to-do',
     replies: [],
     private: isPrivate,
     adopted: false
