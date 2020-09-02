@@ -62,7 +62,12 @@ class Sidebar extends React.Component {
   }
 
   componentWillUnmount() {
+    // console.log('in unmount????');
     window.removeEventListener('scroll', this.handleScroll);
+    chrome.runtime.sendMessage({
+      from: 'content',
+      msg: 'UNSUBSCRIBE'
+    });
   }
 
   handleScroll = (event, filterSelection) => {
@@ -110,6 +115,7 @@ class Sidebar extends React.Component {
     })
 
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+      // console.log('caught this message', request, sender);
       if (
         request.from === 'background' &&
         request.msg === 'USER_AUTH_STATUS_CHANGED'
@@ -212,6 +218,13 @@ class Sidebar extends React.Component {
         this.requestFilterUpdate();
         // console.log("HERE is johnnnnn", request.payload)
       }
+      else if (request.from === 'background' && request.msg === 'FILTER_BY_TAG') {
+        this.setState({
+          filteredAnnotations: this.state.annotations.filter(anno => {
+            return this.checkTags(anno, [request.payload]);
+          })
+        });
+      }
     });
   }
 
@@ -281,12 +294,12 @@ class Sidebar extends React.Component {
       this.state.pinnedAnnos.push(annotation[0]);
     }
     else if (this.containsObjectWithId(id, this.state.pinnedAnnos)) {
-      console.log(annotation);
+      // console.log(annotation);
       this.setState({ pinnedAnnos: this.state.pinnedAnnos.filter(anno => anno.id !== id) });
       return;
     }
     if (!pinned) {
-      console.log(annotation);
+      // console.log(annotation);
       if (annotation[0].childAnchor !== undefined && annotation[0].childAnchor.length) {
         const idArray = [];
         annotation[0].childAnchor.forEach(anno => {
@@ -396,6 +409,7 @@ class Sidebar extends React.Component {
   }
 
   checkTags(annotation, tags) {
+    console.log('check tag', annotation, tags);
     if (!tags.length || annotation.pinned) {
       return true;
     }

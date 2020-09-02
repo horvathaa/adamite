@@ -4,8 +4,8 @@ import { xpathConversion, xpathToNode, flatten, getDescendants, getNodesInRange,
 var xpathRange = require('xpath-range');
 
 function anchorClick(e) {
-    console.log("in Anchor click", e)
-    console.log("spanz", document.getElementsByName(e.target.attributes.getNamedItem("name").value));
+    // console.log("in Anchor click", e)
+    // console.log("spanz", document.getElementsByName(e.target.attributes.getNamedItem("name").value));
     var ids = [e.target.attributes.getNamedItem("name").value];
 
     var spans = document.getElementsByName(ids[0])
@@ -33,7 +33,7 @@ function anchorClick(e) {
 
     var ids = [...new Set(ids)]
 
-    console.log("here is the ids", ids)
+    // console.log("here is the ids", ids)
     //);
     const target = ids;
     // const target = e.target.attributes.getNamedItem("name").value;

@@ -39,6 +39,8 @@ let annotationsAcrossWholeSite = [];
 let annotations = [];
 let publicAnnotations = [];
 let privateAnnotations = [];
+let publicListener;
+let privateListener;
 
 const broadcastAnnotationsUpdated = (message, annotations) => {
   chrome.runtime.sendMessage({
@@ -78,7 +80,7 @@ function setUpGetAllAnnotationsByUrlListener(url, annotations) {
           ...snapshot.data(),
         });
       })
-      console.log('public annos', tempPublicAnnotations);
+      // console.log('public annos', tempPublicAnnotations);
       // var pos = pageannotationsActive.map(function (e) { return e.url; }).indexOf(url);
       // let host = new URL(url).hostname;
       // if (annotationsAcrossWholeSite[host] !== undefined) {
@@ -184,10 +186,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     //   broadcastAnnotationsUpdatedTab("HIGHLIGHT_ANNOTATIONS", annotationsToTransmit, sender.tab.id);
     // }
     // else {
-    let snapshotSubscriptions = [];
+    // let snapshotSubscriptions = [];
     // let annotations = [];
-    let publicListener = setUpGetAllAnnotationsByUrlListener(request.url, annotations);
-    let privateListener = promiseToComeBack(request.url, annotations);
+    console.log('what is this url', request.url);
+    publicListener = setUpGetAllAnnotationsByUrlListener(request.url, annotations);
+    privateListener = promiseToComeBack(request.url, annotations);
     // setUpGetAllAnnotationsByUrlListener(request.url, annotations).then(function (e) {
     //   snapshotSubscriptions.push(e);
     //   promiseToComeBack(request.url, annotations)
@@ -199,6 +202,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // })
 
     // }
+  }
+  else if (request.msg === 'UNSUBSCRIBE' && request.from === 'content') {
+    console.log('public and private listeners lol', publicListener, privateListener);
+    privateListener();
+    publicListener();
   }
   else if (request.msg === 'ANNOTATION_UPDATED' && request.from === 'content') {
     const { id, content, type, tags, isPrivate } = request.payload;
@@ -300,6 +308,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       broadcastAnnotationsUpdated('CONTENT_UPDATED', temp2);
     });
   }
+  else if (request.msg === 'FILTER_BY_TAG' && request.from === 'content') {
+    chrome.runtime.sendMessage({
+      msg: 'FILTER_BY_TAG',
+      from: 'background',
+      payload: request.payload
+    });
+  }
   else if (request.msg === 'SAVE_ANNOTATED_TEXT') {
     let { url, content } = request.payload;
     const hostname = new URL(url).hostname;
@@ -389,7 +404,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       let temp = publicAnnotations.concat(privateAnnotations);
       let anno = temp.filter(anno => id === anno.id);
       let updatedAnno = anno[0];
-      if (updatedAnno.replies.length) {
+      if (updatedAnno.replies !== undefined && updatedAnno.replies !== null && updatedAnno.replies.length) {
         updatedAnno.replies = updatedAnno.replies.concat(replies);
       } else {
         updatedAnno.replies = [replies];

@@ -74,7 +74,7 @@ class Anchor extends Component {
             anchorIcon = <BsFileEarmarkText className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />;
         }
         else if (url === currentUrl) {
-            anchorIcon = <img src={anchorOnPage} className="AnchorIcon" alt='anchor on page' onClick={_ => this.handleOnLocalOnClick} />;
+            anchorIcon = <img src={anchorOnPage} className="AnchorIcon" alt='anchor on page' onClick={_ => this.handleOnLocalOnClick()} />;
         }
         else {
             anchorIcon = <img src={anchorOnOtherPage} className="AnchorIcon" alt='anchor on other page' onClick={_ => this.handleExternalAnchor(url)} />;
