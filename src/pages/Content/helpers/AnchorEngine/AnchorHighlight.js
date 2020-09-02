@@ -51,7 +51,7 @@ function anchorClick(e) {
 /*
 * Finds Range and highlights each element
 */
-export const highlightRange = (anno) => {
+export const highlightRange = (anno, annoId) => {
 
     var wordPath = [];
     // console.log("ANNO ")
@@ -60,7 +60,12 @@ export const highlightRange = (anno) => {
     highlight(newRange, anno.xpath.startOffset, anno.xpath.endOffset, function (node, match, offset) {
 
         var span = document.createElement("span");
-        span.setAttribute("name", anno.id.toString());
+        if (anno.id !== undefined) {
+            span.setAttribute("name", anno.id.toString());
+        }
+        // else {
+        //     span.setAttribute("name", anno.id.toString() + annoId.toString());
+        // }
         span.textContent = match;
         span.onclick = anchorClick;
         span.className = "highlight-adamite-annotation";

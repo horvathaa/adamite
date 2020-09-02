@@ -10,9 +10,11 @@ import '../../../../assets/img/SVGs/Question.svg';
 import '../../../../assets/img/SVGs/Issue.svg';
 
 var queue = [];
+var replyQueue = [];
 
 const Popover = ({ selection, xpathToNode, offsets, removePopover }) => {
     const [selected, setSelected] = useState(null);
+    const [showQuestionMenu, setShowQuestionMenu] = useState(false);
 
     useEffect(() => {
         setSelected(selection.toString());
@@ -58,6 +60,21 @@ const Popover = ({ selection, xpathToNode, offsets, removePopover }) => {
         removePopover();
     };
 
+    const whatQuestionClickedHandler = (event) => {
+        event.stopPropagation();
+        const questionContent = "What is this?";
+        alertBackgroundOfNewSelection(selected, offsets, xpathToNode, "question", questionContent);
+        removePopover();
+    };
+
+    const howQuestionClickedHandler = (event) => {
+        event.stopPropagation();
+        const questionContent = "How do I use this?";
+        alertBackgroundOfNewSelection(selected, offsets, xpathToNode, "question", questionContent);
+        removePopover();
+    };
+
+
     return (
         <div className="buttonRow">
             <div className="onHoverCreateAnnotation" onClick={defaultButtonClickedHandler} >
@@ -78,11 +95,23 @@ const Popover = ({ selection, xpathToNode, offsets, removePopover }) => {
                 </div>
                 To-do
             </div>
-            <div className="onHoverCreateAnnotation" onClick={questionButtonClickedHandler} >
+            <div className="onHoverCreateAnnotation" onClick={questionButtonClickedHandler}
+                onMouseEnter={() => setShowQuestionMenu(true)}
+                onMouseLeave={() => setShowQuestionMenu(false)}>
                 <div className="buttonIconContainer">
                     <img src={chrome.extension.getURL('Question.svg')} alt="question annnotation" />
                 </div>
                 Question
+                {showQuestionMenu && (
+                    <div className="buttonColumn">
+                        <div className="onHoverCreateQuestionAnnotation" onClick={whatQuestionClickedHandler} >
+                            What is this?
+                    </div>
+                        <div className="onHoverCreateAnnotation" onClick={howQuestionClickedHandler} >
+                            How do I use this?
+                     </div>
+                    </div>
+                )}
             </div>
             <div className="onHoverCreateAnnotation" onClick={issueButtonClickedHandler} >
                 <div className="buttonIconContainer">
@@ -130,8 +159,9 @@ function displayPopoverBasedOnRectPosition(rect, props) {
     popOverAnchor.style.left = `${leftPosition}px`;
 }
 
-const alertBackgroundOfNewSelection = (selection, offsets, xpath, type) => {
+const alertBackgroundOfNewSelection = (selection, offsets, xpath, type, content) => {
     // supporting creation of annotations in sidebar
+    const annoContent = content === undefined ? "" : content;
     chrome.runtime.sendMessage({
         msg: 'CONTENT_SELECTED',
         from: 'content',
@@ -139,7 +169,8 @@ const alertBackgroundOfNewSelection = (selection, offsets, xpath, type) => {
             selection,
             offsets,
             xpath,
-            type
+            type,
+            annoContent
         },
     });
 };
@@ -147,6 +178,9 @@ const alertBackgroundOfNewSelection = (selection, offsets, xpath, type) => {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.msg === 'ADD_NEW_ANCHOR') {
         queue.push(request.payload);
+    }
+    else if (request.msg === 'ADD_REPLY_ANCHOR') {
+        replyQueue.push(request.payload);
     }
 });
 
@@ -187,6 +221,7 @@ export const createAnnotation = (event) => {
 
         if (queue.length) {
             let newAnno = queue.pop();
+            console.log('bleh', newAnno);
             chrome.runtime.sendMessage({
                 msg: 'SAVE_NEW_ANCHOR',
                 from: 'content',
@@ -200,10 +235,24 @@ export const createAnnotation = (event) => {
                 }
             });
         }
+        else if (replyQueue.length) {
+            replyQueue.pop();
+            chrome.runtime.sendMessage({
+                msg: 'TRANSMIT_REPLY_ANCHOR',
+                from: 'content',
+                payload: {
+                    xpath: xpathToNode,
+                    url: window.location.href,
+                    anchor: selection.toString(),
+                    offsets: offsets,
+                    hostname: window.location.hostname
+                }
+            });
+        }
         else {
-
             const rectPopover = selection.getRangeAt(0).getBoundingClientRect();
             displayPopoverBasedOnRectPosition(rectPopover, { selection, xpathToNode, offsets });
+            return;
         }
     }
     else {

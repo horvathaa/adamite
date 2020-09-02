@@ -97,6 +97,7 @@ class NewAnnotation extends React.Component {
       offsets: offsets,
       tags: CardWrapperState.tags,
       annotationType: CardWrapperState.annotationType.toLowerCase(),
+      private: CardWrapperState.private
     };
     chrome.runtime.sendMessage(
       {
@@ -129,7 +130,7 @@ class NewAnnotation extends React.Component {
   };
 
   render() {
-    const { newSelection, type } = this.props;
+    const { newSelection, type, annoContent } = this.props;
 
     const options = [
       'Default', 'To-do', 'Highlight', 'Navigation', 'Issue'
@@ -143,16 +144,18 @@ class NewAnnotation extends React.Component {
 
     const defaultOption = options[0];
 
-    if (!newSelection) {
-      return null;
-    }
+    // if (!newSelection) {
+    //   return null;
+    // }
 
     const { annotationContent, submitted, tags } = this.state;
+
+    const annoBody = annoContent === "" ? annotationContent : annoContent;
 
     return (
       <React.Fragment>
         <CardWrapper
-          tags={tags} annotationContent={annotationContent}
+          tags={tags} annotationContent={annoBody}
           edit={!submitted}
           pageAnnotation={newSelection}
           annotationType={type}

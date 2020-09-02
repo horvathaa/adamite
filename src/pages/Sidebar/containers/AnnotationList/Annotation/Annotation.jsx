@@ -28,13 +28,15 @@ class Annotation extends Component {
     editing: false,
     id: this.props.id,
     authorId: this.props.authorId,
-    pinned: this.props.pinned
+    pinned: this.props.pinned,
+    isClosed: this.props.isClosed,
+    howClosed: this.props.howClosed
   };
 
   updateData = () => {
-    let { tags, content, type, authorId, pinned } = this.props;
+    let { tags, content, type, authorId, pinned, isClosed, howClosed } = this.props;
     this.setState({
-      tags, content, annotationType: type, authorId, pinned
+      tags, content, annotationType: type, authorId, pinned, isClosed, howClosed
     });
 
   }
@@ -64,7 +66,9 @@ class Annotation extends Component {
       prevProps.content !== this.props.content ||
       prevProps.type !== this.props.type ||
       prevProps.authorId !== this.props.authorId ||
-      prevProps.pinned !== this.props.pinned) {
+      prevProps.pinned !== this.props.pinned ||
+      prevProps.isClosed !== this.props.isClosed ||
+      prevProps.howClosed !== this.props.howClosed) {
       this.updateData();
     }
   }
@@ -88,6 +92,7 @@ class Annotation extends Component {
 
   handleDoneToDo(id) {
     updateAnnotationById(id, {
+      createdTimestamp: new Date().getTime(),
       trashed: true
     }
     );
@@ -104,6 +109,7 @@ class Annotation extends Component {
   handleUnArchive(e) {
     let id = e.target.value;
     updateAnnotationById(id, {
+      createdTimestamp: new Date().getTime(),
       trashed: false
     }
     );
@@ -123,9 +129,14 @@ class Annotation extends Component {
             }
           );
         }
-        deleteAnnotationForeverById(id);
+        chrome.runtime.sendMessage({
+          msg: "ANNOTATION_DELETED",
+          from: "content",
+          payload: {
+            id: id
+          }
+        })
       });
-
     } else {
       return;
     }
@@ -152,7 +163,8 @@ class Annotation extends Component {
       type: CardWrapperState.annotationType.toLowerCase(),
       tags: CardWrapperState.tags,
       deletedTimestamp: 0,
-      createdTimestamp: new Date().getTime()
+      createdTimestamp: new Date().getTime(),
+      private: CardWrapperState.private
     });
     this.setState({ editing: false });
   }
@@ -198,6 +210,16 @@ class Annotation extends Component {
     });
   }
 
+  notifyParentOfAdopted = (annoId, replyId, adoptedState) => {
+    chrome.runtime.sendMessage({
+      msg: 'REQUEST_ADOPTED_UPDATE',
+      from: 'content',
+      payload: {
+        annoId, replyId, adoptedState
+      }
+    })
+  }
+
   cancelButtonHandler = () => {
     this.setState({ editing: false });
   }
@@ -216,8 +238,8 @@ class Annotation extends Component {
   }
 
   render() {
-    const { anchor, idx, id, active, authorId, currentUser, trashed, timeStamp, url, currentUrl, childAnchor, xpath, replies } = this.props;
-    const { editing, collapsed, tags, content, annotationType, author, pinned } = this.state;
+    const { anchor, idx, id, active, authorId, currentUser, trashed, timeStamp, url, currentUrl, childAnchor, xpath, replies, isPrivate, adopted } = this.props;
+    const { editing, collapsed, tags, content, annotationType, author, pinned, isClosed, howClosed } = this.state;
     if (annotationType === 'default' && !trashed) {
       return (<DefaultAnnotation
         idx={idx}
@@ -339,6 +361,11 @@ class Annotation extends Component {
           cancelButtonHandler={this.cancelButtonHandler}
           submitButtonHandler={this.submitButtonHandler}
           handleExpandCollapse={this.handleExpandCollapse}
+          isPrivate={isPrivate}
+          isClosed={isClosed}
+          howClosed={howClosed}
+          adopted={adopted}
+          notifyParentOfAdopted={this.notifyParentOfAdopted}
         />
       );
     }

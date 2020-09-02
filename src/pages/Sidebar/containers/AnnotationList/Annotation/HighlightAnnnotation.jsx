@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import classNames from 'classnames';
 import './Annotation.css';
 import CustomTag from '../../CustomTag/CustomTag';
+import Highlight from '../../../../../assets/img/SVGs/Highlight.svg';
 import profile from '../../../../../assets/img/SVGs/Profile.svg';
 import reply from '../../../../../assets/img/SVGs/Reply.svg';
 import outlinepin from '../../../../../assets/img/SVGs/pin.svg';
@@ -82,51 +83,62 @@ class HighlightAnnotation extends Component {
                     })}
                 >
                     {!collapsed ? (
-                        <div className={" container " + classNames({
-                            Header: true,
-                            Truncated: collapsed,
-                        })}>
-                            <div className="profileContainer">
-                                <img src={profile} alt="profile" className="profile" />
-                            </div>
-                            <div className="userProfileContainer">
+                        <React.Fragment>
+                            <div className="annotationTypeBadgeContainer">
+                                <div className="annotationTypeBadge row2">
+                                    <div className="annotationTypeBadge col2">
+                                        <div className="badgeContainer">
+                                            <img src={Highlight} alt='highlight type badge' />
+                                        </div>
 
-                                <div className="author">
-                                    {author}
-                                </div>
-                                <div className="timestamp">
-                                    {this.props.formatTimestamp()}
+                                    </div>
                                 </div>
                             </div>
-                            <div className="row">
-                                <div className="AnnotationIconContainer">
-                                    <div className="TopIconContainer" onClick={this.handleReply}>
-                                        <img src={reply} alt="reply" className="profile" />
+                            <div className={" container " + classNames({
+                                Header: true,
+                                Truncated: collapsed,
+                            })}>
+                                <div className="profileContainer">
+                                    <img src={profile} alt="profile" className="profile" />
+                                </div>
+                                <div className="userProfileContainer">
+
+                                    <div className="author">
+                                        {author}
                                     </div>
-                                    <div className="TopIconContainer" onClick={this.props.transmitPinToParent}>
-                                        {pin ? (
-                                            <img src={fillpin} id="pin" alt="pin" className="profile" />
-                                        ) : (
-                                                <img src={outlinepin} id="pin" alt="pin" className="profile" />
-                                            )}
+                                    <div className="timestamp">
+                                        {this.props.formatTimestamp()}
                                     </div>
-                                    <div className="TopIconContainer" >
-                                        <img src={newAnchor} alt="add new anchor" id="newAnchor" className="profile" onClick={this.handleNewAnchorRequest} />
+                                </div>
+                                <div className="row">
+                                    <div className="AnnotationIconContainer">
+                                        <div className="TopIconContainer" onClick={this.handleReply}>
+                                            <img src={reply} alt="reply" className="profile" />
+                                        </div>
+                                        <div className="TopIconContainer" onClick={this.props.transmitPinToParent}>
+                                            {pin ? (
+                                                <img src={fillpin} id="pin" alt="pin" className="profile" />
+                                            ) : (
+                                                    <img src={outlinepin} id="pin" alt="pin" className="profile" />
+                                                )}
+                                        </div>
+                                        <div className="TopIconContainer" >
+                                            <img src={newAnchor} alt="add new anchor" id="newAnchor" className="profile" onClick={this.handleNewAnchorRequest} />
+                                        </div>
+                                        {currentUser.uid === authorId ? (
+                                            <React.Fragment>
+                                                <div className="TopIconContainer" >
+                                                    <img src={edit} alt="edit annotation" className="profile" id="edit" onClick={this.handleEditRequest} />
+                                                </div>
+                                                <div className="TopIconContainer" >
+                                                    <img src={trash} alt="delete annotation" className="profile" id="trash" onClick={this.handleDeleteRequest} />
+                                                </div>
+                                            </React.Fragment>
+                                        ) : (null)}
                                     </div>
-                                    {currentUser.uid === authorId ? (
-                                        <React.Fragment>
-                                            <div className="TopIconContainer" >
-                                                <img src={edit} alt="edit annotation" className="profile" id="edit" onClick={this.handleEditRequest} />
-                                            </div>
-                                            <div className="TopIconContainer" >
-                                                <img src={trash} alt="delete annotation" className="profile" id="trash" onClick={this.handleDeleteRequest} />
-                                            </div>
-                                        </React.Fragment>
-                                    ) : (null)}
                                 </div>
                             </div>
-                        </div>
-                    ) : (null)}
+                        </React.Fragment>) : (null)}
                     {childAnchor === undefined || !childAnchor.length ? (
                         <Anchor
                             id={id}

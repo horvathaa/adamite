@@ -48,3 +48,9 @@
 .MarkQuestionAnswer:hover {
     filter: brightness(.8);
 }
+
+.adoptAnswer {
+    display: flex;
+    align-items: center;
+    align-self: baseline;
+}

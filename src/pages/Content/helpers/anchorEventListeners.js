@@ -37,7 +37,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     else if (request.msg === 'HIGHLIGHT_ANNOTATIONS') {
         const annotationsOnPage = request.payload;
         if (annotationsOnPage.length) {
-            annotationsOnPage.reverse().forEach(anno => highlightRange(anno));
+            annotationsOnPage.reverse().forEach(anno => {
+                if (anno.xpath !== undefined && anno.xpath !== null) {
+                    highlightRange(anno)
+                }
+                if (anno.replies !== undefined && anno.replies.length) {
+                    anno.replies.forEach(reply => {
+                        if (reply.xpath !== undefined) {
+                            console.log('u broke', reply)
+                            highlightRange(reply, anno.id);
+                        }
+                    })
+                }
+            });
         }
     }
     else if (request.msg === 'REFRESH_HIGHLIGHTS') {
@@ -46,7 +58,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         // console.log("in here", request)
         const annotationsOnPage = request.payload;
         if (annotationsOnPage.length) {
-            annotationsOnPage.reverse().forEach(anno => highlightRange(anno));
+            annotationsOnPage.reverse().forEach(anno => {
+                if (anno.xpath !== undefined && anno.xpath !== null) {
+                    highlightRange(anno)
+                }
+                if (anno.replies !== undefined && anno.replies.length) {
+                    anno.replies.forEach(reply => {
+                        if (reply.xpath !== undefined) {
+                            highlightRange(reply);
+                        }
+                    })
+                }
+            });
         }
     }
     else if (request.msg === 'ANNOTATION_FOCUS_ONCLICK') {

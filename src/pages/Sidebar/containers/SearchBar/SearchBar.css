@@ -9,7 +9,9 @@
     -webkit-appearance: searchfield-cancel-button;
   }
   
-
+  .highlight-adamite-search-suggest {
+    background-color: #ffff0099;
+  }
   
   .SearchBarInput.Dark {
     background-color: rgb(51, 51, 51);

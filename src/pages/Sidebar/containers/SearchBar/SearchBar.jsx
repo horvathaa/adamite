@@ -10,6 +10,7 @@ import '../../../../assets/img/SVGs/Question.svg';
 import '../../../../assets/img/SVGs/Issue.svg';
 import '../../../../assets/img/SVGs/location.svg';
 import Highlighter from "react-highlight-words";
+import ReactHtmlParser from 'react-html-parser';
 
 
 class SearchBar extends React.Component {
@@ -28,6 +29,10 @@ class SearchBar extends React.Component {
     //     handleSearchBarInputText,
     // }) => {
 
+    highlightSearchWords = (sentence, baseContent) => {
+        return typeof sentence === "undefined" ? baseContent : sentence.match(new RegExp('(?<=<em>)(.*?)(?=<\/em>)', 'g'));
+    }
+
     componentWillMount() {
         this.onSuggestionsFetchRequested = debounce(
             500,
@@ -45,6 +50,18 @@ class SearchBar extends React.Component {
     }
 
     renderSuggestion = suggestion => {
+        var searchAnchorContent = this.state.value.split(" ");
+        var anchorContent = suggestion.anchorContent;
+        var searchContent = this.state.value.split(" ");
+        var content = suggestion.content;
+
+        if (suggestion.hasOwnProperty("highlight")) {
+            searchAnchorContent = this.highlightSearchWords(suggestion.highlight.anchorContent, searchAnchorContent);
+            anchorContent = suggestion.highlight.hasOwnProperty("anchorContent") ? suggestion.highlight.anchorContent.replace(new RegExp('(<em>)|(<\/em>)', 'g'), '') : anchorContent;
+
+            searchContent = this.highlightSearchWords(suggestion.highlight.content, searchContent);
+            content = suggestion.highlight.hasOwnProperty("content") ? suggestion.highlight.content.replace(new RegExp('(<em>)|(<\/em>)', 'g'), '') : content;
+        }
 
         return (
             <React.Fragment>
@@ -60,23 +77,20 @@ class SearchBar extends React.Component {
                                     <img className="react-autosuggest__anchor-content-icon" src={chrome.extension.getURL("location.svg")} alt="question annnotation" />
                                 </div>
                                 <div className="autosuggest-col-6">
-                                    <em>
-
-                                        <Highlighter
-                                            highlightClassName="YourHighlightClass"
-                                            searchWords={this.state.value.split(" ")}
-                                            autoEscape={true}
-                                            textToHighlight={suggestion.anchorContent}
-                                        />
-                                    </em>
+                                    <Highlighter
+                                        highlightClassName="highlight-adamite-search-suggest"
+                                        searchWords={searchAnchorContent}
+                                        autoEscape={true}
+                                        textToHighlight={suggestion.hasOwnProperty("highlight") && suggestion.highlight.hasOwnProperty("anchorContent") ? suggestion.highlight.anchorContent.replace(new RegExp('(<em>)|(<\/em>)', 'g'), '') : suggestion.anchorContent}
+                                    />
                                 </div>
                             </div>
                             <div className="react-autosuggest__user-content">
                                 <Highlighter
                                     highlightClassName="YourHighlightClass"
-                                    searchWords={this.state.value.split(" ")}
+                                    searchWords={searchContent}
                                     autoEscape={true}
-                                    textToHighlight={suggestion.content}
+                                    textToHighlight={content}
                                 />
                             </div>
                             <div className="react-autosuggest__tags">
@@ -92,12 +106,9 @@ class SearchBar extends React.Component {
     }
 
     onChange = (event, { newValue, suggestion, suggestionValue, suggestionIndex, sectionIndex, method }) => {
-        // console.log("this is the event", event.typeArg, method)
-        // if (method === 'click') {
-
-        //     console.log("THERE IS THE CLICK!", suggestion, suggestionValue, suggestionIndex, sectionIndex, method)
-        // }
-        this.setState({ value: newValue })
+        if (method !== 'click') {
+            this.setState({ value: newValue })
+        }
     }
 
     onKeyDown = (event) => {

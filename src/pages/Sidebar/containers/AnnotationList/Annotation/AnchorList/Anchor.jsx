@@ -3,6 +3,8 @@ import classNames from 'classnames';
 import { FaExternalLinkAlt } from 'react-icons/fa';
 import { FiMapPin } from 'react-icons/fi';
 import { BsFileEarmarkText } from 'react-icons/bs';
+import anchorOnPage from '../../../../../../assets/img/SVGs/Anchor_onpage.svg';
+import anchorOnOtherPage from '../../../../../../assets/img/SVGs/Anchor_otherpage_1.svg';
 import '../Annotation.css';
 import './Anchor.css';
 
@@ -72,10 +74,10 @@ class Anchor extends Component {
             anchorIcon = <BsFileEarmarkText className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />;
         }
         else if (url === currentUrl) {
-            anchorIcon = <FiMapPin className="AnchorIcon" onClick={this.handleOnLocalOnClick} />;
+            anchorIcon = <img src={anchorOnPage} className="AnchorIcon" alt='anchor on page' onClick={_ => this.handleOnLocalOnClick} />;
         }
         else {
-            anchorIcon = <FaExternalLinkAlt className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />;
+            anchorIcon = <img src={anchorOnOtherPage} className="AnchorIcon" alt='anchor on other page' onClick={_ => this.handleExternalAnchor(url)} />;
         }
         return (
             <div
