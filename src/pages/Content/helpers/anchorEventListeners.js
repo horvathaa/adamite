@@ -35,6 +35,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         updateXpaths(collection, request.id)
     }
     else if (request.msg === 'HIGHLIGHT_ANNOTATIONS') {
+        console.log('in highlightr_annotations');
         const annotationsOnPage = request.payload;
         if (annotationsOnPage.length) {
             annotationsOnPage.reverse().forEach(anno => {
@@ -44,7 +45,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 }
                 if (anno.replies !== undefined && anno.replies.length) {
                     anno.replies.forEach(reply => {
-                        if (reply.xpath !== undefined) {
+                        if (reply.xpath !== undefined && reply.xpath !== null) {
                             highlightRange(reply, anno.id);
                         }
                     })
@@ -53,6 +54,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
     }
     else if (request.msg === 'REFRESH_HIGHLIGHTS') {
+        // console.log('in refresh');
         var span = document.getElementsByClassName("highlight-adamite-annotation");
         removeSpans(span);
         // console.log("in here", request)
@@ -64,7 +66,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 }
                 if (anno.replies !== undefined && anno.replies.length) {
                     anno.replies.forEach(reply => {
-                        if (reply.xpath !== undefined) {
+                        if (reply.xpath !== undefined && reply.xpath !== null) {
                             highlightRange(reply);
                         }
                     })
@@ -97,9 +99,4 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         request.newAnno.content = request.newAnno.annotation;
         highlightRange(request.newAnno);
     }
-
-    else if (request.msg === 'DELIVER_FILTERED_ANNOTATION_TAG' && request.from === 'background') {
-        window.postMessage({ type: 'FROM_CONTENT', value: request.payload.response }, "*");
-    }
-
 });

@@ -102,9 +102,9 @@ class Reply extends Component {
                                 </div>
                                 <div className="row">
                                     <div className="AnnotationIconContainer">
+                                        {adoptedStar}
                                         {currentUser.uid === authorId ? (
                                             <React.Fragment>
-                                                {adoptedStar}
                                                 <div className="TopIconContainer" >
                                                     <img src={edit} alt="edit reply" className="profile" id="edit" onClick={_ => this.setState({ editing: true })} />
                                                 </div>

@@ -271,6 +271,7 @@ class Annotation extends Component {
         handleExpandCollapse={this.handleExpandCollapse}
         isPrivate={isPrivate}
         replies={replies}
+        notifyParentOfAdopted={this.notifyParentOfAdopted}
       />);
     }
     else if (annotationType === 'to-do' && !trashed && currentUser.uid === authorId) {
@@ -302,6 +303,7 @@ class Annotation extends Component {
         handleExpandCollapse={this.handleExpandCollapse}
         replies={replies}
         isPrivate={isPrivate}
+        notifyParentOfAdopted={this.notifyParentOfAdopted}
       />);
     }
     else if (annotationType === 'navigation') {
@@ -336,6 +338,7 @@ class Annotation extends Component {
           handleExpandCollapse={this.handleExpandCollapse}
           replies={replies}
           isPrivate={isPrivate}
+          notifyParentOfAdopted={this.notifyParentOfAdopted}
         />
       );
     }

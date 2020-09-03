@@ -19,6 +19,20 @@ import {
 } from '../../firebase/index';
 import firebase from '../../firebase/firebase';
 
+function updateList(list, id, annotations) {
+  let obj = list.filter(obj => id === obj.tabId);
+  let objToUpdate = obj[0];
+  objToUpdate.annotations = annotations;
+  let temp2 = list.filter(obj => obj.tabId !== id);
+  temp2.push(objToUpdate);
+  // temp2 = removeDuplicates(temp2);
+  return temp2;
+}
+
+function containsObjectWithId(id, list) {
+  const test = list.filter(obj => obj.tabId === id);
+  return test.length !== 0;
+}
 // helper method from
 // https://stackoverflow.com/questions/18773778/create-array-of-unique-objects-by-property
 function removeDuplicates(annotationArray) {
@@ -34,7 +48,7 @@ function removeDuplicates(annotationArray) {
 }
 
 let unsubscribeAnnotations = null;
-var pageannotationsActive = [];
+let tabAnnotationCollect = [];
 let annotationsAcrossWholeSite = [];
 let annotations = [];
 let publicAnnotations = [];
@@ -87,6 +101,18 @@ function setUpGetAllAnnotationsByUrlListener(url, annotations) {
       //   annotations.concat(annotationsAcrossWholeSite[host].annotations);
       let annotationsToBroadcast = tempPublicAnnotations.concat(privateAnnotations);
       annotationsToBroadcast = removeDuplicates(annotationsToBroadcast);
+      chrome.tabs.query({ active: true }, tabs => {
+        // console.log('here be public tabs idk what happened', tabs, annotationsToBroadcast);
+        if (containsObjectWithId(tabs[0].id, tabAnnotationCollect)) {
+          tabAnnotationCollect = updateList(tabAnnotationCollect, tabs[0].id, annotationsToBroadcast);
+          // console.log('updated tabAnnotationCollect', tabAnnotationCollect);
+          // tabAnnotationCollect[tabs[0].id] = annotationsToBroadcast;
+        }
+        else {
+          tabAnnotationCollect.push({ tabId: tabs[0].id, annotations: annotationsToBroadcast });
+        }
+      });
+
       // annotations = removeDuplicates(annotations);
       // }
       // pageannotationsActive[pos].annotations = annotations;
@@ -105,7 +131,7 @@ function setUpGetAllAnnotationsByUrlListener(url, annotations) {
             payload: annotationsToBroadcast,
           });
         });
-        console.log("these are changed tabs", tabs)
+        // console.log("these are changed tabs", tabs)
       });
     }))
   })
@@ -135,13 +161,23 @@ function promiseToComeBack(url, annotations) {
 
       let annotationsToBroadcast = tempPrivateAnnotations.concat(publicAnnotations);
       annotationsToBroadcast = removeDuplicates(annotationsToBroadcast);
+      chrome.tabs.query({ active: true }, tabs => {
+        // console.log('here be tabs idk what happened', tabs, annotationsToBroadcast);
+        if (containsObjectWithId(tabs[0].id, tabAnnotationCollect)) {
+          tabAnnotationCollect = updateList(tabAnnotationCollect, tabs[0].id, annotationsToBroadcast);
+          // console.log('updated tabAnnotationCollect', tabAnnotationCollect);
+        }
+        else {
+          tabAnnotationCollect.push({ tabId: tabs[0].id, annotations: annotationsToBroadcast });
+        }
+      });
       // }
       // pageannotationsActive[pos].annotations = annotations;
       // pageannotationsActive[pos].annotations = pageannotationsActive[pos].annotations.sort((a, b) =>
       //   (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
       // );
       // pageannotationsActive[pos].annotations = removeDuplicates(pageannotationsActive[pos].annotations);
-      console.log('bout to broadcast in private sigh', annotationsToBroadcast);
+      // console.log('bout to broadcast in private sigh', annotationsToBroadcast);
       broadcastAnnotationsUpdated("CONTENT_UPDATED", annotationsToBroadcast);
       privateAnnotations = tempPrivateAnnotations;
       chrome.tabs.query({}, tabs => {
@@ -152,12 +188,23 @@ function promiseToComeBack(url, annotations) {
             payload: annotationsToBroadcast,
           });
         });
-        console.log("these are changed tabs", tabs)
+        // console.log("these are changed tabs", tabs)
       });
     }))
   })
 }
 
+chrome.tabs.onActivated.addListener(function (activeInfo) {
+  // console.log('change tab', tabAnnotationCollect);
+  if (containsObjectWithId(activeInfo.tabId, tabAnnotationCollect)) {
+    const tabInfo = tabAnnotationCollect.filter(obj => obj.tabId === activeInfo.tabId);
+    broadcastAnnotationsUpdated('CONTENT_UPDATED', tabInfo[0].annotations);
+  }
+  else {
+    // publicListener = setUpGetAllAnnotationsByUrlListener(request.url, annotations);
+    // privateListener = promiseToComeBack(request.url, annotations);
+  }
+});
 
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -188,7 +235,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // else {
     // let snapshotSubscriptions = [];
     // let annotations = [];
-    console.log('what is this url', request.url);
+    // console.log('requesting annotations for url', request.url);
     publicListener = setUpGetAllAnnotationsByUrlListener(request.url, annotations);
     privateListener = promiseToComeBack(request.url, annotations);
     // setUpGetAllAnnotationsByUrlListener(request.url, annotations).then(function (e) {
@@ -204,7 +251,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // }
   }
   else if (request.msg === 'UNSUBSCRIBE' && request.from === 'content') {
-    console.log('public and private listeners lol', publicListener, privateListener);
     privateListener();
     publicListener();
   }
@@ -215,14 +261,30 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       createdTimestamp: new Date().getTime(),
       deletedTimestamp: 0
     }).then(function () {
-      let temp = publicAnnotations.concat(privateAnnotations);
-      let anno = temp.filter(anno => id === anno.id);
-      let updatedAnno = anno[0];
-      Object.assign(updatedAnno, { id, content, type, tags, isPrivate });
-      let temp2 = temp.filter(anno => anno.id !== id);
-      temp2.push(updatedAnno);
-      temp2 = removeDuplicates(temp2);
-      broadcastAnnotationsUpdated('CONTENT_UPDATED', temp2);
+      // console.log('in annotation updated');
+      if (containsObjectWithId(sender.tab.id, tabAnnotationCollect)) {
+        const tabInfo = tabAnnotationCollect.filter(obj => obj.tabId === sender.tab.id);
+        // console.log('tabInfo', tabInfo);
+        let annotations = tabInfo[0].annotations;
+        let anno = annotations.filter(anno => id === anno.id);
+        let updatedAnno = anno[0];
+        Object.assign(updatedAnno, { id, content, type, tags, isPrivate });
+        let temp2 = annotations.filter(anno => anno.id !== id);
+        temp2.push(updatedAnno);
+        temp2 = removeDuplicates(temp2);
+        broadcastAnnotationsUpdated('CONTENT_UPDATED', temp2);
+      }
+      else {
+        let temp = publicAnnotations.concat(privateAnnotations);
+        let anno = temp.filter(anno => id === anno.id);
+        let updatedAnno = anno[0];
+        Object.assign(updatedAnno, { id, content, type, tags, isPrivate });
+        let temp2 = temp.filter(anno => anno.id !== id);
+        temp2.push(updatedAnno);
+        temp2 = removeDuplicates(temp2);
+        // console.log('updated thing', temp2, updatedAnno);
+        broadcastAnnotationsUpdated('CONTENT_UPDATED', temp2);
+      }
     })
   }
   else if (request.msg === 'ANNOTATION_DELETED' && request.from === 'content') {
@@ -230,7 +292,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       annotations = publicAnnotations.concat(privateAnnotations);
       annotations = annotations.filter(anno => anno.id !== request.payload.id);
       annotations = removeDuplicates(annotations);
-      // pageannotationsActive[pageannotationsActive.length - 1].annotations = pageannotationsActive[pageannotationsActive.length - 1].annotations.filter(anno => anno.id !== request.payload.id);
       broadcastAnnotationsUpdated("CONTENT_UPDATED", annotations);
     });
   }
@@ -508,7 +569,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
     else {
       annotationsAcrossWholeSite[hostname] = { cursor: undefined, annotations: [] };
-      console.log(annotationsAcrossWholeSite);
+      // console.log(annotationsAcrossWholeSite);
     }
     if (cursor === 'DONE') {
       sendResponse({ annotations: annotationsAcrossWholeSite[hostname].annotations, cursor: "DONE" });

@@ -237,6 +237,7 @@ class DefaultAnnotation extends Component {
                                             url={reply.url}
                                             offsets={reply.offsets}
                                             currentUrl={currentUrl}
+                                            notifyParentOfAdopted={this.props.notifyParentOfAdopted}
                                         />
                                     )
                                 }

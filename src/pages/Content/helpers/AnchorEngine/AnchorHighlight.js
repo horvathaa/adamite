@@ -65,7 +65,7 @@ export const highlightRange = (anno, annoId) => {
             newRange = xpathRange.toRange(anno.xpath.start, anno.xpath.startOffset, anno.xpath.end, anno.xpath.endOffset, document);
         }
     } catch (err) {
-        console.log('got error- ', err);
+        // console.log('got error- ', err);
         return;
     }
     // console.log('anno', anno, 'range', newRange);

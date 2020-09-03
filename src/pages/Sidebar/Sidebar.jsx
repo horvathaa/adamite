@@ -29,6 +29,7 @@ class Sidebar extends React.Component {
     showPinned: false,
     pinnedAnnos: [],
     annotatingPage: false,
+    showClearClickedAnnotation: false,
     askAboutRelatedAnnos: false,
     relatedQuestions: [],
     pageName: '',
@@ -55,7 +56,7 @@ class Sidebar extends React.Component {
 
   };
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     if (this.unsubscribeAnnotations) {
       this.unsubscribeAnnotations();
     }
@@ -188,6 +189,7 @@ class Sidebar extends React.Component {
             return target.includes(element.id);
           })
         });
+        this.setState({ showClearClickedAnnotation: true });
       } else if (
         request.from === 'background' &&
         request.msg === 'TOGGLE_SIDEBAR'
@@ -409,7 +411,7 @@ class Sidebar extends React.Component {
   }
 
   checkTags(annotation, tags) {
-    console.log('check tag', annotation, tags);
+    // console.log('check tag', annotation, tags);
     if (!tags.length || annotation.pinned) {
       return true;
     }
@@ -672,6 +674,13 @@ class Sidebar extends React.Component {
                     notifyParentOfPinning={this.handlePinnedAnnotation} />
                 )}
             </div>
+            {this.state.showClearClickedAnnotation && (
+              <div className="userQuestionButtonContainer">
+                <div className="ModifyFilter userQuestions" onClick={_ => { this.setState({ showClearClickedAnnotation: false }); this.setState({ filteredAnnotations: this.state.annotations }) }}>
+                  Show All Annotations
+                </div>
+              </div>
+            )}
           </div>
         )
         }
