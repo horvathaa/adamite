@@ -26,6 +26,7 @@ class Sidebar extends React.Component {
     selected: undefined,
     dropdownOpen: false,
     searchBarInputText: '',
+    searchState: false,
     showFilter: false,
     showPinned: false,
     pinnedAnnos: [],
@@ -66,8 +67,32 @@ class Sidebar extends React.Component {
     window.removeEventListener('scroll', this.handleScroll);
   }
 
+  ElasticSearch = () => {
+    return new Promise((resolve, reject) => {
+      chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+        let url = tabs[0].url;
+        chrome.runtime.sendMessage({
+          msg: 'SCROLL_ELASTIC',
+          url: url
+        },
+          response => { resolve(response) });
+      });
+    });
+  }
+
   handleScroll = (event, filterSelection) => {
     const scrollIsAtTheBottom = (document.documentElement.scrollHeight - window.innerHeight) - 1 <= Math.floor(window.scrollY);
+    if (scrollIsAtTheBottom && this.state.searchState) {
+      this.ElasticSearch()
+        .then(res => {
+          console.log("THESE RESUsssssLTS", res.response.data)
+          const results = res.response.data.hits.hits.map(h => h._source)
+          console.log("THESE RESULTS", res.response)
+          this.setState({
+            searchedAnnotations: this.state.searchedAnnotations.concat(results)
+          })
+        })
+    }
     if (scrollIsAtTheBottom && filterSelection.siteScope.includes('acrossWholeSite')) {
       this.filterAcrossWholeSite(filterSelection);
     }
@@ -304,22 +329,10 @@ class Sidebar extends React.Component {
 
   };
 
-  ElasticSearch = (inputText) => {
-    return new Promise((resolve, reject) => {
-      chrome.runtime.sendMessage({
-        msg: 'SEARCH_ELASTIC',
-        userSearch: inputText
-      },
-        response => {
-          resolve(response.response);
-        });
-    });
-  }
-
-
   handleSearchBarInputText = (searchAnnotations) => {
     console.log("IN HERE!", searchAnnotations)
     this.setState({
+      searchState: true,
       // searchBarInputText: inputText,
       searchedAnnotations: searchAnnotations
     });
@@ -532,7 +545,6 @@ class Sidebar extends React.Component {
 
     const inputText = searchBarInputText.toLowerCase();
     let filteredAnnotationsCopy = searchedAnnotations.length === 0 ? filteredAnnotations : searchedAnnotations;
-    console.log("filterannos", filteredAnnotationsCopy)
     //let filteredAnnotationsCopy = [];
     // filteredAnnotations.forEach((anno) => {
     //   const { content, anchorContent } = anno;

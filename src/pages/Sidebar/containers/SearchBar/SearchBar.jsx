@@ -106,7 +106,7 @@ class SearchBar extends React.Component {
     }
 
     onChange = (event, { newValue, suggestion, suggestionValue, suggestionIndex, sectionIndex, method }) => {
-        if (method !== 'click') {
+        if (method !== 'click' && method !== 'enter') {
             this.setState({ value: newValue })
         }
     }
@@ -141,13 +141,19 @@ class SearchBar extends React.Component {
 
     ElasticSearch2 = (inputText) => {
         return new Promise((resolve, reject) => {
-            chrome.runtime.sendMessage({
-                msg: 'SEARCH_ELASTIC',
-                userSearch: inputText
-            },
-                response => {
-                    resolve(response.response);
-                });
+            chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+                let url = tabs[0].url;
+                // use `url` here inside the callback because it's asynchronous!
+
+                chrome.runtime.sendMessage({
+                    msg: 'SEARCH_ELASTIC',
+                    url: url,
+                    userSearch: inputText
+                },
+                    response => {
+                        resolve(response.response);
+                    });
+            });
         });
     }
 

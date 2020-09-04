@@ -16,12 +16,27 @@ function regenKey() {
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    console.log("SEARCH ELASTIC RR")
     if (request.msg === 'SEARCH_ELASTIC') {
-        keyWrapper(search, { userSearch: request.userSearch, query: searchBarQuery(request.userSearch, true) })
+        console.log("SEARCH_ELASTIC")
+        keyWrapper(search, { userSearch: request.userSearch, query: searchBarQuery(request.userSearch, true), url: request.url, successFunction: searchBarSuccess })
             .then(e => sendResponse({ response: e }))
             .catch(function (err) {
                 console.log("wrapper error", err.response.status)
+            });
+    }
+    else if (request.msg === 'SCROLL_ELASTIC') {
+        console.log("SCROLL_ELASTIC")
+        var query = '';
+        retrieveQueryForScroll(request.url)
+            .then(function (query) {
+                keyWrapper(search, { userSearch: request.url, query: query, url: request.url, successFunction: paginationSuccess })
+                    .then(e => sendResponse({ response: e }))
+                    .catch(function (err) {
+                        console.log("wrapper error", err.response.status)
+                    });
+            })
+            .catch(function (err) {
+                console.log("Nothing was found", err);
             });
     }
 });
@@ -54,6 +69,8 @@ function findWhereMatched(res, value) {
 function searchBarQuery(userSearch) {
     return (
         {
+            "from": 0,
+            "size": 10,
             "query": {
                 "bool": {
                     "should": [
@@ -104,17 +121,13 @@ String.prototype.indexOfEnd = function (string) {
 
 function findOffset(highlightString, sourceString) {
     var cleanString = highlightString.replace(/(<em>)|(<\/em>)/g, '');
-    console.log("cleansubstring", cleanString)
-    console.log("offsets: ", sourceString.indexOf(cleanString));
     highlightString = sourceString.indexOf(cleanString) === 0 ? highlightString : "..." + highlightString;
     highlightString = sourceString.indexOfEnd(cleanString) === sourceString.length ? highlightString : highlightString + "...";
-    //console.log("end offsets: ", sourceString.indexOfEnd(cleanString));
     return highlightString;
 }
 
 function highlightOffsetMatch(hlElement, source) {
     for (var element in hlElement) {
-        console.log("element", element)
         if (typeof hlElement[element] !== "undefined") {
             hlElement[element] = findOffset(hlElement[element][0], source[element])
         } else if (typeof source[element] !== "undefined") {
@@ -126,13 +139,35 @@ function highlightOffsetMatch(hlElement, source) {
     return hlElement;
 }
 
-function search(key, args) {
+function storeQueryForScroll(query, total, url) {
+    console.log("test query", query.from, url)
+    if (typeof query.highlight !== "undefined") {
+        delete query.highlight;
+    }
+    if (query.from < total) {
+        query.from = query.from + 10;
+    }
+    chrome.storage.local.set({ [url]: query });
+}
+
+function retrieveQueryForScroll(url) {
     return new Promise((resolve, reject) => {
-        var userSearch = args.userSearch;
-        var query = args.query;
-        console.log("this is teh query", query);
-        const AuthStr = 'ApiKey ' + key;
-        axios.get(path + '?size=10',
+        chrome.storage.local.get([url], function (result) {
+            if (typeof result === "undefined" || (Object.keys(result).length === 0 && result.constructor === Object)) {
+                console.log("reject here baby");
+                reject(null);
+            }
+            else {
+                console.log("this is the query for url", result[url])
+                resolve(result[url]);
+            }
+        });
+    });
+}
+
+function axiosWrapper(path, query, AuthStr, args, successFunc) {
+    return new Promise((resolve, reject) => {
+        axios.get(path,
             {
                 params: {
                     source: JSON.stringify(query),
@@ -145,27 +180,68 @@ function search(key, args) {
                     'Access-Control-Allow-Origin': '*',
                 }
             }).then((res) => {
-                var finalArray = [];
-                console.log("this is the res", res.data.hits.hits)
-                if (res.data.hits.hits.length !== 0) {
-                    res.data.hits.hits.forEach(function (element) {
-                        console.log(element._source)
-                        userSearch = userSearch.toLowerCase();
-                        element._source["matchedAt"] = findWhereMatched(element._source, userSearch)
-                        var obj = element._source
-                        obj["id"] = element._id
-                        obj["highlight"] = element.hasOwnProperty("highlight") ? highlightOffsetMatch(element.highlight, obj) : undefined;
-                        element._source["id"] = element._id
-
-                        finalArray.push(obj)
-                    });
-                }
-                console.log("Final Array", finalArray)
-                resolve(res);
+                resolve(successFunc(res, args));
             })
             .catch((err) => {
                 console.log('this is the err', err);
                 reject(err);
-            });;
+            });
+    });
+}
+
+function paginationSuccess(res, args) {
+    var finalArray = [];
+
+    console.log("this is the res", res.data)
+    if (res.data.hits.hits.length !== 0) {
+        if (res.data.hits.total.value > 10) {
+            storeQueryForScroll(args.query, res.data.hits.total.value, args.url)
+        }
+        res.data.hits.hits.forEach(function (element) {
+            console.log(element._source)
+            var obj = element._source
+            obj["id"] = element._id
+            element._source["id"] = element._id
+
+            finalArray.push(obj)
+        });
+    }
+    console.log("Final Array", finalArray)
+    return res;
+
+}
+
+function searchBarSuccess(res, args) {
+    var finalArray = [];
+    var userSearch = args.userSearch
+    console.log("this is the res", res.data)
+    if (res.data.hits.hits.length !== 0) {
+        if (res.data.hits.total.value > 10) {
+            storeQueryForScroll(args.query, res.data.hits.total.value, args.url)
+        }
+        res.data.hits.hits.forEach(function (element) {
+            console.log(element._source)
+            userSearch = userSearch.toLowerCase();
+            element._source["matchedAt"] = findWhereMatched(element._source, userSearch)
+            var obj = element._source
+            obj["id"] = element._id
+            obj["highlight"] = element.hasOwnProperty("highlight") ? highlightOffsetMatch(element.highlight, obj) : undefined;
+            element._source["id"] = element._id
+
+            finalArray.push(obj)
+        });
+    }
+    console.log("Final Array", finalArray)
+    return res;
+}
+
+function search(key, args) {
+    return new Promise((resolve, reject) => {
+        var query = args.query;
+        console.log("this is teh query", query);
+        const AuthStr = 'ApiKey ' + key;
+        axiosWrapper(path, query, AuthStr, args, args.successFunction)
+            .then(e => resolve(e))
+            .catch(err => reject(err));
     });
 }
