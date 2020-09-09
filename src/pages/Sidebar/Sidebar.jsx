@@ -677,7 +677,7 @@ class Sidebar extends React.Component {
             {this.state.showClearClickedAnnotation && (
               <div className="userQuestionButtonContainer">
                 <div className="ModifyFilter userQuestions" onClick={_ => { this.setState({ showClearClickedAnnotation: false }); this.setState({ filteredAnnotations: this.state.annotations }) }}>
-                  Show All Annotations
+                  Clear Selected Annotation
                 </div>
               </div>
             )}

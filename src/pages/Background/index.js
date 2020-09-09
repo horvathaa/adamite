@@ -15,7 +15,8 @@ import {
   getAllPrivatePinnedAnnotationsByUserId,
   deleteAnnotationForeverById,
   getCurrentUserId,
-  getPrivateAnnotationsAcrossSite
+  getPrivateAnnotationsAcrossSite,
+  updateAllAnnotations
 } from '../../firebase/index';
 import firebase from '../../firebase/firebase';
 
@@ -27,6 +28,12 @@ function updateList(list, id, annotations) {
   temp2.push(objToUpdate);
   // temp2 = removeDuplicates(temp2);
   return temp2;
+}
+
+// helper method from
+// https://stackoverflow.com/questions/2540969/remove-querystring-from-url
+function getPathFromUrl(url) {
+  return url.split(/[?#]/)[0];
 }
 
 function containsObjectWithId(id, list) {
@@ -209,7 +216,8 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.msg === 'REQUEST_TAB_URL') {
-    sendResponse({ url: sender.tab.url });
+    const cleanUrl = getPathFromUrl(sender.tab.url);
+    sendResponse({ url: cleanUrl });
   }
   else if (request.msg === 'GET_ANNOTATIONS_PAGE_LOAD') {
     // var findActiveUrl = pageannotationsActive.filter(e => e.url === request.url)
@@ -236,6 +244,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // let snapshotSubscriptions = [];
     // let annotations = [];
     // console.log('requesting annotations for url', request.url);
+    // console.log('gonna update all annotations');
+    // updateAllAnnotations();
     publicListener = setUpGetAllAnnotationsByUrlListener(request.url, annotations);
     privateListener = promiseToComeBack(request.url, annotations);
     // setUpGetAllAnnotationsByUrlListener(request.url, annotations).then(function (e) {
