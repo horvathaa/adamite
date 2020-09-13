@@ -12,6 +12,12 @@ import SearchBar from './containers/SearchBar/SearchBar';
 import { Button } from 'react-bootstrap';
 
 class Sidebar extends React.Component {
+  constructor(props) {
+    super(props);
+    if (this.unsubscribeAnnotations) {
+      this.unsubscribeAnnotations();
+    }
+  }
   state = {
     url: '',
     annotations: [],
@@ -57,11 +63,11 @@ class Sidebar extends React.Component {
 
   };
 
-  componentWillMount() {
-    if (this.unsubscribeAnnotations) {
-      this.unsubscribeAnnotations();
-    }
-  }
+  // componentWillMount() {
+  //   if (this.unsubscribeAnnotations) {
+  //     this.unsubscribeAnnotations();
+  //   }
+  // }
 
   componentWillUnmount() {
     window.removeEventListener('scroll', this.handleScroll);
@@ -93,7 +99,7 @@ class Sidebar extends React.Component {
           })
         })
     }
-    if (scrollIsAtTheBottom && filterSelection.siteScope.includes('acrossWholeSite')) {
+    else if (scrollIsAtTheBottom && filterSelection.siteScope.includes('acrossWholeSite')) {
       this.filterAcrossWholeSite(filterSelection);
     }
   }
@@ -329,6 +335,13 @@ class Sidebar extends React.Component {
 
   };
 
+  resetView = () => {
+    this.setState({
+      searchState: false,
+      searchedAnnotations: []
+    })
+  }
+
   handleSearchBarInputText = (searchAnnotations) => {
     console.log("IN HERE!", searchAnnotations)
     this.setState({
@@ -545,13 +558,6 @@ class Sidebar extends React.Component {
 
     const inputText = searchBarInputText.toLowerCase();
     let filteredAnnotationsCopy = searchedAnnotations.length === 0 ? filteredAnnotations : searchedAnnotations;
-    //let filteredAnnotationsCopy = [];
-    // filteredAnnotations.forEach((anno) => {
-    //   const { content, anchorContent } = anno;
-    //   if (content.toLowerCase().includes(inputText) || anchorContent.toLowerCase().includes(inputText)) {
-    //     filteredAnnotationsCopy.push(anno);
-    //   }
-    // });
 
     filteredAnnotationsCopy = filteredAnnotationsCopy.sort((a, b) =>
       (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
@@ -585,6 +591,7 @@ class Sidebar extends React.Component {
                 searchBarInputText={searchBarInputText}
                 handleSearchBarInputText={this.handleSearchBarInputText}
                 searchCount={searchCount}
+                resetView={this.resetView}
               />
             </div>
             <div>

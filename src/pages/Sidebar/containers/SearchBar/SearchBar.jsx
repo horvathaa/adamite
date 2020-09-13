@@ -11,6 +11,7 @@ import '../../../../assets/img/SVGs/Issue.svg';
 import '../../../../assets/img/SVGs/location.svg';
 import Highlighter from "react-highlight-words";
 import ReactHtmlParser from 'react-html-parser';
+import { AiOutlineCloseCircle } from 'react-icons/ai';
 
 
 class SearchBar extends React.Component {
@@ -33,7 +34,7 @@ class SearchBar extends React.Component {
         return typeof sentence === "undefined" ? baseContent : sentence.match(new RegExp('(?<=<em>)(.*?)(?=<\/em>)', 'g'));
     }
 
-    componentWillMount() {
+    componentDidMount() {
         this.onSuggestionsFetchRequested = debounce(
             500,
             this.onSuggestionsFetchRequested
@@ -94,8 +95,8 @@ class SearchBar extends React.Component {
                                 />
                             </div>
                             <div className="react-autosuggest__tags">
-                                {suggestion.tags.map((items) => {
-                                    return <div className="shortCode">{items}</div>
+                                {suggestion.tags.map((items, idx) => {
+                                    return <div key={idx} className="shortCode">{items}</div>
                                 })}
                             </div>
                         </div>
@@ -126,6 +127,11 @@ class SearchBar extends React.Component {
                     this.props.handleSearchBarInputText(results)
                     //this.setState({ suggestions: results })
                 })
+        }
+        /* Backspace clear search */
+        else if (event.keyCode === 8 && input.value.length <= 1) {
+            console.log("clearing search result")
+            this.closeButton();
         }
     };
 
@@ -170,6 +176,11 @@ class SearchBar extends React.Component {
         this.setState({ suggestions: [] })
     }
 
+    closeButton = () => {
+        this.setState({ suggestions: [], value: '' });
+        this.props.resetView();
+    }
+
     render() {
         const { value, suggestions } = this.state
 
@@ -179,6 +190,16 @@ class SearchBar extends React.Component {
             value,
             onKeyDown: this.onKeyDown,
             onChange: this.onChange
+        }
+
+        let clearButton;
+        if (value.length > 0) {
+            clearButton = (
+                <AiOutlineCloseCircle
+                    className="close-icon"
+                    onClick={this.closeButton}
+                />
+            );
         }
 
         return (
@@ -192,6 +213,9 @@ class SearchBar extends React.Component {
                     renderSuggestion={this.renderSuggestion}
                     inputProps={inputProps}
                 />
+                <div className="close-icon-container">
+                    {clearButton}
+                </div>
             </div>
         )
     }

@@ -3,18 +3,6 @@ import { getElasticApiKey } from '../../../firebase/index';
 
 const path = 'https://f1a4257d658c481787cc581e18b9c97e.us-central1.gcp.cloud.es.io:9243/annotations/_search';
 
-function regenKey() {
-    return new Promise((resolve, reject) => {
-        getElasticApiKey().then(function (e) {
-            chrome.storage.sync.set({
-                'ElasticAPIKey': e,
-            }, function () {
-                resolve();
-            });
-        })
-    });
-}
-
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.msg === 'SEARCH_ELASTIC') {
         console.log("SEARCH_ELASTIC")
@@ -39,7 +27,22 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 console.log("Nothing was found", err);
             });
     }
+    else if (request.msg === 'REMOVE_PAGINATION_SEARCH_CACHE') {
+        removeQueryForScroll(request.url);
+    }
 });
+
+function regenKey() {
+    return new Promise((resolve, reject) => {
+        getElasticApiKey().then(function (e) {
+            chrome.storage.sync.set({
+                'ElasticAPIKey': e,
+            }, function () {
+                resolve();
+            });
+        })
+    });
+}
 
 function keyWrapper(passedFunction, args) {
     return new Promise((resolve, reject) => {
@@ -161,6 +164,16 @@ function retrieveQueryForScroll(url) {
                 console.log("this is the query for url", result[url])
                 resolve(result[url]);
             }
+        });
+    });
+}
+
+function removeQueryForScroll(url) {
+    chrome.storage.local.get({ users: [] }, function (items) {
+        // Remove one item at index 0
+        items.users.splice(0, 1);
+        chrome.storage.set(items, function () {
+            alert('Item deleted!');
         });
     });
 }
