@@ -33,7 +33,10 @@ class Reply extends Component {
     }
 
     transmitAdoptedToParent = () => {
-        this.handleAdopted().then(adoptedState => { this.props.notifyParentOfAdopted(this.props.annoId, this.props.replyId, adoptedState) })
+        this.handleAdopted().then(adoptedState => {
+            // this.props.notifyParentOfAdopted(this.props.annoId, this.props.replyId, adoptedState) 
+            this.props.answerIsAdopted(this.props.replyId, adoptedState);
+        })
     }
 
     handleAdopted = () => {
@@ -94,6 +97,7 @@ class Reply extends Component {
                                 </div>
                                 <div className="userProfileContainer">
                                     <div className="author">
+                                        {/* anonymous */}
                                         {author}
                                     </div>
                                     <div className="timestamp">
@@ -118,7 +122,7 @@ class Reply extends Component {
                             </div>
                             {xpath !== null && xpath !== undefined ? (
                                 <Anchor
-                                    annoId={this.props.annoId}
+                                    id={this.props.annoId}
                                     replyId={this.props.replyId}
                                     currentUrl={this.props.currentUrl}
                                     url={url}

@@ -21,6 +21,7 @@ class Anchor extends Component {
                     {
                         msg: 'ANNOTATION_FOCUS_ONCLICK',
                         id: this.props.id,
+                        replyId: this.props.replyId
                     }
                 );
             }
@@ -39,6 +40,7 @@ class Anchor extends Component {
                     {
                         msg: 'ANNOTATION_FOCUS',
                         id: this.props.id,
+                        replyId: this.props.replyId
                     }
                 );
             }
@@ -57,6 +59,7 @@ class Anchor extends Component {
                     {
                         msg: 'ANNOTATION_DEFOCUS',
                         id: this.props.id,
+                        replyId: this.props.replyId
                     }
                 );
             }

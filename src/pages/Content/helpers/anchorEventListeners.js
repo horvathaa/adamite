@@ -1,7 +1,7 @@
 
 //import './AnchorEngine/AnchorCreate';
 import { updateXpaths, removeSpans } from './AnchorEngine/AnchorDestroy';
-import { highlightRange } from './AnchorEngine/AnchorHighlight';
+import { highlightRange, highlightReplyRange } from './AnchorEngine/AnchorHighlight';
 import { createAnnotation, removeAnnotationWidget } from './AnchorEngine/AnchorCreate';
 
 
@@ -40,34 +40,38 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         if (annotationsOnPage.length) {
             annotationsOnPage.reverse().forEach(anno => {
                 if (anno.xpath !== undefined && anno.xpath !== null) {
-                    console.log(anno);
-                    highlightRange(anno)
+                    highlightRange(anno, anno.id)
                 }
                 if (anno.replies !== undefined && anno.replies.length) {
                     anno.replies.forEach(reply => {
                         if (reply.xpath !== undefined && reply.xpath !== null) {
-                            highlightRange(reply, anno.id);
+                            highlightRange(reply, anno.id, reply.replyId);
                         }
                     })
                 }
             });
         }
     }
+    else if (request.msg === 'ADD_REPLY_HIGHLIGHT') {
+        console.log('doin it');
+        const { xpath, id } = request.payload;
+        highlightReplyRange(xpath, id);
+    }
     else if (request.msg === 'REFRESH_HIGHLIGHTS') {
-        // console.log('in refresh');
+        console.log('in refresh');
         var span = document.getElementsByClassName("highlight-adamite-annotation");
-        removeSpans(span);
+        // removeSpans(span);
         // console.log("in here", request)
         const annotationsOnPage = request.payload;
         if (annotationsOnPage.length) {
             annotationsOnPage.reverse().forEach(anno => {
                 if (anno.xpath !== undefined && anno.xpath !== null) {
-                    highlightRange(anno)
+                    highlightRange(anno, anno.id)
                 }
                 if (anno.replies !== undefined && anno.replies.length) {
                     anno.replies.forEach(reply => {
                         if (reply.xpath !== undefined && reply.xpath !== null) {
-                            highlightRange(reply);
+                            highlightRange(reply, anno.id, reply.replyId);
                         }
                     })
                 }
@@ -75,21 +79,40 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
     }
     else if (request.msg === 'ANNOTATION_FOCUS_ONCLICK') {
-        var findSpan = document.getElementsByName(request.id);
+        let findSpan;
+        if (request.replyId !== undefined) {
+            findSpan = document.getElementsByName(request.id + "-" + request.replyId);
+        }
+        else {
+            findSpan = document.getElementsByName(request.id);
+        }
         if (findSpan.length === 0) {
+            console.log('len is 0?')
             return;
         }
         findSpan[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
     else if (request.msg === 'ANNOTATION_FOCUS') {
-        var findSpan = document.getElementsByName(request.id);
+        let findSpan;
+        if (request.replyId !== undefined) {
+            findSpan = document.getElementsByName(request.id + "-" + request.replyId);
+        }
+        else {
+            findSpan = document.getElementsByName(request.id);
+        }
         if (findSpan.length === 0) {
             return;
         }
         findSpan.forEach(e => e.style.backgroundColor = '#7cce7299');
     }
     else if (request.msg === 'ANNOTATION_DEFOCUS') {
-        var findSpan = document.getElementsByName(request.id);
+        let findSpan;
+        if (request.replyId !== undefined) {
+            findSpan = document.getElementsByName(request.id + "-" + request.replyId);
+        }
+        else {
+            findSpan = document.getElementsByName(request.id);
+        }
         if (findSpan.length === 0) {
             return;
         }

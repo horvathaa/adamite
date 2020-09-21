@@ -47,13 +47,47 @@ function anchorClick(e) {
     });
 }
 
+/*
+* Alternative way to use highlightRange
+*/
+export const highlightReplyRange = (xpath, annoId, replyId) => {
+    console.log('are we even IN HERE')
+    var wordPath = [];
+    // console.log("ANNO ")
+    // console.log(anno)
+    let newRange;
+    // console.log('sending in this anno', anno);
+    try {
+        newRange = xpathRange.toRange(xpath.start, xpath.startOffset, xpath.end, xpath.endOffset, document);
+    } catch (err) {
+        // console.log('got error- ', err);
+        return;
+    }
+    // console.log('anno', anno, 'range', newRange);
+    highlight(newRange, xpath.startOffset, xpath.endOffset, function (node, match, offset) {
+
+        var span = document.createElement("span");
+        if (annoId !== undefined && replyId !== undefined) {
+            span.setAttribute("name", annoId.toString() + "-" + replyId.toString());
+        }
+        // else {
+        //     span.setAttribute("name", anno.id.toString() + annoId.toString());
+        // }
+        span.textContent = match;
+        span.onclick = anchorClick;
+        span.className = "highlight-adamite-annotation";
+        node.parentNode.insertBefore(span, node.nextSibling);
+        node.parentNode.normalize()
+    });
+}
 
 /*
 * Finds Range and highlights each element
 */
-export const highlightRange = (anno, annoId) => {
+export const highlightRange = (anno, annoId, replyId) => {
 
     var wordPath = [];
+    console.log('highlighting', anno, annoId, replyId);
     // console.log("ANNO ")
     // console.log(anno)
     let newRange;
@@ -72,8 +106,11 @@ export const highlightRange = (anno, annoId) => {
     highlight(newRange, anno.xpath.startOffset, anno.xpath.endOffset, function (node, match, offset) {
 
         var span = document.createElement("span");
-        if (anno.id !== undefined) {
-            span.setAttribute("name", anno.id.toString());
+        if (annoId !== undefined && replyId === undefined) {
+            span.setAttribute("name", annoId.toString());
+        }
+        else if (annoId !== undefined && replyId !== undefined) {
+            span.setAttribute("name", annoId.toString() + "-" + replyId.toString());
         }
         // else {
         //     span.setAttribute("name", anno.id.toString() + annoId.toString());

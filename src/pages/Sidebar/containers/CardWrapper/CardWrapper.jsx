@@ -85,19 +85,37 @@ export default class CardWrapper extends React.Component {
     }
 
     dropDownSelection = (option) => {
-        this.setState({ annotationType: option.value });
+        if (option.value === 'Normal') {
+            this.setState({ annotationType: "default" });
+        }
+        else if (option.value === 'Empty') {
+            this.setState({ annotationType: "highlight" });
+        }
+        else {
+            this.setState({ annotationType: option.value });
+        }
     }
 
     render() {
 
         const options = [
-            'Default', 'To-do', 'Question', 'Highlight', 'Navigation', 'Issue'
+            'Normal', 'To-do', 'Question', 'Empty', 'Navigation', 'Issue'
         ];
         const defaultOption = options[0];
 
 
         const { annotationContent, tags, elseContent, id, annotationType } = this.state;
         const splitButtonText = this.state.private ? "Post to Only Me" : "Post to Public";
+        let annoTypeDropDownValue;
+        if (annotationType === 'default') {
+            annoTypeDropDownValue = 'normal';
+        }
+        else if (annotationType === 'highlight') {
+            annoTypeDropDownValue = 'empty';
+        }
+        else {
+            annoTypeDropDownValue = annotationType;
+        }
 
         const CardEditor = (<React.Fragment>
             {this.props.edit ? (
@@ -117,7 +135,7 @@ export default class CardWrapper extends React.Component {
                         <div className="Tag-Container">
                             <div className="row">
                                 <div className="Dropdown-Col">
-                                    <Dropdown options={options} onChange={this.dropDownSelection} value={annotationType} />
+                                    <Dropdown options={options} onChange={this.dropDownSelection} value={annoTypeDropDownValue} />
                                 </div>
                                     &nbsp; &nbsp;
                                     <button className="btn Cancel-Button" onClick={this.cancelPassthrough}>

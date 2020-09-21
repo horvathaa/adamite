@@ -4,6 +4,7 @@ import TagsInput from 'react-tagsinput';
 import classNames from 'classnames';
 import '../Annotation.css';
 import './ReplyEditor.css';
+import '../../../CardWrapper/CardWrapper.css';
 import addAnchor from '../../../../../../assets/img/SVGs/NewAnchor2.svg';
 
 class ReplyEditor extends Component {
@@ -135,12 +136,25 @@ class ReplyEditor extends Component {
                     offsets: this.state.offsets
                 }
             });
+            if (this.state.xpath !== undefined) {
+                chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+                    chrome.tabs.sendMessage(tabs[0].id, {
+                        msg: 'ADD_REPLY_HIGHLIGHT',
+                        payload: {
+                            replyId: this.props.replies !== undefined ? this.props.replies.length : 0,
+                            id: this.props.id,
+                            xpath: this.state.xpath
+                        }
+                    });
+                });
+            }
         }
         this.props.finishReply();
     }
 
     render() {
         const { showQuestionAnswerInterface, edit } = this.props;
+        const { anchor } = this.state;
         let content = undefined;
         if (edit !== undefined && edit) {
             content = this.props.replyContent;
@@ -151,6 +165,11 @@ class ReplyEditor extends Component {
                 <div className="ReplyHeader">
                     <hr className="divider" id="editor" />
                 </div>
+                {anchor !== "" ? (
+                    <div className="SelectedTextContainer">
+                        {anchor}
+                    </div>
+                ) : (null)}
                 <div className="ReplyField">
                     <RichTextEditor annotationContent={content} annotationChangeHandler={this.replyChangeHandler} />
                     <div className="Tag-Container">

@@ -140,7 +140,7 @@ export const createAnnotation = async ({
     childAnchor,
     pinned: AnnotationType === 'question' || AnnotationType === 'to-do',
     replies: [],
-    private: true, //just for user study - should be set to 'isPrivate'
+    private: isPrivate, //just for user study - should be set to 'isPrivate'
     adopted: false
   };
   return db.collection(DB_COLLECTIONS.ANNOTATIONS).add(newAnnotation);

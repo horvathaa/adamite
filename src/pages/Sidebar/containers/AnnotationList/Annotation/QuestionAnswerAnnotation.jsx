@@ -79,6 +79,20 @@ class QuestionAnswerAnnotation extends Component {
         });
     }
 
+    answerIsAdopted = (replyId, adoptedState) => {
+        this.props.transmitPinToParent()
+        chrome.runtime.sendMessage({
+            msg: 'UPDATE_QUESTION',
+            from: 'content',
+            payload: {
+                id: this.props.id,
+                isClosed: true,
+                howClosed: "Answered"
+            }
+        });
+        this.props.notifyParentOfAdopted(this.props.id, replyId, adoptedState);
+    }
+
 
 
 
@@ -286,14 +300,15 @@ class QuestionAnswerAnnotation extends Component {
                             <div className="SeparationRow">
                                 <div className="ShowHideReplies" >
                                     <div className="ExpandCollapse">
-                                        <img src={expand} id="ShowReplies" className="Icon" alt="Adopted reply" />
+                                        <img src={expand} id="ShowReplies" className="Icon" alt="Answer" />
                                     </div>
-                            Adopted Reply
+                            Answer
                         </div>
                                 <hr className="divider" />
                             </div>
                             {showAdoptedAnchor && <Anchor
-                                id={replies[adopted].replyId}
+                                id={this.props.id}
+                                replyId={replies[adopted].replyId}
                                 currentUrl={currentUrl}
                                 url={replies[adopted].url}
                                 collapsed={collapsed}
@@ -340,7 +355,8 @@ class QuestionAnswerAnnotation extends Component {
                                             url={reply.url}
                                             offsets={reply.offsets}
                                             currentUrl={currentUrl}
-                                            notifyParentOfAdopted={this.props.notifyParentOfAdopted}
+                                            answerIsAdopted={this.answerIsAdopted}
+                                            // notifyParentOfAdopted={this.props.notifyParentOfAdopted}
                                             adopted={this.props.adopted === reply.replyId}
                                         />
                                     )
