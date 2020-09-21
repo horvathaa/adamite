@@ -322,7 +322,7 @@ class Filter extends React.Component {
                             )}
                     </div>
                 </div>
-                <div className="SearchByTag">
+                {/* <div className="SearchByTag">
                     Search by Tag
                     <div>
                         <input className="Input" placeholder="Type tag here" onChange={this.updateSearchByTag} />
@@ -330,7 +330,7 @@ class Filter extends React.Component {
                             Search
                     </button>
                     </div>
-                </div>
+                </div> */}
                 <div className="Revert">
                     <button className="RevertFilterButton" onClick={this.revertToDefaultFilter}>
                         Revert to Default Filter
