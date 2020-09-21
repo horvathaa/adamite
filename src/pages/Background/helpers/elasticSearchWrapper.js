@@ -4,6 +4,7 @@ import { getElasticApiKey } from '../../../firebase/index';
 const path = 'https://f1a4257d658c481787cc581e18b9c97e.us-central1.gcp.cloud.es.io:9243/annotations/_search';
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    console.log("THIS IS THE MESSAGE", request.msg)
     if (request.msg === 'SEARCH_ELASTIC') {
         console.log("SEARCH_ELASTIC")
         keyWrapper(search, { userSearch: request.userSearch, query: searchBarQuery(request.userSearch, true), url: request.url, successFunction: searchBarSuccess })
@@ -28,6 +29,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             });
     }
     else if (request.msg === 'REMOVE_PAGINATION_SEARCH_CACHE') {
+        console.log("REMOVE CACHE");
         removeQueryForScroll(request.url);
     }
 });
@@ -169,13 +171,32 @@ function retrieveQueryForScroll(url) {
 }
 
 function removeQueryForScroll(url) {
-    chrome.storage.local.get({ users: [] }, function (items) {
-        // Remove one item at index 0
-        items.users.splice(0, 1);
-        chrome.storage.set(items, function () {
-            alert('Item deleted!');
-        });
+    console.log("DELETEING ");
+    chrome.storage.local.get([url], function (result) {
+        if (typeof result === "undefined" || (Object.keys(result).length === 0 && result.constructor === Object)) {
+            console.log("reject here baby");
+        }
+        else {
+            chrome.storage.local.remove(url)
+        }
     });
+
+
+    // chrome.storage.local.get(null, function (items) {
+    //     for (var key in items) {
+    //         if (key.startsWith('url')) { // or key.includes or whatever
+    //             chrome.storage.local.remove(key)
+    //         }
+    //     }
+    // })
+    // chrome.storage.local.get({ url: [] }, function (items) {
+    //     console.log("here are the items", items)
+    //     // Remove one item at index 0
+    //     // items.users.splice(0, 1);
+    //     // chrome.storage.set(items, function () {
+    //     //     alert('Item deleted!');
+    //     // });
+    // });
 }
 
 function axiosWrapper(path, query, AuthStr, args, successFunc) {

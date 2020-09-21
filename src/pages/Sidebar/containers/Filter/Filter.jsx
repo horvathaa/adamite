@@ -214,7 +214,7 @@ class Filter extends React.Component {
                         />
                     </div>
                 </div>
-                <div className="SiteScope">
+                {/* <div className="SiteScope">
                     Location
                     <div className="SiteScopeRow">
                         <div className="SiteScopeButtonContainer">
@@ -232,7 +232,7 @@ class Filter extends React.Component {
                         </button>
                         </div>
                     </div>
-                </div>
+                </div> */}
                 <div className="AnnotationTypeFilter">
                     Annotation Type &nbsp; &nbsp;
                         {this.selection.annoType.length <= 5 ? (

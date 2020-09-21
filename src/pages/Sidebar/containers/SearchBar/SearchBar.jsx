@@ -1,6 +1,7 @@
 import React from 'react'
 import Autosuggest from 'react-autosuggest'
 import { debounce } from 'throttle-debounce'
+import { Dropdown } from 'react-bootstrap';
 import '../../../../assets/img/SVGs/search.svg';
 import './SearchBar.css';
 import '../../../../assets/img/SVGs/Default.svg';
@@ -11,7 +12,7 @@ import '../../../../assets/img/SVGs/Issue.svg';
 import '../../../../assets/img/SVGs/location.svg';
 import Highlighter from "react-highlight-words";
 import ReactHtmlParser from 'react-html-parser';
-import { AiOutlineCloseCircle } from 'react-icons/ai';
+import { AiOutlineSearch, AiOutlineCloseCircle } from 'react-icons/ai';
 
 
 class SearchBar extends React.Component {
@@ -21,7 +22,8 @@ class SearchBar extends React.Component {
     }
     state = {
         value: '',
-        suggestions: []
+        suggestions: [],
+        dropDownValue: 'Global'
     }
 
     // const SearchBar = ({
@@ -50,6 +52,8 @@ class SearchBar extends React.Component {
         if (type === 'issue') return 'Issue.svg';
     }
 
+
+
     renderSuggestion = suggestion => {
         var searchAnchorContent = this.state.value.split(" ");
         var anchorContent = suggestion.anchorContent;
@@ -66,40 +70,40 @@ class SearchBar extends React.Component {
 
         return (
             <React.Fragment>
-                <div className="result">
-                    <div className="autosuggest-row">
-                        <div className="autosuggest-col-sm">
-                            <img className="react-autosuggest__icon" src={chrome.extension.getURL(this.iconSelector(suggestion.type))} alt="question annnotation" />
-                        </div>
-                        <div className="vr">&nbsp;</div>
-                        <div className="autosuggest-col-6">
-                            <div className="autosuggest-row-inner">
-                                <div className="autosuggest-col-6-icon">
-                                    <img className="react-autosuggest__anchor-content-icon" src={chrome.extension.getURL("location.svg")} alt="question annnotation" />
-                                </div>
-                                <div className="autosuggest-col-6">
-                                    <Highlighter
-                                        highlightClassName="highlight-adamite-search-suggest"
-                                        searchWords={searchAnchorContent}
-                                        autoEscape={true}
-                                        textToHighlight={suggestion.hasOwnProperty("highlight") && suggestion.highlight.hasOwnProperty("anchorContent") ? suggestion.highlight.anchorContent.replace(new RegExp('(<em>)|(<\/em>)', 'g'), '') : suggestion.anchorContent}
-                                    />
-                                </div>
+                <div className="autosuggest-row">
+                    <div className="autosuggest-col-sm">
+                        <img className="react-autosuggest__icon" src={chrome.extension.getURL(this.iconSelector(suggestion.type))} alt="question annnotation" />
+                    </div>
+                    <div className="vr">&nbsp;</div>
+                    <div className="autosuggest-col-6">
+                        <div className="autosuggest-row-inner">
+                            <div className="autosuggest-col-6-icon">
+                                <img className="react-autosuggest__anchor-content-icon" src={chrome.extension.getURL("location.svg")} alt="question annnotation" />
                             </div>
-                            <div className="react-autosuggest__user-content">
+                            <div className="autosuggest-col-6">
                                 <Highlighter
-                                    highlightClassName="YourHighlightClass"
-                                    searchWords={searchContent}
+                                    highlightClassName="highlight-adamite-search-suggest"
+                                    searchWords={searchAnchorContent}
                                     autoEscape={true}
-                                    textToHighlight={content}
+                                    textToHighlight={suggestion.hasOwnProperty("highlight") && suggestion.highlight.hasOwnProperty("anchorContent") ? suggestion.highlight.anchorContent.replace(new RegExp('(<em>)|(<\/em>)', 'g'), '') : suggestion.anchorContent}
                                 />
                             </div>
+                        </div>
+                        <div className="react-autosuggest__user-content">
+                            <Highlighter
+                                highlightClassName="YourHighlightClass"
+                                searchWords={searchContent}
+                                autoEscape={true}
+                                textToHighlight={content}
+                            />
+                        </div>
+                        {suggestion.tags.length > 0 && (
                             <div className="react-autosuggest__tags">
                                 {suggestion.tags.map((items, idx) => {
                                     return <div key={idx} className="shortCode">{items}</div>
                                 })}
                             </div>
-                        </div>
+                        )}
                     </div>
                 </div>
             </React.Fragment >
@@ -124,7 +128,7 @@ class SearchBar extends React.Component {
             this.ElasticSearch2(input.value)
                 .then(res => {
                     const results = res.data.hits.hits.map(h => h._source)
-                    this.props.handleSearchBarInputText(results)
+                    this.props.handleSearchBarInputText({ suggestion: results, searchState: true })
                     //this.setState({ suggestions: results })
                 })
         }
@@ -140,8 +144,9 @@ class SearchBar extends React.Component {
     }
 
     onSuggestionSelected = (event, { suggestion, suggestionValue, suggestionIndex, sectionIndex, method }) => {
-        console.log("suggestions selected", suggestion, event.target.value, method)
-        this.props.handleSearchBarInputText([suggestion])
+        console.log("suggestions selected", suggestion, event.target.value, method);
+        this.removeSearchCache();
+        this.props.handleSearchBarInputText({ suggestion: [suggestion], searchState: false })
     }
 
 
@@ -176,22 +181,29 @@ class SearchBar extends React.Component {
         this.setState({ suggestions: [] })
     }
 
+    removeSearchCache = () => {
+        chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+            let url = tabs[0].url;
+            chrome.runtime.sendMessage({
+                msg: 'REMOVE_PAGINATION_SEARCH_CACHE',
+                url: url,
+            });
+        });
+    }
+
     closeButton = () => {
         this.setState({ suggestions: [], value: '' });
+        this.removeSearchCache();
         this.props.resetView();
     }
 
-    render() {
+    changeValue = (text) => {
+        console.log("new value", text)
+        this.setState({ dropDownValue: text })
+    }
+
+    renderInputComponent = inputProps => {
         const { value, suggestions } = this.state
-
-        const inputProps = {
-            ref: this.inputRef,
-            placeholder: 'Search annotation content here',
-            value,
-            onKeyDown: this.onKeyDown,
-            onChange: this.onChange
-        }
-
         let clearButton;
         if (value.length > 0) {
             clearButton = (
@@ -203,9 +215,71 @@ class SearchBar extends React.Component {
         }
 
         return (
-            <div className="SearchBarContainer">
+            <React.Fragment >
+                <div className={`SearchBarContainer ${suggestions.length === 0 ? '' : 'SearchBarContainer--open'}`} >
+                    <div>
+                        <AiOutlineSearch />
+                    </div>
+                    <input {...inputProps} />
+                    <div className="close-icon-container">
+                        {clearButton}
+                    </div>
+                    <div className="vertical-bar"></div>
+                    <Dropdown alignRight>
+                        <Dropdown.Toggle id="dropdown-basic" title={this.state.dropDownValue} className="SearchBar--Dropdown">
+                            {this.state.dropDownValue}
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu >
+                            <Dropdown.Item >
+                                <div onClick={(e) => this.changeValue(e.target.textContent)}>
+                                    Global
+                            </div>
+                            </Dropdown.Item>
+                            <Dropdown.Item >
+                                <div onClick={(e) => this.changeValue(e.target.textContent)}>
+                                    On Page
+                            </div>
+                            </Dropdown.Item>
+                            <Dropdown.Item >
+                                <div onClick={(e) => this.changeValue(e.target.textContent)}>
+                                    Across Site
+                            </div>
+                            </Dropdown.Item>
+                        </Dropdown.Menu>
+                    </Dropdown>
+                </div>
+            </React.Fragment >
+        );
+    };
+
+    render() {
+        const { value, suggestions } = this.state
+
+        const inputProps = {
+            ref: this.inputRef,
+            placeholder: 'Search annotation content here',
+            value,
+            width: '500000px',
+            onKeyDown: this.onKeyDown,
+            onChange: this.onChange
+        }
+
+
+        // let clearButton;
+        // if (value.length > 0) {
+        //     clearButton = (
+        //         <AiOutlineCloseCircle
+        //             className="close-icon"
+        //             onClick={this.closeButton}
+        //         />
+        //     );
+        // }
+
+        return (
+            <div className="outerSearchBar">
                 <Autosuggest
                     suggestions={suggestions}
+                    renderInputComponent={this.renderInputComponent}
                     onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
                     onSuggestionsClearRequested={this.onSuggestionsClearRequested}
                     onSuggestionSelected={this.onSuggestionSelected}
@@ -213,10 +287,7 @@ class SearchBar extends React.Component {
                     renderSuggestion={this.renderSuggestion}
                     inputProps={inputProps}
                 />
-                <div className="close-icon-container">
-                    {clearButton}
-                </div>
-            </div>
+            </div >
         )
     }
 }

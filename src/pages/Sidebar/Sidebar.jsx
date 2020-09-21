@@ -11,6 +11,7 @@ import FilterSummary from './containers/Filter/FilterSummary';
 import SearchBar from './containers/SearchBar/SearchBar';
 import { Button } from 'react-bootstrap';
 
+
 class Sidebar extends React.Component {
   constructor(props) {
     super(props);
@@ -345,9 +346,8 @@ class Sidebar extends React.Component {
   handleSearchBarInputText = (searchAnnotations) => {
     console.log("IN HERE!", searchAnnotations)
     this.setState({
-      searchState: true,
-      // searchBarInputText: inputText,
-      searchedAnnotations: searchAnnotations
+      searchState: searchAnnotations.searchState,
+      searchedAnnotations: searchAnnotations.suggestion
     });
   };
 
