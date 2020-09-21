@@ -79,6 +79,20 @@ class QuestionAnswerAnnotation extends Component {
         });
     }
 
+    answerIsAdopted = (replyId, adoptedState) => {
+        this.props.transmitPinToParent()
+        chrome.runtime.sendMessage({
+            msg: 'UPDATE_QUESTION',
+            from: 'content',
+            payload: {
+                id: this.props.id,
+                isClosed: true,
+                howClosed: "Answered"
+            }
+        });
+        this.props.notifyParentOfAdopted(this.props.id, replyId, adoptedState);
+    }
+
 
 
 
@@ -87,7 +101,7 @@ class QuestionAnswerAnnotation extends Component {
             childAnchor, currentUrl, url, anchor, xpath, tags, annotationType,
             annotationContent, editing, replies, isPrivate, isClosed, howClosed, adopted } = this.props;
         const { replying, showReplies } = this.state;
-        const closedStrings = ['Open Question', 'No Longer Relevant', 'Answered'];
+        const closedStrings = ['Unanswered Question', 'No Longer Relevant', 'Answered'];
         let replyCountString = "";
         if (replies !== undefined) {
             if (replies.length > 1) {
@@ -101,13 +115,13 @@ class QuestionAnswerAnnotation extends Component {
         let closeOutText = "";
         if (isClosed !== undefined) {
             if (!isClosed) {
-                closeOutText = "Open Question";
+                closeOutText = "Unanswered Question";
             }
             else {
                 closeOutText = howClosed;
             }
         } else {
-            closeOutText = "Open Question";
+            closeOutText = "Unanswered Question";
         }
         let adoptedContent, showAdoptedAnchor;
         if (adopted === 0 || adopted) {
@@ -140,31 +154,32 @@ class QuestionAnswerAnnotation extends Component {
                         SelectedAnnotationContainer: this.state.selected,
                     })}
                 >
-                    {!collapsed ? (
-                        <React.Fragment>
-                            <div className="annotationTypeBadgeContainer">
-                                <div className="annotationTypeBadge row2">
-                                    <div className="annotationTypeBadge col2">
-                                        <div className="badgeContainer">
-                                            {isClosed ? (
-                                                <img src={Question} alt='closed question badge' />
-                                            ) : (
-                                                    <img src={openQuestion} alt='open question type badge' />
-                                                )
-                                            }
+                    <div className="annotationTypeBadgeContainer">
+                        <div className="annotationTypeBadge row2">
+                            <div className="annotationTypeBadge col2">
+                                <div className="badgeContainer">
+                                    {isClosed ? (
+                                        <img src={Question} alt='closed question badge' />
+                                    ) : (
+                                            <img src={openQuestion} alt='open question type badge' />
+                                        )
+                                    }
 
-                                        </div>
-                                        <div className="badgeContainer">
-                                            {isPrivate ? (
-                                                <img src={view} alt='private badge' />
-                                            ) :
-                                                (<img src={viewPublic} alt='public badge' />)}
-
-                                        </div>
-                                    </div>
+                                </div>
+                                <div className="badgeContainer">
+                                    {isPrivate ? (
+                                        <img src={view} alt='private badge' />
+                                    ) :
+                                        (<img src={viewPublic} alt='public badge' />)}
 
                                 </div>
                             </div>
+
+                        </div>
+                    </div>
+                    {!collapsed ? (
+                        <React.Fragment>
+
                             <div className={" container " + classNames({
                                 Header: true,
                                 Truncated: collapsed,
@@ -285,14 +300,15 @@ class QuestionAnswerAnnotation extends Component {
                             <div className="SeparationRow">
                                 <div className="ShowHideReplies" >
                                     <div className="ExpandCollapse">
-                                        <img src={expand} id="ShowReplies" className="Icon" alt="Adopted reply" />
+                                        <img src={expand} id="ShowReplies" className="Icon" alt="Answer" />
                                     </div>
-                            Adopted Reply
+                            Answer
                         </div>
                                 <hr className="divider" />
                             </div>
                             {showAdoptedAnchor && <Anchor
-                                id={replies[adopted].replyId}
+                                id={this.props.id}
+                                replyId={replies[adopted].replyId}
                                 currentUrl={currentUrl}
                                 url={replies[adopted].url}
                                 collapsed={collapsed}
@@ -339,7 +355,8 @@ class QuestionAnswerAnnotation extends Component {
                                             url={reply.url}
                                             offsets={reply.offsets}
                                             currentUrl={currentUrl}
-                                            notifyParentOfAdopted={this.props.notifyParentOfAdopted}
+                                            answerIsAdopted={this.answerIsAdopted}
+                                            // notifyParentOfAdopted={this.props.notifyParentOfAdopted}
                                             adopted={this.props.adopted === reply.replyId}
                                         />
                                     )

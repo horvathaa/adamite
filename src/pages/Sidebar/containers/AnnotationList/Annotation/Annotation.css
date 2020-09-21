@@ -342,7 +342,7 @@
 }
 
 .AnchorIcon.hover, .AnchorIcon:hover {
-  filter: brightness(.5);
+  filter: brightness(.2);
   color: RED;
 }
 

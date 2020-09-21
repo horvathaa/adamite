@@ -46,8 +46,9 @@ class Annotation extends Component {
   async componentDidMount() {
     document.addEventListener('keydown', this.keydown, false);
     this.updateData();
-    let authorDoc = getUserProfileById(this.state.authorId);
-    let user = "";
+    let authorDoc = getUserProfileById(this.props.authorId);
+    // let user = "anonymous";
+    let user;
     await authorDoc.get().then(function (doc) {
       if (doc.exists) {
         user = doc.data().email.substring(0, doc.data().email.indexOf('@'));
@@ -91,11 +92,11 @@ class Annotation extends Component {
   }
 
   handleDoneToDo(id) {
-    updateAnnotationById(id, {
-      createdTimestamp: new Date().getTime(),
-      trashed: true
-    }
-    );
+    chrome.runtime.sendMessage({
+      msg: 'FINISH_TODO',
+      from: 'content',
+      payload: { id }
+    });
   }
 
   handleExpertReview = () => {
@@ -108,11 +109,11 @@ class Annotation extends Component {
 
   handleUnArchive(e) {
     let id = e.target.value;
-    updateAnnotationById(id, {
-      createdTimestamp: new Date().getTime(),
-      trashed: false
-    }
-    );
+    chrome.runtime.sendMessage({
+      msg: 'UNARCHIVE',
+      from: 'content',
+      payload: { id }
+    });
   }
 
   handleTrashClick(id) {
@@ -158,13 +159,16 @@ class Annotation extends Component {
   };
 
   submitButtonHandler = (CardWrapperState, id) => {
-    updateAnnotationById(CardWrapperState.id, {
-      content: CardWrapperState.annotationContent,
-      type: CardWrapperState.annotationType.toLowerCase(),
-      tags: CardWrapperState.tags,
-      deletedTimestamp: 0,
-      createdTimestamp: new Date().getTime(),
-      private: CardWrapperState.private
+    chrome.runtime.sendMessage({
+      msg: 'ANNOTATION_UPDATED',
+      from: 'content',
+      payload: {
+        id: CardWrapperState.id,
+        type: CardWrapperState.annotationType.toLowerCase(),
+        content: CardWrapperState.annotationContent,
+        tags: CardWrapperState.tags,
+        isPrivate: CardWrapperState.private
+      }
     });
     this.setState({ editing: false });
   }
@@ -266,7 +270,9 @@ class Annotation extends Component {
         cancelButtonHandler={this.cancelButtonHandler}
         submitButtonHandler={this.submitButtonHandler}
         handleExpandCollapse={this.handleExpandCollapse}
+        isPrivate={isPrivate}
         replies={replies}
+        notifyParentOfAdopted={this.notifyParentOfAdopted}
       />);
     }
     else if (annotationType === 'to-do' && !trashed && currentUser.uid === authorId) {
@@ -297,6 +303,8 @@ class Annotation extends Component {
         submitButtonHandler={this.submitButtonHandler}
         handleExpandCollapse={this.handleExpandCollapse}
         replies={replies}
+        isPrivate={isPrivate}
+        notifyParentOfAdopted={this.notifyParentOfAdopted}
       />);
     }
     else if (annotationType === 'navigation') {
@@ -330,6 +338,8 @@ class Annotation extends Component {
           submitButtonHandler={this.submitButtonHandler}
           handleExpandCollapse={this.handleExpandCollapse}
           replies={replies}
+          isPrivate={isPrivate}
+          notifyParentOfAdopted={this.notifyParentOfAdopted}
         />
       );
     }
@@ -398,6 +408,7 @@ class Annotation extends Component {
           submitButtonHandler={this.submitButtonHandler}
           handleExpandCollapse={this.handleExpandCollapse}
           replies={replies}
+          isPrivate={isPrivate}
         />
       );
     }

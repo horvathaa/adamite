@@ -29,6 +29,7 @@ class Sidebar extends React.Component {
     showPinned: false,
     pinnedAnnos: [],
     annotatingPage: false,
+    showClearClickedAnnotation: false,
     askAboutRelatedAnnos: false,
     relatedQuestions: [],
     pageName: '',
@@ -55,14 +56,19 @@ class Sidebar extends React.Component {
 
   };
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     if (this.unsubscribeAnnotations) {
       this.unsubscribeAnnotations();
     }
   }
 
   componentWillUnmount() {
+    // console.log('in unmount????');
     window.removeEventListener('scroll', this.handleScroll);
+    chrome.runtime.sendMessage({
+      from: 'content',
+      msg: 'UNSUBSCRIBE'
+    });
   }
 
   handleScroll = (event, filterSelection) => {
@@ -110,6 +116,7 @@ class Sidebar extends React.Component {
     })
 
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+      // console.log('caught this message', request, sender);
       if (
         request.from === 'background' &&
         request.msg === 'USER_AUTH_STATUS_CHANGED'
@@ -182,6 +189,7 @@ class Sidebar extends React.Component {
             return target.includes(element.id);
           })
         });
+        this.setState({ showClearClickedAnnotation: true });
       } else if (
         request.from === 'background' &&
         request.msg === 'TOGGLE_SIDEBAR'
@@ -198,19 +206,26 @@ class Sidebar extends React.Component {
         request.msg === 'CONTENT_UPDATED'
       ) {
         this.setState({ annotations: request.payload })
-        let mostRecentAnno, secondMostRecentAnno;
-        const filteredAnnotationsCopy = request.payload.sort((a, b) =>
-          (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
-        );
-        if (this.state.filteredAnnotations.length) {
-          mostRecentAnno = filteredAnnotationsCopy[0];
-          secondMostRecentAnno = filteredAnnotationsCopy[1];
-          if (mostRecentAnno.type === 'question' && secondMostRecentAnno.type === 'question' && !secondMostRecentAnno.isClosed) {
-            this.setState({ askAboutRelatedAnnos: true });
-          }
-        }
+        // let mostRecentAnno, secondMostRecentAnno;
+        // const filteredAnnotationsCopy = request.payload.sort((a, b) =>
+        //   (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
+        // );
+        // if (this.state.filteredAnnotations.length) {
+        //   mostRecentAnno = filteredAnnotationsCopy[0];
+        //   secondMostRecentAnno = filteredAnnotationsCopy[1];
+        //   if (mostRecentAnno.type === 'question' && secondMostRecentAnno.type === 'question' && !secondMostRecentAnno.isClosed) {
+        //     this.setState({ askAboutRelatedAnnos: true });
+        //   }
+        // }
         this.requestFilterUpdate();
         // console.log("HERE is johnnnnn", request.payload)
+      }
+      else if (request.from === 'background' && request.msg === 'FILTER_BY_TAG') {
+        this.setState({
+          filteredAnnotations: this.state.annotations.filter(anno => {
+            return this.checkTags(anno, [request.payload]);
+          })
+        });
       }
     });
   }
@@ -280,8 +295,14 @@ class Sidebar extends React.Component {
       this.setState({ filteredAnnotations: remainingAnnos });
       this.state.pinnedAnnos.push(annotation[0]);
     }
+    else if (this.containsObjectWithId(id, this.state.pinnedAnnos)) {
+      // console.log(annotation);
+      this.setState({ pinnedAnnos: this.state.pinnedAnnos.filter(anno => anno.id !== id) });
+      return;
+    }
     if (!pinned) {
-      if (annotation[0].childAnchor.length) {
+      // console.log(annotation);
+      if (annotation[0].childAnchor !== undefined && annotation[0].childAnchor.length) {
         const idArray = [];
         annotation[0].childAnchor.forEach(anno => {
           idArray.push(anno.id);
@@ -390,6 +411,7 @@ class Sidebar extends React.Component {
   }
 
   checkTags(annotation, tags) {
+    // console.log('check tag', annotation, tags);
     if (!tags.length || annotation.pinned) {
       return true;
     }
@@ -453,7 +475,7 @@ class Sidebar extends React.Component {
     if (filterSelection.siteScope.includes('onPage') && !filterSelection.siteScope.includes('acrossWholeSite')) {
       this.setState({
         filteredAnnotations:
-          this.state.filteredAnnotations.filter(annotation => {
+          this.state.annotations.filter(annotation => {
             return this.checkSiteScope(annotation, filterSelection.siteScope) &&
               this.checkUserScope(annotation, filterSelection.userScope) &&
               this.checkAnnoType(annotation, filterSelection.annoType) &&
@@ -515,7 +537,7 @@ class Sidebar extends React.Component {
       return null;
     }
 
-    console.log('bad bad', this.state.relatedQuestions);
+    // console.log('bad bad', this.state.relatedQuestions);
     const inputText = searchBarInputText.toLowerCase();
     let filteredAnnotationsCopy = [];
     filteredAnnotations.forEach((anno) => {
@@ -652,6 +674,13 @@ class Sidebar extends React.Component {
                     notifyParentOfPinning={this.handlePinnedAnnotation} />
                 )}
             </div>
+            {this.state.showClearClickedAnnotation && (
+              <div className="userQuestionButtonContainer">
+                <div className="ModifyFilter userQuestions" onClick={_ => { this.setState({ showClearClickedAnnotation: false }); this.setState({ filteredAnnotations: this.state.annotations }) }}>
+                  Clear Selected Annotation
+                </div>
+              </div>
+            )}
           </div>
         )
         }

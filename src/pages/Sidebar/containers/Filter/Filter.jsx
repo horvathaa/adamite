@@ -247,7 +247,7 @@ class Filter extends React.Component {
                             <button value="default"
                                 className={classNames({ filterButton: true, selected: this.selection.annoType.includes('default') })}
                                 onClick={value => this.updateAnnoType(value)}>
-                                Default
+                                Normal
                         </button>
                         </div>
                         <div className="AnnoTypeButtonContainer">
@@ -268,7 +268,7 @@ class Filter extends React.Component {
                             <button value="highlight"
                                 className={classNames({ filterButton: true, selected: this.selection.annoType.includes('highlight') })}
                                 onClick={value => this.updateAnnoType(value)}>
-                                Highlight
+                                Empty
                         </button>
                         </div>
                         <div className="AnnoTypeButtonContainer">

@@ -7,7 +7,7 @@ import profile from '../../../../../assets/img/SVGs/Profile.svg';
 import reply from '../../../../../assets/img/SVGs/Reply.svg';
 import outlinepin from '../../../../../assets/img/SVGs/pin.svg';
 import fillpin from '../../../../../assets/img/SVGs/pin_2.svg';
-import newAnchor from '../../../../../assets/img/SVGs/Add_anchor.svg';
+import newAnchor from '../../../../../assets/img/SVGs/NewAnchor2.svg';
 import edit from '../../../../../assets/img/SVGs/edit.svg';
 import trash from '../../../../../assets/img/SVGs/delet.svg';
 import expand from '../../../../../assets/img/SVGs/expand.svg'
@@ -16,6 +16,8 @@ import AnchorList from './AnchorList/AnchorList';
 import Anchor from './AnchorList/Anchor';
 import Reply from './Reply/Reply';
 import ReplyEditor from './Reply/ReplyEditor';
+import view from '../../../../../assets/img/SVGs/view.svg';
+import viewPublic from '../../../../../assets/img/SVGs/view_public.svg';
 
 class IssueAnnotation extends Component {
 
@@ -52,7 +54,7 @@ class IssueAnnotation extends Component {
     render() {
         const { idx, id, collapsed, author, pin, currentUser, authorId,
             childAnchor, currentUrl, url, anchor, xpath, tags, annotationType,
-            annotationContent, editing, replies } = this.props;
+            annotationContent, editing, replies, isPrivate } = this.props;
         const { replying, showReplies } = this.state;
         let replyCountString = "";
         if (replies !== undefined) {
@@ -82,18 +84,25 @@ class IssueAnnotation extends Component {
                         ActiveAnnotationContainer: true,
                     })}
                 >
-                    {!collapsed ? (
-                        <React.Fragment>
-                            <div className="annotationTypeBadgeContainer">
-                                <div className="annotationTypeBadge row2">
-                                    <div className="annotationTypeBadge col2">
-                                        <div className="badgeContainer">
-                                            <img src={Issue} alt='default type badge' />
-                                        </div>
+                    <div className="annotationTypeBadgeContainer">
+                        <div className="annotationTypeBadge row2">
+                            <div className="annotationTypeBadge col2">
+                                <div className="badgeContainer">
+                                    <img src={Issue} alt='default type badge' />
+                                </div>
+                                <div className="badgeContainer">
+                                    {isPrivate ? (
+                                        <img src={view} alt='private badge' />
+                                    ) :
+                                        (<img src={viewPublic} alt='public badge' />)}
 
-                                    </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                    {!collapsed ? (
+                        <React.Fragment>
+
                             <div className={" container " + classNames({
                                 Header: true,
                                 Truncated: collapsed,
@@ -212,7 +221,30 @@ class IssueAnnotation extends Component {
                             <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
                                 {replies.map((reply, idx) => {
                                     return (
-                                        <Reply key={idx} idx={idx} content={reply.replyContent} author={reply.author} timeStamp={reply.timestamp} tags={reply.tags} />
+                                        <Reply
+                                            key={idx}
+                                            idx={idx}
+                                            replyId={reply.replyId}
+                                            annoId={id}
+                                            replies={replies}
+                                            content={reply.replyContent}
+                                            author={reply.author}
+                                            authorId={reply.authorId}
+                                            timeStamp={reply.timestamp}
+                                            tags={reply.tags}
+                                            answer={reply.answer}
+                                            question={reply.question}
+                                            finishReply={this.finishReply}
+                                            showQuestionAnswerInterface={false}
+                                            currentUser={currentUser}
+                                            xpath={reply.xpath}
+                                            anchor={reply.anchor}
+                                            hostname={reply.hostname}
+                                            url={reply.url}
+                                            offsets={reply.offsets}
+                                            currentUrl={currentUrl}
+                                            notifyParentOfAdopted={this.props.notifyParentOfAdopted}
+                                        />
                                     )
                                 }
                                 )}
