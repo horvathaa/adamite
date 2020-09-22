@@ -6,8 +6,8 @@ const path = 'https://f1a4257d658c481787cc581e18b9c97e.us-central1.gcp.cloud.es.
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log("THIS IS THE MESSAGE", request.msg)
     if (request.msg === 'SEARCH_ELASTIC') {
-        console.log("SEARCH_ELASTIC")
-        keyWrapper(search, { userSearch: request.userSearch, query: searchBarQuery(request.userSearch, true), url: request.url, successFunction: searchBarSuccess })
+        console.log("SEARCH_ELASTIC", request)
+        keyWrapper(search, { userSearch: request.userSearch, query: searchBarQuery(request, true), url: request.url, successFunction: searchBarSuccess })
             .then(e => sendResponse({ response: e }))
             .catch(function (err) {
                 console.log("wrapper error", err.response.status)
@@ -16,9 +16,33 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     else if (request.msg === 'SCROLL_ELASTIC') {
         console.log("SCROLL_ELASTIC")
         var query = '';
-        retrieveQueryForScroll(request.url)
+        retrieveUrlQuery(request.url)
             .then(function (query) {
                 keyWrapper(search, { userSearch: request.url, query: query, url: request.url, successFunction: paginationSuccess })
+                    .then(e => sendResponse({ response: e }))
+                    .catch(function (err) {
+                        console.log("wrapper error", err.response.status)
+                    });
+            })
+            .catch(function (err) {
+                console.log("Nothing was found", err);
+            });
+    }
+    else if (request.msg === "SEARCH_ELASTIC_BY_ID") {
+        console.log("SEARCH_ELASTIC_BY_ID", request)
+        keyWrapper(search, { userSearch: null, query: searchByID(request.id), url: request.url, successFunction: paginationSuccess })
+            .then(e => sendResponse({ response: e }))
+            .catch(function (err) {
+                console.log("wrapper error", err.response.status)
+            });
+    }
+    else if (request.msg === "REFRESH_FOR_CONTENT_UPDATED") {
+        console.log("REFRESH_FOR_CONTENT_UPDATED", request)
+        var query = '';
+        retrieveUrlQuery(request.url)
+            .then(function (query) {
+                query.from = 0;
+                keyWrapper(search, { userSearch: request.url, query: query, url: request.url, successFunction: refreshSuccess })
                     .then(e => sendResponse({ response: e }))
                     .catch(function (err) {
                         console.log("wrapper error", err.response.status)
@@ -71,52 +95,89 @@ function findWhereMatched(res, value) {
     if (res["tags"].length !== 0 && res["tags"].indexOf(value) >= 0) return "Tag";
 }
 
-function searchBarQuery(userSearch) {
-    return (
-        {
-            "from": 0,
-            "size": 10,
-            "query": {
-                "bool": {
-                    "should": [
-                        {
-                            "multi_match": {
-                                "query": userSearch,
-                                "type": "phrase",
-                                "fields": [
-                                    "content", "tags", "anchorContent"
-                                ],
-                                "boost": 10
-                            }
-                        },
-                        {
-                            "multi_match": {
-                                "query": userSearch,
-                                "type": "most_fields",
-                                "fields": [
-                                    "partialSearch"
-                                ],
-                                "fuzziness": "0"
-                            }
-                        }
-                    ]
-                }
-            },
-            "highlight": {
-                "require_field_match": false,
-                "type": "plain",
-                "order": "score",
-                "phrase_limit": 2,
-                "fragmenter": "simple",
-                "number_of_fragments": 1,
-                "fragment_size": userSearch.length > 100 ? userSearch.length : 100,
-                "fields": {
-                    "content": {},
-                    "anchorContent": {},
-                    "partialSearch": {}
-                }
+function searchByID(id) {
+    return {
+        "query": {
+            "multi_match": {
+                "query": id,
+                "fields": ["_id", "SharedId"]
             }
-        });
+        }
+    }
+}
+
+function inputQueryBuilder(userSearch) {
+    return {
+        "bool": {
+            "should": [
+                {
+                    "multi_match": {
+                        "query": userSearch,
+                        "type": "phrase",
+                        "fields": [
+                            "content", "tags", "anchorContent"
+                        ],
+                        "boost": 10
+                    }
+                },
+                {
+                    "multi_match": {
+                        "query": userSearch,
+                        "type": "most_fields",
+                        "fields": [
+                            "partialSearch"
+                        ],
+                        "fuzziness": "0"
+                    }
+                }
+            ]
+        }
+    }
+}
+
+function searchBarQuery(query) {
+
+    var searchObj = {
+        "from": 0,
+        "size": 10,
+        "query": {},
+        "highlight": {}
+    };
+
+    if (query.pageVisibility !== undefined && query.pageVisibility !== 'Global') {
+        searchObj.query = {
+            "bool": {
+                "filter": []
+            }
+        }
+        searchObj.query.bool.filter =
+            query.pageVisibility === 'On Page' ?
+                [{ "match": { "url": query.url } }] :
+                [{ "regexp": { "url": ".*" + query.hostname + ".*" } }];
+
+        console.log("NEW TEST QUERY", searchObj)
+        searchObj.query.bool.filter.push(inputQueryBuilder(query.userSearch));
+    }
+    else {
+        searchObj.query = inputQueryBuilder(query.userSearch);
+    }
+
+    searchObj.highlight = {
+        "require_field_match": false,
+        "type": "plain",
+        "order": "score",
+        "phrase_limit": 2,
+        "fragmenter": "simple",
+        "number_of_fragments": 1,
+        "fragment_size": query.userSearch.length > 100 ? query.userSearch.length : 100,
+        "fields": {
+            "content": {},
+            "anchorContent": {},
+            "partialSearch": {}
+        }
+    }
+    console.log("NEW TEST QUERY", searchObj)
+    return searchObj
 }
 
 String.prototype.indexOfEnd = function (string) {
@@ -155,7 +216,7 @@ function storeQueryForScroll(query, total, url) {
     chrome.storage.local.set({ [url]: query });
 }
 
-function retrieveQueryForScroll(url) {
+function retrieveUrlQuery(url) {
     return new Promise((resolve, reject) => {
         chrome.storage.local.get([url], function (result) {
             if (typeof result === "undefined" || (Object.keys(result).length === 0 && result.constructor === Object)) {
@@ -180,23 +241,6 @@ function removeQueryForScroll(url) {
             chrome.storage.local.remove(url)
         }
     });
-
-
-    // chrome.storage.local.get(null, function (items) {
-    //     for (var key in items) {
-    //         if (key.startsWith('url')) { // or key.includes or whatever
-    //             chrome.storage.local.remove(key)
-    //         }
-    //     }
-    // })
-    // chrome.storage.local.get({ url: [] }, function (items) {
-    //     console.log("here are the items", items)
-    //     // Remove one item at index 0
-    //     // items.users.splice(0, 1);
-    //     // chrome.storage.set(items, function () {
-    //     //     alert('Item deleted!');
-    //     // });
-    // });
 }
 
 function axiosWrapper(path, query, AuthStr, args, successFunc) {
@@ -223,6 +267,24 @@ function axiosWrapper(path, query, AuthStr, args, successFunc) {
     });
 }
 
+function refreshSuccess(res, args) {
+    var finalArray = [];
+
+    console.log("this is the res", res.data)
+    if (res.data.hits.hits.length !== 0) {
+        res.data.hits.hits.forEach(function (element) {
+            console.log(element._source)
+            var obj = element._source
+            obj["id"] = element._id
+            element._source["id"] = element._id
+
+            finalArray.push(obj)
+        });
+    }
+    console.log("Final Array", finalArray)
+    return res;
+
+}
 function paginationSuccess(res, args) {
     var finalArray = [];
 

@@ -145,20 +145,50 @@ class SearchBar extends React.Component {
 
     onSuggestionSelected = (event, { suggestion, suggestionValue, suggestionIndex, sectionIndex, method }) => {
         console.log("suggestions selected", suggestion, event.target.value, method);
-        this.removeSearchCache();
-        this.props.handleSearchBarInputText({ suggestion: [suggestion], searchState: false })
+        if (suggestion.SharedId !== null) {
+            this.doanothersearch(suggestion.SharedId).then(res => {
+                const results = res.data.hits.hits.map(h => h._source)
+                console.log("THESE RESULTS IN CLICK", results)
+                this.setState({ suggestions: results })
+                this.removeSearchCache();
+                this.props.handleSearchBarInputText({ suggestion: results, searchState: false });
+            });
+        }
+        else {
+            this.removeSearchCache();
+            this.props.handleSearchBarInputText({ suggestion: [suggestion], searchState: false })
+        }
     }
 
+    doanothersearch = (id) => {
+        return new Promise((resolve, reject) => {
+            chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+                let url = tabs[0].url;
+                //     // use `url` here inside the callback because it's asynchronous!
+                //     console.log("THIS IS THE WINDOW", new URL(tabs[0].url), tabs[0])
+                chrome.runtime.sendMessage({
+                    msg: 'SEARCH_ELASTIC_BY_ID',
+                    id: id,
+                    url: url
+                },
+                    response => {
+                        resolve(response.response);
+                    });
+            });
+        });
+    }
 
     ElasticSearch2 = (inputText) => {
         return new Promise((resolve, reject) => {
             chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
                 let url = tabs[0].url;
                 // use `url` here inside the callback because it's asynchronous!
-
+                console.log("THIS IS THE WINDOW", new URL(tabs[0].url), tabs[0])
                 chrome.runtime.sendMessage({
                     msg: 'SEARCH_ELASTIC',
+                    pageVisibility: this.state.dropDownValue,
                     url: url,
+                    hostname: new URL(tabs[0].url).hostname,
                     userSearch: inputText
                 },
                     response => {

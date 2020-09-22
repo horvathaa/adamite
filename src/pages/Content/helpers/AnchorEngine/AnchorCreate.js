@@ -81,13 +81,13 @@ const Popover = ({ selection, xpathToNode, offsets, removePopover }) => {
                 <div className="buttonIconContainer">
                     <img src={chrome.extension.getURL('Default.svg')} alt="default annotation" />
                 </div>
-                 Default
+                 Normal
             </div>
             <div className="onHoverCreateAnnotation" onClick={highlightButtonClickedHandler} >
                 <div className="buttonIconContainer">
                     <img src={chrome.extension.getURL('Highlight.svg')} alt="highlight" />
                 </div>
-                Highlight
+                Empty
             </div>
             <div className="onHoverCreateAnnotation" onClick={todoButtonClickedHandler} >
                 <div className="buttonIconContainer">
@@ -221,7 +221,7 @@ export const createAnnotation = (event) => {
 
         if (queue.length) {
             let newAnno = queue.pop();
-            console.log('bleh', newAnno);
+            // console.log('bleh', newAnno);
             chrome.runtime.sendMessage({
                 msg: 'SAVE_NEW_ANCHOR',
                 from: 'content',

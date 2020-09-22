@@ -38,6 +38,7 @@ class Sidebar extends React.Component {
     showPinned: false,
     pinnedAnnos: [],
     annotatingPage: false,
+    showClearClickedAnnotation: false,
     askAboutRelatedAnnos: false,
     relatedQuestions: [],
     pageName: '',
@@ -69,17 +70,27 @@ class Sidebar extends React.Component {
   //     this.unsubscribeAnnotations();
   //   }
   // }
+  // UNSAFE_componentWillMount() {
+  //   if (this.unsubscribeAnnotations) {
+  //     this.unsubscribeAnnotations();
+  //   }
+  // }
 
   componentWillUnmount() {
+    // console.log('in unmount????');
     window.removeEventListener('scroll', this.handleScroll);
+    chrome.runtime.sendMessage({
+      from: 'content',
+      msg: 'UNSUBSCRIBE'
+    });
   }
 
-  ElasticSearch = () => {
+  ElasticSearch = (msg) => {
     return new Promise((resolve, reject) => {
       chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
         let url = tabs[0].url;
         chrome.runtime.sendMessage({
-          msg: 'SCROLL_ELASTIC',
+          msg: msg,
           url: url
         },
           response => { resolve(response) });
@@ -90,7 +101,7 @@ class Sidebar extends React.Component {
   handleScroll = (event, filterSelection) => {
     const scrollIsAtTheBottom = (document.documentElement.scrollHeight - window.innerHeight) - 1 <= Math.floor(window.scrollY);
     if (scrollIsAtTheBottom && this.state.searchState) {
-      this.ElasticSearch()
+      this.ElasticSearch("SCROLL_ELASTIC")
         .then(res => {
           console.log("THESE RESUsssssLTS", res.response.data)
           const results = res.response.data.hits.hits.map(h => h._source)
@@ -143,6 +154,7 @@ class Sidebar extends React.Component {
     })
 
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+      // console.log('caught this message', request, sender);
       if (
         request.from === 'background' &&
         request.msg === 'USER_AUTH_STATUS_CHANGED'
@@ -215,6 +227,7 @@ class Sidebar extends React.Component {
             return target.includes(element.id);
           })
         });
+        this.setState({ showClearClickedAnnotation: true });
       } else if (
         request.from === 'background' &&
         request.msg === 'TOGGLE_SIDEBAR'
@@ -231,19 +244,37 @@ class Sidebar extends React.Component {
         request.msg === 'CONTENT_UPDATED'
       ) {
         this.setState({ annotations: request.payload })
-        let mostRecentAnno, secondMostRecentAnno;
-        const filteredAnnotationsCopy = request.payload.sort((a, b) =>
-          (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
-        );
-        if (this.state.filteredAnnotations.length) {
-          mostRecentAnno = filteredAnnotationsCopy[0];
-          secondMostRecentAnno = filteredAnnotationsCopy[1];
-          if (mostRecentAnno.type === 'question' && secondMostRecentAnno.type === 'question' && !secondMostRecentAnno.isClosed) {
-            this.setState({ askAboutRelatedAnnos: true });
-          }
+        if (this.state.searchedAnnotations.length !== 0) {
+          this.ElasticSearch("REFRESH_FOR_CONTENT_UPDATED").then(res => {
+            console.log("THESE RESUsssssLTS", res.response.data)
+            const results = res.response.data.hits.hits.map(h => h._source)
+            console.log("THESE RESULTS", res.response)
+            this.setState({
+              searchedAnnotations: results
+            })
+          })
+
         }
+        // let mostRecentAnno, secondMostRecentAnno;
+        // const filteredAnnotationsCopy = request.payload.sort((a, b) =>
+        //   (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
+        // );
+        // if (this.state.filteredAnnotations.length) {
+        //   mostRecentAnno = filteredAnnotationsCopy[0];
+        //   secondMostRecentAnno = filteredAnnotationsCopy[1];
+        //   if (mostRecentAnno.type === 'question' && secondMostRecentAnno.type === 'question' && !secondMostRecentAnno.isClosed) {
+        //     this.setState({ askAboutRelatedAnnos: true });
+        //   }
+        // }
         this.requestFilterUpdate();
         // console.log("HERE is johnnnnn", request.payload)
+      }
+      else if (request.from === 'background' && request.msg === 'FILTER_BY_TAG') {
+        this.setState({
+          filteredAnnotations: this.state.annotations.filter(anno => {
+            return this.checkTags(anno, [request.payload]);
+          })
+        });
       }
     });
   }
@@ -313,8 +344,14 @@ class Sidebar extends React.Component {
       this.setState({ filteredAnnotations: remainingAnnos });
       this.state.pinnedAnnos.push(annotation[0]);
     }
+    else if (this.containsObjectWithId(id, this.state.pinnedAnnos)) {
+      // console.log(annotation);
+      this.setState({ pinnedAnnos: this.state.pinnedAnnos.filter(anno => anno.id !== id) });
+      return;
+    }
     if (!pinned) {
-      if (annotation[0].childAnchor.length) {
+      // console.log(annotation);
+      if (annotation[0].childAnchor !== undefined && annotation[0].childAnchor.length) {
         const idArray = [];
         annotation[0].childAnchor.forEach(anno => {
           idArray.push(anno.id);
@@ -431,6 +468,7 @@ class Sidebar extends React.Component {
   }
 
   checkTags(annotation, tags) {
+    // console.log('check tag', annotation, tags);
     if (!tags.length || annotation.pinned) {
       return true;
     }
@@ -494,7 +532,7 @@ class Sidebar extends React.Component {
     if (filterSelection.siteScope.includes('onPage') && !filterSelection.siteScope.includes('acrossWholeSite')) {
       this.setState({
         filteredAnnotations:
-          this.state.filteredAnnotations.filter(annotation => {
+          this.state.annotations.filter(annotation => {
             return this.checkSiteScope(annotation, filterSelection.siteScope) &&
               this.checkUserScope(annotation, filterSelection.userScope) &&
               this.checkAnnoType(annotation, filterSelection.annoType) &&
@@ -555,10 +593,12 @@ class Sidebar extends React.Component {
     if (currentUser === undefined) {
       return null;
     }
-
+    console.log("this is a render");
+    // console.log('bad bad', this.state.relatedQuestions);
     const inputText = searchBarInputText.toLowerCase();
+    // console.log("these are searched annotations", searchedAnnotations, searchedAnnotations.length === 0)
     let filteredAnnotationsCopy = searchedAnnotations.length === 0 ? filteredAnnotations : searchedAnnotations;
-
+    console.log("these are searched annotations", filteredAnnotationsCopy, searchedAnnotations.length === 0)
     filteredAnnotationsCopy = filteredAnnotationsCopy.sort((a, b) =>
       (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
     );
@@ -687,6 +727,13 @@ class Sidebar extends React.Component {
                     notifyParentOfPinning={this.handlePinnedAnnotation} />
                 )}
             </div>
+            {this.state.showClearClickedAnnotation && (
+              <div className="userQuestionButtonContainer">
+                <div className="ModifyFilter userQuestions" onClick={_ => { this.setState({ showClearClickedAnnotation: false }); this.setState({ filteredAnnotations: this.state.annotations }) }}>
+                  Clear Selected Annotation
+                </div>
+              </div>
+            )}
           </div>
         )
         }

@@ -88,13 +88,16 @@ export const updateAnnotationById = (id, newAnnotationFields = {}) => {
 };
 
 export const updateAllAnnotations = () => {
-  db.collection(DB_COLLECTIONS.ANNOTATIONS).get().then(function (querySnapshot) {
-    querySnapshot.forEach(function (doc) {
-      doc.ref.update({
-        // fill in here what needs updating
+  db.collection(DB_COLLECTIONS.ANNOTATIONS)
+    .get()
+    .then(function (querySnapshot) {
+      querySnapshot.forEach(function (doc) {
+        doc.ref.update({
+
+          // fill in here what needs updating
+        });
       });
     });
-  });
 }
 
 export const createAnnotation = async ({
@@ -135,9 +138,9 @@ export const createAnnotation = async ({
     offsets,
     xpath,
     childAnchor,
-    pinned: AnnotationType === 'question',
+    pinned: AnnotationType === 'question' || AnnotationType === 'to-do',
     replies: [],
-    private: isPrivate,
+    private: isPrivate, //just for user study - should be set to 'isPrivate'
     adopted: false
   };
   return db.collection(DB_COLLECTIONS.ANNOTATIONS).add(newAnnotation);
