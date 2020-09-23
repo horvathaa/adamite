@@ -14,7 +14,7 @@ import { Button } from 'react-bootstrap';
 
 class Sidebar extends React.Component {
   constructor(props) {
-    super(props);
+    super(props); // deprecated - change
     if (this.unsubscribeAnnotations) {
       this.unsubscribeAnnotations();
     }
@@ -244,17 +244,17 @@ class Sidebar extends React.Component {
         request.msg === 'CONTENT_UPDATED'
       ) {
         this.setState({ annotations: request.payload })
-        if (this.state.searchedAnnotations.length !== 0) {
-          this.ElasticSearch("REFRESH_FOR_CONTENT_UPDATED").then(res => {
-            console.log("THESE RESUsssssLTS", res.response.data)
-            const results = res.response.data.hits.hits.map(h => h._source)
-            console.log("THESE RESULTS", res.response)
-            this.setState({
-              searchedAnnotations: results
-            })
-          })
+        // if (this.state.searchedAnnotations.length !== 0) {
+        //   this.ElasticSearch("REFRESH_FOR_CONTENT_UPDATED").then(res => {
+        //     console.log("THESE RESUsssssLTS", res.response.data)
+        //     const results = res.response.data.hits.hits.map(h => h._source)
+        //     console.log("THESE RESULTS", res.response)
+        //     this.setState({
+        //       searchedAnnotations: results
+        //     })
+        //   })
 
-        }
+        // }
         // let mostRecentAnno, secondMostRecentAnno;
         // const filteredAnnotationsCopy = request.payload.sort((a, b) =>
         //   (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
@@ -268,6 +268,46 @@ class Sidebar extends React.Component {
         // }
         this.requestFilterUpdate();
         // console.log("HERE is johnnnnn", request.payload)
+      }
+      else if (request.from === 'background' && request.msg === 'ELASTIC_CONTENT_UPDATED') {
+        if (this.state.searchedAnnotations.length !== 0) {
+          console.log('ayyyy');
+          chrome.runtime.sendMessage({
+            msg: 'GET_ANNOTATION_BY_ID',
+            from: 'content',
+            payload: {
+              id: request.payload
+            }
+          },
+            (response) => {
+              const { annotation } = response;
+
+              console.log('annotation', annotation)
+              let tempArray = this.state.searchedAnnotations;
+              let index = this.state.searchedAnnotations.findIndex(anno => {
+                return anno.id === annotation.id;
+              });
+              tempArray[index] = annotation;
+              console.log('new list', tempArray);
+              this.setState({ searchedAnnotations: tempArray })
+            })
+        }
+      }
+      else if (request.from === 'background' && request.msg === 'ELASTIC_CONTENT_DELETED') {
+        if (this.state.searchedAnnotations.length !== 0) {
+          let id = request.payload;
+          let tempArray = this.state.searchedAnnotations.filter(anno => {
+            return anno.id !== id;
+          });
+          this.setState({ searchedAnnotations: tempArray })
+        }
+      }
+      else if (request.from === 'background' && request.msg === 'ELASTIC_CHILD_ANCHOR_ADDED') {
+        if (this.state.searchedAnnotations.length !== 0) {
+          let tempArray = this.state.searchedAnnotations;
+          tempArray.push(request.payload);
+          this.setState({ searchedAnnotations: tempArray });
+        }
       }
       else if (request.from === 'background' && request.msg === 'FILTER_BY_TAG') {
         this.setState({
@@ -593,12 +633,12 @@ class Sidebar extends React.Component {
     if (currentUser === undefined) {
       return null;
     }
-    console.log("this is a render");
+    // console.log("this is a render");
     // console.log('bad bad', this.state.relatedQuestions);
     const inputText = searchBarInputText.toLowerCase();
     // console.log("these are searched annotations", searchedAnnotations, searchedAnnotations.length === 0)
     let filteredAnnotationsCopy = searchedAnnotations.length === 0 ? filteredAnnotations : searchedAnnotations;
-    console.log("these are searched annotations", filteredAnnotationsCopy, searchedAnnotations.length === 0)
+    // console.log("these are searched annotations", filteredAnnotationsCopy, searchedAnnotations.length === 0)
     filteredAnnotationsCopy = filteredAnnotationsCopy.sort((a, b) =>
       (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
     );

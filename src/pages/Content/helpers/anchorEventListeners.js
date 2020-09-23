@@ -58,7 +58,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         highlightReplyRange(xpath, id);
     }
     else if (request.msg === 'REFRESH_HIGHLIGHTS') {
-        console.log('in refresh');
+        // console.log('in refresh');
         var span = document.getElementsByClassName("highlight-adamite-annotation");
 
         const annotationsOnPage = request.payload;

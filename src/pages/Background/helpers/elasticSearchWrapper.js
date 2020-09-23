@@ -244,6 +244,10 @@ function removeQueryForScroll(url) {
 }
 
 function axiosWrapper(path, query, AuthStr, args, successFunc) {
+    console.log('path', path);
+    console.log('query', query);
+    console.log('auth', AuthStr);
+
     return new Promise((resolve, reject) => {
         axios.get(path,
             {
