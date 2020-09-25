@@ -294,41 +294,9 @@ export const createAnnotation = (event) => {
             endOffset: rect.endOffset
         };
 
-        // if (queue.length) {
-        //     let newAnno = queue.pop();
-        //     // console.log('bleh', newAnno);
-        //     chrome.runtime.sendMessage({
-        //         msg: 'SAVE_NEW_ANCHOR',
-        //         from: 'content',
-        //         payload: {
-        //             newAnno: newAnno,
-        //             xpath: xpathToNode,
-        //             url: window.location.href,
-        //             anchor: selection.toString(),
-        //             offsets: offsets,
-        //             hostname: window.location.hostname
-        //         }
-        //     });
-        // }
-        // else if (replyQueue.length) {
-        //     replyQueue.pop();
-        //     chrome.runtime.sendMessage({
-        //         msg: 'TRANSMIT_REPLY_ANCHOR',
-        //         from: 'content',
-        //         payload: {
-        //             xpath: xpathToNode,
-        //             url: window.location.href,
-        //             anchor: selection.toString(),
-        //             offsets: offsets,
-        //             hostname: window.location.hostname
-        //         }
-        //     });
-        // }
-        // else {
         const rectPopover = selection.getRangeAt(0).getBoundingClientRect();
         displayPopoverBasedOnRectPosition(rectPopover, { selection, xpathToNode, offsets });
         return;
-        // }
     }
     else {
         if (!popOverAnchor.contains(event.target)) {
