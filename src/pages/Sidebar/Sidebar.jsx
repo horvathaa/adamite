@@ -573,7 +573,7 @@ class Sidebar extends React.Component {
 
   // wtf why is there this.state.annotations and this.state.filteredAnnotations? past amber? hello?
   applyFilter = (filterSelection) => {
-    this.setState({ selection: filterSelection });
+    this.setState({ filterSelection: filterSelection });
     if (filterSelection.siteScope.includes('onPage') && !filterSelection.siteScope.includes('acrossWholeSite')) {
       this.setState({
         filteredAnnotations:
@@ -685,7 +685,7 @@ class Sidebar extends React.Component {
               />
             </div>
             <div>
-              {!this.state.showFilter && <FilterSummary filter={this.state.filterSelection} openFilter={this.openFilter} />}
+              {!this.state.showFilter && <FilterSummary applyFilter={this.applyFilter} filter={this.state.filterSelection} openFilter={this.openFilter} />}
               {this.state.askAboutRelatedAnnos && !this.state.showFilter ? (
                 <React.Fragment>
                   <div className="FilterSummaryContainer">

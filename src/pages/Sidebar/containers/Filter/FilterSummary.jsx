@@ -44,11 +44,42 @@ function areArraysEqualSets(a1, a2) {
 
 class FilterSummary extends React.Component {
 
-    createDropDown = (args) => {
+    selection = {
+        siteScope: ['onPage'],
+        userScope: ['public'],
+        annoType: ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'],
+        timeRange: 'all',
+        archive: null,
+        tags: []
+    }
 
+    updateTimeRange = (eventKey, event) => {
+        this.selection.timeRange = event.target.getAttribute('data-value');
+        this.props.applyFilter(this.selection);
+    }
+
+    updateUserScope = (eventKey, event) => {
+        this.selection.userScope = [event.target.getAttribute('data-value')];
+        this.props.applyFilter(this.selection);
+    }
+
+    updateAnnoType = (eventKey, event) => {
+        let choice = event.target.getAttribute('data-value');
+        if (choice === 'all') {
+            this.selection.annoType = ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'];
+        }
+        else if (this.selection.annoType.includes(choice)) {
+            this.selection.annoType = this.selection.annoType.filter(e => e !== choice);
+        } else {
+            this.selection.annoType.push(choice);
+        }
+        this.props.applyFilter(this.selection);
+    }
+
+    createDropDown = (args) => {
         const listItems = args.items.map((option, idx) => {
-            let active = option === args.activeFilter ? true : false;
-            return <Dropdown.Item key={idx} > {active ? <AiOutlineCheck /> : ""} {option} </Dropdown.Item>
+            let active = option.visible === args.activeFilter ? true : false;
+            return <Dropdown.Item key={idx} onSelect={args.updateFunction} data-value={option.value}> {active ? <AiOutlineCheck /> : ""} {option.visible} </Dropdown.Item>
         });
 
         return (
@@ -133,13 +164,16 @@ class FilterSummary extends React.Component {
         return (
             //onClick={this.props.openFilter}
             <div className="FilterSummaryContainer">
-                <div className="FilterSectionRow" id="Header">
-                    Currently Selected Filter
-                </div>
                 <div className="FilterSectionRow">
                     <div className="FilterSection">Filters</div>
                     <div className="FilterSection">
-                        {this.createDropDown({ Icon: GoEye, activeFilter: userScope, header: "Post Type", items: ["Anyone", "Public", "Private"] })}
+                        {this.createDropDown({
+                            Icon: GoEye,
+                            activeFilter: userScope,
+                            header: "Post Type",
+                            updateFunction: this.updateUserScope,
+                            items: [{ visible: "Anyone", value: 'public' }, { visible: "Only Me", value: 'onlyMe' }]
+                        })}
 
                         {/* <div className="FilterIconContainer">
 
@@ -148,22 +182,35 @@ class FilterSummary extends React.Component {
                         &nbsp; {userScope} */}
                     </div>
                     <div className="FilterSection">
-                        {this.createDropDown({ Icon: AiFillClockCircle, activeFilter: timeRange, header: "Posted date", items: ["All Time", "Past Year", "Past Month", "Past Week", "Past Day"] })}
-
-                        {/* <div className="FilterIconContainer">
-                            <img src={time} alt="time icon" />
-                        </div>
-                        &nbsp; {timeRange} */}
+                        {this.createDropDown({
+                            Icon: AiFillClockCircle,
+                            activeFilter: timeRange,
+                            header: "Posted date",
+                            updateFunction: this.updateTimeRange,
+                            items: [{ visible: "All Time", value: "all" },
+                            { visible: "Past Year", value: "year" },
+                            { visible: "Past Month", value: "month" },
+                            { visible: "Past Week", value: "week" },
+                            { visible: "Past Day", value: "day" }]
+                        })}
                     </div>
-                    <div className="FilterSection">
+                    {/* <div className="FilterSection">
                         {this.createDropDown({ Icon: BiAnchor, activeFilter: siteScope, header: "Anchor Location", items: ["Global", "On Page", "Across Site"] })}
-                        {/* <div className="FilterIconContainer">
-                            <img src={location} alt="location icon" />
-                        </div>
-                        &nbsp; {siteScope} */}
-                    </div>
+
+                </div> */}
                     <div className="FilterSection">
-                        {this.createDropDown({ Icon: BsChatSquareDots, activeFilter: annoType, header: "Annotation Type", items: ["All Types", "Normal", "Empty", "To-do", "Question", "Issue"] })}
+                        {this.createDropDown({
+                            Icon: BsChatSquareDots,
+                            activeFilter: annoType,
+                            header: "Annotation Type",
+                            updateFunction: this.updateAnnoType,
+                            items: [{ visible: "All Types", value: 'all' },
+                            { visible: "Normal", value: 'default' },
+                            { visible: "Empty", value: 'highlight' },
+                            { visible: "To-do", value: 'to-do' },
+                            { visible: "Question", value: 'question' },
+                            { visible: "Issue", value: 'issue' }]
+                        })}
 
                         {/* <div className="FilterIconContainer">
                             <img src={anno_type} alt="annotation type icon" />
@@ -192,7 +239,7 @@ class FilterSummary extends React.Component {
                         </div>
                     ) : (null)}
                 </div>
-            </div>
+            </div >
 
 
 

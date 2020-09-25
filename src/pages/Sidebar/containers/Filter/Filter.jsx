@@ -70,7 +70,6 @@ class Filter extends React.Component {
     }
 
     searchByTag = () => {
-        console.log('sending this', this.state.searchByTag);
         this.props.searchByTag(this.state.searchByTag);
     }
 
