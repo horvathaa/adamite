@@ -34,3 +34,29 @@
     font-size: 0.9rem;
     color: #6B778C;
 }
+
+/* #author-visibility::after{
+    display: none; 
+ } */
+
+.filterDropDown{
+    font-size: 0.9rem !important;
+    color: #6B778C !important;
+    background-color: transparent !important;
+    padding: 0px !important;
+    border: none !important;
+    display: flex !important;
+}
+.filterDropDown::after{
+    display: none !important; 
+}
+.filterDropDown:hover{
+    color: #6b778ca1 !important;
+}
+.filterDropDown:focus{
+    box-shadow: none !important;
+}
+.filterReactIcon{
+    width: 18px;
+    height: 20px;
+}

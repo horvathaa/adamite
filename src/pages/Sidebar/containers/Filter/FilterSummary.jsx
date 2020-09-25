@@ -1,11 +1,17 @@
 import React from 'react';
 import './FilterSummary.css';
 import classNames from 'classnames';
+import { GoEye } from 'react-icons/go';
+import { AiFillClockCircle, AiOutlineCheck } from 'react-icons/ai';
+import { BiAnchor } from 'react-icons/bi';
+import { BsChatSquareDots } from 'react-icons/bs';
 import view from '../../../../assets/img/SVGs/view.svg';
 import time from '../../../../assets/img/SVGs/time.svg';
 import location from '../../../../assets/img/SVGs/location.svg';
 import anno_type from '../../../../assets/img/SVGs/anno_type.svg';
 import tag from '../../../../assets/img/SVGs/tag.svg';
+import { Dropdown } from 'react-bootstrap';
+
 
 /** assumes array elements are primitive types
 * check whether 2 arrays are equal sets.
@@ -37,6 +43,31 @@ function areArraysEqualSets(a1, a2) {
 }
 
 class FilterSummary extends React.Component {
+
+    createDropDown = (args) => {
+
+        const listItems = args.items.map((option, idx) => {
+            let active = option === args.activeFilter ? true : false;
+            return <Dropdown.Item key={idx} > {active ? <AiOutlineCheck /> : ""} {option} </Dropdown.Item>
+        });
+
+        return (
+            <React.Fragment>
+                <Dropdown>
+                    <Dropdown.Toggle title={args.header} className="filterDropDown">
+                        <div className="FilterIconContainer">
+                            <args.Icon className="filterReactIcon" />
+                        </div>
+                        &nbsp; {args.activeFilter}
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu >
+                        <Dropdown.Header>{args.header}</Dropdown.Header>
+                        {listItems}
+                    </Dropdown.Menu>
+                </Dropdown>
+            </React.Fragment>
+        );
+    }
 
     render() {
         const { filter } = this.props;
@@ -100,34 +131,44 @@ class FilterSummary extends React.Component {
         }
 
         return (
-            <div className="FilterSummaryContainer" onClick={this.props.openFilter} style={{ cursor: 'pointer' }}>
+            //onClick={this.props.openFilter}
+            <div className="FilterSummaryContainer">
                 <div className="FilterSectionRow" id="Header">
                     Currently Selected Filter
                 </div>
                 <div className="FilterSectionRow">
+                    <div className="FilterSection">Filters</div>
                     <div className="FilterSection">
-                        <div className="FilterIconContainer">
+                        {this.createDropDown({ Icon: GoEye, activeFilter: userScope, header: "Post Type", items: ["Anyone", "Public", "Private"] })}
+
+                        {/* <div className="FilterIconContainer">
+
                             <img src={view} alt="author view icon" />
                         </div>
-                        &nbsp; {userScope}
+                        &nbsp; {userScope} */}
                     </div>
                     <div className="FilterSection">
-                        <div className="FilterIconContainer">
+                        {this.createDropDown({ Icon: AiFillClockCircle, activeFilter: timeRange, header: "Posted date", items: ["All Time", "Past Year", "Past Month", "Past Week", "Past Day"] })}
+
+                        {/* <div className="FilterIconContainer">
                             <img src={time} alt="time icon" />
                         </div>
-                        &nbsp; {timeRange}
+                        &nbsp; {timeRange} */}
                     </div>
                     <div className="FilterSection">
-                        <div className="FilterIconContainer">
+                        {this.createDropDown({ Icon: BiAnchor, activeFilter: siteScope, header: "Anchor Location", items: ["Global", "On Page", "Across Site"] })}
+                        {/* <div className="FilterIconContainer">
                             <img src={location} alt="location icon" />
                         </div>
-                        &nbsp; {siteScope}
+                        &nbsp; {siteScope} */}
                     </div>
                     <div className="FilterSection">
-                        <div className="FilterIconContainer">
+                        {this.createDropDown({ Icon: BsChatSquareDots, activeFilter: annoType, header: "Annotation Type", items: ["All Types", "Normal", "Empty", "To-do", "Question", "Issue"] })}
+
+                        {/* <div className="FilterIconContainer">
                             <img src={anno_type} alt="annotation type icon" />
                         </div>
-                        &nbsp; {annoType}
+                        &nbsp; {annoType} */}
                     </div>
                     {filter.tags.length ? (
                         <div className="FilterSection">
