@@ -2,7 +2,9 @@
   width: 100%;
   display: flex;
   position: relative;
-  padding: 15px 15px 5px 15px;
+  /* padding: 15px 15px 5px 15px; */
+  padding: 15px 5px 5px 5px;
+  margin-bottom: 2%;
 }
 
 .InnerNewAnnotation {
@@ -81,8 +83,10 @@
 .AnnotationContainer {
   padding: 5px;
   background: white;
-  border: 1px solid #bfbebe;
-  box-shadow: 2px 2px 2px #88888887;
+  border: 1px solid #a6a6a694;
+    box-shadow: 5px 5px 2px #88888866;
+  /* border: 1px solid #bfbebe;
+  box-shadow: 2px 2px 2px #88888887; */
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
   border-top-left-radius: 8px;

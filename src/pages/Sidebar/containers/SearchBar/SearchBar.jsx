@@ -10,8 +10,11 @@ import '../../../../assets/img/SVGs/Todo.svg';
 import '../../../../assets/img/SVGs/Question.svg';
 import '../../../../assets/img/SVGs/Issue.svg';
 import '../../../../assets/img/SVGs/location.svg';
+import anchorOnPage from '../../../../assets/img/SVGs/Anchor_onpage.svg';
+import anchorOnOtherPage from '../../../../assets/img/SVGs/Anchor_otherpage_1.svg';
 import Highlighter from "react-highlight-words";
 import ReactHtmlParser from 'react-html-parser';
+import classNames from 'classnames';
 import { AiOutlineSearch, AiOutlineCloseCircle } from 'react-icons/ai';
 
 
@@ -23,22 +26,16 @@ class SearchBar extends React.Component {
     state = {
         value: '',
         suggestions: [],
-        dropDownValue: 'Global'
+        dropDownValue: 'Global',
+        hits: 0
     }
-
-    // const SearchBar = ({
-    //     searchCount,
-    //     searchBarInputText,
-    //     handleSearchBarInputText,
-    // }) => {
-
     highlightSearchWords = (sentence, baseContent) => {
         return typeof sentence === "undefined" ? baseContent : sentence.match(new RegExp('(?<=<em>)(.*?)(?=<\/em>)', 'g'));
     }
 
     componentDidMount() {
         this.onSuggestionsFetchRequested = debounce(
-            500,
+            300,
             this.onSuggestionsFetchRequested
         )
     }
@@ -67,7 +64,6 @@ class SearchBar extends React.Component {
             searchContent = this.highlightSearchWords(suggestion.highlight.content, searchContent);
             content = suggestion.highlight.hasOwnProperty("content") ? suggestion.highlight.content.replace(new RegExp('(<em>)|(<\/em>)', 'g'), '') : content;
         }
-
         return (
             <React.Fragment>
                 <div className="autosuggest-row">
@@ -78,7 +74,7 @@ class SearchBar extends React.Component {
                     <div className="autosuggest-col-6">
                         <div className="autosuggest-row-inner">
                             <div className="autosuggest-col-6-icon">
-                                <img className="react-autosuggest__anchor-content-icon" src={chrome.extension.getURL("location.svg")} alt="question annnotation" />
+                                <img className="react-autosuggest__anchor-content-icon" src={this.props.url === suggestion.url ? anchorOnPage : anchorOnOtherPage} alt="question annnotation" />
                             </div>
                             <div className="autosuggest-col-6">
                                 <Highlighter
@@ -128,6 +124,9 @@ class SearchBar extends React.Component {
             this.ElasticSearch2(input.value)
                 .then(res => {
                     const results = res.data.hits.hits.map(h => h._source)
+                    console.log("this is a hit", this.state.hits)
+                    this.setState({ hits: res.data.hits.total.value })
+                    this.props.searchedSearchCount(res.data.hits.total.value);
                     this.props.handleSearchBarInputText({ suggestion: results, searchState: true })
                     //this.setState({ suggestions: results })
                 })
@@ -145,11 +144,12 @@ class SearchBar extends React.Component {
 
     onSuggestionSelected = (event, { suggestion, suggestionValue, suggestionIndex, sectionIndex, method }) => {
         console.log("suggestions selected", suggestion, event.target.value, method);
+        this.props.searchedSearchCount(1);
         if (suggestion.SharedId !== null) {
             this.doanothersearch(suggestion.SharedId).then(res => {
                 const results = res.data.hits.hits.map(h => h._source)
                 console.log("THESE RESULTS IN CLICK", results)
-                this.setState({ suggestions: results })
+                this.setState({ suggestions: results, hits: 1 })
                 this.removeSearchCache();
                 this.props.handleSearchBarInputText({ suggestion: results, searchState: false });
             });
@@ -158,6 +158,7 @@ class SearchBar extends React.Component {
             this.removeSearchCache();
             this.props.handleSearchBarInputText({ suggestion: [suggestion], searchState: false })
         }
+
     }
 
     doanothersearch = (id) => {
@@ -201,14 +202,16 @@ class SearchBar extends React.Component {
     onSuggestionsFetchRequested = ({ value }) => {
         this.ElasticSearch2(value)
             .then(res => {
+                console.log("THESE RAW REZ", res.data.hits.total.value)
                 const results = res.data.hits.hits.map(h => h._source)
                 console.log("THESE RESULTS", results)
-                this.setState({ suggestions: results })
+                this.setState({ suggestions: results, hits: res.data.hits.total.value })
             })
     }
 
     onSuggestionsClearRequested = () => {
-        this.setState({ suggestions: [] })
+        this.setState({ suggestions: [], hits: 0 })
+        //this.props.searchedSearchCount(0);
     }
 
     removeSearchCache = () => {
@@ -222,7 +225,7 @@ class SearchBar extends React.Component {
     }
 
     closeButton = () => {
-        this.setState({ suggestions: [], value: '' });
+        this.setState({ suggestions: [], value: '', hits: 0 });
         this.removeSearchCache();
         this.props.resetView();
     }
@@ -246,7 +249,7 @@ class SearchBar extends React.Component {
 
         return (
             <React.Fragment >
-                <div className={`SearchBarContainer ${suggestions.length === 0 ? '' : 'SearchBarContainer--open'}`} >
+                <div className={`SearchBarContainer ${suggestions.length === 0 || value.length === 0 ? '' : 'SearchBarContainer--open'}`} >
                     <div>
                         <AiOutlineSearch />
                     </div>
@@ -293,77 +296,41 @@ class SearchBar extends React.Component {
             onKeyDown: this.onKeyDown,
             onChange: this.onChange
         }
-
-
-        // let clearButton;
-        // if (value.length > 0) {
-        //     clearButton = (
-        //         <AiOutlineCloseCircle
-        //             className="close-icon"
-        //             onClick={this.closeButton}
-        //         />
-        //     );
-        // }
+        console.log("this is the value!", this.state)
+        var searchCount = this.state.value.length !== 0 && suggestions.length !== 0 ? this.state.hits : this.props.searchCount;
 
         return (
-            <div className="outerSearchBar">
-                <Autosuggest
-                    suggestions={suggestions}
-                    renderInputComponent={this.renderInputComponent}
-                    onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
-                    onSuggestionsClearRequested={this.onSuggestionsClearRequested}
-                    onSuggestionSelected={this.onSuggestionSelected}
-                    getSuggestionValue={suggestion => suggestion.content}
-                    renderSuggestion={this.renderSuggestion}
-                    inputProps={inputProps}
-                />
-            </div >
+            <React.Fragment >
+                <div className="AutosuggestSearchBar">
+                    <Autosuggest
+                        suggestions={suggestions}
+                        renderInputComponent={this.renderInputComponent}
+                        onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
+                        onSuggestionsClearRequested={this.onSuggestionsClearRequested}
+                        onSuggestionSelected={this.onSuggestionSelected}
+                        getSuggestionValue={suggestion => suggestion.content}
+                        renderSuggestion={this.renderSuggestion}
+                        inputProps={inputProps}
+                    />
+                </div>
+                <div className="outerSearchBar">
+                    <div className="SearchResultsCountContainer">
+                        <div
+                            className={classNames({
+                                SearchResultsCount: true,
+                                NoResults: suggestions.length === 0 && searchCount === 0,
+                                Success: suggestions.length > 0 && searchCount >= 1,
+                                //Searching: suggestions.length > 0 && searchCount > 1,
+                            })}
+                        >
+                            {searchCount}
+                        </div>
+                    </div>
+                </div>
+            </React.Fragment >
+
         )
     }
 }
 
 export default SearchBar;
-
-
-// import React, { useContext } from 'react';
-// import classNames from 'classnames';
-// import './SearchBar.css';
-// import search from '../../../../assets/img/SVGs/search.svg';
-
-// const SearchBar = ({
-//     searchCount,
-//     searchBarInputText,
-//     handleSearchBarInputText,
-// }) => {
-
-//     return (
-//         <div className="SearchBarContainer">
-//             <input
-//                 // autoFocus
-//                 type="search"
-//                 className={classNames({
-//                     SearchBarInput: true,
-//                 })}
-//                 placeholder={'Search annotation content here'}
-//                 value={searchBarInputText}
-//                 onChange={(e) => handleSearchBarInputText(e)}
-//             />
-//             <div className="SearchResultsCountContainer">
-//                 <div
-//                     className={classNames({
-//                         SearchResultsCount: true,
-//                         NoResults: searchBarInputText.length > 0 && searchCount === 0,
-//                         Success: searchBarInputText.length > 0 && searchCount === 1,
-//                         Searching: searchBarInputText.length > 0 && searchCount > 1,
-
-//                     })}
-//                 >
-//                     {searchCount}
-//                 </div>
-//             </div>
-//         </div>
-//     );
-// };
-
-// export default SearchBar;
-

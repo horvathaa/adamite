@@ -41,6 +41,7 @@ class Sidebar extends React.Component {
     showClearClickedAnnotation: false,
     askAboutRelatedAnnos: false,
     relatedQuestions: [],
+    searchCount: 0,
     pageName: '',
     filterSelection: {
       siteScope: ['onPage'],
@@ -413,7 +414,8 @@ class Sidebar extends React.Component {
   resetView = () => {
     this.setState({
       searchState: false,
-      searchedAnnotations: []
+      searchedAnnotations: [],
+      searchCount: 0
     })
   }
 
@@ -423,6 +425,11 @@ class Sidebar extends React.Component {
       searchState: searchAnnotations.searchState,
       searchedAnnotations: searchAnnotations.suggestion
     });
+  };
+
+  searchedSearchCount = (count) => {
+    console.log("this is being called", count)
+    this.setState({ searchCount: count });
   };
 
   handleShowFilter = () => {
@@ -644,12 +651,15 @@ class Sidebar extends React.Component {
       (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
     );
 
-    let searchCount;
+    let tempSearchCount;
     if (this.state.showPinned) {
-      searchCount = filteredAnnotationsCopy.length + pinnedAnnos.length;
+      // this.setState({ searchCount: filteredAnnotationsCopy.length + pinnedAnnos.length });
+      tempSearchCount = filteredAnnotationsCopy.length + pinnedAnnos.length;
     }
     else {
-      searchCount = filteredAnnotationsCopy.length;
+      // this.setState({ searchCount: filteredAnnotationsCopy.length });
+
+      tempSearchCount = filteredAnnotationsCopy.length;
     }
     return (
       <div className="SidebarContainer" >
@@ -667,8 +677,10 @@ class Sidebar extends React.Component {
               <SearchBar
                 searchBarInputText={searchBarInputText}
                 handleSearchBarInputText={this.handleSearchBarInputText}
-                searchCount={searchCount}
+                searchCount={this.state.searchCount === 0 ? tempSearchCount : this.state.searchCount}
+                url={this.state.url}
                 resetView={this.resetView}
+                searchedSearchCount={this.searchedSearchCount}
               />
             </div>
             <div>
