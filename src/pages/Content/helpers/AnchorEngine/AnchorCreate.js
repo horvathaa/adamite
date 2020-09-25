@@ -38,26 +38,34 @@ const Popover = ({ selection, xpathToNode, offsets, removePopover }) => {
 
     const defaultButtonClickedHandler = (event) => {
         event.stopPropagation();
-        alertBackgroundOfNewSelection(selection.toString(), offsets, xpathToNode, "default");
-        removePopover();
+        if (selected) {
+            alertBackgroundOfNewSelection(selected, offsets, xpathToNode, "default");
+            removePopover();
+        }
     };
 
     const todoButtonClickedHandler = (event) => {
         event.stopPropagation();
-        alertBackgroundOfNewSelection(selection.toString(), offsets, xpathToNode, "to-do");
-        removePopover();
+        if (selected) {
+            alertBackgroundOfNewSelection(selected, offsets, xpathToNode, "to-do");
+            removePopover();
+        }
     };
 
     const questionButtonClickedHandler = (event) => {
         event.stopPropagation();
-        alertBackgroundOfNewSelection(selection.toString(), offsets, xpathToNode, "question");
-        removePopover();
+        if (selected) {
+            alertBackgroundOfNewSelection(selected, offsets, xpathToNode, "question");
+            removePopover();
+        }
     };
 
     const issueButtonClickedHandler = (event) => {
         event.stopPropagation();
-        alertBackgroundOfNewSelection(selection.toString(), offsets, xpathToNode, "issue");
-        removePopover();
+        if (selected) {
+            alertBackgroundOfNewSelection(selected, offsets, xpathToNode, "issue");
+            removePopover();
+        }
     };
 
     const whatQuestionClickedHandler = (event) => {
@@ -93,7 +101,9 @@ const Popover = ({ selection, xpathToNode, offsets, removePopover }) => {
                 <div className="buttonIconContainer">
                     <img src={chrome.extension.getURL('Todo.svg')} alt="to-do annnotation" />
                 </div>
-                To-do
+                <div onClick={todoButtonClickedHandler}>
+                    To-do
+                </div>
             </div>
             <div className="onHoverCreateAnnotation" onClick={questionButtonClickedHandler}
                 onMouseEnter={() => setShowQuestionMenu(true)}
@@ -162,6 +172,7 @@ function displayPopoverBasedOnRectPosition(rect, props) {
 const alertBackgroundOfNewSelection = (selection, offsets, xpath, type, content) => {
     // supporting creation of annotations in sidebar
     const annoContent = content === undefined ? "" : content;
+    console.log('transmitting content selected', annoContent);
     chrome.runtime.sendMessage({
         msg: 'CONTENT_SELECTED',
         from: 'content',

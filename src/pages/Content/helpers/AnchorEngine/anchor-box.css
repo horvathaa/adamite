@@ -204,5 +204,5 @@
 }
 
 .buttonIconContainer:hover {
-    filter: brightness(.8);
+    filter: brightness(1.5);
   }

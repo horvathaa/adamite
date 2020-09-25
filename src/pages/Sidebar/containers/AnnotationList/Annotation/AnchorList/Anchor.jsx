@@ -107,7 +107,6 @@ class Anchor extends Component {
                                 {url}
                             </div>
                         </div>
-
                     )}
             </div>
         );

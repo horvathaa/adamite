@@ -176,6 +176,7 @@ class Sidebar extends React.Component {
         request.msg === 'CONTENT_SELECTED'
       ) {
         const { selection, offsets, xpath, type, annoContent } = request.payload;
+        console.log('in sidebar, content selected', selection);
         this.setState({
           newSelection: selection,
           offsets: offsets,

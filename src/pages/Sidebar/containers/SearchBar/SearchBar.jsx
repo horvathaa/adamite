@@ -184,7 +184,7 @@ class SearchBar extends React.Component {
             chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
                 let url = tabs[0].url;
                 // use `url` here inside the callback because it's asynchronous!
-                console.log("THIS IS THE WINDOW", new URL(tabs[0].url), tabs[0])
+                // console.log("THIS IS THE WINDOW", new URL(tabs[0].url), tabs[0])
                 chrome.runtime.sendMessage({
                     msg: 'SEARCH_ELASTIC',
                     pageVisibility: this.state.dropDownValue,
@@ -296,7 +296,7 @@ class SearchBar extends React.Component {
             onKeyDown: this.onKeyDown,
             onChange: this.onChange
         }
-        console.log("this is the value!", this.state)
+        // console.log("this is the value!", this.state)
         var searchCount = this.state.value.length !== 0 && suggestions.length !== 0 ? this.state.hits : this.props.searchCount;
 
         return (

@@ -12,10 +12,6 @@ class AnnotationList extends Component {
   render() {
     const { annotations, currentUser } = this.props;
 
-    /* {annotationsCopy.map((annotation, idx) => { */
-    // this is just for the user study - do not keep this in real version of app!
-    // const annotationsCopy = annotations.filter(anno => anno.authorId === currentUser.uid || anno.authorId === 'XRCVPsHHNANyhefwAaLBBCAecRz1');
-
 
     // TODO: make shared ID of parent the parent's ID so river can do his search check
     // also fix child anchor on URL click thing - load parent annotation
