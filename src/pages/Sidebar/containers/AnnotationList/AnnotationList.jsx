@@ -22,8 +22,10 @@ class AnnotationList extends Component {
     let listOfChildAnnos = annotations.filter(anno => anno.SharedId !== null);
     listOfChildAnnos.forEach(anno => {
       for (let parentAnno of annotations) {
-        if (parentAnno.id === anno.SharedId && !parentAnno.childAnchor.includes(anno)) {
-          parentAnno.childAnchor.push(anno);
+        if (typeof anno.SharedId !== "undefined") {
+          if (parentAnno.id === anno.SharedId && !parentAnno.childAnchor.includes(anno)) {
+            parentAnno.childAnchor.push(anno);
+          }
         }
       }
     });

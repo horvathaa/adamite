@@ -1,7 +1,16 @@
 .outerSearchBar {
-    width: 90%;
+    width: 8%;
+    margin-right: 10px;
     z-index: 1;
     align-items: center;
+    display: flex;
+}
+
+.AutosuggestSearchBar{
+  width:100%;
+  z-index: 1;
+  align-items: center;
+  display: block;
 }
 
 .SearchBarContainer {
@@ -11,13 +20,13 @@
     align-items: center;
 
     flex: 1;
-    margin-left: 10px;
+    margin-left: 8px;
     margin-top: 6px;
     margin-bottom: 3px;
     border-radius: 24px;
     padding-left: 1em;
     padding-right: 1em;
-    box-shadow: inset 0 1px 2px rgba(10, 10, 10, 0.1);
+    /* box-shadow: 0 1px 6px 0 rgba(32,33,36,0.28); */
     border: 1px solid transparent;
     background-color: #fff;
     border-color: #dbdbdb;
@@ -32,11 +41,11 @@
     position: relative;
     transition: 0.1s all ease-in;
     transition: box-shadow .3s;
-    margin-right: 2em;
+    margin-right: .5em;
   }
 
   .SearchBarContainer:hover {
-    box-shadow: 1px 1px 8px 1px #dcdcdc;
+    box-shadow: 0 1px 6px 0 rgba(32,33,36,0.28);
   }
 
   .SearchBarContainer:focus-within{
@@ -57,6 +66,8 @@
     border-top-right-radius: 16px;
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
+    border-bottom: none;
+    box-shadow: 0 1px 6px 0 rgba(32,33,36,0.28);
   }
 
   .SearchBar--Dropdown {
@@ -101,10 +112,10 @@
   
   .SearchResultsCountContainer {
     flex-shrink: 0;
-    margin-right: 6px;
-    width: 36px;
+    /* width: 36px; */
     height: 100%;
-  
+    /* margin-right: 6px;
+    margin-left: 1em; */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -148,7 +159,7 @@
   
   .react-autosuggest__container {
     position: relative;
-    display: contents;
+    /* display: contents; */
     width: 95%;
     /* margin-top: -10px; */
   }
@@ -221,12 +232,15 @@
     z-index: 1;
     position: absolute;
     padding: 0;
-    margin-left: 10px;
+    margin-left: 8px;
+    margin-bottom: 2em;
     background-color: #fff;
     list-style-type: none;
-    width: 90%;
-    border: 1px solid #eee;
-    box-shadow: 1px 1px 8px 1px #dcdcdc;
+    width: 100%;
+    border: 1px solid #dbdbdb;
+    border-top: none !important;
+    border-radius: 0 0 24px 24px;
+    box-shadow: 0 4px 6px 0 rgba(32,33,36,0.28);
   }
   
   .react-autosuggest__suggestion {
@@ -244,7 +258,7 @@
 
   .react-autosuggest__icon {
     margin-left: .25em;
-    width: 2em;
+    width: 1.7em;
     color: #7f8080;
     height: 2em;
     cursor: pointer;

@@ -1,12 +1,12 @@
 .WholeSidebar {
   display: flex;
-  background-color: whitesmoke;
+  background-color: white;
   height: 100vh;
   background-repeat: repeat;
 }
 
 .SidebarContainer {
-  background-color: whitesmoke;
+  background-color: white;
   height: 100vh;
   background-repeat: repeat;
   /* display: inline-flex */
@@ -150,7 +150,7 @@
 
 
 .FilterButton {
-  padding: 4px 0px 0px 4px;
+  padding: 5px 0px 0px 6px;
 }
 
 .ShowMyQuestionsButtonContainer {

@@ -214,10 +214,10 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
     const tabInfo = tabAnnotationCollect.filter(obj => obj.tabId === activeInfo.tabId);
     broadcastAnnotationsUpdated('CONTENT_UPDATED', tabInfo[0].annotations);
   }
-  else {
-    // publicListener = setUpGetAllAnnotationsByUrlListener(request.url, annotations);
-    // privateListener = promiseToComeBack(request.url, annotations);
-  }
+  // else {
+  //   publicListener = setUpGetAllAnnotationsByUrlListener(request.url, annotations);
+  //   privateListener = promiseToComeBack(request.url, annotations);
+  // }
 });
 
 
@@ -231,8 +231,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     privateListener = promiseToComeBack(request.url, annotations);
   }
   else if (request.msg === 'UNSUBSCRIBE' && request.from === 'content') {
-    privateListener();
-    publicListener();
+    if (typeof privateListener === "function") {
+      privateListener();
+    }
+    if (typeof publicListener === "function") {
+      publicListener();
+    }
   }
   else if (request.msg === 'ANNOTATION_UPDATED' && request.from === 'content') {
     const { id, content, type, tags, isPrivate } = request.payload;
@@ -300,20 +304,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       isPrivate: false
     });
   }
-  else if (request.from === 'content' && request.msg === 'UNARCHIVE') {
+  // else if (request.from === 'content' && request.msg === 'UNARCHIVE') {
+  //   const { id } = request.payload;
+  //   updateAnnotationById(id, {
+  //     createdTimestamp: new Date().getTime(),
+  //     trashed: false
+  //   }).then(function () {
+  //     broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
+  //   });
+  // }
+  else if (request.from === 'content' && (request.msg === 'FINISH_TODO' || request.msg === 'UNARCHIVE')) {
     const { id } = request.payload;
     updateAnnotationById(id, {
       createdTimestamp: new Date().getTime(),
-      trashed: false
-    }).then(function () {
-      broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
-    });
-  }
-  else if (request.from === 'content' && request.msg === 'FINISH_TODO') {
-    const { id } = request.payload;
-    updateAnnotationById(id, {
-      createdTimestamp: new Date().getTime(),
-      trashed: true
+      trashed: request.msg === 'FINISH_TODO' ? true : false
     }).then(function () {
       broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
     });
