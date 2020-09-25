@@ -177,10 +177,85 @@ const alertBackgroundOfNewSelection = (selection, offsets, xpath, type, content)
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.msg === 'ADD_NEW_ANCHOR') {
-        queue.push(request.payload);
+        var selection = window.getSelection();
+        if (selection.type === 'Range') {
+            const rect = selection.getRangeAt(0);
+
+            //Text nodes that were highlighted by user
+            var textNodes = getNodesInRange(rect).filter(function (element) {
+                return element.nodeType === 3 && element.data.trim() !== "";
+            });
+
+            const offsets = {
+                startOffset: rect.startOffset,
+                endOffset: rect.endOffset,
+            };
+
+            var tempArry = []
+            for (var i = 0; i < textNodes.length; i++) {
+                tempArry.push(xpathConversion(textNodes[i].parentNode))
+            }
+
+            var xpathToNode = {
+                start: xpathConversion(textNodes[0]),
+                end: xpathConversion(textNodes[textNodes.length - 1]),
+                startOffset: rect.startOffset,
+                endOffset: rect.endOffset
+            };
+            chrome.runtime.sendMessage({
+                msg: 'SAVE_NEW_ANCHOR',
+                from: 'content',
+                payload: {
+                    newAnno: request.payload,
+                    xpath: xpathToNode,
+                    url: window.location.href,
+                    anchor: selection.toString(),
+                    offsets: offsets,
+                    hostname: window.location.hostname
+                }
+            });
+            selection.removeRange(rect);
+        }
     }
     else if (request.msg === 'ADD_REPLY_ANCHOR') {
-        replyQueue.push(request.payload);
+        var selection = window.getSelection();
+        if (selection.type === 'Range') {
+            const rect = selection.getRangeAt(0);
+
+            //Text nodes that were highlighted by user
+            var textNodes = getNodesInRange(rect).filter(function (element) {
+                return element.nodeType === 3 && element.data.trim() !== "";
+            });
+
+            const offsets = {
+                startOffset: rect.startOffset,
+                endOffset: rect.endOffset,
+            };
+
+            var tempArry = []
+            for (var i = 0; i < textNodes.length; i++) {
+                tempArry.push(xpathConversion(textNodes[i].parentNode))
+            }
+
+            var xpathToNode = {
+                start: xpathConversion(textNodes[0]),
+                end: xpathConversion(textNodes[textNodes.length - 1]),
+                startOffset: rect.startOffset,
+                endOffset: rect.endOffset
+            };
+            chrome.runtime.sendMessage({
+                msg: 'TRANSMIT_REPLY_ANCHOR',
+                from: 'content',
+                payload: {
+                    xpath: xpathToNode,
+                    url: window.location.href,
+                    anchor: selection.toString(),
+                    offsets: offsets,
+                    hostname: window.location.hostname
+                }
+            });
+            selection.removeRange(rect);
+        }
     }
 });
 
@@ -219,41 +294,41 @@ export const createAnnotation = (event) => {
             endOffset: rect.endOffset
         };
 
-        if (queue.length) {
-            let newAnno = queue.pop();
-            // console.log('bleh', newAnno);
-            chrome.runtime.sendMessage({
-                msg: 'SAVE_NEW_ANCHOR',
-                from: 'content',
-                payload: {
-                    newAnno: newAnno,
-                    xpath: xpathToNode,
-                    url: window.location.href,
-                    anchor: selection.toString(),
-                    offsets: offsets,
-                    hostname: window.location.hostname
-                }
-            });
-        }
-        else if (replyQueue.length) {
-            replyQueue.pop();
-            chrome.runtime.sendMessage({
-                msg: 'TRANSMIT_REPLY_ANCHOR',
-                from: 'content',
-                payload: {
-                    xpath: xpathToNode,
-                    url: window.location.href,
-                    anchor: selection.toString(),
-                    offsets: offsets,
-                    hostname: window.location.hostname
-                }
-            });
-        }
-        else {
-            const rectPopover = selection.getRangeAt(0).getBoundingClientRect();
-            displayPopoverBasedOnRectPosition(rectPopover, { selection, xpathToNode, offsets });
-            return;
-        }
+        // if (queue.length) {
+        //     let newAnno = queue.pop();
+        //     // console.log('bleh', newAnno);
+        //     chrome.runtime.sendMessage({
+        //         msg: 'SAVE_NEW_ANCHOR',
+        //         from: 'content',
+        //         payload: {
+        //             newAnno: newAnno,
+        //             xpath: xpathToNode,
+        //             url: window.location.href,
+        //             anchor: selection.toString(),
+        //             offsets: offsets,
+        //             hostname: window.location.hostname
+        //         }
+        //     });
+        // }
+        // else if (replyQueue.length) {
+        //     replyQueue.pop();
+        //     chrome.runtime.sendMessage({
+        //         msg: 'TRANSMIT_REPLY_ANCHOR',
+        //         from: 'content',
+        //         payload: {
+        //             xpath: xpathToNode,
+        //             url: window.location.href,
+        //             anchor: selection.toString(),
+        //             offsets: offsets,
+        //             hostname: window.location.hostname
+        //         }
+        //     });
+        // }
+        // else {
+        const rectPopover = selection.getRangeAt(0).getBoundingClientRect();
+        displayPopoverBasedOnRectPosition(rectPopover, { selection, xpathToNode, offsets });
+        return;
+        // }
     }
     else {
         if (!popOverAnchor.contains(event.target)) {

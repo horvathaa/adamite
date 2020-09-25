@@ -271,7 +271,6 @@ class Sidebar extends React.Component {
       }
       else if (request.from === 'background' && request.msg === 'ELASTIC_CONTENT_UPDATED') {
         if (this.state.searchedAnnotations.length !== 0) {
-          console.log('ayyyy');
           chrome.runtime.sendMessage({
             msg: 'GET_ANNOTATION_BY_ID',
             from: 'content',
@@ -281,8 +280,6 @@ class Sidebar extends React.Component {
           },
             (response) => {
               const { annotation } = response;
-
-              console.log('annotation', annotation)
               let tempArray = this.state.searchedAnnotations;
               let index = this.state.searchedAnnotations.findIndex(anno => {
                 return anno.id === annotation.id;

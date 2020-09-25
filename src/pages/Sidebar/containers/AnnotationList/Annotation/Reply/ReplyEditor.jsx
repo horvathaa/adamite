@@ -65,7 +65,6 @@ class ReplyEditor extends Component {
     }
 
     requestNewAnchor = () => {
-        alert('Select the text you want to anchor this answer to!');
         const { id, replies } = this.props;
         let replyId;
         if (this.props.replyId === undefined) {

@@ -186,7 +186,6 @@ class Annotation extends Component {
   }
 
   handleNewAnchor = (id) => {
-    alert('Select the text you want to anchor this annotation to!')
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
       chrome.tabs.sendMessage(tabs[0].id, {
         msg: 'ADD_NEW_ANCHOR',

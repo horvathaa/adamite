@@ -4,7 +4,7 @@ import { getElasticApiKey } from '../../../firebase/index';
 const path = 'https://f1a4257d658c481787cc581e18b9c97e.us-central1.gcp.cloud.es.io:9243/annotations/_search';
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    console.log("THIS IS THE MESSAGE", request.msg)
+    // console.log("THIS IS THE MESSAGE", request.msg)
     if (request.msg === 'SEARCH_ELASTIC') {
         console.log("SEARCH_ELASTIC", request)
         keyWrapper(search, { userSearch: request.userSearch, query: searchBarQuery(request, true), url: request.url, successFunction: searchBarSuccess })
