@@ -214,25 +214,6 @@ class Filter extends React.Component {
                         />
                     </div>
                 </div>
-                {/* <div className="SiteScope">
-                    Location
-                    <div className="SiteScopeRow">
-                        <div className="SiteScopeButtonContainer">
-                            <button value="onPage"
-                                className={classNames({ filterButton: true, selected: this.selection.siteScope.includes('onPage') })}
-                                onClick={value => this.updateSiteScope(value)}>
-                                On Page
-                        </button>
-                        </div>
-                        <div className="SiteScopeButtonContainer">
-                            <button value="acrossWholeSite"
-                                className={classNames({ filterButton: true, selected: this.selection.siteScope.includes('acrossWholeSite') })}
-                                onClick={value => this.updateSiteScope(value)}>
-                                Across Whole Site
-                        </button>
-                        </div>
-                    </div>
-                </div> */}
                 <div className="AnnotationTypeFilter">
                     Annotation Type &nbsp; &nbsp;
                         {this.selection.annoType.length <= 5 ? (
