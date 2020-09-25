@@ -223,15 +223,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       isPrivate: false
     });
   }
-  // else if (request.from === 'content' && request.msg === 'UNARCHIVE') {
-  //   const { id } = request.payload;
-  //   updateAnnotationById(id, {
-  //     createdTimestamp: new Date().getTime(),
-  //     trashed: false
-  //   }).then(function () {
-  //     broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
-  //   });
-  // }
+  else if (request.from === 'content' && request.msg === 'UNARCHIVE') {
+    const { id } = request.payload;
+    updateAnnotationById(id, {
+      createdTimestamp: new Date().getTime(),
+      trashed: false
+    }).then(function () {
+      broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
+    });
+  }
   else if (request.from === 'content' && (request.msg === 'FINISH_TODO' || request.msg === 'UNARCHIVE')) {
     const { id } = request.payload;
     updateAnnotationById(id, {
