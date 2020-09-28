@@ -34,7 +34,6 @@ class Reply extends Component {
 
     transmitAdoptedToParent = () => {
         this.handleAdopted().then(adoptedState => {
-            // this.props.notifyParentOfAdopted(this.props.annoId, this.props.replyId, adoptedState) 
             this.props.answerIsAdopted(this.props.replyId, adoptedState);
         })
     }
@@ -129,10 +128,6 @@ class Reply extends Component {
                                     pageAnchor={xpath === null}
                                 />) : (null)}
                             <div className="annotationContent">
-                                <div className="QuestionAnswerMarker">
-                                    {answer !== undefined && answer ? "A" : (null)}
-                                    {question !== undefined && question ? "Q" : (null)}
-                                </div>
                                 <div className="contentBody">
                                     {content}
                                 </div>

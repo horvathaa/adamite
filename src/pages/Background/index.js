@@ -323,7 +323,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       });
     });
   } else if (request.msg === 'ADD_NEW_REPLY') {
-    const { id, reply, replyTags, answer, question, replyId, xpath, anchor, hostname, url, offsets } = request.payload;
+    const { id, reply, replyTags, answer, question, replyId, xpath, anchor, hostname, url, offsets, adopted } = request.payload;
     const author = getCurrentUser().email.substring(0, getCurrentUser().email.indexOf('@'));
     const replies = Object.assign({}, {
       replyId: replyId,
@@ -338,9 +338,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       anchor: anchor !== undefined ? anchor : "",
       hostname: hostname !== undefined ? hostname : "",
       url: url !== undefined ? url : "",
-      offsets: offsets !== undefined ? offsets : null
+      offsets: offsets !== undefined ? offsets : null,
+      adopted: adopted !== undefined ? adopted : false
     });
-    console.log("BUGGED REPLY", replies)
+    // console.log("BUGGED REPLY", replies)
     updateAnnotationById(id, {
       createdTimestamp: new Date().getTime(),
       replies: firebase.firestore.FieldValue.arrayUnion({

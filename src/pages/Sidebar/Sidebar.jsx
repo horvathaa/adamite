@@ -562,7 +562,6 @@ class Sidebar extends React.Component {
           this.checkTimeRange(annotation, filterSelection.timeRange) &&
           this.checkTags(annotation, filterSelection.tags)
       });
-      // console.log('wtf is happening lmao', annotations);
       let newList = annotations.concat(this.state.filteredAnnotations);
       newList = this.removeDuplicates(newList); // - for now commenting this out but for pagination
       // purposes, will probably need this back - should have background transmit whether or not we're still paginating
@@ -571,7 +570,6 @@ class Sidebar extends React.Component {
     });
   }
 
-  // wtf why is there this.state.annotations and this.state.filteredAnnotations? past amber? hello?
   applyFilter = (filterSelection) => {
     this.setState({ filterSelection: filterSelection });
     if (filterSelection.siteScope.includes('onPage') && !filterSelection.siteScope.includes('acrossWholeSite')) {
@@ -672,9 +670,9 @@ class Sidebar extends React.Component {
         {currentUser !== null && (
           <div>
             <div className={classNames({ TopRow: true, filterOpen: this.state.showFilter })}>
-              <div className="FilterButton">
+              {/* <div className="FilterButton">
                 <img src={filter} alt="Filter icon" onClick={this.handleShowFilter} className="Filter" />
-              </div>
+              </div> */}
               <SearchBar
                 searchBarInputText={searchBarInputText}
                 handleSearchBarInputText={this.handleSearchBarInputText}
@@ -686,7 +684,7 @@ class Sidebar extends React.Component {
             </div>
             <div>
               {!this.state.showFilter && <FilterSummary applyFilter={this.applyFilter} filter={this.state.filterSelection} openFilter={this.openFilter} />}
-              {this.state.askAboutRelatedAnnos && !this.state.showFilter ? (
+              {/* {this.state.askAboutRelatedAnnos && !this.state.showFilter ? (
                 <React.Fragment>
                   <div className="FilterSummaryContainer">
                     I noticed that you have an open question and you just created a new question - are they related? &nbsp;
@@ -695,14 +693,14 @@ class Sidebar extends React.Component {
                   </div>
 
                 </React.Fragment>
-              ) : (null)}
-              {this.state.showFilter &&
+              ) : (null)} */}
+              {/* {this.state.showFilter &&
                 <Filter applyFilter={this.applyFilter}
                   filterAnnotationLength={this.getFilteredAnnotationListLength}
                   getFilteredAnnotations={this.getFilteredAnnotations}
                   currentFilter={this.state.filterSelection}
                   searchByTag={this.searchByTag}
-                />}
+                />} */}
               {this.state.newSelection !== null &&
                 !this.state.annotatingPage &&
                 this.state.newSelection.trim().length > 0 && (

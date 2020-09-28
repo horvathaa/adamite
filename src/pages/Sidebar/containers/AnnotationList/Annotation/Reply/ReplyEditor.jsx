@@ -6,6 +6,7 @@ import '../Annotation.css';
 import './ReplyEditor.css';
 import '../../../CardWrapper/CardWrapper.css';
 import addAnchor from '../../../../../../assets/img/SVGs/NewAnchor2.svg';
+import { SplitButton, Button, Dropdown as BootstrapDropdown } from 'react-bootstrap';
 
 class ReplyEditor extends Component {
 
@@ -23,7 +24,8 @@ class ReplyEditor extends Component {
         url: this.props.url ? this.props.url : "",
         anchor: this.props.anchor ? this.props.anchor : "",
         offsets: this.props.offsets ? this.props.offsets : undefined,
-        hostname: this.props.hostname ? this.props.hostname : ""
+        hostname: this.props.hostname ? this.props.hostname : "",
+        adopted: this.props.adopted ? this.props.adopted : false
     }
 
     componentDidMount() {
@@ -106,7 +108,8 @@ class ReplyEditor extends Component {
                 anchor: this.state.anchor,
                 hostname: this.state.hostname,
                 url: this.state.url,
-                offsets: this.state.offsets
+                offsets: this.state.offsets,
+                adopted: this.state.adopted
             };
             let replies = this.props.replies.filter(reply => reply.replyId !== this.props.replyId);
             const repliesToTransmit = replies.concat(newReply);
@@ -119,6 +122,17 @@ class ReplyEditor extends Component {
             });
 
         } else {
+            if (this.state.adopted) {
+                const { adopted } = this.state;
+                const replyId = this.props.replies !== undefined ? this.props.replies.length : 0;
+                chrome.runtime.sendMessage({
+                    msg: 'REQUEST_ADOPTED_UPDATE',
+                    from: 'content',
+                    payload: {
+                        annoId: this.props.id, replyId, adoptedState: adopted
+                    }
+                });
+            }
             chrome.runtime.sendMessage({
                 msg: 'ADD_NEW_REPLY',
                 payload: {
@@ -132,7 +146,8 @@ class ReplyEditor extends Component {
                     anchor: this.state.anchor,
                     hostname: this.state.hostname,
                     url: this.state.url,
-                    offsets: this.state.offsets
+                    offsets: this.state.offsets,
+                    adopted: this.state.adopted
                 }
             });
             if (this.state.xpath !== undefined) {
@@ -152,13 +167,39 @@ class ReplyEditor extends Component {
     }
 
     render() {
-        const { showQuestionAnswerInterface, edit } = this.props;
+        const { edit } = this.props;
         const { anchor } = this.state;
         let content = undefined;
         if (edit !== undefined && edit) {
             content = this.props.replyContent;
         }
         const { replyTags } = this.state;
+        let titleContainer;
+        if (this.state.adopted) {
+            titleContainer = "Post Answer"
+        }
+        else {
+            titleContainer = "Post Reply"
+        }
+        let submission = this.props.showQuestionAnswerInterface ? (
+            <SplitButton
+                key="typeOfReply"
+                id="dropdown-split-variants-secondary"
+                variant="secondary"
+                title={titleContainer}
+                onClick={this.submitReply}
+            >
+                {this.props.showQuestionAnswerInterface && <BootstrapDropdown.Item onClick={_ => { this.setState({ adopted: true, answer: true }); this.submitReply() }} eventKey="1">Answer</BootstrapDropdown.Item>}
+                {this.props.showQuestionAnswerInterface && <BootstrapDropdown.Item onClick={_ => { this.setState({ adopted: false, answer: false }); this.submitReply() }} eventKey="2">Reply</BootstrapDropdown.Item>}
+            </SplitButton>) : (
+                <Button
+                    key="replySubmit"
+                    id="dropdown-split-variants-secondary"
+                    variant="secondary"
+                    title={"Post Reply"}
+                    onClick={this.submitReply}
+                >Post Reply </Button>
+            )
         return (
             <React.Fragment>
                 <div className="ReplyHeader">
@@ -187,10 +228,7 @@ class ReplyEditor extends Component {
                             <div className="cancelButtonContainer">
                                 <button onClick={this.cancelReply} className="Cancel-Button">Cancel</button> &nbsp; &nbsp;
                             </div>
-                            <div className="publishButtonContainer">
-                                <button onClick={this.submitReply} className="Publish-Button">Submit</button>
-                            </div>
-
+                            {submission}
                         </div>
                     </div>
                 </div>

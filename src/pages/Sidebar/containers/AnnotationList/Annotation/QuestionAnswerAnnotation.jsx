@@ -27,11 +27,6 @@ class QuestionAnswerAnnotation extends Component {
     state = {
         replying: false,
         showReplies: false,
-        selected: false
-    }
-
-    setSelected = () => {
-        this.setState({ selected: !this.state.selected })
     }
 
     handleNewAnchorRequest = () => {
@@ -136,7 +131,7 @@ class QuestionAnswerAnnotation extends Component {
         const closeoutOptions = closedStrings.filter(str => str !== closeOutText);
 
         return (
-            <li key={idx} onClick={this.setSelected} id={id} className={classNames({ AnnotationItem: true })}>
+            <li key={idx} id={id} className={classNames({ AnnotationItem: true })}>
                 <div
                     className={classNames({
                         AnnotationContainerPad: true,

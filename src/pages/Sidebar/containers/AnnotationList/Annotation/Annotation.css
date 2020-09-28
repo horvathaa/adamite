@@ -267,8 +267,13 @@
   font-weight: bold;
   line-height: 1.5;
   border-radius: 0.2rem;
-  
+  border: none;
 }
+
+.ToDo-Button:hover {
+  filter: brightness(1.2);
+}
+
 
 .Issue-Button{
   position: relative;
@@ -279,7 +284,11 @@
   font-weight: bold;
   line-height: 1.5;
   border-radius: 0.2rem;
-  
+  border: none;
+}
+
+.Issue-Button:hover {
+  filter: brightness(1.2);
 }
 
 .ContentContainer {
@@ -518,6 +527,7 @@
   font-size: 1rem;
   line-height: 1.5;
   border-radius: 0.25rem;
+  height: 100%;
   transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
   position: relative;
   background-color: #6969692b !important;
