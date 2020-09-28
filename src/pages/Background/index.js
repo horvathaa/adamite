@@ -108,7 +108,7 @@ function setUpGetAllAnnotationsByUrlListener(url, annotations) {
       broadcastAnnotationsUpdated("CONTENT_UPDATED", annotationsToBroadcast);
       publicAnnotations = tempPublicAnnotations;
       chrome.tabs.query({}, tabs => {
-        tabs = tabs.filter(e => e.url === url)
+        tabs = tabs.filter(e => getPathFromUrl(e.url) === url)
         tabs.forEach(function (tab) {
           chrome.tabs.sendMessage(tab.id, {
             msg: 'REFRESH_HIGHLIGHTS',
@@ -143,8 +143,9 @@ function promiseToComeBack(url, annotations) {
       broadcastAnnotationsUpdated("CONTENT_UPDATED", annotationsToBroadcast);
       privateAnnotations = tempPrivateAnnotations;
       chrome.tabs.query({}, tabs => {
-        tabs = tabs.filter(e => e.url === url)
+        tabs = tabs.filter(e => getPathFromUrl(e.url) === url)
         tabs.forEach(function (tab) {
+          console.log('refreshing highlights');
           chrome.tabs.sendMessage(tab.id, {
             msg: 'REFRESH_HIGHLIGHTS',
             payload: annotationsToBroadcast,
@@ -172,10 +173,11 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.msg === 'REQUEST_TAB_URL') {
     const cleanUrl = getPathFromUrl(sender.tab.url);
+    console.log('sending url', cleanUrl);
     sendResponse({ url: cleanUrl });
   }
   else if (request.msg === 'GET_ANNOTATIONS_PAGE_LOAD') {
-    console.log('is this getting called lol');
+    // console.log('is this getting called lol');
     publicListener = setUpGetAllAnnotationsByUrlListener(request.url, annotations);
     privateListener = promiseToComeBack(request.url, annotations);
   }

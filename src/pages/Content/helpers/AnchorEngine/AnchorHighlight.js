@@ -3,6 +3,12 @@ import { xpathConversion, xpathToNode, flatten, getDescendants, getNodesInRange,
 // import $ from 'jquery';
 var xpathRange = require('xpath-range');
 
+// helper method from
+// https://stackoverflow.com/questions/2540969/remove-querystring-from-url
+function getPathFromUrl(url) {
+    return url.split(/[?#]/)[0];
+}
+
 function anchorClick(e) {
     // console.log("in Anchor click", e)
     // console.log("spanz", document.getElementsByName(e.target.attributes.getNamedItem("name").value));
@@ -41,7 +47,7 @@ function anchorClick(e) {
         msg: 'ANCHOR_CLICKED',
         from: 'content',
         payload: {
-            url: window.location.href,
+            url: getPathFromUrl(window.location.href),
             target: target,
         },
     });
@@ -51,7 +57,7 @@ function anchorClick(e) {
 * Alternative way to use highlightRange
 */
 export const highlightReplyRange = (xpath, annoId, replyId) => {
-    console.log('are we even IN HERE')
+    // console.log('are we even IN HERE')
     var wordPath = [];
     // console.log("ANNO ")
     // console.log(anno)

@@ -104,9 +104,9 @@ class Sidebar extends React.Component {
     if (scrollIsAtTheBottom && this.state.searchState) {
       this.ElasticSearch("SCROLL_ELASTIC")
         .then(res => {
-          console.log("THESE RESUsssssLTS", res.response.data)
+          // console.log("THESE RESUsssssLTS", res.response.data)
           const results = res.response.data.hits.hits.map(h => h._source)
-          console.log("THESE RESULTS", res.response)
+          // console.log("THESE RESULTS", res.response)
           this.setState({
             searchedAnnotations: this.state.searchedAnnotations.concat(results)
           })
@@ -132,6 +132,7 @@ class Sidebar extends React.Component {
           },
           urlData => {
             this.setState({ url: urlData.url });
+            console.log('got URL', urlData.url);
             if (currentUserData.payload.currentUser) {
               this.setUpAnnotationsListener(
                 currentUserData.payload.currentUser.uid,

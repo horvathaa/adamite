@@ -8,13 +8,19 @@ import anchorOnOtherPage from '../../../../../../assets/img/SVGs/Anchor_otherpag
 import '../Annotation.css';
 import './Anchor.css';
 
+// helper method from
+// https://stackoverflow.com/questions/2540969/remove-querystring-from-url
+function getPathFromUrl(url) {
+    return url.split(/[?#]/)[0];
+}
+
 class Anchor extends Component {
     handleOnLocalOnClick = () => {
         if (this.props.id === null) {
             return;
         }
         chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-            let url = tabs[0].url;
+            const url = getPathFromUrl(tabs[0].url);
             if (this.props.url === url) {
                 chrome.tabs.sendMessage(
                     tabs[0].id,
@@ -33,7 +39,7 @@ class Anchor extends Component {
             return;
         }
         chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-            let url = tabs[0].url;
+            const url = getPathFromUrl(tabs[0].url);
             if (this.props.url === url) {
                 chrome.tabs.sendMessage(
                     tabs[0].id,
@@ -52,7 +58,7 @@ class Anchor extends Component {
             return;
         }
         chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-            let url = tabs[0].url;
+            const url = getPathFromUrl(tabs[0].url);
             if (this.props.url === url) {
                 chrome.tabs.sendMessage(
                     tabs[0].id,

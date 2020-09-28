@@ -12,6 +12,12 @@ import '../../../../assets/img/SVGs/Issue.svg';
 var queue = [];
 var replyQueue = [];
 
+// helper method from
+// https://stackoverflow.com/questions/2540969/remove-querystring-from-url
+function getPathFromUrl(url) {
+    return url.split(/[?#]/)[0];
+}
+
 const Popover = ({ selection, xpathToNode, offsets, removePopover }) => {
     const [selected, setSelected] = useState(null);
     const [showQuestionMenu, setShowQuestionMenu] = useState(false);
@@ -29,7 +35,7 @@ const Popover = ({ selection, xpathToNode, offsets, removePopover }) => {
                     anchor: selected,
                     xpath: xpathToNode,
                     offsets: offsets,
-                    url: window.location.href,
+                    url: getPathFromUrl(window.location.href),
                 },
             });
             removePopover();
@@ -172,7 +178,7 @@ function displayPopoverBasedOnRectPosition(rect, props) {
 const alertBackgroundOfNewSelection = (selection, offsets, xpath, type, content) => {
     // supporting creation of annotations in sidebar
     const annoContent = content === undefined ? "" : content;
-    console.log('transmitting content selected', annoContent);
+    // console.log('transmitting content selected', annoContent);
     chrome.runtime.sendMessage({
         msg: 'CONTENT_SELECTED',
         from: 'content',
@@ -219,7 +225,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 payload: {
                     newAnno: request.payload,
                     xpath: xpathToNode,
-                    url: window.location.href,
+                    url: getPathFromUrl(window.location.href),
                     anchor: selection.toString(),
                     offsets: offsets,
                     hostname: window.location.hostname
@@ -259,7 +265,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 from: 'content',
                 payload: {
                     xpath: xpathToNode,
-                    url: window.location.href,
+                    url: getPathFromUrl(window.location.href),
                     anchor: selection.toString(),
                     offsets: offsets,
                     hostname: window.location.hostname

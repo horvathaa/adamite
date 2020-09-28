@@ -35,7 +35,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         updateXpaths(collection, request.id)
     }
     else if (request.msg === 'HIGHLIGHT_ANNOTATIONS') {
-        console.log('in highlightr_annotations');
+        // console.log('in highlightr_annotations');
         const annotationsOnPage = request.payload;
         if (annotationsOnPage.length) {
             annotationsOnPage.reverse().forEach(anno => {
@@ -53,7 +53,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
     }
     else if (request.msg === 'ADD_REPLY_HIGHLIGHT') {
-        console.log('doin it');
+        // console.log('doin it');
         const { xpath, id } = request.payload;
         highlightReplyRange(xpath, id);
     }
