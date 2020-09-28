@@ -41,25 +41,9 @@ class Annotation extends Component {
 
   }
 
-  // probably switch to just storing text version of username in the annotation table so we cut down
-  // on this read
   async componentDidMount() {
     document.addEventListener('keydown', this.keydown, false);
     this.updateData();
-    let authorDoc = getUserProfileById(this.props.authorId);
-    // let user = "anonymous";
-    let user;
-    await authorDoc.get().then(function (doc) {
-      if (doc.exists) {
-        user = doc.data().email.substring(0, doc.data().email.indexOf('@'));
-      }
-      else {
-        user = "anonymous";
-      }
-    }).catch(function (error) {
-      console.log('could not get doc:', error);
-    });
-    this.setState({ author: user });
   }
 
   componentDidUpdate(prevProps) {
@@ -69,7 +53,8 @@ class Annotation extends Component {
       prevProps.authorId !== this.props.authorId ||
       prevProps.pinned !== this.props.pinned ||
       prevProps.isClosed !== this.props.isClosed ||
-      prevProps.howClosed !== this.props.howClosed) {
+      prevProps.howClosed !== this.props.howClosed ||
+      prevProps.author !== this.props.author) {
       this.updateData();
     }
   }
@@ -86,7 +71,6 @@ class Annotation extends Component {
     var day = date.getDate();
     var hour = date.getHours();
     var min = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
-    // var sec = date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
     var time = hour + ':' + min + ' ' + day + ' ' + month + ' ' + year;
     return time;
   }
@@ -242,7 +226,8 @@ class Annotation extends Component {
 
   render() {
     const { anchor, idx, id, active, authorId, currentUser, trashed, timeStamp, url, currentUrl, childAnchor, xpath, replies, isPrivate, adopted } = this.props;
-    const { editing, collapsed, tags, content, annotationType, author, pinned, isClosed, howClosed } = this.state;
+    const { editing, collapsed, tags, content, annotationType, pinned, isClosed, howClosed } = this.state;
+    const author = this.props.author === undefined ? "anonymous" : this.props.author;
     if (annotationType === 'default' && !trashed) {
       return (<DefaultAnnotation
         idx={idx}

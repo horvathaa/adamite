@@ -114,7 +114,8 @@ export const createAnnotation = async ({
   xpath,
   childAnchor,
   pinned,
-  isPrivate
+  isPrivate,
+  author
 }) => {
   authorId = authorId ? authorId : getCurrentUserId();
   if (!authorId) {
@@ -141,7 +142,8 @@ export const createAnnotation = async ({
     pinned: AnnotationType === 'question' || AnnotationType === 'to-do',
     replies: [],
     private: isPrivate, //just for user study - should be set to 'isPrivate'
-    adopted: false
+    adopted: false,
+    author
   };
   return db.collection(DB_COLLECTIONS.ANNOTATIONS).add(newAnnotation);
 };

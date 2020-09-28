@@ -208,6 +208,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   else if (request.msg === 'SAVE_HIGHLIGHT') {
     let { url, anchor, xpath, offsets } = request.payload;
     const hostname = new URL(url).hostname;
+    const author = getCurrentUser().email.substring(0, getCurrentUser().email.indexOf('@'));
     createAnnotation({
       taskId: null,
       SharedId: null,
@@ -222,7 +223,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       pinned: false,
       AnnotationTags: [],
       childAnchor: [],
-      isPrivate: false
+      isPrivate: false,
+      author
     });
   }
   else if (request.from === 'content' && request.msg === 'UNARCHIVE') {
@@ -262,6 +264,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   else if (request.msg === 'SAVE_ANNOTATED_TEXT') {
     let { url, content } = request.payload;
     const hostname = new URL(url).hostname;
+    const author = getCurrentUser().email.substring(0, getCurrentUser().email.indexOf('@'));
 
     // firebase: in action
     //content = JSON.parse(content); // consider just pass content as an object
@@ -280,7 +283,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       pinned: false,
       AnnotationTags: content.tags,
       childAnchor: [],
-      isPrivate: content.private
+      isPrivate: content.private,
+      author
     }).then(value => {
       sendResponse({
         msg: 'DONE',
