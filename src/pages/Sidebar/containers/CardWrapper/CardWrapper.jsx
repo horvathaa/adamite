@@ -88,7 +88,7 @@ export default class CardWrapper extends React.Component {
         if (option.value === 'Normal') {
             this.setState({ annotationType: "default" });
         }
-        else if (option.value === 'Empty') {
+        else if (option.value === 'highlight') {
             this.setState({ annotationType: "highlight" });
         }
         else {
@@ -99,7 +99,7 @@ export default class CardWrapper extends React.Component {
     render() {
 
         const options = [
-            'Normal', 'To-do', 'Question', 'Empty', 'Navigation', 'Issue'
+            'Normal', 'To-do', 'Question', 'Highlight', 'Issue'
         ];
         const defaultOption = options[0];
 

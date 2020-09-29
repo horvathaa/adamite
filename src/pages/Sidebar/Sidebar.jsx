@@ -46,7 +46,7 @@ class Sidebar extends React.Component {
     filterSelection: {
       siteScope: ['onPage'],
       userScope: ['public'],
-      annoType: ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'],
+      annoType: ['default', 'to-do', 'question', 'highlight', 'issue'],
       timeRange: 'all',
       archive: null,
       tags: []
@@ -672,9 +672,9 @@ class Sidebar extends React.Component {
         {currentUser !== null && (
           <div>
             <div className={classNames({ TopRow: true, filterOpen: this.state.showFilter })}>
-              <div className="FilterButton">
+              {/* <div className="FilterButton">
                 <img src={filter} alt="Filter icon" onClick={this.handleShowFilter} className="Filter" />
-              </div>
+              </div> */}
               <SearchBar
                 searchBarInputText={searchBarInputText}
                 handleSearchBarInputText={this.handleSearchBarInputText}

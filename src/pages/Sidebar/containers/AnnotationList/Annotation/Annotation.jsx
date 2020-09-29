@@ -306,9 +306,6 @@ class Annotation extends Component {
         notifyParentOfAdopted={this.notifyParentOfAdopted}
       />);
     }
-    else if (annotationType === 'navigation') {
-      return (null);
-    }
     else if (annotationType === 'highlight') {
       return (
         <HighlightAnnotation
