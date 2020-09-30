@@ -38,7 +38,6 @@ class Annotation extends Component {
     this.setState({
       tags, content, annotationType: type, authorId, pinned, isClosed, howClosed
     });
-
   }
 
   async componentDidMount() {
