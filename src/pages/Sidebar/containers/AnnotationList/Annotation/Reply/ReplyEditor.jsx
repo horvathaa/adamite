@@ -91,9 +91,7 @@ class ReplyEditor extends Component {
         });
     }
 
-    // when submitting reply on annotation that is not on current page, uses cache so reply isn't represented
-    // probably not good solution
-    submitReply = () => {
+    submitReply = (adopted, answer) => {
         if (this.props.edit) {
             const newReply = {
                 replyId: this.props.replyId,
@@ -122,17 +120,6 @@ class ReplyEditor extends Component {
             });
 
         } else {
-            if (this.state.adopted) {
-                const { adopted } = this.state;
-                const replyId = this.props.replies !== undefined ? this.props.replies.length : 0;
-                chrome.runtime.sendMessage({
-                    msg: 'REQUEST_ADOPTED_UPDATE',
-                    from: 'content',
-                    payload: {
-                        annoId: this.props.id, replyId, adoptedState: adopted
-                    }
-                });
-            }
             chrome.runtime.sendMessage({
                 msg: 'ADD_NEW_REPLY',
                 payload: {
@@ -140,28 +127,50 @@ class ReplyEditor extends Component {
                     id: this.props.id,
                     reply: this.state.reply,
                     replyTags: this.state.replyTags,
-                    answer: this.state.answer,
+                    answer: answer !== undefined ? answer : false,
                     question: this.state.question,
                     xpath: this.state.xpath,
                     anchor: this.state.anchor,
                     hostname: this.state.hostname,
                     url: this.state.url,
                     offsets: this.state.offsets,
-                    adopted: this.state.adopted
+                    adopted: adopted !== undefined ? adopted : false
+                }
+            }, (response) => {
+                if (response.msg === 'DONE') {
+                    if (adopted) {
+                        const replyId = this.props.replies !== undefined ? this.props.replies.length : 0;
+                        chrome.runtime.sendMessage({
+                            msg: 'REQUEST_ADOPTED_UPDATE',
+                            from: 'content',
+                            payload: {
+                                annoId: this.props.id, replyId, adoptedState: adopted
+                            }
+                        });
+                        chrome.runtime.sendMessage({
+                            msg: 'UPDATE_QUESTION',
+                            from: 'content',
+                            payload: {
+                                id: this.props.id,
+                                isClosed: true,
+                                howClosed: "Answered"
+                            }
+                        });
+                    }
+                    if (this.state.xpath !== undefined) {
+                        chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+                            chrome.tabs.sendMessage(tabs[0].id, {
+                                msg: 'ADD_REPLY_HIGHLIGHT',
+                                payload: {
+                                    replyId: this.props.replies !== undefined ? this.props.replies.length : 0,
+                                    id: this.props.id,
+                                    xpath: this.state.xpath
+                                }
+                            });
+                        });
+                    }
                 }
             });
-            if (this.state.xpath !== undefined) {
-                chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-                    chrome.tabs.sendMessage(tabs[0].id, {
-                        msg: 'ADD_REPLY_HIGHLIGHT',
-                        payload: {
-                            replyId: this.props.replies !== undefined ? this.props.replies.length : 0,
-                            id: this.props.id,
-                            xpath: this.state.xpath
-                        }
-                    });
-                });
-            }
         }
         this.props.finishReply();
     }
@@ -187,10 +196,10 @@ class ReplyEditor extends Component {
                 id="dropdown-split-variants-secondary"
                 variant="secondary"
                 title={titleContainer}
-                onClick={this.submitReply}
+                onClick={_ => this.submitReply(false, false)}
             >
-                {this.props.showQuestionAnswerInterface && <BootstrapDropdown.Item onClick={_ => { this.setState({ adopted: true, answer: true }); this.submitReply() }} eventKey="1">Answer</BootstrapDropdown.Item>}
-                {this.props.showQuestionAnswerInterface && <BootstrapDropdown.Item onClick={_ => { this.setState({ adopted: false, answer: false }); this.submitReply() }} eventKey="2">Reply</BootstrapDropdown.Item>}
+                {this.props.showQuestionAnswerInterface && <BootstrapDropdown.Item onClick={_ => { this.setState({ adopted: true, answer: true }); this.submitReply(true, true) }} eventKey="1">Answer</BootstrapDropdown.Item>}
+                {this.props.showQuestionAnswerInterface && <BootstrapDropdown.Item onClick={_ => { this.setState({ adopted: false, answer: false }); this.submitReply(false, false) }} eventKey="2">Reply</BootstrapDropdown.Item>}
             </SplitButton>) : (
                 <Button
                     key="replySubmit"
