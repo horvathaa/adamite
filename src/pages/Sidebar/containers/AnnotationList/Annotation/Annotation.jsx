@@ -46,20 +46,20 @@ class Annotation extends Component {
   async componentDidMount() {
     document.addEventListener('keydown', this.keydown, false);
     this.updateData();
-    let authorDoc = getUserProfileById(this.props.authorId);
-    // let user = "anonymous";
-    let user;
-    await authorDoc.get().then(function (doc) {
-      if (doc.exists) {
-        user = doc.data().email.substring(0, doc.data().email.indexOf('@'));
-      }
-      else {
-        user = "anonymous";
-      }
-    }).catch(function (error) {
-      console.log('could not get doc:', error);
-    });
-    this.setState({ author: user });
+    // let authorDoc = getUserProfileById(this.props.authorId);
+    // // let user = "anonymous";
+    // let user;
+    // await authorDoc.get().then(function (doc) {
+    //   if (doc.exists) {
+    //     user = doc.data().email.substring(0, doc.data().email.indexOf('@'));
+    //   }
+    //   else {
+    //     user = "anonymous";
+    //   }
+    // }).catch(function (error) {
+    //   console.log('could not get doc:', error);
+    // });
+    // this.setState({ author: user });
   }
 
   componentDidUpdate(prevProps) {

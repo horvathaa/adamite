@@ -1,6 +1,10 @@
 import { DB_COLLECTIONS, db, getCurrentUserId } from '../index';
 import firebase from '../firebase';
 
+export const getAllGroupsByUserId = uid => {
+  return db.collection(DB_COLLECTIONS.USERS).where('uid', '==', uid);
+};
+
 export const getAllAnnotationsByUserId = uid => {
   return db.collection(DB_COLLECTIONS.ANNOTATIONS).where('authorId', '==', uid);
 };
@@ -61,6 +65,12 @@ export const getAllPinnedAnnotationsByUserId = (uid) => {
     .where('authorId', '==', uid)
     .where('pinned', '==', true)
     .where('private', '==', false);
+};
+
+export const getGroupAnnotationsByGroupId = (gid) => {
+  return db
+    .collection(DB_COLLECTIONS.ANNOTATIONS)
+    .where('Group', 'array-contains', gid)
 };
 
 export const getAllPrivatePinnedAnnotationsByUserId = (uid) => {
