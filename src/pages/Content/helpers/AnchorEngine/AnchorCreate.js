@@ -101,7 +101,7 @@ const Popover = ({ selection, xpathToNode, offsets, removePopover }) => {
                 <div className="buttonIconContainer">
                     <img src={chrome.extension.getURL('Highlight.svg')} alt="highlight" />
                 </div>
-                Empty
+                Highlight
             </div>
             <div className="onHoverCreateAnnotation" onClick={todoButtonClickedHandler} >
                 <div className="buttonIconContainer">

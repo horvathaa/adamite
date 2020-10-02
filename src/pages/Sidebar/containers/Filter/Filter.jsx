@@ -11,7 +11,7 @@ class Filter extends React.Component {
     selection = {
         siteScope: ['onPage'],
         userScope: ['public'],
-        annoType: ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'],
+        annoType: ['default', 'to-do', 'question', 'highlight', 'issue'],
         timeRange: 'all',
         archive: null,
         tags: []
@@ -90,7 +90,7 @@ class Filter extends React.Component {
     }
 
     setAnnoTypeListFull = () => {
-        this.selection.annoType = ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'];
+        this.selection.annoType = ['default', 'to-do', 'question', 'highlight', 'issue'];
         this.props.applyFilter(this.selection);
     }
 
@@ -98,7 +98,7 @@ class Filter extends React.Component {
         this.selection = {
             siteScope: ['onPage'],
             userScope: ['public'],
-            annoType: ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'],
+            annoType: ['default', 'to-do', 'question', 'highlight', 'issue'],
             timeRange: 'all',
             archive: null,
             tags: []
@@ -248,7 +248,7 @@ class Filter extends React.Component {
                             <button value="highlight"
                                 className={classNames({ filterButton: true, selected: this.selection.annoType.includes('highlight') })}
                                 onClick={value => this.updateAnnoType(value)}>
-                                Empty
+                                Highlight
                         </button>
                         </div>
                         <div className="AnnoTypeButtonContainer">

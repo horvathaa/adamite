@@ -16,8 +16,11 @@ import {
   getAllPrivatePinnedAnnotationsByUserId,
   deleteAnnotationForeverById,
   getCurrentUserId,
+  getAllGroupsByUserId,
   getPrivateAnnotationsAcrossSite,
-  updateAllAnnotations, getAnnotationById
+  updateAllAnnotations, getAnnotationById,
+  getGroupAnnotationsByGroupId,
+  getUserByUserId
 } from '../../firebase/index';
 import firebase from '../../firebase/firebase';
 
@@ -77,6 +80,7 @@ const broadcastAnnotationsUpdated = (message, annotations) => {
 
 const broadcastAnnotationsUpdatedTab = (message, annotations, tabId) => {
   chrome.tabs.query({ active: true }, tabs => {
+    console.log("here are the annotation", annotations)
     chrome.tabs.sendMessage(
       tabId,
       {
@@ -144,6 +148,7 @@ function promiseToComeBack(url, annotations) {
           tabAnnotationCollect.push({ tabId: tabs[0].id, annotations: annotationsToBroadcast });
         }
       });
+      console.log("annotations", annotationsToBroadcast)
       broadcastAnnotationsUpdated("CONTENT_UPDATED", annotationsToBroadcast);
       privateAnnotations = tempPrivateAnnotations;
       chrome.tabs.query({}, tabs => {
@@ -183,6 +188,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // console.log('is this getting called lol');
     publicListener = setUpGetAllAnnotationsByUrlListener(request.url, annotations);
     privateListener = promiseToComeBack(request.url, annotations);
+    // console.log('is this getting called lol', publicListener, privateListener);
   }
   else if (request.msg === 'UNSUBSCRIBE' && request.from === 'content') {
     if (typeof privateListener === "function") {
@@ -414,6 +420,39 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // console.log('sending', pinnedAnnotations);
     // sendResponse({ annotations: pinnedAnnotations });
     // pinnedAnnotations = [];
+  }
+  else if (request.from === 'content' && request.msg === 'GET_GROUP_ANNOTATIONS') {
+    let GroupAnnotations = [];
+    let gid = [];
+    getUserByUserId(getCurrentUserId()).get().then(function (doc) {
+      if (!doc.empty) {
+        doc.docs.forEach(user => {
+          console.log(user.data());
+          gid = user.data().groups;
+        })
+      }
+      console.log('giddy', gid);
+      getGroupAnnotationsByGroupId(gid[0]).get().then(function (doc) {
+        console.log('doc', doc);
+        doc.docs.forEach(gid => {
+          console.log(gid.data());
+        });
+      }).catch(function (error) {
+        console.log('could not get doc: ', error);
+      });
+      // return doc.docs[0].data().groups;
+    }).catch(function (error) {
+      console.log('could not get doc: ', error);
+    });
+
+    //   getAllPrivatePinnedAnnotationsByUserId(getCurrentUserId()).get().then(function (doc) {
+    //     doc.docs.forEach(anno => {
+    //       pinnedAnnotations.push({ id: anno.id, ...anno.data() });
+    //     });
+    //     // annotations = annotations.filter(anno => anno.isClosed === false);
+    //     sendResponse({ annotations: pinnedAnnotations });
+    //   })
+    // });
   }
   else if (request.from === 'content' && request.msg === 'REQUEST_PIN_UPDATE') {
     const { id, pinned } = request.payload;

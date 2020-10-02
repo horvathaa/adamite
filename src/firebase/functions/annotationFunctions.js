@@ -1,6 +1,10 @@
 import { DB_COLLECTIONS, db, getCurrentUserId } from '../index';
 import firebase from '../firebase';
 
+export const getUserByUserId = uid => {
+  return db.collection(DB_COLLECTIONS.USERS).where('uid', '==', uid);
+};
+
 export const getAllAnnotationsByUserId = uid => {
   return db.collection(DB_COLLECTIONS.ANNOTATIONS).where('authorId', '==', uid);
 };
@@ -63,6 +67,14 @@ export const getAllPinnedAnnotationsByUserId = (uid) => {
     .where('private', '==', false);
 };
 
+export const getGroupAnnotationsByGroupId = (gid) => {
+  console.log('in annofunctions', gid);
+  return db
+    .collection(DB_COLLECTIONS.ANNOTATIONS)
+    .where('groups', 'array-contains', gid)
+  // .where('private', '==', false);
+};
+
 export const getAllPrivatePinnedAnnotationsByUserId = (uid) => {
   return db
     .collection(DB_COLLECTIONS.ANNOTATIONS)
@@ -93,7 +105,6 @@ export const updateAllAnnotations = () => {
     .then(function (querySnapshot) {
       querySnapshot.forEach(function (doc) {
         doc.ref.update({
-
           // fill in here what needs updating
         });
       });

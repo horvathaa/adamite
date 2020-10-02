@@ -46,7 +46,7 @@ class Sidebar extends React.Component {
     filterSelection: {
       siteScope: ['onPage'],
       userScope: ['public'],
-      annoType: ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'],
+      annoType: ['default', 'to-do', 'question', 'highlight', 'issue'],
       timeRange: 'all',
       archive: null,
       tags: []
@@ -147,6 +147,11 @@ class Sidebar extends React.Component {
         );
       }
     );
+
+    chrome.runtime.sendMessage({
+      msg: 'GET_GROUP_ANNOTATIONS',
+      from: 'content'
+    });
 
     // chrome.runtime.sendMessage({
     //   from: 'content',

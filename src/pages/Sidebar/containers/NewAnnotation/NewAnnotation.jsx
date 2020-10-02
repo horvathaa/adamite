@@ -133,7 +133,7 @@ class NewAnnotation extends React.Component {
     const { newSelection, type, annoContent } = this.props;
 
     const options = [
-      'Default', 'To-do', 'Highlight', 'Navigation', 'Issue'
+      'Default', 'To-do', 'Highlight', 'Issue'
     ];
 
     const submittedLoadState = (
