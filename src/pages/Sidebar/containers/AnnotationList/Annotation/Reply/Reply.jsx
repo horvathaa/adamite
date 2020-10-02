@@ -54,7 +54,6 @@ class Reply extends Component {
         var day = date.getDate();
         var hour = date.getHours();
         var min = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
-        // var sec = date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
         var time = hour + ':' + min + ' ' + day + ' ' + month + ' ' + year;
         return time;
     }

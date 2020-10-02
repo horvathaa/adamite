@@ -147,6 +147,7 @@ class ReplyEditor extends Component {
                                 annoId: this.props.id, replyId, adoptedState: adopted
                             }
                         });
+                        // consider changing to callback to parent so we can also unpin annotation
                         chrome.runtime.sendMessage({
                             msg: 'UPDATE_QUESTION',
                             from: 'content',
@@ -183,22 +184,15 @@ class ReplyEditor extends Component {
             content = this.props.replyContent;
         }
         const { replyTags } = this.state;
-        let titleContainer;
-        if (this.state.adopted) {
-            titleContainer = "Post Answer"
-        }
-        else {
-            titleContainer = "Post Reply"
-        }
+
         let submission = this.props.showQuestionAnswerInterface ? (
             <SplitButton
                 key="typeOfReply"
                 id="dropdown-split-variants-secondary"
                 variant="secondary"
-                title={titleContainer}
-                onClick={_ => this.submitReply(false, false)}
+                title={"Post Answer"}
+                onClick={_ => this.submitReply(true, true)}
             >
-                {this.props.showQuestionAnswerInterface && <BootstrapDropdown.Item onClick={_ => { this.setState({ adopted: true, answer: true }); this.submitReply(true, true) }} eventKey="1">Answer</BootstrapDropdown.Item>}
                 {this.props.showQuestionAnswerInterface && <BootstrapDropdown.Item onClick={_ => { this.setState({ adopted: false, answer: false }); this.submitReply(false, false) }} eventKey="2">Reply</BootstrapDropdown.Item>}
             </SplitButton>) : (
                 <Button

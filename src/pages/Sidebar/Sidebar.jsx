@@ -148,12 +148,12 @@ class Sidebar extends React.Component {
       }
     );
 
-    chrome.runtime.sendMessage({
-      from: 'content',
-      msg: 'GET_PINNED_ANNOTATIONS'
-    }, response => {
-      this.setState({ pinnedAnnos: response.annotations });
-    })
+    // chrome.runtime.sendMessage({
+    //   from: 'content',
+    //   msg: 'GET_PINNED_ANNOTATIONS'
+    // }, response => {
+    //   this.setState({ pinnedAnnos: response.annotations });
+    // })
 
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       // console.log('caught this message', request, sender);
@@ -310,7 +310,10 @@ class Sidebar extends React.Component {
         }
       }
       else if (request.from === 'background' && request.msg === 'FILTER_BY_TAG') {
+        let filterSelection = this.state.filterSelection;
+        filterSelection.tags = [request.payload];
         this.setState({
+          filterSelection: filterSelection,
           filteredAnnotations: this.state.annotations.filter(anno => {
             return this.checkTags(anno, [request.payload]);
           })
@@ -739,7 +742,15 @@ class Sidebar extends React.Component {
             </div>
             <div className="userQuestions">
               <div className="userQuestionButtonContainer">
-                <div className="ModifyFilter userQuestions" onClick={_ => { this.setState({ showPinned: !this.state.showPinned }) }}>
+                <div className="ModifyFilter userQuestions" onClick={_ => {
+                  this.setState({ showPinned: !this.state.showPinned })
+                  chrome.runtime.sendMessage({
+                    from: 'content',
+                    msg: 'GET_PINNED_ANNOTATIONS'
+                  }, response => {
+                    this.setState({ pinnedAnnos: response.annotations });
+                  })
+                }}>
                   {this.state.showPinned ? ("Hide Pinned Annotations") : ("Show Pinned Annotations")}
                 </div>
               </div>

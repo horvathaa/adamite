@@ -61,6 +61,9 @@ let annotationsAcrossWholeSite = [];
 let annotations = [];
 let publicAnnotations = [];
 let privateAnnotations = [];
+let pinnedAnnotations = [];
+let pinnedPrivateListener;
+let pinnedPublicListener;
 let publicListener;
 let privateListener;
 
@@ -96,6 +99,7 @@ function setUpGetAllAnnotationsByUrlListener(url, annotations) {
           ...snapshot.data(),
         });
       })
+      console.log("temp", tempPublicAnnotations);
       let annotationsToBroadcast = tempPublicAnnotations.concat(privateAnnotations);
       chrome.tabs.query({ active: true }, tabs => {
         if (containsObjectWithId(tabs[0].id, tabAnnotationCollect)) {
@@ -145,7 +149,7 @@ function promiseToComeBack(url, annotations) {
       chrome.tabs.query({}, tabs => {
         tabs = tabs.filter(e => getPathFromUrl(e.url) === url)
         tabs.forEach(function (tab) {
-          console.log('refreshing highlights');
+          // console.log('refreshing highlights');
           chrome.tabs.sendMessage(tab.id, {
             msg: 'REFRESH_HIGHLIGHTS',
             payload: annotationsToBroadcast,
@@ -186,6 +190,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
     if (typeof publicListener === "function") {
       publicListener();
+    }
+    if (typeof pinnedPrivateListener === "function") {
+      pinnedPrivateListener();
+    }
+    if (typeof pinnedPublicListener === "function") {
+      pinnedPublicListener();
     }
   }
   else if (request.msg === 'ANNOTATION_UPDATED' && request.from === 'content') {
@@ -292,9 +302,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
   } else if (request.from === 'content' && request.msg === 'SAVE_NEW_ANCHOR') {
     let { newAnno, xpath, url, anchor, offsets, hostname } = request.payload;
+    const author = getCurrentUser().email.substring(0, getCurrentUser().email.indexOf('@'));
     createAnnotation({
       taskId: null,
       childAnchor: null,
+      author,
       AnnotationContent: newAnno.content,
       AnnotationType: newAnno.type,
       SharedId: newAnno.sharedId,
@@ -346,7 +358,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       offsets: offsets !== undefined ? offsets : null,
       adopted: adopted !== undefined ? adopted : false
     });
-    // console.log("BUGGED REPLY", replies)
     updateAnnotationById(id, {
       createdTimestamp: new Date().getTime(),
       replies: firebase.firestore.FieldValue.arrayUnion({
@@ -380,19 +391,29 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
   }
   else if (request.from === 'content' && request.msg === 'GET_PINNED_ANNOTATIONS') {
-    let pinnedAnnotations = [];
-    getAllPinnedAnnotationsByUserId(getCurrentUserId()).get().then(function (doc) {
-      doc.docs.forEach(anno => {
-        pinnedAnnotations.push({ id: anno.id, ...anno.data() });
-      });
-      getAllPrivatePinnedAnnotationsByUserId(getCurrentUserId()).get().then(function (doc) {
-        doc.docs.forEach(anno => {
-          pinnedAnnotations.push({ id: anno.id, ...anno.data() });
-        });
-        // annotations = annotations.filter(anno => anno.isClosed === false);
-        sendResponse({ annotations: pinnedAnnotations });
-      })
-    });
+    // change to onSnapshot? 
+    // console.log('in get pinned annotations');
+    // pinnedPublicListener = getAllPinnedAnnotationsByUserId(getCurrentUserId()).onSnapshot(querySnapshot => {
+    //   querySnapshot.forEach(snapshot => {
+    //     console.log('pushing public snapshot', snapshot.data());
+    //     pinnedAnnotations.push({
+    //       id: snapshot.id,
+    //       ...snapshot.data(),
+    //     });
+    //   });
+    // });
+    // pinnedPrivateListener = getAllPrivatePinnedAnnotationsByUserId(getCurrentUserId()).onSnapshot(querySnapshot => {
+    //   querySnapshot.forEach(snapshot => {
+    //     console.log('pushing private snapshot', snapshot.data());
+    //     pinnedAnnotations.push({
+    //       id: snapshot.id,
+    //       ...snapshot.data(),
+    //     });
+    //   });
+    // });
+    // console.log('sending', pinnedAnnotations);
+    // sendResponse({ annotations: pinnedAnnotations });
+    // pinnedAnnotations = [];
   }
   else if (request.from === 'content' && request.msg === 'REQUEST_PIN_UPDATE') {
     const { id, pinned } = request.payload;
