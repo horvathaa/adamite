@@ -46,20 +46,20 @@ class Annotation extends Component {
   async componentDidMount() {
     document.addEventListener('keydown', this.keydown, false);
     this.updateData();
-    let authorDoc = getUserProfileById(this.props.authorId);
-    // let user = "anonymous";
-    let user;
-    await authorDoc.get().then(function (doc) {
-      if (doc.exists) {
-        user = doc.data().email.substring(0, doc.data().email.indexOf('@'));
-      }
-      else {
-        user = "anonymous";
-      }
-    }).catch(function (error) {
-      console.log('could not get doc:', error);
-    });
-    this.setState({ author: user });
+    // let authorDoc = getUserProfileById(this.props.authorId);
+    // // let user = "anonymous";
+    // let user;
+    // await authorDoc.get().then(function (doc) {
+    //   if (doc.exists) {
+    //     user = doc.data().email.substring(0, doc.data().email.indexOf('@'));
+    //   }
+    //   else {
+    //     user = "anonymous";
+    //   }
+    // }).catch(function (error) {
+    //   console.log('could not get doc:', error);
+    // });
+    // this.setState({ author: user });
   }
 
   componentDidUpdate(prevProps) {
@@ -186,7 +186,6 @@ class Annotation extends Component {
   }
 
   handleNewAnchor = (id) => {
-    alert('Select the text you want to anchor this annotation to!')
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
       chrome.tabs.sendMessage(tabs[0].id, {
         msg: 'ADD_NEW_ANCHOR',
@@ -306,9 +305,6 @@ class Annotation extends Component {
         isPrivate={isPrivate}
         notifyParentOfAdopted={this.notifyParentOfAdopted}
       />);
-    }
-    else if (annotationType === 'navigation') {
-      return (null);
     }
     else if (annotationType === 'highlight') {
       return (

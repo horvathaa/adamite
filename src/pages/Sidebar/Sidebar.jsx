@@ -11,11 +11,19 @@ import FilterSummary from './containers/Filter/FilterSummary';
 import SearchBar from './containers/SearchBar/SearchBar';
 import { Button } from 'react-bootstrap';
 
+
 class Sidebar extends React.Component {
+  constructor(props) {
+    super(props); // deprecated - change
+    if (this.unsubscribeAnnotations) {
+      this.unsubscribeAnnotations();
+    }
+  }
   state = {
     url: '',
     annotations: [],
     filteredAnnotations: [],
+    searchedAnnotations: [],
     newSelection: null,
     rect: null,
     offsets: null,
@@ -25,6 +33,7 @@ class Sidebar extends React.Component {
     selected: undefined,
     dropdownOpen: false,
     searchBarInputText: '',
+    searchState: false,
     showFilter: false,
     showPinned: false,
     pinnedAnnos: [],
@@ -32,11 +41,12 @@ class Sidebar extends React.Component {
     showClearClickedAnnotation: false,
     askAboutRelatedAnnos: false,
     relatedQuestions: [],
+    searchCount: 0,
     pageName: '',
     filterSelection: {
       siteScope: ['onPage'],
       userScope: ['public'],
-      annoType: ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'],
+      annoType: ['default', 'to-do', 'question', 'highlight', 'issue'],
       timeRange: 'all',
       archive: null,
       tags: []
@@ -56,11 +66,16 @@ class Sidebar extends React.Component {
 
   };
 
-  UNSAFE_componentWillMount() {
-    if (this.unsubscribeAnnotations) {
-      this.unsubscribeAnnotations();
-    }
-  }
+  // componentWillMount() {
+  //   if (this.unsubscribeAnnotations) {
+  //     this.unsubscribeAnnotations();
+  //   }
+  // }
+  // UNSAFE_componentWillMount() {
+  //   if (this.unsubscribeAnnotations) {
+  //     this.unsubscribeAnnotations();
+  //   }
+  // }
 
   componentWillUnmount() {
     // console.log('in unmount????');
@@ -71,9 +86,33 @@ class Sidebar extends React.Component {
     });
   }
 
+  ElasticSearch = (msg) => {
+    return new Promise((resolve, reject) => {
+      chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+        let url = tabs[0].url;
+        chrome.runtime.sendMessage({
+          msg: msg,
+          url: url
+        },
+          response => { resolve(response) });
+      });
+    });
+  }
+
   handleScroll = (event, filterSelection) => {
     const scrollIsAtTheBottom = (document.documentElement.scrollHeight - window.innerHeight) - 1 <= Math.floor(window.scrollY);
-    if (scrollIsAtTheBottom && filterSelection.siteScope.includes('acrossWholeSite')) {
+    if (scrollIsAtTheBottom && this.state.searchState) {
+      this.ElasticSearch("SCROLL_ELASTIC")
+        .then(res => {
+          console.log("THESE RESUsssssLTS", res.response.data)
+          const results = res.response.data.hits.hits.map(h => h._source)
+          console.log("THESE RESULTS", res.response)
+          this.setState({
+            searchedAnnotations: this.state.searchedAnnotations.concat(results)
+          })
+        })
+    }
+    else if (scrollIsAtTheBottom && filterSelection.siteScope.includes('acrossWholeSite')) {
       this.filterAcrossWholeSite(filterSelection);
     }
   }
@@ -137,6 +176,7 @@ class Sidebar extends React.Component {
         request.msg === 'CONTENT_SELECTED'
       ) {
         const { selection, offsets, xpath, type, annoContent } = request.payload;
+        console.log('in sidebar, content selected', selection);
         this.setState({
           newSelection: selection,
           offsets: offsets,
@@ -206,6 +246,17 @@ class Sidebar extends React.Component {
         request.msg === 'CONTENT_UPDATED'
       ) {
         this.setState({ annotations: request.payload })
+        // if (this.state.searchedAnnotations.length !== 0) {
+        //   this.ElasticSearch("REFRESH_FOR_CONTENT_UPDATED").then(res => {
+        //     console.log("THESE RESUsssssLTS", res.response.data)
+        //     const results = res.response.data.hits.hits.map(h => h._source)
+        //     console.log("THESE RESULTS", res.response)
+        //     this.setState({
+        //       searchedAnnotations: results
+        //     })
+        //   })
+
+        // }
         // let mostRecentAnno, secondMostRecentAnno;
         // const filteredAnnotationsCopy = request.payload.sort((a, b) =>
         //   (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
@@ -219,6 +270,43 @@ class Sidebar extends React.Component {
         // }
         this.requestFilterUpdate();
         // console.log("HERE is johnnnnn", request.payload)
+      }
+      else if (request.from === 'background' && request.msg === 'ELASTIC_CONTENT_UPDATED') {
+        if (this.state.searchedAnnotations.length !== 0) {
+          chrome.runtime.sendMessage({
+            msg: 'GET_ANNOTATION_BY_ID',
+            from: 'content',
+            payload: {
+              id: request.payload
+            }
+          },
+            (response) => {
+              const { annotation } = response;
+              let tempArray = this.state.searchedAnnotations;
+              let index = this.state.searchedAnnotations.findIndex(anno => {
+                return anno.id === annotation.id;
+              });
+              tempArray[index] = annotation;
+              console.log('new list', tempArray);
+              this.setState({ searchedAnnotations: tempArray })
+            })
+        }
+      }
+      else if (request.from === 'background' && request.msg === 'ELASTIC_CONTENT_DELETED') {
+        if (this.state.searchedAnnotations.length !== 0) {
+          let id = request.payload;
+          let tempArray = this.state.searchedAnnotations.filter(anno => {
+            return anno.id !== id;
+          });
+          this.setState({ searchedAnnotations: tempArray })
+        }
+      }
+      else if (request.from === 'background' && request.msg === 'ELASTIC_CHILD_ANCHOR_ADDED') {
+        if (this.state.searchedAnnotations.length !== 0) {
+          let tempArray = this.state.searchedAnnotations;
+          tempArray.push(request.payload);
+          this.setState({ searchedAnnotations: tempArray });
+        }
       }
       else if (request.from === 'background' && request.msg === 'FILTER_BY_TAG') {
         this.setState({
@@ -324,11 +412,25 @@ class Sidebar extends React.Component {
 
   };
 
-  handleSearchBarInputText = (event) => {
-    let inputText = event.target.value;
+  resetView = () => {
     this.setState({
-      searchBarInputText: inputText,
+      searchState: false,
+      searchedAnnotations: [],
+      searchCount: 0
+    })
+  }
+
+  handleSearchBarInputText = (searchAnnotations) => {
+    console.log("IN HERE!", searchAnnotations)
+    this.setState({
+      searchState: searchAnnotations.searchState,
+      searchedAnnotations: searchAnnotations.suggestion
     });
+  };
+
+  searchedSearchCount = (count) => {
+    console.log("this is being called", count)
+    this.setState({ searchCount: count });
   };
 
   handleShowFilter = () => {
@@ -471,7 +573,7 @@ class Sidebar extends React.Component {
 
   // wtf why is there this.state.annotations and this.state.filteredAnnotations? past amber? hello?
   applyFilter = (filterSelection) => {
-    this.setState({ selection: filterSelection });
+    this.setState({ filterSelection: filterSelection });
     if (filterSelection.siteScope.includes('onPage') && !filterSelection.siteScope.includes('acrossWholeSite')) {
       this.setState({
         filteredAnnotations:
@@ -531,22 +633,17 @@ class Sidebar extends React.Component {
   };
 
   render() {
-    const { currentUser, filteredAnnotations, searchBarInputText, pinnedAnnos } = this.state;
+    const { currentUser, filteredAnnotations, searchBarInputText, searchedAnnotations, pinnedAnnos } = this.state;
 
     if (currentUser === undefined) {
       return null;
     }
-
+    // console.log("this is a render");
     // console.log('bad bad', this.state.relatedQuestions);
     const inputText = searchBarInputText.toLowerCase();
-    let filteredAnnotationsCopy = [];
-    filteredAnnotations.forEach((anno) => {
-      const { content, anchorContent } = anno;
-      if (content.toLowerCase().includes(inputText) || anchorContent.toLowerCase().includes(inputText)) {
-        filteredAnnotationsCopy.push(anno);
-      }
-    });
-
+    // console.log("these are searched annotations", searchedAnnotations, searchedAnnotations.length === 0)
+    let filteredAnnotationsCopy = searchedAnnotations.length === 0 ? filteredAnnotations : searchedAnnotations;
+    // console.log("these are searched annotations", filteredAnnotationsCopy, searchedAnnotations.length === 0)
     filteredAnnotationsCopy = filteredAnnotationsCopy.sort((a, b) =>
       (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
     );
@@ -555,12 +652,15 @@ class Sidebar extends React.Component {
       (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
     );
 
-    let searchCount;
+    let tempSearchCount;
     if (this.state.showPinned) {
-      searchCount = filteredAnnotationsCopy.length + pinnedAnnos.length;
+      // this.setState({ searchCount: filteredAnnotationsCopy.length + pinnedAnnos.length });
+      tempSearchCount = filteredAnnotationsCopy.length + pinnedAnnos.length;
     }
     else {
-      searchCount = filteredAnnotationsCopy.length;
+      // this.setState({ searchCount: filteredAnnotationsCopy.length });
+
+      tempSearchCount = filteredAnnotationsCopy.length;
     }
     return (
       <div className="SidebarContainer" >
@@ -572,17 +672,20 @@ class Sidebar extends React.Component {
         {currentUser !== null && (
           <div>
             <div className={classNames({ TopRow: true, filterOpen: this.state.showFilter })}>
-              <div className="FilterButton">
+              {/* <div className="FilterButton">
                 <img src={filter} alt="Filter icon" onClick={this.handleShowFilter} className="Filter" />
-              </div>
+              </div> */}
               <SearchBar
                 searchBarInputText={searchBarInputText}
                 handleSearchBarInputText={this.handleSearchBarInputText}
-                searchCount={searchCount}
+                searchCount={this.state.searchCount === 0 ? tempSearchCount : this.state.searchCount}
+                url={this.state.url}
+                resetView={this.resetView}
+                searchedSearchCount={this.searchedSearchCount}
               />
             </div>
             <div>
-              {!this.state.showFilter && <FilterSummary filter={this.state.filterSelection} openFilter={this.openFilter} />}
+              {!this.state.showFilter && <FilterSummary applyFilter={this.applyFilter} filter={this.state.filterSelection} openFilter={this.openFilter} />}
               {this.state.askAboutRelatedAnnos && !this.state.showFilter ? (
                 <React.Fragment>
                   <div className="FilterSummaryContainer">

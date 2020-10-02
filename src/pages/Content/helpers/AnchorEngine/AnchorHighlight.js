@@ -87,7 +87,7 @@ export const highlightReplyRange = (xpath, annoId, replyId) => {
 export const highlightRange = (anno, annoId, replyId) => {
 
     var wordPath = [];
-    console.log('highlighting', anno, annoId, replyId);
+    // console.log('highlighting', anno, annoId, replyId);
     // console.log("ANNO ")
     // console.log(anno)
     let newRange;

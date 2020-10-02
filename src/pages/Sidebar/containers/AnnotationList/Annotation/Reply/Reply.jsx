@@ -97,7 +97,6 @@ class Reply extends Component {
                                 </div>
                                 <div className="userProfileContainer">
                                     <div className="author">
-                                        {/* anonymous */}
                                         {author}
                                     </div>
                                     <div className="timestamp">

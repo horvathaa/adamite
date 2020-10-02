@@ -11,7 +11,7 @@ class Filter extends React.Component {
     selection = {
         siteScope: ['onPage'],
         userScope: ['public'],
-        annoType: ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'],
+        annoType: ['default', 'to-do', 'question', 'highlight', 'issue'],
         timeRange: 'all',
         archive: null,
         tags: []
@@ -70,7 +70,6 @@ class Filter extends React.Component {
     }
 
     searchByTag = () => {
-        console.log('sending this', this.state.searchByTag);
         this.props.searchByTag(this.state.searchByTag);
     }
 
@@ -91,7 +90,7 @@ class Filter extends React.Component {
     }
 
     setAnnoTypeListFull = () => {
-        this.selection.annoType = ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'];
+        this.selection.annoType = ['default', 'to-do', 'question', 'highlight', 'issue'];
         this.props.applyFilter(this.selection);
     }
 
@@ -99,7 +98,7 @@ class Filter extends React.Component {
         this.selection = {
             siteScope: ['onPage'],
             userScope: ['public'],
-            annoType: ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'],
+            annoType: ['default', 'to-do', 'question', 'highlight', 'issue'],
             timeRange: 'all',
             archive: null,
             tags: []
@@ -214,25 +213,6 @@ class Filter extends React.Component {
                         />
                     </div>
                 </div>
-                <div className="SiteScope">
-                    Location
-                    <div className="SiteScopeRow">
-                        <div className="SiteScopeButtonContainer">
-                            <button value="onPage"
-                                className={classNames({ filterButton: true, selected: this.selection.siteScope.includes('onPage') })}
-                                onClick={value => this.updateSiteScope(value)}>
-                                On Page
-                        </button>
-                        </div>
-                        <div className="SiteScopeButtonContainer">
-                            <button value="acrossWholeSite"
-                                className={classNames({ filterButton: true, selected: this.selection.siteScope.includes('acrossWholeSite') })}
-                                onClick={value => this.updateSiteScope(value)}>
-                                Across Whole Site
-                        </button>
-                        </div>
-                    </div>
-                </div>
                 <div className="AnnotationTypeFilter">
                     Annotation Type &nbsp; &nbsp;
                         {this.selection.annoType.length <= 5 ? (
@@ -268,7 +248,7 @@ class Filter extends React.Component {
                             <button value="highlight"
                                 className={classNames({ filterButton: true, selected: this.selection.annoType.includes('highlight') })}
                                 onClick={value => this.updateAnnoType(value)}>
-                                Empty
+                                Highlight
                         </button>
                         </div>
                         <div className="AnnoTypeButtonContainer">
@@ -322,7 +302,7 @@ class Filter extends React.Component {
                             )}
                     </div>
                 </div>
-                <div className="SearchByTag">
+                {/* <div className="SearchByTag">
                     Search by Tag
                     <div>
                         <input className="Input" placeholder="Type tag here" onChange={this.updateSearchByTag} />
@@ -330,7 +310,7 @@ class Filter extends React.Component {
                             Search
                     </button>
                     </div>
-                </div>
+                </div> */}
                 <div className="Revert">
                     <button className="RevertFilterButton" onClick={this.revertToDefaultFilter}>
                         Revert to Default Filter

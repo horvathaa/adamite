@@ -73,14 +73,15 @@ class Anchor extends Component {
     render() {
         const { currentUrl, collapsed, url, anchorContent, pageAnchor } = this.props;
         let anchorIcon;
+
         if (pageAnchor) {
-            anchorIcon = <BsFileEarmarkText className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />;
+            anchorIcon = <BsFileEarmarkText className="AnchorIcon" />;
         }
         else if (url === currentUrl) {
-            anchorIcon = <img src={anchorOnPage} className="AnchorIcon" alt='anchor on page' onClick={_ => this.handleOnLocalOnClick()} />;
+            anchorIcon = <img src={anchorOnPage} className="AnchorIcon" alt='anchor on page' />;
         }
         else {
-            anchorIcon = <img src={anchorOnOtherPage} className="AnchorIcon" alt='anchor on other page' onClick={_ => this.handleExternalAnchor(url)} />;
+            anchorIcon = <img src={anchorOnOtherPage} className="AnchorIcon" alt='anchor on other page' />;
         }
         return (
             <div
@@ -90,6 +91,7 @@ class Anchor extends Component {
                 })}
                 onMouseEnter={this.handleOnLocalOnMouseEnter}
                 onMouseLeave={this.handleOnLocalOnMouseLeave}
+                onClick={pageAnchor || currentUrl !== url ? url => this.handleExternalAnchor : this.handleOnLocalOnClick}
             >
                 <div className="AnchorIconContainer">
                     {anchorIcon}
@@ -101,11 +103,10 @@ class Anchor extends Component {
                 ) : (
                         <div className="AnchorTextContainer">
                             {anchorContent}
-                            <div className="AnchorUrlContainer" onClick={_ => this.handleExternalAnchor(url)}>
+                            <div className="AnchorUrlContainer" onClick={url => this.handleExternalAnchor}>
                                 {url}
                             </div>
                         </div>
-
                     )}
             </div>
         );

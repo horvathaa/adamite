@@ -65,7 +65,6 @@ class ReplyEditor extends Component {
     }
 
     requestNewAnchor = () => {
-        alert('Select the text you want to anchor this answer to!');
         const { id, replies } = this.props;
         let replyId;
         if (this.props.replyId === undefined) {
@@ -180,14 +179,10 @@ class ReplyEditor extends Component {
                         </div>
                     </div>
                     <div className="ReplyButtonRow">
-                        <div className={classNames({ buttonCol: true, question: showQuestionAnswerInterface })}>
-                            {showQuestionAnswerInterface && (
-                                <div className="buttonRow">
-                                    <div onClick={this.markQuestion} className={classNames({ MarkQuestionAnswer: true, question: this.state.question })}>Q</div>
-                                    <div onClick={this.markAnswer} className={classNames({ MarkQuestionAnswer: true, answered: this.state.answer })} >A</div>
-                                    <img src={addAnchor} alt='add new anchor' onClick={this.requestNewAnchor} />
-                                </div>
-                            )}
+                        <div className={classNames({ buttonCol: true })}>
+                            <div className="buttonRow">
+                                <img src={addAnchor} alt='add new anchor' onClick={this.requestNewAnchor} />
+                            </div>
                             &nbsp; &nbsp;
                             <div className="cancelButtonContainer">
                                 <button onClick={this.cancelReply} className="Cancel-Button">Cancel</button> &nbsp; &nbsp;
