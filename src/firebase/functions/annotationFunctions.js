@@ -70,9 +70,9 @@ export const getAllPinnedAnnotationsByUserId = (uid) => {
 export const getGroupAnnotationsByGroupId = (gid) => {
   console.log('in annofunctions', gid);
   return db
-    .collection(DB_COLLECTIONS.ANNOTATIONS)
-    .where('groups', 'array-contains', gid)
-  // .where('private', '==', false);
+    .collection(DB_COLLECTIONS.ANNOTATIONS)//.doc("06OlxrYfO08cofa2mDb9");
+    .where('groups', 'array-contains-any', gid) // switch to array-contains-any to look across all groups that user is in
+    .where('private', '==', true);
 };
 
 export const getAllPrivatePinnedAnnotationsByUserId = (uid) => {
@@ -105,7 +105,7 @@ export const updateAllAnnotations = () => {
     .then(function (querySnapshot) {
       querySnapshot.forEach(function (doc) {
         doc.ref.update({
-          // fill in here what needs updating
+          // fill in here
         });
       });
     });

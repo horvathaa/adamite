@@ -432,7 +432,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         })
       }
       console.log('giddy', gid);
-      getGroupAnnotationsByGroupId(gid[0]).get().then(function (doc) {
+      getGroupAnnotationsByGroupId(gid).get().then(function (doc) {
         console.log('doc', doc);
         doc.docs.forEach(gid => {
           console.log(gid.data());
