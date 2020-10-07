@@ -15,6 +15,11 @@ export const getAllAnnotationsByUrl = url => {
     .where('private', '==', false);
 };
 
+export const getAllUserGroups = uid => {
+  return db.collection(DB_COLLECTIONS.GROUPS)
+    .where('uids', 'array-contains', uid);
+}
+
 export const getPrivateAnnotationsByUrl = (url, uid) => {
   return db.collection(DB_COLLECTIONS.ANNOTATIONS)
     .where('url', '==', url)

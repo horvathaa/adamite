@@ -20,7 +20,8 @@ import {
   getPrivateAnnotationsAcrossSite,
   updateAllAnnotations, getAnnotationById,
   getGroupAnnotationsByGroupId,
-  getUserByUserId
+  getUserByUserId,
+  getAllUserGroups
 } from '../../firebase/index';
 import firebase from '../../firebase/firebase';
 
@@ -189,6 +190,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     publicListener = setUpGetAllAnnotationsByUrlListener(request.url, annotations);
     privateListener = promiseToComeBack(request.url, annotations);
     // console.log('is this getting called lol', publicListener, privateListener);
+  }
+  else if (request.msg === 'GET_USER_GROUPS' && request.from === 'content') {
+    let userGroups = [];
+    getAllUserGroups(getCurrentUser().uid).get().then(function (doc) {
+      doc.docs.forEach(gid => {
+        userGroups.push(gid.data())
+      });
+      sendResponse({ groups: userGroups });
+    }).catch(function (error) {
+      console.log('could not get doc: ', error);
+    });
   }
   else if (request.msg === 'UNSUBSCRIBE' && request.from === 'content') {
     if (typeof privateListener === "function") {

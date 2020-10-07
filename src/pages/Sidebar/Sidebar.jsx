@@ -31,6 +31,7 @@ class Sidebar extends React.Component {
     newAnnotationType: 'default',
     currentUser: undefined,
     selected: undefined,
+    groups: undefined,
     dropdownOpen: false,
     searchBarInputText: '',
     searchState: false,
@@ -46,7 +47,7 @@ class Sidebar extends React.Component {
     filterSelection: {
       siteScope: ['onPage'],
       userScope: ['public'],
-      annoType: ['default', 'to-do', 'question', 'highlight', 'issue'],
+      annoType: ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'],
       timeRange: 'all',
       archive: null,
       tags: []
@@ -149,16 +150,19 @@ class Sidebar extends React.Component {
     );
 
     chrome.runtime.sendMessage({
-      msg: 'GET_GROUP_ANNOTATIONS',
-      from: 'content'
-    });
+      from: 'content',
+      msg: 'GET_PINNED_ANNOTATIONS'
+    }, response => {
+      this.setState({ pinnedAnnos: response.annotations });
+    })
 
-    // chrome.runtime.sendMessage({
-    //   from: 'content',
-    //   msg: 'GET_PINNED_ANNOTATIONS'
-    // }, response => {
-    //   this.setState({ pinnedAnnos: response.annotations });
-    // })
+    chrome.runtime.sendMessage({
+      from: 'content',
+      msg: 'GET_USER_GROUPS'
+    }, response => {
+      this.setState({ groups: response.groups });
+      console.log(response.groups);
+    })
 
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       // console.log('caught this message', request, sender);
@@ -749,14 +753,8 @@ class Sidebar extends React.Component {
               <div className="userQuestionButtonContainer">
                 <div className="ModifyFilter userQuestions" onClick={_ => {
                   this.setState({ showPinned: !this.state.showPinned })
-                  chrome.runtime.sendMessage({
-                    from: 'content',
-                    msg: 'GET_PINNED_ANNOTATIONS'
-                  }, response => {
-                    this.setState({ pinnedAnnos: response.annotations });
-                  })
                 }}>
-                  {this.state.showPinned ? ("Hide Pinned Annotations") : ("Show Pinned Annotations")}
+                  {this.state.showPinned ? ("Hide " + this.state.pinnedAnnos.length + " Pinned Annotations") : ("Show " + this.state.pinnedAnnos.length + " Pinned Annotations")}
                 </div>
               </div>
               {this.state.showPinned ? (
@@ -767,7 +765,7 @@ class Sidebar extends React.Component {
                   notifyParentOfPinning={this.handlePinnedAnnotation} />
                   <div className="userQuestionButtonContainer">
                     <div className="ModifyFilter userQuestions" onClick={_ => { this.setState({ showPinned: !this.state.showPinned }) }}>
-                      {this.state.showPinned ? ("Hide Pinned Annotations") : ("Show Pinned Annotations")}
+                      {this.state.showPinned ? ("Hide " + this.state.pinnedAnnos.length + " Pinned Annotations") : ("Show " + this.state.pinnedAnnos.length + " Pinned Annotations")}
                     </div>
                   </div>
                 </React.Fragment>
