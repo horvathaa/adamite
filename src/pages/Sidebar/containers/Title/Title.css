@@ -165,4 +165,22 @@
   padding: 5px;
 }
 
+.titleDropDown{
+  font-size: 0.9rem !important;
+  color: #6B778C !important;
+  background-color: transparent !important;
+  padding: 0px !important;
+  border: none !important;
+  display: flex !important;
+  margin: 3px;
+}
+.titleDropDown:after{
+  display: none !important; 
+}
+.titleDropDown:hover{
+  color: #6b778ca1 !important;
+}
+.titleDropDown:focus{
+  box-shadow: none !important;
+}
 

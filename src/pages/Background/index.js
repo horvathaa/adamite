@@ -70,6 +70,7 @@ let pinnedPrivateListener;
 let pinnedPublicListener;
 let publicListener;
 let privateListener;
+let groupListener;
 
 const broadcastAnnotationsUpdated = (message, annotations) => {
   chrome.runtime.sendMessage({
@@ -92,6 +93,32 @@ const broadcastAnnotationsUpdatedTab = (message, annotations, tabId) => {
     );
   });
 };
+
+const broadcastGroupsUpdated = (message, groups) => {
+  chrome.runtime.sendMessage({
+    msg: message,
+    from: 'background',
+    payload: groups,
+  });
+}
+
+function setUpGetGroupListener(uid) {
+  console.log('in setupgrouplistener', uid);
+  return new Promise((resolve, reject) => {
+    resolve(getAllUserGroups(uid).onSnapshot(querySnapshot => {
+      let groups = [];
+      querySnapshot.forEach(snapshot => {
+        groups.push({
+          gid: snapshot.id,
+          ...snapshot.data()
+        });
+      })
+      console.log('groups in back', groups);
+      broadcastGroupsUpdated("GROUPS_UPDATED", groups);
+    }))
+  })
+
+}
 
 
 function setUpGetAllAnnotationsByUrlListener(url, annotations) {
@@ -433,29 +460,30 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // sendResponse({ annotations: pinnedAnnotations });
     // pinnedAnnotations = [];
   }
-  else if (request.from === 'content' && request.msg === 'GET_GROUP_ANNOTATIONS') {
-    let GroupAnnotations = [];
-    let gid = [];
-    getUserByUserId(getCurrentUserId()).get().then(function (doc) {
-      if (!doc.empty) {
-        doc.docs.forEach(user => {
-          console.log(user.data());
-          gid = user.data().groups;
-        })
-      }
-      console.log('giddy', gid);
-      getGroupAnnotationsByGroupId(gid).get().then(function (doc) {
-        console.log('doc', doc);
-        doc.docs.forEach(gid => {
-          console.log(gid.data());
-        });
-      }).catch(function (error) {
-        console.log('could not get doc: ', error);
-      });
-      // return doc.docs[0].data().groups;
-    }).catch(function (error) {
-      console.log('could not get doc: ', error);
-    });
+  else if (request.from === 'content' && request.msg === 'GET_GROUPS_PAGE_LOAD') {
+    groupListener = setUpGetGroupListener(request.uid);
+    // let GroupAnnotations = [];
+    // let gid = [];
+    // getUserByUserId(getCurrentUserId()).get().then(function (doc) {
+    //   if (!doc.empty) {
+    //     doc.docs.forEach(user => {
+    //       console.log(user.data());
+    //       gid = user.data().groups;
+    //     })
+    //   }
+    //   console.log('giddy', gid);
+    //   getGroupAnnotationsByGroupId(gid).get().then(function (doc) {
+    //     console.log('doc', doc);
+    //     doc.docs.forEach(gid => {
+    //       console.log(gid.data());
+    //     });
+    //   }).catch(function (error) {
+    //     console.log('could not get doc: ', error);
+    //   });
+    //   // return doc.docs[0].data().groups;
+    // }).catch(function (error) {
+    //   console.log('could not get doc: ', error);
+    // });
 
     //   getAllPrivatePinnedAnnotationsByUserId(getCurrentUserId()).get().then(function (doc) {
     //     doc.docs.forEach(anno => {

@@ -31,7 +31,7 @@ class Sidebar extends React.Component {
     newAnnotationType: 'default',
     currentUser: undefined,
     selected: undefined,
-    groups: undefined,
+    groups: [],
     dropdownOpen: false,
     searchBarInputText: '',
     searchState: false,
@@ -60,12 +60,19 @@ class Sidebar extends React.Component {
     chrome.runtime.sendMessage(
       {
         msg: 'GET_ANNOTATIONS_PAGE_LOAD',
-        uid: uid,
         url: url,
       },
     );
 
   };
+
+  setUpGroupsListener = (uid) => {
+    chrome.runtime.sendMessage({
+      msg: 'GET_GROUPS_PAGE_LOAD',
+      from: 'content',
+      uid: uid
+    });
+  }
 
   // componentWillMount() {
   //   if (this.unsubscribeAnnotations) {
@@ -126,14 +133,18 @@ class Sidebar extends React.Component {
       },
       currentUserData => {
         this.setState({ currentUser: currentUserData.payload.currentUser });
-
+        if (currentUserData.payload.currentUser) {
+          console.log('in this set up groups listener');
+          this.setUpGroupsListener(
+            currentUserData.payload.currentUser.uid
+          );
+        }
         chrome.runtime.sendMessage(
           {
             msg: 'REQUEST_TAB_URL',
           },
           urlData => {
             this.setState({ url: urlData.url });
-            console.log('got URL', urlData.url);
             if (currentUserData.payload.currentUser) {
               this.setUpAnnotationsListener(
                 currentUserData.payload.currentUser.uid,
@@ -154,14 +165,6 @@ class Sidebar extends React.Component {
       msg: 'GET_PINNED_ANNOTATIONS'
     }, response => {
       this.setState({ pinnedAnnos: response.annotations });
-    })
-
-    chrome.runtime.sendMessage({
-      from: 'content',
-      msg: 'GET_USER_GROUPS'
-    }, response => {
-      this.setState({ groups: response.groups });
-      console.log(response.groups);
     })
 
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -186,7 +189,6 @@ class Sidebar extends React.Component {
         request.msg === 'CONTENT_SELECTED'
       ) {
         const { selection, offsets, xpath, type, annoContent } = request.payload;
-        console.log('in sidebar, content selected', selection);
         this.setState({
           newSelection: selection,
           offsets: offsets,
@@ -250,6 +252,10 @@ class Sidebar extends React.Component {
             this.resetNewSelection();
           }, 500);
         }
+      }
+      else if (request.from === 'background' && request.msg === 'GROUPS_UPDATED') {
+        console.log('in set state groups updated', request.payload);
+        this.setState({ groups: request.payload });
       }
       else if (
         request.from === 'background' &&
@@ -376,6 +382,10 @@ class Sidebar extends React.Component {
     this.setState({ unanchored: true });
   }
 
+  updateSidebarGroup = () => {
+    console.log('updating in sidebar');
+  }
+
   handleRelatedQuestions = () => {
     this.setState({ askAboutRelatedAnnos: false });
     const annotations = this.state.annotations.sort((a, b) =>
@@ -434,7 +444,6 @@ class Sidebar extends React.Component {
   }
 
   handleSearchBarInputText = (searchAnnotations) => {
-    console.log("IN HERE!", searchAnnotations)
     this.setState({
       searchState: searchAnnotations.searchState,
       searchedAnnotations: searchAnnotations.suggestion
@@ -644,7 +653,7 @@ class Sidebar extends React.Component {
   };
 
   render() {
-    const { currentUser, filteredAnnotations, searchBarInputText, searchedAnnotations, pinnedAnnos } = this.state;
+    const { currentUser, filteredAnnotations, searchBarInputText, searchedAnnotations, pinnedAnnos, groups } = this.state;
 
     if (currentUser === undefined) {
       return null;
@@ -678,6 +687,8 @@ class Sidebar extends React.Component {
         <Title currentUser={currentUser}
           handleShowAnnotatePage={this.handleShowAnnotatePage}
           handleUnanchoredAnnotation={this.handleUnanchoredAnnotation}
+          groups={groups}
+          updateSidebarGroup={this.updateSidebarGroup}
         />
         {currentUser === null && <Authentication />}
         {currentUser !== null && (

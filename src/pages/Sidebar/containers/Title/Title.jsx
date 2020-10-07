@@ -3,6 +3,7 @@ import classNames from 'classnames';
 import { Dropdown } from 'react-bootstrap';
 // import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { APP_NAME_FULL } from '../../../../shared/constants';
+import { RiGroupLine } from 'react-icons/ri';
 import { AiOutlineUser } from 'react-icons/ai';
 import '../../../../assets/img/Adamite.png';
 import profile from '../../../../assets/img/SVGs/Profile.svg';
@@ -23,6 +24,7 @@ const addAnnotationToggle = React.forwardRef(({ children, onClick }, ref) => (
   </a>
 ));
 
+
 export default class Title extends React.Component {
   constructor(props) {
     super(props);
@@ -35,6 +37,31 @@ export default class Title extends React.Component {
       newAnnotationDropDownOpen: false
     };
     this.currentUser = this.props.currentUser;
+  }
+
+  createDropDown = (args) => {
+    console.log('arrr', args);
+    const listItems = args.items.map((option, idx) => {
+      // let active = args.activeFilter.indexOf(option.visible) > -1 ? true : false
+      return <Dropdown.Item key={idx} onSelect={args.updateFunction} > {option.name} </Dropdown.Item>
+    });
+
+    return (
+      <React.Fragment>
+        <Dropdown>
+          <Dropdown.Toggle title={args.header} className="titleDropDown">
+            <div className="FilterIconContainer">
+              <args.Icon className="filterReactIcon" />
+            </div>
+            &nbsp; {args.activeGroup}
+          </Dropdown.Toggle>
+          <Dropdown.Menu >
+            <Dropdown.Header>{args.header}</Dropdown.Header>
+            {listItems}
+          </Dropdown.Menu>
+        </Dropdown>
+      </React.Fragment>
+    );
   }
 
   toggle() {
@@ -58,7 +85,8 @@ export default class Title extends React.Component {
   };
 
   render() {
-    const { currentUser } = this.props;
+    const { currentUser, groups } = this.props;
+
     return (
 
       <div className="TitleContainer">
@@ -68,6 +96,15 @@ export default class Title extends React.Component {
               <div className="Header">
                 <img className="TitleIcon" src={chrome.extension.getURL('Adamite.png')} alt="Adamite logo"></img>
                 <div className="Title">{APP_NAME_FULL}</div>
+                <div className="titleDropDown">
+                  {this.createDropDown({
+                    Icon: RiGroupLine,
+                    activeGroup: "Public", // need actual logic here
+                    header: "Group",
+                    updateFunction: this.props.updateSidebarGroup,
+                    items: groups
+                  })}
+                </div>
               </div>
             </div>
             {currentUser !== null && (
