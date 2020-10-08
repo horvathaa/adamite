@@ -134,7 +134,7 @@ class Sidebar extends React.Component {
       currentUserData => {
         this.setState({ currentUser: currentUserData.payload.currentUser });
         if (currentUserData.payload.currentUser) {
-          console.log('in this set up groups listener');
+          // console.log('in this set up groups listener');
           this.setUpGroupsListener(
             currentUserData.payload.currentUser.uid
           );
@@ -254,7 +254,7 @@ class Sidebar extends React.Component {
         }
       }
       else if (request.from === 'background' && request.msg === 'GROUPS_UPDATED') {
-        console.log('in set state groups updated', request.payload);
+        // console.log('in set state groups updated', request.payload);
         this.setState({ groups: request.payload });
       }
       else if (

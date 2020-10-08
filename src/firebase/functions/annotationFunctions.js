@@ -20,6 +20,17 @@ export const getAllUserGroups = uid => {
     .where('uids', 'array-contains', uid);
 }
 
+export const addNewGroup = async ({
+  name,
+  uid,
+}) => {
+  let newGroup = {
+    name,
+    uids: [uid]
+  };
+  return db.collection(DB_COLLECTIONS.GROUPS).add(newGroup);
+};
+
 export const getPrivateAnnotationsByUrl = (url, uid) => {
   return db.collection(DB_COLLECTIONS.ANNOTATIONS)
     .where('url', '==', url)

@@ -21,7 +21,8 @@ import {
   updateAllAnnotations, getAnnotationById,
   getGroupAnnotationsByGroupId,
   getUserByUserId,
-  getAllUserGroups
+  getAllUserGroups,
+  addNewGroup
 } from '../../firebase/index';
 import firebase from '../../firebase/firebase';
 
@@ -103,7 +104,7 @@ const broadcastGroupsUpdated = (message, groups) => {
 }
 
 function setUpGetGroupListener(uid) {
-  console.log('in setupgrouplistener', uid);
+  // console.log('in setupgrouplistener', uid);
   return new Promise((resolve, reject) => {
     resolve(getAllUserGroups(uid).onSnapshot(querySnapshot => {
       let groups = [];
@@ -113,7 +114,7 @@ function setUpGetGroupListener(uid) {
           ...snapshot.data()
         });
       })
-      console.log('groups in back', groups);
+      // console.log('groups in back', groups);
       broadcastGroupsUpdated("GROUPS_UPDATED", groups);
     }))
   })
@@ -227,6 +228,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       sendResponse({ groups: userGroups });
     }).catch(function (error) {
       console.log('could not get doc: ', error);
+    });
+  }
+  else if (request.msg === 'ADD_NEW_GROUP' && request.from === 'content') {
+    addNewGroup({
+      name: request.payload.name,
+      uid: request.payload.uid
     });
   }
   else if (request.msg === 'UNSUBSCRIBE' && request.from === 'content') {

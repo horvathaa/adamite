@@ -39,8 +39,25 @@ export default class Title extends React.Component {
     this.currentUser = this.props.currentUser;
   }
 
+  addNewGroup = () => {
+    const groupName = prompt('Please Enter Your New Group\'s Name', 'example');
+    if (groupName === null || groupName === '') {
+      return;
+    }
+    else {
+      console.log(groupName);
+      chrome.runtime.sendMessage({
+        msg: 'ADD_NEW_GROUP',
+        from: 'content',
+        payload: {
+          uid: this.props.currentUser.uid,
+          name: groupName
+        }
+      })
+    }
+  }
+
   createDropDown = (args) => {
-    console.log('arrr', args);
     const listItems = args.items.map((option, idx) => {
       // let active = args.activeFilter.indexOf(option.visible) > -1 ? true : false
       return <Dropdown.Item key={idx} onSelect={args.updateFunction} > {option.name} </Dropdown.Item>
@@ -58,6 +75,7 @@ export default class Title extends React.Component {
           <Dropdown.Menu >
             <Dropdown.Header>{args.header}</Dropdown.Header>
             {listItems}
+            <Dropdown.Item key={args.items.length} onSelect={this.addNewGroup} > + New Group </Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
       </React.Fragment>
