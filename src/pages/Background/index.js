@@ -219,17 +219,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     privateListener = promiseToComeBack(request.url, annotations);
     // console.log('is this getting called lol', publicListener, privateListener);
   }
-  else if (request.msg === 'GET_USER_GROUPS' && request.from === 'content') {
-    let userGroups = [];
-    getAllUserGroups(getCurrentUser().uid).get().then(function (doc) {
-      doc.docs.forEach(gid => {
-        userGroups.push(gid.data())
-      });
-      sendResponse({ groups: userGroups });
-    }).catch(function (error) {
-      console.log('could not get doc: ', error);
-    });
-  }
   else if (request.msg === 'ADD_NEW_GROUP' && request.from === 'content') {
     addNewGroup({
       name: request.payload.name,

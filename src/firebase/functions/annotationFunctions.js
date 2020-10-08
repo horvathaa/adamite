@@ -28,7 +28,11 @@ export const addNewGroup = async ({
     name,
     uids: [uid]
   };
-  return db.collection(DB_COLLECTIONS.GROUPS).add(newGroup);
+  db.collection(DB_COLLECTIONS.GROUPS).add(newGroup).then(ref => {
+    db.collection(DB_COLLECTIONS.GROUPS).doc(ref.id).update({
+      gid: ref.id
+    });
+  });
 };
 
 export const getPrivateAnnotationsByUrl = (url, uid) => {
