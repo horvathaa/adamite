@@ -183,7 +183,7 @@ class IssueAnnotation extends Component {
                             collapsed={collapsed} />
                     </React.Fragment>
 
-                    {tags.length && !collapsed && !editing ? (
+                    {"tags" in this && tags.length && !collapsed && !editing ? (
                         <div className={classNames({
                             TagRow: true
                         })}>

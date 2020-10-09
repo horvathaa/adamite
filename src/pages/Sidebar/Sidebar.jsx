@@ -380,8 +380,19 @@ class Sidebar extends React.Component {
     this.setState({ unanchored: true });
   }
 
-  updateSidebarGroup = () => {
-    console.log('updating in sidebar');
+  updateSidebarGroup = (option) => {
+    console.log('updating in sidebar', option);
+    chrome.runtime.sendMessage({
+      msg: 'GROUP_ELASTIC',
+      payload: {
+        gid: option.gid,
+        url: this.state.url
+      }
+    },
+      (response) => {
+        console.log('here with response');
+        console.log(response);
+      });
   }
 
   handleRelatedQuestions = () => {
@@ -685,7 +696,6 @@ class Sidebar extends React.Component {
         <Title currentUser={currentUser}
           handleShowAnnotatePage={this.handleShowAnnotatePage}
           handleUnanchoredAnnotation={this.handleUnanchoredAnnotation}
-          groups={groups}
           updateSidebarGroup={this.updateSidebarGroup}
         />
         {currentUser === null && <Authentication />}
@@ -705,7 +715,16 @@ class Sidebar extends React.Component {
               />
             </div>
             <div>
-              {!this.state.showFilter && <FilterSummary applyFilter={this.applyFilter} filter={this.state.filterSelection} openFilter={this.openFilter} />}
+              {!this.state.showFilter &&
+                <FilterSummary
+                  applyFilter={this.applyFilter}
+                  groups={groups}
+                  filter={this.state.filterSelection}
+                  openFilter={this.openFilter}
+                  uid={currentUser.uid}
+                  updateSidebarGroup={this.updateSidebarGroup}
+                />
+              }
               {/* {this.state.askAboutRelatedAnnos && !this.state.showFilter ? (
                 <React.Fragment>
                   <div className="FilterSummaryContainer">

@@ -214,10 +214,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     sendResponse({ url: cleanUrl });
   }
   else if (request.msg === 'GET_ANNOTATIONS_PAGE_LOAD') {
-    // console.log('is this getting called lol');
     publicListener = setUpGetAllAnnotationsByUrlListener(request.url, annotations);
     privateListener = promiseToComeBack(request.url, annotations);
-    // console.log('is this getting called lol', publicListener, privateListener);
   }
   else if (request.msg === 'ADD_NEW_GROUP' && request.from === 'content') {
     addNewGroup({
@@ -432,6 +430,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
   }
   else if (request.from === 'content' && request.msg === 'GET_PINNED_ANNOTATIONS') {
+    let pinnedAnnotations = [];
+    getAllPinnedAnnotationsByUserId(getCurrentUserId()).get().then(function (doc) {
+      doc.docs.forEach(anno => {
+        pinnedAnnotations.push({ id: anno.id, ...anno.data() });
+      });
+      getAllPrivatePinnedAnnotationsByUserId(getCurrentUserId()).get().then(function (doc) {
+        doc.docs.forEach(anno => {
+          pinnedAnnotations.push({ id: anno.id, ...anno.data() });
+        });
+        // annotations = annotations.filter(anno => anno.isClosed === false);
+        sendResponse({ annotations: pinnedAnnotations });
+      })
+    });
     // change to onSnapshot? 
     // console.log('in get pinned annotations');
     // pinnedPublicListener = getAllPinnedAnnotationsByUserId(getCurrentUserId()).onSnapshot(querySnapshot => {

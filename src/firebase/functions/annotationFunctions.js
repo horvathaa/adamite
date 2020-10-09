@@ -26,7 +26,8 @@ export const addNewGroup = async ({
 }) => {
   let newGroup = {
     name,
-    uids: [uid]
+    uids: [uid],
+    owner: uid
   };
   db.collection(DB_COLLECTIONS.GROUPS).add(newGroup).then(ref => {
     db.collection(DB_COLLECTIONS.GROUPS).doc(ref.id).update({

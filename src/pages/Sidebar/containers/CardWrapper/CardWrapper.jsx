@@ -26,7 +26,7 @@ export default class CardWrapper extends React.Component {
         addedTag: false,
         annotationContent: this.props.annotationContent.trim() === '' ? '' : this.props.annotationContent,
         annotationType: this.props.annotationType === undefined ? "Default" : this.props.annotationType,
-        tags: this.props.tags.length === 0 ? [] : this.props.tags,
+        tags: this.props.tags !== undefined && this.props.tags.length === 0 ? [] : this.props.tags,
         elseContent: this.props.elseContent,
         pageAnnotation: this.props.pageAnnotation,
         collapsed: this.props.collapsed,

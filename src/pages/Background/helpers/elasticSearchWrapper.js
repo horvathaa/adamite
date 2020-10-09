@@ -14,8 +14,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
     else if (request.msg === 'GROUP_ELASTIC') {
         console.log("GROUP_ELASTIC", request)
-        keyWrapper(search, { query: groupQuery(request.gid), url: request.url, successFunction: groupSearchSuccess })
-            .then(e => sendResponse({ response: e }))
+        keyWrapper(search, { query: groupQuery(request.payload.gid), url: request.payload.url, successFunction: groupSearchSuccess })
+            .then(e => { console.log('sending response'); sendResponse({ response: e }) })
             .catch(function (err) {
                 console.log("wrapper error", err.response.status)
             });

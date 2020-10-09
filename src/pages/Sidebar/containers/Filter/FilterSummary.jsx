@@ -3,6 +3,7 @@ import './FilterSummary.css';
 import classNames from 'classnames';
 import { GoEye } from 'react-icons/go';
 import { AiFillClockCircle, AiOutlineCheck } from 'react-icons/ai';
+import { RiGroupLine } from 'react-icons/ri';
 import { BiAnchor } from 'react-icons/bi';
 import { BsChatSquareDots } from 'react-icons/bs';
 import view from '../../../../assets/img/SVGs/view.svg';
@@ -83,6 +84,49 @@ class FilterSummary extends React.Component {
         this.props.applyFilter(this.selection);
     }
 
+    addNewGroup = () => {
+        const groupName = prompt('Please Enter Your New Group\'s Name', 'example');
+        if (groupName === null || groupName === '') {
+            return;
+        }
+        else {
+            console.log(groupName);
+            chrome.runtime.sendMessage({
+                msg: 'ADD_NEW_GROUP',
+                from: 'content',
+                payload: {
+                    uid: this.props.uid,
+                    name: groupName
+                }
+            })
+        }
+    }
+
+    createGroupDropDown = (args) => {
+        const listItems = args.items.map((option, idx) => {
+            // let active = args.activeFilter.indexOf(option.visible) > -1 ? true : false
+            return <Dropdown.Item key={idx} onSelect={_ => { args.updateFunction(option) }} > {option.name} </Dropdown.Item>
+        });
+
+        return (
+            <React.Fragment>
+                <Dropdown>
+                    <Dropdown.Toggle title={args.header} className="titleDropDown">
+                        <div className="FilterIconContainer">
+                            <args.Icon className="filterReactIcon" />
+                        </div>
+                &nbsp; {args.activeGroup}
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu >
+                        <Dropdown.Header>{args.header}</Dropdown.Header>
+                        {listItems}
+                        <Dropdown.Item key={args.items.length} onSelect={this.addNewGroup} > + New Group </Dropdown.Item>
+                    </Dropdown.Menu>
+                </Dropdown>
+            </React.Fragment>
+        );
+    }
+
     createDropDown = (args) => {
         const listItems = args.items.map((option, idx) => {
             let active = args.activeFilter.indexOf(option.visible) > -1 ? true : false
@@ -108,7 +152,7 @@ class FilterSummary extends React.Component {
     }
 
     render() {
-        const { filter } = this.props;
+        const { filter, groups } = this.props;
         let annoType = "";
         if (areArraysEqualSets(filter.annoType, ['default', 'to-do', 'question', 'highlight', 'issue'])) {
             annoType = "All Types";
@@ -136,6 +180,16 @@ class FilterSummary extends React.Component {
 
         return (
             <div className="FilterSummaryContainer">
+                <div className="FilterSectionRow">
+                    <div className="FilterSection">Groups</div>
+                    {this.createGroupDropDown({
+                        Icon: RiGroupLine,
+                        activeGroup: "Public", // need actual logic here
+                        header: "Group",
+                        updateFunction: (option) => this.props.updateSidebarGroup(option),
+                        items: groups
+                    })}
+                </div>
                 <div className="FilterSectionRow">
                     <div className="FilterSection">Filters</div>
                     <div className="FilterSection">
