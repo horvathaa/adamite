@@ -12,6 +12,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 console.log("wrapper error", err.response.status)
             });
     }
+    else if (request.msg === 'GROUP_ELASTIC') {
+        console.log("GROUP_ELASTIC", request)
+        keyWrapper(search, { query: groupQuery(request.gid), url: request.url, successFunction: groupSearchSuccess })
+            .then(e => sendResponse({ response: e }))
+            .catch(function (err) {
+                console.log("wrapper error", err.response.status)
+            });
+    }
     else if (request.msg === 'SCROLL_ELASTIC') {
         console.log("SCROLL_ELASTIC")
         var query = '';
@@ -69,15 +77,15 @@ function regenKey() {
     });
 }
 
-function keyWrapper(passedFunction, args) {
+function keyWrapper(passedFunction, args, count = 0) {
     return new Promise((resolve, reject) => {
         chrome.storage.sync.get(['ElasticAPIKey'], storedKey => {
             console.log("this is the key", storedKey);
             passedFunction(storedKey.ElasticAPIKey.data, args)
                 .then(e => resolve(e))
                 .catch(function (err) {
-                    if (err.response.status === 401) {
-                        regenKey().then(e => keyWrapper(passedFunction, args));
+                    if (err.response.status === 401 && count <= 5) {
+                        regenKey().then(e => keyWrapper(passedFunction, args, ++count));
                     }
                     else {
                         reject(err);
@@ -103,6 +111,18 @@ function searchByID(id) {
             }
         }
     }
+}
+
+function groupQuery(gid) {
+    return {
+        "query": {
+            "term": {
+                "groups": {
+                    "value": gid
+                }
+            }
+        }
+    };
 }
 
 function inputQueryBuilder(userSearch) {
@@ -307,7 +327,27 @@ function paginationSuccess(res, args) {
     }
     console.log("Final Array", finalArray)
     return res;
+}
 
+function groupSearchSuccess(res, args) {
+    var finalArray = [];
+
+    console.log("this is the group res", res.data)
+    if (res.data.hits.hits.length !== 0) {
+        if (res.data.hits.total.value > 10) {
+            storeQueryForScroll(args.query, res.data.hits.total.value, args.url)
+        }
+        res.data.hits.hits.forEach(function (element) {
+            console.log(element._source)
+            var obj = element._source
+            obj["id"] = element._id
+            element._source["id"] = element._id
+
+            finalArray.push(obj)
+        });
+    }
+    console.log("Final Array", finalArray)
+    return res;
 }
 
 function searchBarSuccess(res, args) {

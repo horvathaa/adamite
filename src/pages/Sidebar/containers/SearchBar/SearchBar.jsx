@@ -93,7 +93,7 @@ class SearchBar extends React.Component {
                                 textToHighlight={content}
                             />
                         </div>
-                        {suggestion.tags.length > 0 && (
+                        {"tags" in suggestion && suggestion.tags.length > 0 && (
                             <div className="react-autosuggest__tags">
                                 {suggestion.tags.map((items, idx) => {
                                     return <div key={idx} className="shortCode">{items}</div>
