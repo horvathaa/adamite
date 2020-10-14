@@ -22,12 +22,16 @@ export const getAllUserGroups = uid => {
 
 export const addNewGroup = async ({
   name,
-  uid,
+  description,
+  owner,
+  emails
 }) => {
   let newGroup = {
     name,
-    uids: [uid],
-    owner: uid
+    description,
+    emails,
+    uids: [owner],
+    owner
   };
   db.collection(DB_COLLECTIONS.GROUPS).add(newGroup).then(ref => {
     db.collection(DB_COLLECTIONS.GROUPS).doc(ref.id).update({

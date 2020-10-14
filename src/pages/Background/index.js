@@ -207,6 +207,10 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
   // }
 });
 
+const showModal = () => {
+  const modal = document.createElement("dialog");
+  modal.setAttribute("style", `height:450px;border: none;top:150px;border-radius:20px;background-color:white;position: fixed; box-shadow: 0px 12px 48px rgba(29, 5, 64, 0.32);`);
+}
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.msg === 'REQUEST_TAB_URL') {
@@ -214,14 +218,49 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     sendResponse({ url: cleanUrl });
   }
   else if (request.msg === 'GET_ANNOTATIONS_PAGE_LOAD') {
+    console.log("GET_ANNOTATIONS_PAGE_LOAD")
+    let email = getCurrentUser().email;
+    let userName = email.substring(0, getCurrentUser().email.indexOf('@'));
+
+    chrome.tabs.query({ active: true },
+      (tabs) => {
+        chrome.tabs.sendMessage(
+          tabs[0].id,
+          {
+            msg: 'CREATE_GROUP',
+            from: 'background',
+            owner: {
+              uid: request.uid,
+              email: email,
+              userName: userName
+            }
+          }
+        );
+      });
+
     publicListener = setUpGetAllAnnotationsByUrlListener(request.url, annotations);
     privateListener = promiseToComeBack(request.url, annotations);
   }
   else if (request.msg === 'ADD_NEW_GROUP' && request.from === 'content') {
+    console.log("this is the request for a new group", request);
     addNewGroup({
-      name: request.payload.name,
-      uid: request.payload.uid
+      name: request.group.name,
+      description: request.group.description,
+      owner: request.group.owner,
+      emails: request.group.emails
     });
+  }
+  else if (request.msg === 'SHOW_GROUP' && request.from === 'content') {
+    chrome.tabs.query({ active: true },
+      (tabs) => {
+        chrome.tabs.sendMessage(
+          tabs[0].id,
+          {
+            msg: 'SHOW_GROUP',
+            from: 'background',
+          }
+        );
+      });
   }
   else if (request.msg === 'UNSUBSCRIBE' && request.from === 'content') {
     if (typeof privateListener === "function") {

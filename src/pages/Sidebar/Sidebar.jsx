@@ -61,6 +61,7 @@ class Sidebar extends React.Component {
       {
         msg: 'GET_ANNOTATIONS_PAGE_LOAD',
         url: url,
+        uid: uid
       },
     );
 
