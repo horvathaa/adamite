@@ -4,7 +4,7 @@ import './groupModal.css';
 
 chrome.runtime.onMessage.addListener((request) => {
     if (request.msg === 'CREATE_GROUP' && request.from === 'background') { renderModal(request.owner); }
-    else if (request.msg === 'SHOW_GROUP' && request.from === 'background') { showModal(); }
+    else if (request.msg === 'SHOW_GROUP' && request.from === 'background') { console.log('showing modal'); showModal(); }
 });
 
 const isVisible = elem => !!elem && !!(elem.offsetWidth || elem.offsetHeight || elem.getClientRects().length)
@@ -54,7 +54,7 @@ const renderModal = (owner) => {
     modal.classList.add("new-group-modal");
     document.body.appendChild(modal);
     modal.setAttribute('id', 'blurg');
-    console.log("rendering")
+    // console.log("rendering")
     const App = (
         <React.Fragment>
 

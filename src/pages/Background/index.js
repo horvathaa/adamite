@@ -213,30 +213,28 @@ const showModal = () => {
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.msg === 'REQUEST_TAB_URL') {
+  if (request.msg === 'REQUEST_TAB_INFO') {
     const cleanUrl = getPathFromUrl(sender.tab.url);
-    sendResponse({ url: cleanUrl });
+    const tabId = sender.tab.id;
+    sendResponse({ url: cleanUrl, tabId });
   }
   else if (request.msg === 'GET_ANNOTATIONS_PAGE_LOAD') {
     console.log("GET_ANNOTATIONS_PAGE_LOAD")
     let email = getCurrentUser().email;
     let userName = email.substring(0, getCurrentUser().email.indexOf('@'));
 
-    chrome.tabs.query({ active: true },
-      (tabs) => {
-        chrome.tabs.sendMessage(
-          tabs[0].id,
-          {
-            msg: 'CREATE_GROUP',
-            from: 'background',
-            owner: {
-              uid: request.uid,
-              email: email,
-              userName: userName
-            }
-          }
-        );
-      });
+    chrome.tabs.sendMessage(
+      request.tabId,
+      {
+        msg: 'CREATE_GROUP',
+        from: 'background',
+        owner: {
+          uid: request.uid,
+          email: email,
+          userName: userName
+        }
+      }
+    );
 
     publicListener = setUpGetAllAnnotationsByUrlListener(request.url, annotations);
     privateListener = promiseToComeBack(request.url, annotations);
@@ -250,8 +248,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       emails: request.group.emails
     });
   }
+  // maybe switch to passing in tabId here instead of querying
   else if (request.msg === 'SHOW_GROUP' && request.from === 'content') {
-    chrome.tabs.query({ active: true },
+    chrome.tabs.query({ active: true, lastFocusedWindow: true },
       (tabs) => {
         chrome.tabs.sendMessage(
           tabs[0].id,

@@ -60,6 +60,8 @@ class AnnotationList extends Component {
               howClosed={annotation.howClosed}
               adopted={annotation.adopted}
               author={annotation.author}
+              userGroups={this.props.groups}
+              annoGroups={annotation.groups}
             />
           );
         })}

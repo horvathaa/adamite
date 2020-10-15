@@ -113,6 +113,9 @@ class ToDoAnnotation extends Component {
                                     <div className="author">
                                         {author}
                                     </div>
+                                    <div className="groupName">
+                                        {this.props.getGroupName()}
+                                    </div>
                                     <div className="timestamp">
                                         {this.props.formatTimestamp()}
                                     </div>

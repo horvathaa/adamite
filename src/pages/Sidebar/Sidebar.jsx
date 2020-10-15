@@ -58,14 +58,15 @@ class Sidebar extends React.Component {
   };
 
 
-  setUpAnnotationsListener = (uid, url) => {
+  setUpAnnotationsListener = (uid, url, tabId) => {
 
     chrome.runtime.sendMessage(
       {
         msg: 'GET_ANNOTATIONS_PAGE_LOAD',
         url: url,
-        uid: uid
-      },
+        uid: uid,
+        tabId: tabId
+      }
     );
 
   };
@@ -143,14 +144,15 @@ class Sidebar extends React.Component {
         }
         chrome.runtime.sendMessage(
           {
-            msg: 'REQUEST_TAB_URL',
+            msg: 'REQUEST_TAB_INFO',
           },
-          urlData => {
-            this.setState({ url: urlData.url });
+          tabInfo => {
+            this.setState({ url: tabInfo.url, tabId: tabInfo.tabId });
             if (currentUserData.payload.currentUser) {
               this.setUpAnnotationsListener(
                 currentUserData.payload.currentUser.uid,
-                urlData.url
+                tabInfo.url,
+                tabInfo.tabId
               );
             } else {
               if (this.unsubscribeAnnotations) {
@@ -816,6 +818,7 @@ class Sidebar extends React.Component {
               </div>
               {this.state.showPinned ? (
                 <React.Fragment><AnnotationList annotations={pinnedAnnosCopy}
+                  groups={groups}
                   currentUser={currentUser}
                   url={this.state.url}
                   requestFilterUpdate={this.requestChildAnchorFilterUpdate}
@@ -841,6 +844,7 @@ class Sidebar extends React.Component {
                 </div>
               ) : (
                   <AnnotationList annotations={renderedAnnotations}
+                    groups={groups}
                     currentUser={currentUser}
                     url={this.state.url}
                     requestFilterUpdate={this.requestChildAnchorFilterUpdate}

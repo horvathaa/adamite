@@ -115,7 +115,7 @@ class Groups extends React.Component {
     }
 
     render() {
-        console.log("thee are the props", this.state)
+        // console.log("thee are the props", this.state)
 
         const {
             ownerUid,

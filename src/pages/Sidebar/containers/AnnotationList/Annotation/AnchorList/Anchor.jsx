@@ -72,8 +72,10 @@ class Anchor extends Component {
         });
     }
 
-    handleExternalAnchor(url) {
-        chrome.runtime.sendMessage({ msg: "LOAD_EXTERNAL_ANCHOR", from: 'content', payload: url });
+    // handleOnClick = ()
+
+    handleExternalAnchor = () => {
+        chrome.runtime.sendMessage({ msg: "LOAD_EXTERNAL_ANCHOR", from: 'content', payload: this.props.url });
     }
 
     render() {
@@ -97,7 +99,7 @@ class Anchor extends Component {
                 })}
                 onMouseEnter={this.handleOnLocalOnMouseEnter}
                 onMouseLeave={this.handleOnLocalOnMouseLeave}
-                onClick={pageAnchor || currentUrl !== url ? url => this.handleExternalAnchor : this.handleOnLocalOnClick}
+                onClick={(pageAnchor || currentUrl !== url) ? this.handleExternalAnchor : this.handleOnLocalOnClick}
             >
                 <div className="AnchorIconContainer">
                     {anchorIcon}
@@ -109,7 +111,7 @@ class Anchor extends Component {
                 ) : (
                         <div className="AnchorTextContainer">
                             {anchorContent}
-                            <div className="AnchorUrlContainer" onClick={url => this.handleExternalAnchor}>
+                            <div className="AnchorUrlContainer" onClick={this.handleExternalAnchor}>
                                 {url}
                             </div>
                         </div>

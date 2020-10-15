@@ -74,6 +74,28 @@ class Annotation extends Component {
     return time;
   }
 
+  getGroupName = () => {
+    let matches = [];
+    if (this.props.userGroups !== undefined && this.props.annoGroups !== undefined) {
+      matches = this.props.userGroups.filter(group => this.props.annoGroups.includes(group.gid));
+    }
+    if (matches.length > 0) {
+      let formattedString = "";
+      matches.forEach((group, i) => {
+        if (i === (matches.length - 1)) {
+          formattedString += group.name;
+        }
+        else {
+          formattedString += group.name + ", ";
+        }
+      });
+      return formattedString;
+    }
+    else {
+      return this.props.isPrivate ? "Private" : "Public";
+    }
+  }
+
   handleDoneToDo(id) {
     chrome.runtime.sendMessage({
       msg: 'FINISH_TODO',
@@ -225,7 +247,7 @@ class Annotation extends Component {
 
   render() {
     const { anchor, idx, id, active, authorId, currentUser, trashed, timeStamp, url, currentUrl, childAnchor, xpath, replies, isPrivate, adopted } = this.props;
-    const { editing, collapsed, tags, content, annotationType, pinned, isClosed, howClosed } = this.state;
+    const { editing, collapsed, tags, content, annotationType, pinned, isClosed, howClosed, userGroups, annoGroups } = this.state;
     const author = this.props.author === undefined ? "anonymous" : this.props.author;
     if (annotationType === 'default' && !trashed) {
       return (<DefaultAnnotation
@@ -256,6 +278,7 @@ class Annotation extends Component {
         isPrivate={isPrivate}
         replies={replies}
         notifyParentOfAdopted={this.notifyParentOfAdopted}
+        getGroupName={this.getGroupName}
       />);
     }
     else if (annotationType === 'to-do' && !trashed && currentUser.uid === authorId) {
@@ -288,6 +311,7 @@ class Annotation extends Component {
         replies={replies}
         isPrivate={isPrivate}
         notifyParentOfAdopted={this.notifyParentOfAdopted}
+        getGroupName={this.getGroupName}
       />);
     }
     else if (annotationType === 'highlight') {
@@ -320,6 +344,7 @@ class Annotation extends Component {
           replies={replies}
           isPrivate={isPrivate}
           notifyParentOfAdopted={this.notifyParentOfAdopted}
+          getGroupName={this.getGroupName}
         />
       );
     }
@@ -356,6 +381,7 @@ class Annotation extends Component {
           howClosed={howClosed}
           adopted={adopted}
           notifyParentOfAdopted={this.notifyParentOfAdopted}
+          getGroupName={this.getGroupName}
         />
       );
     }
@@ -389,6 +415,7 @@ class Annotation extends Component {
           handleExpandCollapse={this.handleExpandCollapse}
           replies={replies}
           isPrivate={isPrivate}
+          getGroupName={this.getGroupName}
         />
       );
     }
