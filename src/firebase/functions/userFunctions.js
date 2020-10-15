@@ -28,6 +28,6 @@ export const updateUserProfile = (user = getCurrentUser()) => {
     );
 };
 
-export const getUserProfileById = uid => {
-  return db.collection(DB_COLLECTIONS.USERS).doc(uid);
-};
+// export const getUserProfileById = uid => {
+//   return db.collection(DB_COLLECTIONS.USERS).doc(uid);
+// };

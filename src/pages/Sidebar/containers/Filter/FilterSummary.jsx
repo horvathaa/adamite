@@ -111,21 +111,29 @@ class FilterSummary extends React.Component {
     }
 
     addNewGroup = () => {
-        const groupName = prompt('Please Enter Your New Group\'s Name', 'example');
-        if (groupName === null || groupName === '') {
-            return;
-        }
-        else {
-            console.log(groupName);
-            chrome.runtime.sendMessage({
-                msg: 'ADD_NEW_GROUP',
-                from: 'content',
-                payload: {
-                    uid: this.props.uid,
-                    name: groupName
-                }
-            })
-        }
+        chrome.runtime.sendMessage({
+            msg: 'SHOW_GROUP',
+            from: 'content',
+            payload: {
+                uid: this.props.uid,
+                // name: groupName
+            }
+        })
+        // const groupName = prompt('Please Enter Your New Group\'s Name', 'example');
+        // if (groupName === null || groupName === '') {
+        //     return;
+        // }
+        // else {
+        //     console.log(groupName);
+        //     chrome.runtime.sendMessage({
+        //         msg: 'ADD_NEW_GROUP',
+        //         from: 'content',
+        //         payload: {
+        //             uid: this.props.uid,
+        //             name: groupName
+        //         }
+        //     })
+        // }
     }
 
     createGroupDropDown = (args) => {
