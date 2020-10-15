@@ -271,7 +271,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       pinned: false,
       AnnotationTags: [],
       childAnchor: [],
-      isPrivate: false,
+      private: false,
       author
     });
   }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './FilterSummary.css';
 import classNames from 'classnames';
 import { GoEye } from 'react-icons/go';
@@ -12,8 +12,34 @@ import location from '../../../../assets/img/SVGs/location.svg';
 import anno_type from '../../../../assets/img/SVGs/anno_type.svg';
 import tag from '../../../../assets/img/SVGs/tag.svg';
 import { Dropdown } from 'react-bootstrap';
+import MultiSelect from 'react-multi-select-component';
 
+const GroupMultiSelect = ({ groups, handleNotifySidebar }) => {
+    const [selected, setSelected] = useState(null);
+    // console.log('function', updateSidebarGroup);
+    const options = groups.map(group => {
+        return { label: group.name, value: group.gid };
+    });
 
+    function handleSelection(selection) {
+        setSelected(selection);
+        // console.log('selection', selection, selected);
+        handleNotifySidebar(selection);
+        // console.log('calling function', handleNotifySidebar);
+    }
+
+    return (
+        <div>
+            <MultiSelect
+                options={options}
+                value={selected}
+                onChange={handleSelection}
+                labelledBy={"Select"}
+            />
+        </div>
+    )
+
+}
 
 /** assumes array elements are primitive types
 * check whether 2 arrays are equal sets.
@@ -120,6 +146,7 @@ class FilterSummary extends React.Component {
                     <Dropdown.Menu >
                         <Dropdown.Header>{args.header}</Dropdown.Header>
                         {listItems}
+                        <Dropdown.Divider />
                         <Dropdown.Item key={args.items.length} onSelect={this.addNewGroup} > + New Group </Dropdown.Item>
                     </Dropdown.Menu>
                 </Dropdown>
@@ -151,8 +178,12 @@ class FilterSummary extends React.Component {
         );
     }
 
+    handleNotifySidebar = (option) => {
+        this.props.updateSidebarGroup(option);
+    }
+
     render() {
-        const { filter, groups } = this.props;
+        const { filter, groups, activeGroup } = this.props;
         let annoType = "";
         if (areArraysEqualSets(filter.annoType, ['default', 'to-do', 'question', 'highlight', 'issue'])) {
             annoType = "All Types";
@@ -182,13 +213,14 @@ class FilterSummary extends React.Component {
             <div className="FilterSummaryContainer">
                 <div className="FilterSectionRow">
                     <div className="FilterSection">Groups</div>
-                    {this.createGroupDropDown({
+                    <GroupMultiSelect groups={groups} handleNotifySidebar={this.handleNotifySidebar} />
+                    {/* {this.createGroupDropDown({
                         Icon: RiGroupLine,
-                        activeGroup: "Public", // need actual logic here
+                        activeGroup: activeGroup, // need actual logic here
                         header: "Group",
                         updateFunction: (option) => this.props.updateSidebarGroup(option),
                         items: groups
-                    })}
+                    })} */}
                 </div>
                 <div className="FilterSectionRow">
                     <div className="FilterSection">Filters</div>
