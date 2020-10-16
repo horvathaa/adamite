@@ -105,17 +105,17 @@ class Groups extends React.Component {
     }
 
     nameHandleChange = (e) => {
-        console.log("this is the name", e, e.target.value)
+        // console.log("this is the name", e, e.target.value)
         this.setState({ groupName: e.target.value })
     }
 
     groupDescriptionHandleChange = (e) => {
-        console.log("this is the descript", e, e.target.value)
+        // console.log("this is the descript", e, e.target.value)
         this.setState({ groupDescription: e.target.value })
     }
 
     render() {
-        console.log("thee are the props", this.state)
+        // console.log("thee are the props", this.state)
 
         const {
             ownerUid,
