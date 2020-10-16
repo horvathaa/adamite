@@ -309,7 +309,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       pinned: false,
       AnnotationTags: [],
       childAnchor: [],
-      private: false,
+      isPrivate: false,
       author
     });
   }
@@ -370,7 +370,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       AnnotationTags: content.tags,
       childAnchor: [],
       isPrivate: content.private,
-      author
+      author,
+      groups: content.groups
     }).then(value => {
       sendResponse({
         msg: 'DONE',

@@ -14,6 +14,7 @@
     "axios": "^0.19.2",
     "bootstrap": "^4.5.2",
     "classnames": "^2.2.6",
+    "dom-anchor-text-position": "^5.0.0",
     "draft-js": "^0.11.7",
     "email-validator": "^2.0.4",
     "firebase": "^7.21.1",

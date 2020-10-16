@@ -91,7 +91,7 @@ class ReplyEditor extends Component {
         });
     }
 
-    submitReply = (adopted, answer) => {
+    submitReply = (e, adopted, answer) => {
         if (this.props.edit) {
             const newReply = {
                 replyId: this.props.replyId,
@@ -129,11 +129,11 @@ class ReplyEditor extends Component {
                     replyTags: this.state.replyTags,
                     answer: answer !== undefined ? answer : false,
                     question: this.state.question,
-                    xpath: this.state.xpath,
+                    xpath: this.state.xpath !== undefined ? this.state.xpath : null,
                     anchor: this.state.anchor,
                     hostname: this.state.hostname,
                     url: this.state.url,
-                    offsets: this.state.offsets,
+                    offsets: this.state.offsets !== undefined ? this.state.offsets : null,
                     adopted: adopted !== undefined ? adopted : false
                 }
             }, (response) => {

@@ -196,7 +196,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.msg === 'ADD_NEW_ANCHOR') {
         var selection = window.getSelection();
         if (selection.type === 'Range') {
-            console.log('in here');
             const rect = selection.getRangeAt(0);
 
             //Text nodes that were highlighted by user
