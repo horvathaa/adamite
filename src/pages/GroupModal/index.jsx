@@ -24,5 +24,5 @@ const App = () => {
     return <Groups uid={params.uid} email={params.email} userName={params.userName} />;
 };
 
-console.log("PARENT", window.location);
+// console.log("PARENT", window.location);
 render(<App />, window.document.querySelector('#app-container'));

@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './FilterSummary.css';
 import classNames from 'classnames';
 import { GoEye } from 'react-icons/go';
 import { AiFillClockCircle, AiOutlineCheck } from 'react-icons/ai';
 import { RiGroupLine } from 'react-icons/ri';
-import { BiAnchor } from 'react-icons/bi';
+import { BiAnchor, BiPlusCircle } from 'react-icons/bi';
 import { BsChatSquareDots } from 'react-icons/bs';
 import view from '../../../../assets/img/SVGs/view.svg';
 import time from '../../../../assets/img/SVGs/time.svg';
@@ -12,8 +12,34 @@ import location from '../../../../assets/img/SVGs/location.svg';
 import anno_type from '../../../../assets/img/SVGs/anno_type.svg';
 import tag from '../../../../assets/img/SVGs/tag.svg';
 import { Dropdown } from 'react-bootstrap';
+import MultiSelect from 'react-multi-select-component';
 
+const GroupMultiSelect = ({ groups, handleNotifySidebar, addNewGroup }) => {
+    const [selected, setSelected] = useState(null);
+    // console.log('function', updateSidebarGroup);
+    let options = groups.map(group => {
+        return { label: group.name, value: group.gid };
+    });
 
+    function handleSelection(selection) {
+        setSelected(selection);
+        // console.log('selection', selection, selected);
+        handleNotifySidebar(selection);
+        // console.log('calling function', handleNotifySidebar);
+    }
+
+    return (
+        <div>
+            <MultiSelect
+                options={options}
+                value={selected}
+                onChange={handleSelection}
+                labelledBy={"Select"}
+            />
+        </div>
+    )
+
+}
 
 /** assumes array elements are primitive types
 * check whether 2 arrays are equal sets.
@@ -110,31 +136,6 @@ class FilterSummary extends React.Component {
         // }
     }
 
-    createGroupDropDown = (args) => {
-        const listItems = args.items.map((option, idx) => {
-            // let active = args.activeFilter.indexOf(option.visible) > -1 ? true : false
-            return <Dropdown.Item key={idx} onSelect={_ => { args.updateFunction(option) }} > {option.name} </Dropdown.Item>
-        });
-
-        return (
-            <React.Fragment>
-                <Dropdown>
-                    <Dropdown.Toggle title={args.header} className="titleDropDown">
-                        <div className="FilterIconContainer">
-                            <args.Icon className="filterReactIcon" />
-                        </div>
-                &nbsp; {args.activeGroup}
-                    </Dropdown.Toggle>
-                    <Dropdown.Menu >
-                        <Dropdown.Header>{args.header}</Dropdown.Header>
-                        {listItems}
-                        <Dropdown.Item key={args.items.length} onSelect={this.addNewGroup} > + New Group </Dropdown.Item>
-                    </Dropdown.Menu>
-                </Dropdown>
-            </React.Fragment>
-        );
-    }
-
     createDropDown = (args) => {
         const listItems = args.items.map((option, idx) => {
             let active = args.activeFilter.indexOf(option.visible) > -1 ? true : false
@@ -159,8 +160,12 @@ class FilterSummary extends React.Component {
         );
     }
 
+    handleNotifySidebar = (option) => {
+        this.props.updateSidebarGroup(option);
+    }
+
     render() {
-        const { filter, groups } = this.props;
+        const { filter, groups, activeGroup } = this.props;
         let annoType = "";
         if (areArraysEqualSets(filter.annoType, ['default', 'to-do', 'question', 'highlight', 'issue'])) {
             annoType = "All Types";
@@ -190,13 +195,16 @@ class FilterSummary extends React.Component {
             <div className="FilterSummaryContainer">
                 <div className="FilterSectionRow">
                     <div className="FilterSection">Groups</div>
-                    {this.createGroupDropDown({
-                        Icon: RiGroupLine,
-                        activeGroup: "Public", // need actual logic here
-                        header: "Group",
-                        updateFunction: (option) => this.props.updateSidebarGroup(option),
-                        items: groups
-                    })}
+                    <GroupMultiSelect
+                        groups={groups}
+                        handleNotifySidebar={this.handleNotifySidebar}
+                        addNewGroup={this.addNewGroup}
+                    />
+                    <div className="filterDropDown">
+                        <div className="FilterIconContainer">
+                            <BiPlusCircle className="filterReactIcon" onClick={_ => this.addNewGroup()} />
+                        </div>
+                    </div>
                 </div>
                 <div className="FilterSectionRow">
                     <div className="FilterSection">Filters</div>

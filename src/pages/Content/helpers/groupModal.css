@@ -4,6 +4,8 @@
     width: 40%;
     border: none;
     top: 20%;
+    padding: 1em;
+    margin: auto;
     border-radius:20px;
     background-color:white;
     position: fixed; 

@@ -12,6 +12,7 @@ import SearchBar from './containers/SearchBar/SearchBar';
 import { Button } from 'react-bootstrap';
 
 
+
 class Sidebar extends React.Component {
   constructor(props) {
     super(props); // deprecated - change
@@ -24,6 +25,7 @@ class Sidebar extends React.Component {
     annotations: [],
     filteredAnnotations: [],
     searchedAnnotations: [],
+    groupAnnotations: [],
     newSelection: null,
     rect: null,
     offsets: null,
@@ -31,6 +33,7 @@ class Sidebar extends React.Component {
     newAnnotationType: 'default',
     currentUser: undefined,
     selected: undefined,
+    activeGroups: [],
     groups: [],
     dropdownOpen: false,
     searchBarInputText: '',
@@ -55,14 +58,15 @@ class Sidebar extends React.Component {
   };
 
 
-  setUpAnnotationsListener = (uid, url) => {
+  setUpAnnotationsListener = (uid, url, tabId) => {
 
     chrome.runtime.sendMessage(
       {
         msg: 'GET_ANNOTATIONS_PAGE_LOAD',
         url: url,
-        uid: uid
-      },
+        uid: uid,
+        tabId: tabId
+      }
     );
 
   };
@@ -140,14 +144,15 @@ class Sidebar extends React.Component {
         }
         chrome.runtime.sendMessage(
           {
-            msg: 'REQUEST_TAB_URL',
+            msg: 'REQUEST_TAB_INFO',
           },
-          urlData => {
-            this.setState({ url: urlData.url });
+          tabInfo => {
+            this.setState({ url: tabInfo.url, tabId: tabInfo.tabId });
             if (currentUserData.payload.currentUser) {
               this.setUpAnnotationsListener(
                 currentUserData.payload.currentUser.uid,
-                urlData.url
+                tabInfo.url,
+                tabInfo.tabId
               );
             } else {
               if (this.unsubscribeAnnotations) {
@@ -381,19 +386,33 @@ class Sidebar extends React.Component {
     this.setState({ unanchored: true });
   }
 
-  updateSidebarGroup = (option) => {
-    console.log('updating in sidebar', option);
-    chrome.runtime.sendMessage({
-      msg: 'GROUP_ELASTIC',
-      payload: {
-        gid: option.gid,
-        url: this.state.url
-      }
-    },
-      (response) => {
-        console.log('here with response');
-        console.log(response);
-      });
+  updateSidebarGroup = (options) => {
+    let groupKV = [];
+    let groupNames = [];
+    // todo - check options to see whether or not the label is in activeGroups - if it is, then great, do what we already do
+    // else filter it out
+    if (options.length === 0) {
+      this.setState({ groupAnnotations: [], activeGroups: [] });
+      return;
+    }
+    options.forEach(group => {
+      chrome.runtime.sendMessage({
+        msg: 'GROUP_ELASTIC',
+        payload: {
+          gid: group.value,
+          url: this.state.url
+        }
+      },
+        (res) => {
+          groupKV.push({ name: group.label, annotations: res.response.data.hits.hits.map(h => h._source) });
+          groupNames.push(group.label);
+          this.setState({ groupAnnotations: groupKV });
+          this.setState({ activeGroups: groupNames });
+        })
+
+    });
+
+    // this.setState({ activeGroup: option[0].label })
   }
 
   handleRelatedQuestions = () => {
@@ -663,41 +682,51 @@ class Sidebar extends React.Component {
   };
 
   render() {
-    const { currentUser, filteredAnnotations, searchBarInputText, searchedAnnotations, pinnedAnnos, groups } = this.state;
-
+    const { currentUser, filteredAnnotations, searchBarInputText, searchedAnnotations, groupAnnotations, pinnedAnnos, groups, activeGroups } = this.state;
     if (currentUser === undefined) {
       return null;
     }
     // console.log("this is a render");
     // console.log('bad bad', this.state.relatedQuestions);
     const inputText = searchBarInputText.toLowerCase();
+    // console.log("ll code", groupAnnotations, activeGroups, activeGroups.length);
     // console.log("these are searched annotations", searchedAnnotations, searchedAnnotations.length === 0)
-    let filteredAnnotationsCopy = searchedAnnotations.length === 0 ? filteredAnnotations : searchedAnnotations;
-    // console.log("these are searched annotations", filteredAnnotationsCopy, searchedAnnotations.length === 0)
-    filteredAnnotationsCopy = filteredAnnotationsCopy.sort((a, b) =>
+    let renderedAnnotations = [];
+    if (searchedAnnotations.length) {
+      renderedAnnotations = searchedAnnotations;
+    }
+    else if (activeGroups.length) {
+      // console.log('in here', groupAnnotations);
+      groupAnnotations.forEach((group) => {
+        // console.log('groupppp', group);
+        renderedAnnotations = renderedAnnotations.concat(group.annotations);
+      });
+    }
+    else {
+      renderedAnnotations = filteredAnnotations;
+    }
+
+    renderedAnnotations = renderedAnnotations.sort((a, b) =>
       (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
     );
 
     const pinnedAnnosCopy = pinnedAnnos.sort((a, b) =>
       (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
     );
+    // console.log('rendered?', renderedAnnotations);
 
     let tempSearchCount;
     if (this.state.showPinned) {
-      // this.setState({ searchCount: filteredAnnotationsCopy.length + pinnedAnnos.length });
-      tempSearchCount = filteredAnnotationsCopy.length + pinnedAnnos.length;
+      tempSearchCount = renderedAnnotations.length + pinnedAnnos.length;
     }
     else {
-      // this.setState({ searchCount: filteredAnnotationsCopy.length });
-
-      tempSearchCount = filteredAnnotationsCopy.length;
+      tempSearchCount = renderedAnnotations.length;
     }
     return (
       <div className="SidebarContainer" >
         <Title currentUser={currentUser}
           handleShowAnnotatePage={this.handleShowAnnotatePage}
           handleUnanchoredAnnotation={this.handleUnanchoredAnnotation}
-          updateSidebarGroup={this.updateSidebarGroup}
         />
         {currentUser === null && <Authentication />}
         {currentUser !== null && (
@@ -724,6 +753,7 @@ class Sidebar extends React.Component {
                   openFilter={this.openFilter}
                   uid={currentUser.uid}
                   updateSidebarGroup={this.updateSidebarGroup}
+                // activeGroup={activeGroups.length ? activeGroup : "Public"}
                 />
               }
               {/* {this.state.askAboutRelatedAnnos && !this.state.showFilter ? (
@@ -788,6 +818,7 @@ class Sidebar extends React.Component {
               </div>
               {this.state.showPinned ? (
                 <React.Fragment><AnnotationList annotations={pinnedAnnosCopy}
+                  groups={groups}
                   currentUser={currentUser}
                   url={this.state.url}
                   requestFilterUpdate={this.requestChildAnchorFilterUpdate}
@@ -803,7 +834,7 @@ class Sidebar extends React.Component {
 
             </div>
             <div>
-              {!filteredAnnotationsCopy.length && this.state.newSelection === null && !this.state.annotatingPage && !this.state.showFilter ? (
+              {!renderedAnnotations.length && this.state.newSelection === null && !this.state.annotatingPage && !this.state.showFilter ? (
                 <div className="whoops">
                   There's nothing here! Try
                   <button className="ModifyFilter" onClick={this.openFilter}>
@@ -812,7 +843,8 @@ class Sidebar extends React.Component {
                   or creating a new annotation
                 </div>
               ) : (
-                  <AnnotationList annotations={filteredAnnotationsCopy}
+                  <AnnotationList annotations={renderedAnnotations}
+                    groups={groups}
                     currentUser={currentUser}
                     url={this.state.url}
                     requestFilterUpdate={this.requestChildAnchorFilterUpdate}
