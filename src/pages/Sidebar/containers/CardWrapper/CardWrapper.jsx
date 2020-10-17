@@ -30,7 +30,8 @@ export default class CardWrapper extends React.Component {
         elseContent: this.props.elseContent,
         pageAnnotation: this.props.pageAnnotation,
         collapsed: this.props.collapsed,
-        private: true
+        private: true,
+        groups: []
     };
 
     updateData = () => {
@@ -73,6 +74,7 @@ export default class CardWrapper extends React.Component {
     }
 
     submitPassthrough = () => {
+        console.log('state', this.state);
         this.setState({ edit: this.props.submitButtonHandler(this.state) });
     }
 
@@ -105,6 +107,7 @@ export default class CardWrapper extends React.Component {
 
 
         const { annotationContent, tags, elseContent, id, annotationType } = this.state;
+        const { userGroups } = this.props;
         const splitButtonText = this.state.private ? "Post to Only Me" : "Post to Public";
         let annoTypeDropDownValue;
         if (annotationType === 'default') {
@@ -143,7 +146,7 @@ export default class CardWrapper extends React.Component {
                                     </button>
                                     &nbsp; &nbsp;
                                 <SplitButton
-                                    key="publicPrivate"
+                                    key="publicPrivateGroup"
                                     id="dropdown-split-variants-secondary"
                                     variant="secondary"
                                     title={splitButtonText}
@@ -151,6 +154,9 @@ export default class CardWrapper extends React.Component {
                                 >
                                     <BootstrapDropdown.Item onClick={_ => this.setState({ private: true })} eventKey="1">Only Me</BootstrapDropdown.Item>
                                     <BootstrapDropdown.Item onClick={_ => this.setState({ private: false })} eventKey="2">Public</BootstrapDropdown.Item>
+                                    {userGroups.map((group, i) => {
+                                        return <BootstrapDropdown.Item onClick={_ => this.setState({ groups: [group.gid] })} eventKey={i + 2}>{group.name}</BootstrapDropdown.Item>
+                                    })}
                                 </SplitButton>
                             </div>
                         </div>

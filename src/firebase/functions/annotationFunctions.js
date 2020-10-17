@@ -151,7 +151,8 @@ export const createAnnotation = async ({
   childAnchor,
   pinned,
   isPrivate,
-  author
+  author,
+  groups
 }) => {
   authorId = authorId ? authorId : getCurrentUserId();
   if (!authorId) {
@@ -177,9 +178,10 @@ export const createAnnotation = async ({
     childAnchor,
     pinned: AnnotationType === 'question' || AnnotationType === 'to-do',
     replies: [],
-    private: isPrivate, //just for user study - should be set to 'isPrivate'
+    private: isPrivate,
     adopted: false,
-    author
+    author,
+    groups
   };
   return db.collection(DB_COLLECTIONS.ANNOTATIONS).add(newAnnotation);
 };

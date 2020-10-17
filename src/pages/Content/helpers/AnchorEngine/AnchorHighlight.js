@@ -2,6 +2,7 @@ import './anchor-box.css';
 import { xpathConversion, xpathToNode, flatten, getDescendants, getNodesInRange, pullXpathfromLocal } from './AnchorHelpers';
 // import $ from 'jquery';
 var xpathRange = require('xpath-range');
+let textPosition = require('dom-anchor-text-position');
 
 // helper method from
 // https://stackoverflow.com/questions/2540969/remove-querystring-from-url
@@ -66,8 +67,9 @@ export const highlightReplyRange = (xpath, annoId, replyId) => {
     try {
         newRange = xpathRange.toRange(xpath.start, xpath.startOffset, xpath.end, xpath.endOffset, document);
     } catch (err) {
-        // console.log('got error- ', err);
-        return;
+        console.log('got error- ', err);
+
+        // return;
     }
     // console.log('anno', anno, 'range', newRange);
     highlight(newRange, xpath.startOffset, xpath.endOffset, function (node, match, offset) {

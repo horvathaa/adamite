@@ -172,7 +172,8 @@ class Annotation extends Component {
         type: CardWrapperState.annotationType.toLowerCase(),
         content: CardWrapperState.annotationContent,
         tags: CardWrapperState.tags,
-        isPrivate: CardWrapperState.private
+        isPrivate: CardWrapperState.private,
+        groups: CardWrapperState.groups
       }
     });
     this.setState({ editing: false });
@@ -279,6 +280,7 @@ class Annotation extends Component {
         replies={replies}
         notifyParentOfAdopted={this.notifyParentOfAdopted}
         getGroupName={this.getGroupName}
+        userGroups={userGroups}
       />);
     }
     else if (annotationType === 'to-do' && !trashed && currentUser.uid === authorId) {

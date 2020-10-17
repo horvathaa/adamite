@@ -90,6 +90,7 @@ class NewAnnotation extends React.Component {
     this.setState({ submitted: true });
 
     const { url, newSelection, xpath, offsets } = this.props;
+    console.log('cardwrapper state', CardWrapperState);
     const annotationInfo = {
       anchor: newSelection,
       annotation: CardWrapperState.annotationContent,
@@ -97,7 +98,8 @@ class NewAnnotation extends React.Component {
       offsets: offsets,
       tags: CardWrapperState.tags,
       annotationType: CardWrapperState.annotationType.toLowerCase(),
-      private: CardWrapperState.private
+      private: CardWrapperState.private,
+      groups: CardWrapperState.groups
     };
     chrome.runtime.sendMessage(
       {
@@ -130,7 +132,7 @@ class NewAnnotation extends React.Component {
   };
 
   render() {
-    const { newSelection, type, annoContent } = this.props;
+    const { newSelection, type, annoContent, userGroups } = this.props;
 
     const options = [
       'Default', 'To-do', 'Highlight', 'Issue'
@@ -159,7 +161,7 @@ class NewAnnotation extends React.Component {
           edit={!submitted}
           pageAnnotation={newSelection}
           annotationType={type}
-
+          userGroups={userGroups}
           cancelButtonHandler={this.cancelButtonHandler}
           submitButtonHandler={this.submitButtonHandler}
           elseContent={submittedLoadState} />

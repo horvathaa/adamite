@@ -784,6 +784,7 @@ class Sidebar extends React.Component {
                     xpath={this.state.xpath}
                     type={this.state.newAnnotationType}
                     annoContent={this.state.newAnnotationContent}
+                    userGroups={groups}
                   />
                 )}
               {this.state.annotatingPage &&
@@ -794,6 +795,7 @@ class Sidebar extends React.Component {
                   annoContent={''}
                   offsets={null}
                   xpath={null}
+                  userGroups={groups}
                 />
               }
               {this.state.unanchored &&
@@ -804,6 +806,7 @@ class Sidebar extends React.Component {
                   annoContent={''}
                   offsets={null}
                   xpath={null}
+                  userGroups={groups}
                 />
               }
 
@@ -817,12 +820,15 @@ class Sidebar extends React.Component {
                 </div>
               </div>
               {this.state.showPinned ? (
-                <React.Fragment><AnnotationList annotations={pinnedAnnosCopy}
-                  groups={groups}
-                  currentUser={currentUser}
-                  url={this.state.url}
-                  requestFilterUpdate={this.requestChildAnchorFilterUpdate}
-                  notifyParentOfPinning={this.handlePinnedAnnotation} />
+                <React.Fragment>
+                  <AnnotationList
+                    annotations={pinnedAnnosCopy}
+                    groups={groups}
+                    currentUser={currentUser}
+                    url={this.state.url}
+                    requestFilterUpdate={this.requestChildAnchorFilterUpdate}
+                    notifyParentOfPinning={this.handlePinnedAnnotation}
+                  />
                   <div className="userQuestionButtonContainer">
                     <div className="ModifyFilter userQuestions" onClick={_ => { this.setState({ showPinned: !this.state.showPinned }) }}>
                       {this.state.showPinned ? ("Hide " + this.state.pinnedAnnos.length + " Pinned Annotations") : ("Show " + this.state.pinnedAnnos.length + " Pinned Annotations")}
@@ -836,11 +842,7 @@ class Sidebar extends React.Component {
             <div>
               {!renderedAnnotations.length && this.state.newSelection === null && !this.state.annotatingPage && !this.state.showFilter ? (
                 <div className="whoops">
-                  There's nothing here! Try
-                  <button className="ModifyFilter" onClick={this.openFilter}>
-                    modifying your filter,
-                  </button>
-                  or creating a new annotation
+                  There's nothing here! Try searching for an annotation or creating a new annotation
                 </div>
               ) : (
                   <AnnotationList annotations={renderedAnnotations}
