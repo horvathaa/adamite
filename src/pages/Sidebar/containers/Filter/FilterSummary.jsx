@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import './FilterSummary.css';
 import classNames from 'classnames';
 import { GoEye } from 'react-icons/go';
-import { AiFillClockCircle, AiOutlineCheck } from 'react-icons/ai';
-import { RiGroupLine } from 'react-icons/ri';
-import { BiAnchor, BiPlusCircle } from 'react-icons/bi';
+import { AiFillClockCircle, AiOutlineCheck, AiOutlineCloseCircle, AiOutlineUsergroupAdd } from 'react-icons/ai';
+import { BiAnchor, BiPlusCircle, BiGroup } from 'react-icons/bi';
 import { BsChatSquareDots } from 'react-icons/bs';
 import view from '../../../../assets/img/SVGs/view.svg';
 import time from '../../../../assets/img/SVGs/time.svg';
@@ -13,33 +12,8 @@ import anno_type from '../../../../assets/img/SVGs/anno_type.svg';
 import tag from '../../../../assets/img/SVGs/tag.svg';
 import { Dropdown } from 'react-bootstrap';
 import MultiSelect from 'react-multi-select-component';
-
-const GroupMultiSelect = ({ groups, handleNotifySidebar, addNewGroup }) => {
-    const [selected, setSelected] = useState(null);
-    // console.log('function', updateSidebarGroup);
-    let options = groups.map(group => {
-        return { label: group.name, value: group.gid };
-    });
-
-    function handleSelection(selection) {
-        setSelected(selection);
-        // console.log('selection', selection, selected);
-        handleNotifySidebar(selection);
-        // console.log('calling function', handleNotifySidebar);
-    }
-
-    return (
-        <div>
-            <MultiSelect
-                options={options}
-                value={selected}
-                onChange={handleSelection}
-                labelledBy={"Select"}
-            />
-        </div>
-    )
-
-}
+import { check } from 'prettier';
+import GroupMultiSelect from '../MultiSelect/MultiSelect'
 
 /** assumes array elements are primitive types
 * check whether 2 arrays are equal sets.
@@ -200,11 +174,6 @@ class FilterSummary extends React.Component {
                         handleNotifySidebar={this.handleNotifySidebar}
                         addNewGroup={this.addNewGroup}
                     />
-                    <div className="filterDropDown">
-                        <div className="FilterIconContainer">
-                            <BiPlusCircle className="filterReactIcon" onClick={_ => this.addNewGroup()} />
-                        </div>
-                    </div>
                 </div>
                 <div className="FilterSectionRow">
                     <div className="FilterSection">Filters</div>
@@ -249,7 +218,8 @@ class FilterSummary extends React.Component {
                             <div className="FilterIconContainer">
                                 <img src={tag} alt="tag icon" />
                             </div>
-                        &nbsp; &nbsp; <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
+                        &nbsp; &nbsp;
+                            <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
                                 {filter.tags.map((tag, idx) => {
                                     if (idx !== (filter.tags.length - 1)) {
                                         return (<li key={idx} style={{ display: "inline" }}>

@@ -7,18 +7,9 @@
     display: flex;
     padding: 0px 0px 0px 8px;
 }
-
-.multi-select {
-    --rmsc-main: #4285f4;
-    --rmsc-hover: #f1f3f5;
-    --rmsc-selected: #e2e6ea;
-    --rmsc-border: #ccc;
-    --rmsc-gray: #6B778C !important;
-    --rmsc-bg: #fff;
-    --rmsc-p: 10px; /* Spacing */
-    --rmsc-radius: 4px; /* Radius */
-    --rmsc-h: auto !important; /* Height */
-  }
+.multi-select-wrapper{
+    width: 80%
+}
 
 .FilterSection {
     position: relative;

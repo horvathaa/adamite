@@ -1,0 +1,154 @@
+
+.multi-select {
+    padding: 4px 0px 0px 0px;
+    --rmsc-main: #4285f4;
+    --rmsc-hover: #4aba8d21 !important;
+    --rmsc-selected: #4aba8d3d !important;
+    --rmsc-border: none !important;
+    --rmsc-gray: none !important;
+    --rmsc-bg: #fff;
+    --rmsc-p: 10px; /* Spacing */
+    --rmsc-radius: 4px; /* Radius */
+    --rmsc-h: auto !important; /* Height */
+}
+
+.selected{
+    margin-left: 5px !important;
+    border-top-left-radius: 20px !important;
+    border-bottom-left-radius: 20px !important;
+}
+
+.multi-select:focus {
+    --rmsc-border: none !important;
+    outline: none !important;
+    border: none !important;
+}
+
+.multi-select:focus-within {
+    box-shadow: none !important;
+    border-color: none !important;
+}
+
+.multi-select-check-wrapper {
+    display: initial;
+    padding-right: .5em;
+}
+
+.dropdown-container{
+    box-shadow: none !important;
+    border-color: none !important;
+}
+
+.dropdown-heading{
+    cursor: pointer !important;
+}
+
+.clear-selected-button {
+    color: #7f8080;
+    transition: none !important;
+    padding-right: .25em !important;
+    padding-left: .25em !important;
+}
+
+.clear-selected-button:hover {
+    color: black;
+    transition: none !important;
+}
+
+.clear-selected-button:focus {
+    outline: none !important;
+}
+.dropdown-heading-value{
+    flex: none !important;
+    display: contents !important;
+}
+
+.dropdown-heading-value span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /* width: 90%; */
+}
+
+.dropdown-heading-dropdown-arrow{
+    display: none;
+}
+
+.dropdown-heading-value:hover{   
+    color: #6b778ca1 !important;
+}
+
+.dropdown-heading:hover{   
+    color: #6b778ca1 !important;
+}
+.gray:hover {
+    color: #6b778ca1 !important;
+}
+
+.gray:hover {
+    color: none !important;
+}
+
+.dropdown-heading *{
+    transition: none !important;
+    padding-top: none !important;
+}
+
+.dropdown-content {
+    width: 300px !important;
+}
+
+.panel-content{
+    box-shadow: 0 1px 6px 0 rgba(32,33,36,0.28) !important;
+    border-radius: 10px !important;
+}
+
+.select-panel ul {
+    width: 300px !important;
+    overflow-x: hidden;
+}
+
+.select-panel div input {
+    padding-top: .5em;
+    padding-bottom: .25em;
+}
+
+.select-panel div {
+    border-bottom: 1px solid #e9e6e6;
+    margin-bottom: .5em;
+}
+
+.select-panel div button:focus {
+    outline: none !important;
+}
+
+.select-panel div button:hover {
+    color: #242424;
+    transition: none !important;
+}
+
+.select-panel div button {
+    color: #7f8080;
+    transition: none !important;
+    padding-right: 1em;
+    padding-left: 1em;
+}
+
+.select-panel div button svg{
+    transition: none !important;
+}
+
+.select-panel ul div {
+    border-bottom: none;
+    margin-bottom: 0px;
+}
+
+.select-panel label div {
+    display: flex;
+    border-bottom: none;
+    margin-bottom: 0px;
+}
+
+.select-panel label div span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
