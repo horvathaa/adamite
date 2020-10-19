@@ -16,7 +16,9 @@ class Groups extends React.Component {
         groupDescription: "",
         emails: [this.props.email],
         invalidUser: "",
-        invalidName: ""
+        invalidName: "",
+        editState: false,
+        gid: ""
     }
 
     componentWillUnmount() {
@@ -41,7 +43,29 @@ class Groups extends React.Component {
                     groupDescription: "",
                     emails: initstate.emails,
                     invalidUser: "",
-                    invalidName: ""
+                    invalidName: "",
+                    editState: false,
+                    gid: ""
+                });
+            }
+            else if (
+                request.from === 'content' &&
+                request.msg === 'EDIT_EXISTING_GROUP'
+            ) {
+                console.log("edit groups", request)
+                let data = request.payload;
+                this.setState({
+                    ownerUid: data.owner,
+                    ownerEmail: data.ownerEmail,
+                    userName: data.userName,
+                    uids: data.uids,
+                    groupName: data.groupName,
+                    groupDescription: data.groupDescription,
+                    emails: data.emails,
+                    invalidUser: "",
+                    invalidName: "",
+                    editState: true,
+                    gid: data.gid
                 });
             }
         });
@@ -104,6 +128,24 @@ class Groups extends React.Component {
         });
     }
 
+    onClickDeletez = (e) => {
+        console.log("in here", this.state.groupName, this.state.groupName.length)
+        if (this.state.groupName.length <= 0) {
+            this.setState({ invalidName: "*group name cannot be blank" })
+            return;
+        }
+
+        if (window.confirm("Are you sure you want to delete this group?")) {
+            console.log("deleting", this.state.gid)
+            chrome.runtime.sendMessage({
+                msg: 'DELETE_GROUP',
+                from: 'modal',
+                gid: this.state.gid
+            });
+        }
+        // document.getElementById("demo").innerHTML = txt;
+    }
+
     nameHandleChange = (e) => {
         // console.log("this is the name", e, e.target.value)
         this.setState({ groupName: e.target.value })
@@ -126,7 +168,8 @@ class Groups extends React.Component {
             groupDescription,
             emails,
             invalidUser,
-            invalidName
+            invalidName,
+            editState
         } = this.state;
 
 
@@ -140,7 +183,7 @@ class Groups extends React.Component {
                                 <AiOutlineUsergroupAdd className="profile" />
                             </div>
                             <div>
-                                <h1 className="title"> Create Group </h1>
+                                <h1 className="title"> {editState ? "Edit" : "Create"} Group </h1>
                             </div>
                         </div>
                         <div>
@@ -173,8 +216,6 @@ class Groups extends React.Component {
                         <div className="input-modal">
                             <input type="email" placeholder="Add People to your Group by Email" className="input" onKeyDown={this.onKeyDown} />
                         </div>
-                        {/* <div className="table-wrapper"> */}
-                        {/* <div className="table-scroll"> */}
                         <table className="table" cellSpacing="0" cellPadding="0">
                             <tbody>
                                 {emails.map((items, idx) => {
@@ -208,11 +249,15 @@ class Groups extends React.Component {
                                 )}
                             </tbody>
                         </table>
-                        {/* </div> */}
-                        {/* </div> */}
                     </div>
                 </div>
-                <footer><button className="btn" onClick={this.onClickCreate} >Create</button></footer>
+                <footer>
+                    {editState ?
+                        <button className="btn-delete btn" onClick={this.onClickDeletez} >Delete</button>
+                        : null
+                    }
+                    <button className="btn" onClick={this.onClickDelete} >{editState ? "Update" : "Create"}</button>
+                </footer>
             </React.Fragment>
         );
     }

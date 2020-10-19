@@ -112,12 +112,20 @@ export const getAnnotationById = id => {
   return db.collection(DB_COLLECTIONS.ANNOTATIONS).doc(id);
 };
 
+export const getGroupByGid = gid => {
+  return db.collection(DB_COLLECTIONS.GROUPS).doc(gid);
+}
+
 export const trashAnnotationById = id => {
   getAnnotationById(id).update({ trashed: true });
 };
 
 export const deleteAnnotationForeverById = (id) => {
   return getAnnotationById(id).delete();
+};
+
+export const deleteGroupForeverByGid = (gid) => {
+  return getGroupByGid(gid).delete();
 };
 
 export const updateAnnotationById = (id, newAnnotationFields = {}) => {

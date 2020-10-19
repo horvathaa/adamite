@@ -30,7 +30,7 @@
 }
 
 .multi-select-check-wrapper {
-    display: initial;
+    display: inline-block !important;
     padding-right: .5em;
 }
 
@@ -41,6 +41,11 @@
 
 .dropdown-heading{
     cursor: pointer !important;
+}
+
+.edit-button:hover {
+    color: black;
+    transition: none !important;
 }
 
 .clear-selected-button {
@@ -151,4 +156,28 @@
 .select-panel label div span {
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.FilterIconContainer2 {
+    padding: 4px 0px 0px 0px;
+}
+
+.item-wrapper{
+    display: block !important;
+    position: relative;
+    width:100%;
+}
+
+.item-inner-left {
+    display: inline-flex !important;
+}
+
+.item-inner-left-span {
+    display: inline-block !important;
+    width: 230px;
+}
+
+.item-inner-right {
+    float: right;
+    display: inline-block !important;
 }

@@ -199,6 +199,10 @@ table tbody tr th {
     background: transparent;
 }
 
+.btn-delete {
+    left: 0;
+    background-color: #f35b2e !important;
+}
 .btn {
     bottom: 0;
     right: 0;
@@ -247,4 +251,8 @@ footer {
     height: 45px;
     border-top: 1px solid;
     background-color: white;
+}
+
+.App {
+    margin-bottom: 2em;
 }

@@ -11,10 +11,9 @@ const isVisible = elem => !!elem && !!(elem.offsetWidth || elem.offsetHeight || 
 
 function hideOnClickOutside(element) {
     const outsideClickListener = event => {
-        if (element.contains(event.target) && isVisible(element)) { // or use: event.target.closest(selector) === null                      console.log("this is happening")
+        if (element.contains(event.target) && isVisible(element)) {
             removeClickListener()
             element.classList.add('w3-animate-show');
-            // element.close()
             chrome.runtime.sendMessage({
                 msg: 'GROUP_MODAL_CLOSED',
                 from: 'helper'

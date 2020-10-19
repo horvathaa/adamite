@@ -15,6 +15,7 @@ import {
   getAllPinnedAnnotationsByUserId,
   getAllPrivatePinnedAnnotationsByUserId,
   deleteAnnotationForeverById,
+  deleteGroupForeverByGid,
   getCurrentUserId,
   getAllGroupsByUserId,
   getPrivateAnnotationsAcrossSite,
@@ -247,6 +248,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       owner: request.group.owner,
       emails: request.group.emails
     });
+  }
+  else if (request.msg === "DELETE_GROUP" && request.from === 'modal') {
+    console.log("this is the request for a delete group", request.gid);
+    const { gid } = request;
+    deleteGroupForeverByGid(gid);
   }
   // maybe switch to passing in tabId here instead of querying
   else if (request.msg === 'SHOW_GROUP' && request.from === 'content') {

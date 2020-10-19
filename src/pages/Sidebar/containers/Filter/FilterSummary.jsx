@@ -1,18 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import './FilterSummary.css';
-import classNames from 'classnames';
 import { GoEye } from 'react-icons/go';
 import { AiFillClockCircle, AiOutlineCheck, AiOutlineCloseCircle, AiOutlineUsergroupAdd } from 'react-icons/ai';
-import { BiAnchor, BiPlusCircle, BiGroup } from 'react-icons/bi';
 import { BsChatSquareDots } from 'react-icons/bs';
-import view from '../../../../assets/img/SVGs/view.svg';
-import time from '../../../../assets/img/SVGs/time.svg';
-import location from '../../../../assets/img/SVGs/location.svg';
-import anno_type from '../../../../assets/img/SVGs/anno_type.svg';
 import tag from '../../../../assets/img/SVGs/tag.svg';
 import { Dropdown } from 'react-bootstrap';
-import MultiSelect from 'react-multi-select-component';
-import { check } from 'prettier';
 import GroupMultiSelect from '../MultiSelect/MultiSelect'
 
 /** assumes array elements are primitive types
@@ -170,6 +162,7 @@ class FilterSummary extends React.Component {
                 <div className="FilterSectionRow">
                     <div className="FilterSection">Groups</div>
                     <GroupMultiSelect
+                        uid={this.props.uid}
                         groups={groups}
                         handleNotifySidebar={this.handleNotifySidebar}
                         addNewGroup={this.addNewGroup}
