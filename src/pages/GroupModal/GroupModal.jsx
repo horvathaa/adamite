@@ -115,7 +115,8 @@ class Groups extends React.Component {
             this.setState({ invalidName: "*group name cannot be blank" })
             return;
         }
-        console.log("sending date")
+        let emails = this.state.emails.filter(e => e !== this.props.email)
+        console.log("sending date", this.state.emails, this.props.email, emails)
         chrome.runtime.sendMessage({
             msg: 'ADD_NEW_GROUP',
             from: 'content',
@@ -123,7 +124,7 @@ class Groups extends React.Component {
                 name: this.state.groupName,
                 owner: this.state.ownerUid,
                 description: this.state.groupDescription,
-                emails: this.state.emails,
+                emails: emails,
             },
         });
     }
@@ -256,7 +257,7 @@ class Groups extends React.Component {
                         <button className="btn-delete btn" onClick={this.onClickDeletez} >Delete</button>
                         : null
                     }
-                    <button className="btn" onClick={this.onClickDelete} >{editState ? "Update" : "Create"}</button>
+                    <button className="btn" onClick={this.onClickCreate} >{editState ? "Update" : "Create"}</button>
                 </footer>
             </React.Fragment>
         );
