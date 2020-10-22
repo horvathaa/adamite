@@ -90,13 +90,6 @@ class DefaultAnnotation extends Component {
                                 <div className="badgeContainer">
                                     <img src={Default} alt='default type badge' />
                                 </div>
-                                <div className="badgeContainer">
-                                    {isPrivate ? (
-                                        <img src={view} alt='private badge' />
-                                    ) :
-                                        (<img src={viewPublic} alt='public badge' />)}
-
-                                </div>
                             </div>
                         </div>
                     </div>

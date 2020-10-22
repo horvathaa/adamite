@@ -26,6 +26,7 @@ class Sidebar extends React.Component {
     filteredAnnotations: [],
     searchedAnnotations: [],
     groupAnnotations: [],
+    filteredGroupAnnotations: [],
     newSelection: null,
     rect: null,
     offsets: null,
@@ -624,6 +625,22 @@ class Sidebar extends React.Component {
   applyFilter = (filterSelection) => {
     this.setState({ filterSelection: filterSelection });
     if (filterSelection.siteScope.includes('onPage') && !filterSelection.siteScope.includes('acrossWholeSite')) {
+      if (this.state.groupAnnotations.length) {
+        let viewableGroupAnnotations = [];
+        this.state.groupAnnotations.forEach((group) => {
+          viewableGroupAnnotations = viewableGroupAnnotations.concat(group.annotations);
+        })
+        this.setState({
+          filteredGroupAnnotations:
+            viewableGroupAnnotations.filter(annotation => {
+              return this.checkSiteScope(annotation, filterSelection.siteScope) &&
+                this.checkUserScope(annotation, filterSelection.userScope) &&
+                this.checkAnnoType(annotation, filterSelection.annoType) &&
+                this.checkTimeRange(annotation, filterSelection.timeRange) &&
+                this.checkTags(annotation, filterSelection.tags)
+            })
+        })
+      }
       this.setState({
         filteredAnnotations:
           this.state.annotations.filter(annotation => {
@@ -631,7 +648,7 @@ class Sidebar extends React.Component {
               this.checkUserScope(annotation, filterSelection.userScope) &&
               this.checkAnnoType(annotation, filterSelection.annoType) &&
               this.checkTimeRange(annotation, filterSelection.timeRange) &&
-              this.checkTags(annotation, filterSelection.tags);
+              this.checkTags(annotation, filterSelection.tags)
           })
       });
     }
@@ -682,7 +699,7 @@ class Sidebar extends React.Component {
   };
 
   render() {
-    const { currentUser, filteredAnnotations, searchBarInputText, searchedAnnotations, groupAnnotations, pinnedAnnos, groups, activeGroups } = this.state;
+    const { currentUser, filteredAnnotations, searchBarInputText, searchedAnnotations, groupAnnotations, filteredGroupAnnotations, pinnedAnnos, groups, activeGroups } = this.state;
     if (currentUser === undefined) {
       return null;
     }
@@ -697,10 +714,16 @@ class Sidebar extends React.Component {
     }
     else if (activeGroups.length) {
       // console.log('in here', groupAnnotations);
-      groupAnnotations.forEach((group) => {
-        // console.log('groupppp', group);
-        renderedAnnotations = renderedAnnotations.concat(group.annotations);
-      });
+      console.log('filtered..', filteredGroupAnnotations);
+      if (filteredGroupAnnotations.length) {
+        renderedAnnotations = renderedAnnotations.concat(filteredGroupAnnotations);
+      }
+      else {
+        groupAnnotations.forEach((group) => {
+          // console.log('groupppp', group);
+          renderedAnnotations = renderedAnnotations.concat(group.annotations);
+        });
+      }
     }
     else {
       renderedAnnotations = filteredAnnotations;

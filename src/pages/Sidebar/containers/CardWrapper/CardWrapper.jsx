@@ -106,9 +106,16 @@ export default class CardWrapper extends React.Component {
         const defaultOption = options[0];
 
 
-        const { annotationContent, tags, elseContent, id, annotationType } = this.state;
+        const { annotationContent, tags, elseContent, id, annotationType, groups } = this.state;
         const { userGroups } = this.props;
-        const splitButtonText = this.state.private ? "Post to Only Me" : "Post to Public";
+        let splitButtonText;
+        if (groups.length > 0) {
+            const name = userGroups.filter(g => g.gid === groups[0])[0].name;
+            splitButtonText = "Post to " + name;
+        }
+        else {
+            splitButtonText = this.state.private ? "Post to Only Me" : "Post to Public";
+        }
         let annoTypeDropDownValue;
         if (annotationType === 'default') {
             annoTypeDropDownValue = 'normal';

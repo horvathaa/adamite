@@ -29,6 +29,12 @@
   margin: 0px 4px;
   font-size: 12px;
   font-style: italic;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  text-overflow: ellipsis;
+  width: min-content;
+  max-width: 250px;
+  overflow-wrap: break-word;
 }
 
 .AnnotationContainerPadActive {

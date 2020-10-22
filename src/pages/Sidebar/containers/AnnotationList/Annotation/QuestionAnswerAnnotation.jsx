@@ -161,15 +161,7 @@ class QuestionAnswerAnnotation extends Component {
                                     }
 
                                 </div>
-                                <div className="badgeContainer">
-                                    {isPrivate ? (
-                                        <img src={view} alt='private badge' />
-                                    ) :
-                                        (<img src={viewPublic} alt='public badge' />)}
-
-                                </div>
                             </div>
-
                         </div>
                     </div>
                     {!collapsed ? (
