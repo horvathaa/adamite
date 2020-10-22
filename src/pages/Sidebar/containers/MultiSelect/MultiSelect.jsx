@@ -84,7 +84,7 @@ class GroupMultiSelect extends React.Component {
 
         const { groups, selected } = this.state;
 
-        console.log("this is the passed in groups", this.props.groups, this.state.uid)
+        // console.log("this is the passed in groups", this.props.groups, this.state.uid)
         let options = this.props.groups.map(group => {
             return { label: group.name, value: group.gid, owner: group.owner };
         });

@@ -201,14 +201,16 @@ class Sidebar extends React.Component {
           newAnnotationType: type,
           newAnnotationContent: annoContent
         });
-      } else if (
-        request.from === 'background' &&
-        request.msg === 'CONTENT_NOT_SELECTED'
-      ) {
-        // should check whether annotation has user-added content or not - will need to request
-        // child annotation's state
-        this.resetNewSelection();
-      } else if (
+      }
+      //  else if (
+      //   request.from === 'background' &&
+      //   request.msg === 'CONTENT_NOT_SELECTED'
+      // ) {
+      //   // should check whether annotation has user-added content or not - will need to request
+      //   // child annotation's state
+      //   this.resetNewSelection();
+      // } 
+      else if (
         request.from === 'content' &&
         request.msg === 'ANCHOR_CLICKED'
       ) {
@@ -780,26 +782,11 @@ class Sidebar extends React.Component {
                 // activeGroup={activeGroups.length ? activeGroup : "Public"}
                 />
               }
-              {/* {this.state.askAboutRelatedAnnos && !this.state.showFilter ? (
-                <React.Fragment>
-                  <div className="FilterSummaryContainer">
-                    I noticed that you have an open question and you just created a new question - are they related? &nbsp;
-                    <Button variant="outline-info" size='sm' onClick={this.handleRelatedQuestions}>Yes</Button> &nbsp; &nbsp;
-                    <Button variant="outline-info" size='sm' onClick={_ => this.setState({ askAboutRelatedAnnos: false })}>No</Button>
-                  </div>
 
-                </React.Fragment>
-              ) : (null)} */}
-              {/* {this.state.showFilter &&
-                <Filter applyFilter={this.applyFilter}
-                  filterAnnotationLength={this.getFilteredAnnotationListLength}
-                  getFilteredAnnotations={this.getFilteredAnnotations}
-                  currentFilter={this.state.filterSelection}
-                  searchByTag={this.searchByTag}
-                />} */}
               {this.state.newSelection !== null &&
                 !this.state.annotatingPage &&
-                this.state.newSelection.trim().length > 0 && (
+                // this.state.newSelection.trim().length > 0 && 
+                (
                   <NewAnnotation
                     url={this.state.url}
                     newSelection={this.state.newSelection}
@@ -866,7 +853,7 @@ class Sidebar extends React.Component {
             <div>
               {!renderedAnnotations.length && this.state.newSelection === null && !this.state.annotatingPage && !this.state.showFilter ? (
                 <div className="whoops">
-                  There's nothing here! Try searching for an annotation or creating a new annotation
+                  There's nothing here! Try searching for an annotation, modifying your groups or filters, or creating a new annotation
                 </div>
               ) : (
                   <AnnotationList annotations={renderedAnnotations}

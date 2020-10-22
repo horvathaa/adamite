@@ -40,6 +40,7 @@ class NewAnnotation extends React.Component {
   };
 
   componentDidMount() {
+    console.log('what', this.keydown);
     document.addEventListener('keydown', this.keydown, false);
   }
 
