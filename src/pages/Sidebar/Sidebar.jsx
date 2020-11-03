@@ -51,7 +51,7 @@ class Sidebar extends React.Component {
     filterSelection: {
       siteScope: ['onPage'],
       userScope: ['public'],
-      annoType: ['default', 'to-do', 'question', 'highlight', 'navigation', 'issue'],
+      annoType: ['default', 'to-do', 'question', 'highlight', 'issue'],
       timeRange: 'all',
       archive: null,
       tags: []

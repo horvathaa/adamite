@@ -316,7 +316,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       AnnotationTags: [],
       childAnchor: [],
       isPrivate: false,
-      author
+      author,
+      groups: [] // later have this be a default group
     });
   }
   else if (request.from === 'content' && request.msg === 'UNARCHIVE') {
