@@ -2,6 +2,8 @@ import React from 'react';
 import './GroupModal.css';
 import profile from '../../assets/img/SVGs/Profile.svg';
 import { AiOutlineUsergroupAdd, AiOutlineDelete } from 'react-icons/ai';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 // import { copySync } from 'fs-extra';
 
 
@@ -27,6 +29,7 @@ class Groups extends React.Component {
 
     componentDidMount() {
         var initstate = this.state;
+
         //reset state when modal closes
         chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             if (
@@ -102,7 +105,7 @@ class Groups extends React.Component {
      * Deletes an email when trash icon is clicked
      */
     onClickDelete = (email) => {
-        console.log("in delete");
+        // console.log("in delete");
         var results = this.state.emails.filter(function (el) {
             return !el.match(email)
         })
@@ -110,7 +113,7 @@ class Groups extends React.Component {
     }
 
     onClickCreate = (e) => {
-        console.log("in here", this.state.groupName, this.state.groupName.length)
+        // console.log("in here", this.state.groupName, this.state.groupName.length)
         if (this.state.groupName.length <= 0) {
             this.setState({ invalidName: "*group name cannot be blank" })
             return;
@@ -130,7 +133,7 @@ class Groups extends React.Component {
     }
 
     onClickDeletez = (e) => {
-        console.log("in here", this.state.groupName, this.state.groupName.length)
+        // console.log("in here", this.state.groupName, this.state.groupName.length)
         if (this.state.groupName.length <= 0) {
             this.setState({ invalidName: "*group name cannot be blank" })
             return;
@@ -173,10 +176,9 @@ class Groups extends React.Component {
             editState
         } = this.state;
 
-
         return (
-            <React.Fragment>
 
+            <React.Fragment>
                 <div className="App">
                     <div>
                         <div className="header">

@@ -34,6 +34,7 @@
     "react-icons": "^3.11.0",
     "react-multi-select-component": "^3.0.4",
     "react-tagsinput": "^3.19.0",
+    "react-toastify": "^6.0.9",
     "react-widgets": "^4.6.0",
     "throttle-debounce": "^2.3.0",
     "url-loader": "^4.1.0",

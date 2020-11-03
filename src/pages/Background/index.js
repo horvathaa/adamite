@@ -241,18 +241,41 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     privateListener = promiseToComeBack(request.url, annotations);
   }
   else if (request.msg === 'ADD_NEW_GROUP' && request.from === 'content') {
-    console.log("this is the request for a new group", request);
+    // console.log("this is the request for a new group", request);
     addNewGroup({
       name: request.group.name,
       description: request.group.description,
       owner: request.group.owner,
       emails: request.group.emails
-    });
+    }).then(value => {
+      chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+        const tabId = tabs[0].id;
+        chrome.tabs.sendMessage(
+          tabId,
+          {
+            msg: 'GROUP_CREATE_SUCCESS',
+            from: 'background',
+          }
+        );
+      });
+
+    })
   }
   else if (request.msg === "DELETE_GROUP" && request.from === 'modal') {
     console.log("this is the request for a delete group", request.gid);
     const { gid } = request;
-    deleteGroupForeverByGid(gid);
+    deleteGroupForeverByGid(gid).then(value => {
+      chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+        const tabId = tabs[0].id;
+        chrome.tabs.sendMessage(
+          tabId,
+          {
+            msg: 'GROUP_DELETE_SUCCESS',
+            from: 'background',
+          }
+        );
+      });
+    });
   }
   // maybe switch to passing in tabId here instead of querying
   else if (request.msg === 'SHOW_GROUP' && request.from === 'content') {
