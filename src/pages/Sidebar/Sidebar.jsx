@@ -384,14 +384,15 @@ class Sidebar extends React.Component {
     });
   };
 
-  handleUnanchoredAnnotation = () => {
-    // this.setState({ annotatingPage: true });
-    this.setState({ unanchored: true });
-  }
+  // handleUnanchoredAnnotation = () => {
+  //   // this.setState({ annotatingPage: true });
+  //   this.setState({ unanchored: true });
+  // }
 
   updateSidebarGroup = (options) => {
     let groupKV = [];
     let groupNames = [];
+    const { uid } = this.state.currentUser;
     // todo - check options to see whether or not the label is in activeGroups - if it is, then great, do what we already do
     // else filter it out
     if (options.length === 0) {
@@ -399,22 +400,44 @@ class Sidebar extends React.Component {
       return;
     }
     options.forEach(group => {
-      chrome.runtime.sendMessage({
-        msg: 'GROUP_ELASTIC',
-        payload: {
-          gid: group.value,
-          url: this.state.url
-        }
-      },
-        (res) => {
-          groupKV.push({ name: group.label, annotations: res.response.data.hits.hits.map(h => h._source) });
-          groupNames.push(group.label);
-          this.setState({ groupAnnotations: groupKV });
-          this.setState({ activeGroups: groupNames });
-          this.setState({ filteredGroupAnnotations: [] });
+      if (group.value === "onlyme") {
+        groupKV.push({
+          name: "onlyme", annotations: this.state.annotations.filter(anno => anno.authorId === uid)
         })
+        // groupNames.push(group.label)
+      }
+      else if (group.value === "public") {
+        groupKV.push({
+          name: "public", annotations: this.state.activeGroups.includes("Only Me") ? this.state.annotations.filter(anno => anno.authorId !== uid) : this.state.annotations
+        })
+      }
+      else {
+        chrome.runtime.sendMessage({
+          msg: 'GROUP_ELASTIC',
+          payload: {
+            gid: group.value,
+            url: this.state.url
+          }
+        },
+          (res) => {
+            groupKV.push({ name: group.label, annotations: res.response.data.hits.hits.map(h => h._source) });
+            // console.log('what the groupkv', groupKV);
+            // groupNames.push(group.label);
+            this.setState({ groupAnnotations: groupKV });
+            this.setState({ activeGroups: groupNames });
+
+          });
+      }
+
+      // console.log('what is Happening my Dude', groupKV);
+      groupNames.push(group.label);
+      this.setState({ groupAnnotations: groupKV });
+      this.setState({ activeGroups: groupNames });
+
+      // this.setState({ filteredGroupAnnotations: [] });
 
     });
+
 
     // this.setState({ activeGroup: option[0].label })
   }
@@ -696,9 +719,9 @@ class Sidebar extends React.Component {
     if (this.state.annotatingPage) {
       this.setState({ annotatingPage: false });
     }
-    if (this.state.unanchored) {
-      this.setState({ unanchored: false });
-    }
+    // if (this.state.unanchored) {
+    //   this.setState({ unanchored: false });
+    // }
   };
 
   render() {
@@ -716,17 +739,15 @@ class Sidebar extends React.Component {
       renderedAnnotations = searchedAnnotations;
     }
     else if (activeGroups.length) {
-      // console.log('in here', groupAnnotations);
-      console.log('filtered..', filteredGroupAnnotations);
-      if (filteredGroupAnnotations.length) {
-        renderedAnnotations = renderedAnnotations.concat(filteredGroupAnnotations);
-      }
-      else {
-        groupAnnotations.forEach((group) => {
-          // console.log('groupppp', group);
-          renderedAnnotations = renderedAnnotations.concat(group.annotations);
-        });
-      }
+      // if (filteredGroupAnnotations.length) {
+      //   renderedAnnotations = renderedAnnotations.concat(filteredGroupAnnotations);
+      // }
+      // else {
+      groupAnnotations.forEach((group) => {
+        // console.log('groupppp', group);
+        renderedAnnotations = renderedAnnotations.concat(group.annotations);
+      });
+      // }
     }
     else {
       renderedAnnotations = filteredAnnotations;
@@ -752,7 +773,7 @@ class Sidebar extends React.Component {
       <div className="SidebarContainer" >
         <Title currentUser={currentUser}
           handleShowAnnotatePage={this.handleShowAnnotatePage}
-          handleUnanchoredAnnotation={this.handleUnanchoredAnnotation}
+        // handleUnanchoredAnnotation={this.handleUnanchoredAnnotation}
         />
         {currentUser === null && <Authentication />}
         {currentUser !== null && (
@@ -809,7 +830,7 @@ class Sidebar extends React.Component {
                   userGroups={groups}
                 />
               }
-              {this.state.unanchored &&
+              {/* {this.state.unanchored &&
                 <NewAnnotation
                   url={this.state.url}
                   newSelection={''}
@@ -819,7 +840,7 @@ class Sidebar extends React.Component {
                   xpath={null}
                   userGroups={groups}
                 />
-              }
+              } */}
 
             </div>
             <div className="userQuestions">

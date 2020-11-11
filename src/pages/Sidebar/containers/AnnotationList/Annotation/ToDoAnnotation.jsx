@@ -174,7 +174,8 @@ class ToDoAnnotation extends Component {
                             cancelButtonHandler={this.props.cancelButtonHandler}
                             submitButtonHandler={this.props.submitButtonHandler}
                             elseContent={annotationContent}
-                            collapsed={collapsed} />
+                            collapsed={collapsed}
+                            userGroups={this.props.userGroups} />
                     </React.Fragment>
 
                     {"tags" in this && tags.length && !collapsed && !editing ? (
@@ -245,7 +246,7 @@ class ToDoAnnotation extends Component {
                             </ul>
                         </div>
                     ) : (null)}
-                    {replies !== undefined && !showReplies && replies.length ? (
+                    {replies !== undefined && !showReplies && !collapsed && replies.length ? (
                         <div className="ShowHideReplies">
                             <div className="ExpandCollapse">
                                 <img src={expand} className="Icon" id="ShowReplies" alt="Show replies" onClick={this.handleShowReplies} />

@@ -176,7 +176,8 @@ class IssueAnnotation extends Component {
                             cancelButtonHandler={this.props.cancelButtonHandler}
                             submitButtonHandler={this.props.submitButtonHandler}
                             elseContent={annotationContent}
-                            collapsed={collapsed} />
+                            collapsed={collapsed}
+                            userGroups={this.props.userGroups} />
                     </React.Fragment>
 
                     {"tags" in this && tags.length && !collapsed && !editing ? (

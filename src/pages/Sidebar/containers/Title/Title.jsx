@@ -88,9 +88,6 @@ export default class Title extends React.Component {
                           <Dropdown.Item as="button" onSelect={this.props.handleShowAnnotatePage}>
                             Add Page Annotation
                         </Dropdown.Item>
-                          <Dropdown.Item as="button" onSelect={this.props.handleUnanchoredAnnotation}>
-                            Add Unanchored Annotation
-                        </Dropdown.Item>
                         </Dropdown.Menu>
                       </Dropdown>
                     </div>

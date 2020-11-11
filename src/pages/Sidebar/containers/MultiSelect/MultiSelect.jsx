@@ -14,10 +14,10 @@ class GroupMultiSelect extends React.Component {
     }
 
     editModal = (gid) => {
-        console.log("gid!", gid)
+        // console.log("gid!", gid)
         let group = this.props.groups.find(e => e.gid === gid);
 
-        console.log("gonna edit this modal!", group)
+        // console.log("gonna edit this modal!", group)
         chrome.runtime.sendMessage({
             msg: 'EDIT_EXISTING_GROUP',
             from: 'content',
@@ -81,12 +81,23 @@ class GroupMultiSelect extends React.Component {
     }
 
     render() {
-
-        const { groups, selected } = this.state;
+        const { selected } = this.state;
 
         // console.log("this is the passed in groups", this.props.groups, this.state.uid)
         let options = this.props.groups.map(group => {
             return { label: group.name, value: group.gid, owner: group.owner };
+        });
+
+        options.push({
+            label: "Only Me",
+            value: "onlyme",
+            owner: ""
+        });
+
+        options.push({
+            label: "Anyone",
+            value: "public",
+            owner: ""
         });
 
         return (

@@ -170,7 +170,7 @@ class FilterSummary extends React.Component {
                 </div>
                 <div className="FilterSectionRow">
                     <div className="FilterSection">Filters</div>
-                    <div className="FilterSection">
+                    {/* <div className="FilterSection">
                         {this.createDropDown({
                             Icon: GoEye,
                             activeFilter: filter.userScope.includes('public') ? 'Anyone' : 'Only Me',
@@ -178,7 +178,7 @@ class FilterSummary extends React.Component {
                             updateFunction: this.updateUserScope,
                             items: [{ visible: "Anyone", value: 'public' }, { visible: "Only Me", value: 'onlyMe' }]
                         })}
-                    </div>
+                    </div> */}
                     <div className="FilterSection">
                         {this.createDropDown({
                             Icon: AiFillClockCircle,

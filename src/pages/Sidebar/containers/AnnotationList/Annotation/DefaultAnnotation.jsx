@@ -177,7 +177,7 @@ class DefaultAnnotation extends Component {
                             submitButtonHandler={this.props.submitButtonHandler}
                             elseContent={annotationContent}
                             collapsed={collapsed}
-                            groups={this.props.userGroups} />
+                            userGroups={this.props.userGroups} />
                     </React.Fragment>
 
                     {"tags" in this && tags.length && !collapsed && !editing ? (
@@ -243,7 +243,7 @@ class DefaultAnnotation extends Component {
 
                         </div>
                     ) : (null)}
-                    {replies !== undefined && !showReplies && replies.length ? (
+                    {replies !== undefined && !showReplies && !collapsed && replies.length ? (
                         <div className="ShowHideReplies">
                             <div className="ExpandCollapse">
                                 <img src={expand} className="Icon" id="ShowReplies" alt="Show replies" onClick={this.handleShowReplies} />

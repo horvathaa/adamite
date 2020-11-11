@@ -30,7 +30,8 @@ class Annotation extends Component {
     authorId: this.props.authorId,
     pinned: this.props.pinned,
     isClosed: this.props.isClosed,
-    howClosed: this.props.howClosed
+    howClosed: this.props.howClosed,
+    userGroups: this.props.userGroups === undefined ? [] : this.props.userGroups
   };
 
   updateData = () => {
@@ -314,6 +315,7 @@ class Annotation extends Component {
         isPrivate={isPrivate}
         notifyParentOfAdopted={this.notifyParentOfAdopted}
         getGroupName={this.getGroupName}
+        userGroups={userGroups}
       />);
     }
     else if (annotationType === 'highlight') {
@@ -347,6 +349,7 @@ class Annotation extends Component {
           isPrivate={isPrivate}
           notifyParentOfAdopted={this.notifyParentOfAdopted}
           getGroupName={this.getGroupName}
+          userGroups={userGroups}
         />
       );
     }
@@ -384,6 +387,7 @@ class Annotation extends Component {
           adopted={adopted}
           notifyParentOfAdopted={this.notifyParentOfAdopted}
           getGroupName={this.getGroupName}
+          userGroups={userGroups}
         />
       );
     }
@@ -418,6 +422,7 @@ class Annotation extends Component {
           replies={replies}
           isPrivate={isPrivate}
           getGroupName={this.getGroupName}
+          userGroups={userGroups}
         />
       );
     }

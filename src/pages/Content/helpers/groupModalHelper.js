@@ -6,7 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 chrome.runtime.onMessage.addListener((request) => {
     if (request.msg === 'CREATE_GROUP' && request.from === 'background') { renderModal(request.owner); }
-    else if (request.msg === 'SHOW_GROUP' && request.from === 'background') { console.log('showing modal'); showModal(); }
+    else if (request.msg === 'SHOW_GROUP' && request.from === 'background') { showModal(); }
     else if (request.msg === 'GROUP_CREATE_SUCCESS' && request.from === 'background') {
         toast.success('Successfully created group!', {
             position: "top-left",
@@ -100,7 +100,7 @@ function hideOnClickOutside(element) {
     const removeClickListener = () => {
         document.removeEventListener('click', outsideClickListener)
     }
-    console.log("adding element", element)
+    // console.log("adding element", element)
     document.addEventListener('click', outsideClickListener)
     element.addEventListener('animationend', function () {
         if (this.classList.contains('w3-animate-show')) {

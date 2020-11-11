@@ -24,7 +24,7 @@ class Groups extends React.Component {
     }
 
     componentWillUnmount() {
-        console.log("this is being unmounted")
+        // console.log("this is being unmounted")
     }
 
     componentDidMount() {
@@ -36,7 +36,7 @@ class Groups extends React.Component {
                 request.from === 'helper' &&
                 request.msg === 'GROUP_MODAL_CLOSED'
             ) {
-                console.log("closed called reset state")
+                // console.log("closed called reset state")
                 this.setState({
                     ownerUid: initstate.ownerUid,
                     ownerEmail: initstate.ownerEmail,
@@ -55,7 +55,7 @@ class Groups extends React.Component {
                 request.from === 'content' &&
                 request.msg === 'EDIT_EXISTING_GROUP'
             ) {
-                console.log("edit groups", request)
+                // console.log("edit groups", request)
                 let data = request.payload;
                 this.setState({
                     ownerUid: data.owner,
@@ -79,23 +79,23 @@ class Groups extends React.Component {
      */
     onKeyDown = (e) => {
         if (e.key === 'Enter') {
-            console.log('do validate', e.target.value);
+            // console.log('do validate', e.target.value);
             let userInput = e.target.value;
             let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
             if (re.test(userInput)) {
-                console.log("Passed")
+                // console.log("Passed")
                 if (!this.state.emails.includes(userInput)) {
                     let newEmails = this.state.emails;
                     newEmails.push(userInput)
                     this.setState({ emails: newEmails, invalidUser: "" })
                 }
                 else {
-                    console.log("failed");
+                    // console.log("failed");
                     this.setState({ invalidUser: "*Email Already Exists in Group" })
                 }
             }
             else {
-                console.log("failed");
+                // console.log("failed");
                 this.setState({ invalidUser: "*Invalid Email" })
             }
         }
@@ -119,7 +119,7 @@ class Groups extends React.Component {
             return;
         }
         let emails = this.state.emails.filter(e => e !== this.props.email)
-        console.log("sending date", this.state.emails, this.props.email, emails)
+        // console.log("sending date", this.state.emails, this.props.email, emails)
         chrome.runtime.sendMessage({
             msg: 'ADD_NEW_GROUP',
             from: 'content',
@@ -140,7 +140,7 @@ class Groups extends React.Component {
         }
 
         if (window.confirm("Are you sure you want to delete this group?")) {
-            console.log("deleting", this.state.gid)
+            // console.log("deleting", this.state.gid)
             chrome.runtime.sendMessage({
                 msg: 'DELETE_GROUP',
                 from: 'modal',
