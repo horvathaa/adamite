@@ -580,65 +580,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
   }
   else if (request.from === 'content' && request.msg === 'GET_PINNED_ANNOTATIONS') {
-
     sendResponse({ annotations: pinnedAnnotations });
-    // change to onSnapshot? 
-    // console.log('in get pinned annotations');
-    // pinnedPublicListener = getAllPinnedAnnotationsByUserId(getCurrentUserId()).onSnapshot(querySnapshot => {
-    //   querySnapshot.forEach(snapshot => {
-    //     console.log('pushing public snapshot', snapshot.data());
-    //     pinnedAnnotations.push({
-    //       id: snapshot.id,
-    //       ...snapshot.data(),
-    //     });
-    //   });
-    // });
-    // pinnedPrivateListener = getAllPrivatePinnedAnnotationsByUserId(getCurrentUserId()).onSnapshot(querySnapshot => {
-    //   querySnapshot.forEach(snapshot => {
-    //     console.log('pushing private snapshot', snapshot.data());
-    //     pinnedAnnotations.push({
-    //       id: snapshot.id,
-    //       ...snapshot.data(),
-    //     });
-    //   });
-    // });
-    // console.log('sending', pinnedAnnotations);
-    // sendResponse({ annotations: pinnedAnnotations });
-    // pinnedAnnotations = [];
   }
   else if (request.from === 'content' && request.msg === 'GET_GROUPS_PAGE_LOAD') {
     groupListener = setUpGetGroupListener(request.uid);
-    // let GroupAnnotations = [];
-    // let gid = [];
-    // getUserByUserId(getCurrentUserId()).get().then(function (doc) {
-    //   if (!doc.empty) {
-    //     doc.docs.forEach(user => {
-    //       console.log(user.data());
-    //       gid = user.data().groups;
-    //     })
-    //   }
-    //   console.log('giddy', gid);
-    //   getGroupAnnotationsByGroupId(gid).get().then(function (doc) {
-    //     console.log('doc', doc);
-    //     doc.docs.forEach(gid => {
-    //       console.log(gid.data());
-    //     });
-    //   }).catch(function (error) {
-    //     console.log('could not get doc: ', error);
-    //   });
-    //   // return doc.docs[0].data().groups;
-    // }).catch(function (error) {
-    //   console.log('could not get doc: ', error);
-    // });
-
-    //   getAllPrivatePinnedAnnotationsByUserId(getCurrentUserId()).get().then(function (doc) {
-    //     doc.docs.forEach(anno => {
-    //       pinnedAnnotations.push({ id: anno.id, ...anno.data() });
-    //     });
-    //     // annotations = annotations.filter(anno => anno.isClosed === false);
-    //     sendResponse({ annotations: pinnedAnnotations });
-    //   })
-    // });
   }
   else if (request.from === 'content' && request.msg === 'REQUEST_PIN_UPDATE') {
     const { id, pinned } = request.payload;

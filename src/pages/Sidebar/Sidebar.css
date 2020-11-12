@@ -148,6 +148,28 @@
   box-shadow: 2px 2px 2px #8888;
 }
 
+.ModifyFilter.userQuestions:before, .ModifyFilter.userQuestions:after {
+  background-color: #6B778C;
+  content: "";
+  display: inline-block;
+  height: 1px;
+  position: relative;
+  vertical-align: middle;
+  width: 50%;
+  opacity: 75%;
+}
+
+.ModifyFilter.userQuestions:before {
+  right: 0.8em;
+  margin-left: -52%;
+}
+
+.ModifyFilter.userQuestions:after {
+  left: 0.8em;
+  margin-right: -51%;
+  /* z-index: -1; */
+}
+
 
 .FilterButton {
   padding: 5px 0px 0px 6px;
