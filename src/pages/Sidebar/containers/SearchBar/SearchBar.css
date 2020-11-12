@@ -1,9 +1,10 @@
 .outerSearchBar {
     width: 8%;
-    margin-right: 10px;
+    /* margin-right: 10px; */
     z-index: 1;
     align-items: center;
     display: flex;
+    margin-left: auto;
 }
 
 .AutosuggestSearchBar{
@@ -149,7 +150,7 @@
   }
   
   .Success {
-    background-color: #23d160;
+    background-color: #6B778C;
     color: #fff;
   }
   

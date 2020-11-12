@@ -834,6 +834,7 @@ class Sidebar extends React.Component {
                   openFilter={this.openFilter}
                   uid={currentUser.uid}
                   updateSidebarGroup={this.updateSidebarGroup}
+                  tempSearchCount={tempSearchCount}
                 // activeGroup={activeGroups.length ? activeGroup : "Public"}
                 />
               }

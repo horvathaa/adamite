@@ -313,7 +313,7 @@ class SearchBar extends React.Component {
                         inputProps={inputProps}
                     />
                 </div>
-                <div className="outerSearchBar">
+                {/* <div className="outerSearchBar">
                     <div className="SearchResultsCountContainer">
                         <div
                             className={classNames({
@@ -326,7 +326,7 @@ class SearchBar extends React.Component {
                             {searchCount}
                         </div>
                     </div>
-                </div>
+                </div> */}
             </React.Fragment >
 
         )
