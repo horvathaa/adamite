@@ -80,6 +80,13 @@ class Sidebar extends React.Component {
     });
   }
 
+  setUpPinnedListener = (uid) => {
+    chrome.runtime.sendMessage({
+      msg: 'SET_UP_PIN',
+      from: 'content',
+    });
+  }
+
   // componentWillMount() {
   //   if (this.unsubscribeAnnotations) {
   //     this.unsubscribeAnnotations();
@@ -142,6 +149,7 @@ class Sidebar extends React.Component {
           this.setUpGroupsListener(
             currentUserData.payload.currentUser.uid
           );
+          this.setUpPinnedListener();
         }
         chrome.runtime.sendMessage(
           {
@@ -210,6 +218,11 @@ class Sidebar extends React.Component {
       //   // child annotation's state
       //   this.resetNewSelection();
       // } 
+      else if (request.from === 'background' && request.msg === 'PINNED_CHANGED') {
+        this.setState({
+          pinnedAnnos: request.payload
+        });
+      }
       else if (
         request.from === 'content' &&
         request.msg === 'ANCHOR_CLICKED'
@@ -454,8 +467,9 @@ class Sidebar extends React.Component {
   }
 
   handlePinnedAnnotation = (id, pinned) => {
-    let annotation = this.state.filteredAnnotations.filter(anno => anno.id === id);
+    let annotation;
     if (this.containsObjectWithId(id, this.state.filteredAnnotations)) {
+      annotation = this.state.filteredAnnotations.filter(anno => anno.id === id);
       annotation[0].pinned = pinned;
       let remainingAnnos = this.state.filteredAnnotations.filter(anno => anno.id !== id);
       remainingAnnos.push(...annotation);
@@ -463,9 +477,29 @@ class Sidebar extends React.Component {
       this.state.pinnedAnnos.push(annotation[0]);
     }
     else if (this.containsObjectWithId(id, this.state.pinnedAnnos)) {
-      // console.log(annotation);
       this.setState({ pinnedAnnos: this.state.pinnedAnnos.filter(anno => anno.id !== id) });
+      chrome.runtime.sendMessage({
+        msg: 'REQUEST_PIN_UPDATE',
+        from: 'content',
+        payload: {
+          id: id,
+          pinned: pinned
+        }
+      })
       return;
+    }
+    else {
+      if (this.state.activeGroups.length) {
+        this.state.groupAnnotations.forEach((group) => {
+          if (this.containsObjectWithId(id, group.annotations)) {
+            annotation = group.annotations.filter(anno => anno.id === id);
+            annotation[0].pinned = pinned;
+            this.state.pinnedAnnos.push(annotation[0]);
+          }
+        })
+
+      }
+
     }
     if (!pinned) {
       // console.log(annotation);

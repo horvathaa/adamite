@@ -67,6 +67,8 @@ let annotationsAcrossWholeSite = [];
 let annotations = [];
 let publicAnnotations = [];
 let privateAnnotations = [];
+let publicPinnedAnnotations = [];
+let privatePinnedAnnotations = [];
 let pinnedAnnotations = [];
 let pinnedPrivateListener;
 let pinnedPublicListener;
@@ -122,6 +124,80 @@ function setUpGetGroupListener(uid) {
 
 }
 
+function getAllPrivatePinnedAnnotationsListener() {
+  return new Promise((resolve, reject) => {
+    resolve(getAllPrivatePinnedAnnotationsByUserId(getCurrentUserId()).onSnapshot(querySnapshot2 => {
+      let tempPrivatePinnedAnnotations = [];
+      querySnapshot2.forEach(snapshot => {
+        tempPrivatePinnedAnnotations.push({
+          id: snapshot.id,
+          ...snapshot.data(),
+        });
+      })
+      // console.log("temp", tempPublicAnnotations);
+      pinnedAnnotations = tempPrivatePinnedAnnotations.concat(publicPinnedAnnotations);
+      privatePinnedAnnotations = tempPrivatePinnedAnnotations;
+      // chrome.tabs.query({ active: true }, tabs => {
+      //   if (containsObjectWithId(tabs[0].id, tabAnnotationCollect)) {
+      //     tabAnnotationCollect = updateList(tabAnnotationCollect, tabs[0].id, annotationsToBroadcast);
+      //   }
+      //   else {
+      //     tabAnnotationCollect.push({ tabId: tabs[0].id, annotations: annotationsToBroadcast });
+      //   }
+      // });
+      // broadcastAnnotationsUpdated("CONTENT_UPDATED", annotationsToBroadcast);
+      broadcastAnnotationsUpdated("PINNED_CHANGED", pinnedAnnotations);
+      // publicAnnotations = tempPublicAnnotations;
+      // chrome.tabs.query({}, tabs => {
+      //   tabs = tabs.filter(e => getPathFromUrl(e.url) === url)
+      //   tabs.forEach(function (tab) {
+      //     chrome.tabs.sendMessage(tab.id, {
+      //       msg: 'REFRESH_HIGHLIGHTS',
+      //       payload: annotationsToBroadcast,
+      //     });
+      //   });
+      // });
+    }))
+  })
+}
+
+function getAllPublicPinnedAnnotationsListener() {
+  return new Promise((resolve, reject) => {
+    resolve(getAllPinnedAnnotationsByUserId(getCurrentUserId()).onSnapshot(querySnapshot2 => {
+      let tempPublicPinnedAnnotations = [];
+      querySnapshot2.forEach(snapshot => {
+        tempPublicPinnedAnnotations.push({
+          id: snapshot.id,
+          ...snapshot.data(),
+        });
+      })
+      // console.log('in get all public pinned');
+      // console.log("temp", tempPublicAnnotations);
+      pinnedAnnotations = tempPublicPinnedAnnotations.concat(privatePinnedAnnotations);
+      publicPinnedAnnotations = tempPublicPinnedAnnotations;
+      // chrome.tabs.query({ active: true }, tabs => {
+      //   if (containsObjectWithId(tabs[0].id, tabAnnotationCollect)) {
+      //     tabAnnotationCollect = updateList(tabAnnotationCollect, tabs[0].id, annotationsToBroadcast);
+      //   }
+      //   else {
+      //     tabAnnotationCollect.push({ tabId: tabs[0].id, annotations: annotationsToBroadcast });
+      //   }
+      // });
+      broadcastAnnotationsUpdated("PINNED_CHANGED", pinnedAnnotations);
+      // publicAnnotations = tempPublicAnnotations;
+      // chrome.tabs.query({}, tabs => {
+      //   tabs = tabs.filter(e => getPathFromUrl(e.url) === url)
+      //   tabs.forEach(function (tab) {
+      //     chrome.tabs.sendMessage(tab.id, {
+      //       msg: 'REFRESH_HIGHLIGHTS',
+      //       payload: annotationsToBroadcast,
+      //     });
+      //   });
+      // });
+    }))
+  })
+}
+
 
 function setUpGetAllAnnotationsByUrlListener(url, annotations) {
   return new Promise((resolve, reject) => {
@@ -133,7 +209,7 @@ function setUpGetAllAnnotationsByUrlListener(url, annotations) {
           ...snapshot.data(),
         });
       })
-      console.log("temp", tempPublicAnnotations);
+      // console.log("temp", tempPublicAnnotations);
       let annotationsToBroadcast = tempPublicAnnotations.concat(privateAnnotations);
       chrome.tabs.query({ active: true }, tabs => {
         if (containsObjectWithId(tabs[0].id, tabAnnotationCollect)) {
@@ -178,7 +254,7 @@ function promiseToComeBack(url, annotations) {
           tabAnnotationCollect.push({ tabId: tabs[0].id, annotations: annotationsToBroadcast });
         }
       });
-      console.log("annotations", annotationsToBroadcast)
+      // console.log("annotations", annotationsToBroadcast)
       broadcastAnnotationsUpdated("CONTENT_UPDATED", annotationsToBroadcast);
       privateAnnotations = tempPrivateAnnotations;
       chrome.tabs.query({}, tabs => {
@@ -239,6 +315,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     publicListener = setUpGetAllAnnotationsByUrlListener(request.url, annotations);
     privateListener = promiseToComeBack(request.url, annotations);
+  }
+  else if (request.msg === 'SET_UP_PIN' && request.from === 'content') {
+    // console.log('in pin listener');
+    pinnedPrivateListener = getAllPrivatePinnedAnnotationsListener();
+    pinnedPublicListener = getAllPublicPinnedAnnotationsListener();
   }
   else if (request.msg === 'ADD_NEW_GROUP' && request.from === 'content') {
     // console.log("this is the request for a new group", request);
@@ -499,19 +580,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
   }
   else if (request.from === 'content' && request.msg === 'GET_PINNED_ANNOTATIONS') {
-    let pinnedAnnotations = [];
-    getAllPinnedAnnotationsByUserId(getCurrentUserId()).get().then(function (doc) {
-      doc.docs.forEach(anno => {
-        pinnedAnnotations.push({ id: anno.id, ...anno.data() });
-      });
-      getAllPrivatePinnedAnnotationsByUserId(getCurrentUserId()).get().then(function (doc) {
-        doc.docs.forEach(anno => {
-          pinnedAnnotations.push({ id: anno.id, ...anno.data() });
-        });
-        // annotations = annotations.filter(anno => anno.isClosed === false);
-        sendResponse({ annotations: pinnedAnnotations });
-      })
-    });
+
+    sendResponse({ annotations: pinnedAnnotations });
     // change to onSnapshot? 
     // console.log('in get pinned annotations');
     // pinnedPublicListener = getAllPinnedAnnotationsByUserId(getCurrentUserId()).onSnapshot(querySnapshot => {

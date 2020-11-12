@@ -103,6 +103,7 @@ class Annotation extends Component {
       from: 'content',
       payload: { id }
     });
+    this.transmitPinToParent();
   }
 
   handleExpertReview = () => {
@@ -120,6 +121,7 @@ class Annotation extends Component {
       from: 'content',
       payload: { id }
     });
+    this.transmitPinToParent();
   }
 
   handleTrashClick(id) {
