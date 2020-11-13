@@ -211,7 +211,7 @@ function setUpGetAllAnnotationsByUrlListener(url, annotations) {
       })
       // console.log("temp", tempPublicAnnotations);
       let annotationsToBroadcast = tempPublicAnnotations.concat(privateAnnotations);
-      chrome.tabs.query({ active: true }, tabs => {
+      chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
         if (containsObjectWithId(tabs[0].id, tabAnnotationCollect)) {
           tabAnnotationCollect = updateList(tabAnnotationCollect, tabs[0].id, annotationsToBroadcast);
         }
@@ -247,7 +247,7 @@ function promiseToComeBack(url, annotations) {
         });
       });
       let annotationsToBroadcast = tempPrivateAnnotations.concat(publicAnnotations);
-      chrome.tabs.query({ active: true }, tabs => {
+      chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
         if (containsObjectWithId(tabs[0].id, tabAnnotationCollect)) {
           tabAnnotationCollect = updateList(tabAnnotationCollect, tabs[0].id, annotationsToBroadcast);
         }
@@ -274,16 +274,17 @@ function promiseToComeBack(url, annotations) {
 }
 
 chrome.tabs.onActivated.addListener(function (activeInfo) {
-  // console.log('tab activated', tabAnnotationCollect, activeInfo);
   if (containsObjectWithId(activeInfo.tabId, tabAnnotationCollect)) {
     const tabInfo = tabAnnotationCollect.filter(obj => obj.tabId === activeInfo.tabId);
     broadcastAnnotationsUpdated('CONTENT_UPDATED', tabInfo[0].annotations);
+    chrome.browserAction.setBadgeText({ text: String(tabInfo[0].annotations.length) });
   }
-  // else {
-  //   // console.log('in else', activeInfo.tabId);
-  //   // publicListener = setUpGetAllAnnotationsByUrlListener(request.url, annotations);
-  //   // privateListener = promiseToComeBack(request.url, annotations);
-  // }
+  else {
+    chrome.tabs.get(activeInfo.tabId, (tab) => {
+      publicListener = setUpGetAllAnnotationsByUrlListener(tab.url, annotations);
+      privateListener = promiseToComeBack(tab.url, annotations);
+    });
+  }
 });
 
 const showModal = () => {
