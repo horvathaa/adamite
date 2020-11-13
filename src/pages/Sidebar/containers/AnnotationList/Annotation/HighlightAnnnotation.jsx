@@ -180,7 +180,7 @@ class HighlightAnnotation extends Component {
                             userGroups={this.props.userGroups} />
                     </React.Fragment>
 
-                    {"tags" in this && tags.length && !collapsed && !editing ? (
+                    {tags !== undefined && tags.length && !collapsed && !editing ? (
                         <div className={classNames({
                             TagRow: true
                         })}>

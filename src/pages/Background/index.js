@@ -198,6 +198,10 @@ function getAllPublicPinnedAnnotationsListener() {
   })
 }
 
+chrome.browserAction.onClicked.addListener((tab) => {
+  console.log('invoked', tab);
+  chrome.browserAction.disable(tab.tabId);
+});
 
 function setUpGetAllAnnotationsByUrlListener(url, annotations) {
   return new Promise((resolve, reject) => {
@@ -220,6 +224,7 @@ function setUpGetAllAnnotationsByUrlListener(url, annotations) {
         }
       });
       broadcastAnnotationsUpdated("CONTENT_UPDATED", annotationsToBroadcast);
+      chrome.browserAction.setBadgeText({ text: String(annotationsToBroadcast.length) });
       publicAnnotations = tempPublicAnnotations;
       chrome.tabs.query({}, tabs => {
         tabs = tabs.filter(e => getPathFromUrl(e.url) === url)
@@ -256,6 +261,7 @@ function promiseToComeBack(url, annotations) {
       });
       // console.log("annotations", annotationsToBroadcast)
       broadcastAnnotationsUpdated("CONTENT_UPDATED", annotationsToBroadcast);
+      chrome.browserAction.setBadgeText({ text: String(annotationsToBroadcast.length) });
       privateAnnotations = tempPrivateAnnotations;
       chrome.tabs.query({}, tabs => {
         tabs = tabs.filter(e => getPathFromUrl(e.url) === url)
@@ -297,6 +303,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
   else if (request.msg === 'GET_ANNOTATIONS_PAGE_LOAD') {
     console.log("GET_ANNOTATIONS_PAGE_LOAD")
+
     let email = getCurrentUser().email;
     let userName = email.substring(0, getCurrentUser().email.indexOf('@'));
 
@@ -315,6 +322,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     publicListener = setUpGetAllAnnotationsByUrlListener(request.url, annotations);
     privateListener = promiseToComeBack(request.url, annotations);
+    console.log('annos', annotations);
+    chrome.browserAction.setBadgeText({ text: String(annotations.length) });
   }
   else if (request.msg === 'SET_UP_PIN' && request.from === 'content') {
     // console.log('in pin listener');

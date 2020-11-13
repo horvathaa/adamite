@@ -446,8 +446,7 @@ class Sidebar extends React.Component {
       groupNames.push(group.label);
       this.setState({ groupAnnotations: groupKV });
       this.setState({ activeGroups: groupNames });
-
-      // this.setState({ filteredGroupAnnotations: [] });
+      this.setState({ filteredGroupAnnotations: [] });
 
     });
 

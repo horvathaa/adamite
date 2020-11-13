@@ -83,22 +83,23 @@ class GroupMultiSelect extends React.Component {
     render() {
         const { selected } = this.state;
 
-        // console.log("this is the passed in groups", this.props.groups, this.state.uid)
-        let options = this.props.groups.map(group => {
-            return { label: group.name, value: group.gid, owner: group.owner };
+        let options = [];
+
+        options.push({
+            label: "Public",
+            value: "public",
+            owner: ""
         });
 
         options.push({
-            label: "Only Me",
+            label: "Private",
             value: "onlyme",
             owner: ""
         });
 
-        options.push({
-            label: "Anyone",
-            value: "public",
-            owner: ""
-        });
+        options = options.concat(this.props.groups.map(group => {
+            return { label: group.name, value: group.gid, owner: group.owner };
+        }));
 
         return (
             <React.Fragment>
@@ -116,6 +117,7 @@ class GroupMultiSelect extends React.Component {
                         ClearIcon={<AiOutlineCloseCircle />}
                         ClearSelectedIcon={<AiOutlineCloseCircle />}
                         ItemRenderer={this.DefaultItemRenderer}
+                        disableSearch={true}
                     />
                 </div>
 

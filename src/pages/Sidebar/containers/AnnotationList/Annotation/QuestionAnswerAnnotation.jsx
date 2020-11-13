@@ -268,7 +268,7 @@ class QuestionAnswerAnnotation extends Component {
                         </div>
                     }
 
-                    {"tags" in this && tags.length && !collapsed && !editing ? (
+                    {tags !== undefined && tags.length && !collapsed && !editing ? (
                         <div className={classNames({
                             TagRow: true
                         })}>
