@@ -198,10 +198,6 @@ function getAllPublicPinnedAnnotationsListener() {
   })
 }
 
-chrome.browserAction.onClicked.addListener((tab) => {
-  console.log('invoked', tab);
-  chrome.browserAction.disable(tab.tabId);
-});
 
 function setUpGetAllAnnotationsByUrlListener(url, annotations) {
   return new Promise((resolve, reject) => {
