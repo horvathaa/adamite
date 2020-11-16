@@ -40,7 +40,6 @@ class NewAnnotation extends React.Component {
   };
 
   componentDidMount() {
-    console.log('what', this.keydown);
     document.addEventListener('keydown', this.keydown, false);
   }
 
@@ -91,7 +90,6 @@ class NewAnnotation extends React.Component {
     this.setState({ submitted: true });
 
     const { url, newSelection, xpath, offsets } = this.props;
-    console.log('cardwrapper state', CardWrapperState);
     const annotationInfo = {
       anchor: newSelection,
       annotation: CardWrapperState.annotationContent,

@@ -10,15 +10,18 @@ class AnnotationList extends Component {
   }
 
   render() {
-    const { annotations, currentUser } = this.props;
+    const { annotations, altAnnotationList, currentUser } = this.props;
+    // console.log('what am i DOING', altAnnotationList);
 
-
-    // TODO: make shared ID of parent the parent's ID so river can do his search check
-    // also fix child anchor on URL click thing - load parent annotation
     let listOfChildAnnos = annotations.filter(anno => anno.SharedId !== null);
+    let altChildAnnos = altAnnotationList.filter(anno => anno.SharedId !== null);
+    // console.log(altChildAnnos, 'wahthathat');
+    listOfChildAnnos = listOfChildAnnos.concat(altChildAnnos);
+    // console.log('lol', listOfChildAnnos);
     listOfChildAnnos.forEach(anno => {
       for (let parentAnno of annotations) {
         if (typeof anno.SharedId !== "undefined") {
+          // console.log('anno in loop', anno);
           if (parentAnno.id === anno.SharedId && !parentAnno.childAnchor.includes(anno)) {
             parentAnno.childAnchor.push(anno);
           }
@@ -29,6 +32,7 @@ class AnnotationList extends Component {
     // console.log('before filter', annotations);
 
     const annotationsCopy = annotations.filter(anno => anno.SharedId === null || "undefined" === typeof (anno['SharedId']));
+    // console.log('afterfilter', annotationsCopy);
     // this.props.requestFilterUpdate(annotationsCopy);
     return (
       <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>

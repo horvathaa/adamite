@@ -211,6 +211,7 @@ function setUpGetAllAnnotationsByUrlListener(url, annotations) {
       })
       // console.log("temp", tempPublicAnnotations);
       let annotationsToBroadcast = tempPublicAnnotations.concat(privateAnnotations);
+      annotationsToBroadcast = annotationsToBroadcast.filter(anno => !anno.deleted);
       chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
         if (containsObjectWithId(tabs[0].id, tabAnnotationCollect)) {
           tabAnnotationCollect = updateList(tabAnnotationCollect, tabs[0].id, annotationsToBroadcast);
@@ -220,7 +221,8 @@ function setUpGetAllAnnotationsByUrlListener(url, annotations) {
         }
       });
       broadcastAnnotationsUpdated("CONTENT_UPDATED", annotationsToBroadcast);
-      chrome.browserAction.setBadgeText({ text: String(annotationsToBroadcast.length) });
+      const numChildAnchs = annotationsToBroadcast.filter(anno => anno.SharedId !== null);
+      chrome.browserAction.setBadgeText({ text: String(annotationsToBroadcast.length - numChildAnchs.length) });
       publicAnnotations = tempPublicAnnotations;
       chrome.tabs.query({}, tabs => {
         tabs = tabs.filter(e => getPathFromUrl(e.url) === url)
@@ -247,6 +249,7 @@ function promiseToComeBack(url, annotations) {
         });
       });
       let annotationsToBroadcast = tempPrivateAnnotations.concat(publicAnnotations);
+      annotationsToBroadcast = annotationsToBroadcast.filter(anno => !anno.deleted);
       chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
         if (containsObjectWithId(tabs[0].id, tabAnnotationCollect)) {
           tabAnnotationCollect = updateList(tabAnnotationCollect, tabs[0].id, annotationsToBroadcast);
@@ -257,7 +260,8 @@ function promiseToComeBack(url, annotations) {
       });
       // console.log("annotations", annotationsToBroadcast)
       broadcastAnnotationsUpdated("CONTENT_UPDATED", annotationsToBroadcast);
-      chrome.browserAction.setBadgeText({ text: String(annotationsToBroadcast.length) });
+      const numChildAnchs = annotationsToBroadcast.filter(anno => anno.SharedId !== null);
+      chrome.browserAction.setBadgeText({ text: String(annotationsToBroadcast.length - numChildAnchs.length) });
       privateAnnotations = tempPrivateAnnotations;
       chrome.tabs.query({}, tabs => {
         tabs = tabs.filter(e => getPathFromUrl(e.url) === url)
@@ -411,7 +415,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
   else if (request.msg === 'ANNOTATION_DELETED' && request.from === 'content') {
     const { id } = request.payload;
-    deleteAnnotationForeverById(id).then(function () {
+    updateAnnotationById(id, {
+      deletedTimestamp: new Date().getTime(),
+      deleted: true
+    }).then(function () {
       broadcastAnnotationsUpdated("ELASTIC_CONTENT_DELETED", id);
     });
   }
@@ -436,7 +443,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       isPrivate: false,
       author,
       groups: [], // later have this be a default group
-      readCount: 0
+      readCount: 0,
+      deleted: false
     });
   }
   else if (request.from === 'content' && request.msg === 'UNARCHIVE') {
@@ -498,7 +506,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       isPrivate: content.private,
       author,
       groups: content.groups,
-      readCount: 0
+      readCount: 0,
+      deleted: false
     }).then(value => {
       sendResponse({
         msg: 'DONE',

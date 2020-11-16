@@ -191,7 +191,8 @@ export const createAnnotation = async ({
     adopted: false,
     author,
     groups,
-    readCount
+    readCount,
+    deleted: false
   };
   return db.collection(DB_COLLECTIONS.ANNOTATIONS).add(newAnnotation);
 };

@@ -10,6 +10,7 @@ import Filter from './containers/Filter/Filter';
 import FilterSummary from './containers/Filter/FilterSummary';
 import SearchBar from './containers/SearchBar/SearchBar';
 import { Button } from 'react-bootstrap';
+import { left } from 'glamor';
 
 
 
@@ -323,7 +324,7 @@ class Sidebar extends React.Component {
                 return anno.id === annotation.id;
               });
               tempArray[index] = annotation;
-              console.log('new list', tempArray);
+              // console.log('new list', tempArray);
               this.setState({ searchedAnnotations: tempArray })
             })
         }
@@ -540,7 +541,7 @@ class Sidebar extends React.Component {
   };
 
   searchedSearchCount = (count) => {
-    console.log("this is being called", count)
+    // console.log("this is being called", count)
     this.setState({ searchCount: count });
   };
 
@@ -790,17 +791,24 @@ class Sidebar extends React.Component {
       (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
     );
 
-    const pinnedAnnosCopy = pinnedAnnos.sort((a, b) =>
+    renderedAnnotations = renderedAnnotations.filter(anno => !anno.deleted);
+
+    let pinnedAnnosCopy = pinnedAnnos.sort((a, b) =>
       (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
     );
+
+    pinnedAnnosCopy = pinnedAnnosCopy.filter(anno => !anno.deleted);
+    const pinnedNumChildAnchs = pinnedAnnosCopy.filter(anno => anno.SharedId !== null);
+
+    const numChildAnchs = renderedAnnotations.filter(anno => anno.SharedId !== null);
     // console.log('rendered?', renderedAnnotations);
 
     let tempSearchCount;
     if (this.state.showPinned) {
-      tempSearchCount = renderedAnnotations.length + pinnedAnnos.length;
+      tempSearchCount = renderedAnnotations.length - numChildAnchs.length + pinnedAnnosCopy.length - pinnedNumChildAnchs.length;
     }
     else {
-      tempSearchCount = renderedAnnotations.length;
+      tempSearchCount = renderedAnnotations.length - numChildAnchs.length;
     }
     return (
       <div className="SidebarContainer" >
@@ -882,13 +890,14 @@ class Sidebar extends React.Component {
                 <div className="ModifyFilter userQuestions" onClick={_ => {
                   this.setState({ showPinned: !this.state.showPinned })
                 }}>
-                  {this.state.showPinned ? ("Hide " + this.state.pinnedAnnos.length + " Pinned Annotations") : ("Show " + this.state.pinnedAnnos.length + " Pinned Annotations")}
+                  {this.state.showPinned ? ("Hide " + (pinnedAnnosCopy.length - pinnedNumChildAnchs.length) + " Pinned Annotations") : ("Show " + (pinnedAnnosCopy.length - pinnedNumChildAnchs.length) + " Pinned Annotations")}
                 </div>
               </div>
               {this.state.showPinned ? (
                 <React.Fragment>
                   <AnnotationList
                     annotations={pinnedAnnosCopy}
+                    altAnnotationList={renderedAnnotations}
                     groups={groups}
                     currentUser={currentUser}
                     url={this.state.url}
@@ -897,7 +906,7 @@ class Sidebar extends React.Component {
                   />
                   <div className="userQuestionButtonContainer">
                     <div className="ModifyFilter userQuestions" onClick={_ => { this.setState({ showPinned: !this.state.showPinned }) }}>
-                      {this.state.showPinned ? ("Hide " + this.state.pinnedAnnos.length + " Pinned Annotations") : ("Show " + this.state.pinnedAnnos.length + " Pinned Annotations")}
+                      {this.state.showPinned ? ("Hide " + (pinnedAnnosCopy.length - pinnedNumChildAnchs.length) + " Pinned Annotations") : ("Show " + (pinnedAnnosCopy.length - pinnedNumChildAnchs.length) + " Pinned Annotations")}
                     </div>
                   </div>
                 </React.Fragment>
@@ -912,6 +921,7 @@ class Sidebar extends React.Component {
                 </div>
               ) : (
                   <AnnotationList annotations={renderedAnnotations}
+                    altAnnotationList={pinnedAnnosCopy}
                     groups={groups}
                     currentUser={currentUser}
                     url={this.state.url}
