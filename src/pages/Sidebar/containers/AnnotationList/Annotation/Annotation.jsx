@@ -23,7 +23,7 @@ class Annotation extends Component {
   state = {
     tags: this.props.tags,
     content: this.props.content,
-    collapsed: false,
+    collapsed: true,
     annotationType: this.props.type,
     editing: false,
     id: this.props.id,
@@ -31,7 +31,9 @@ class Annotation extends Component {
     pinned: this.props.pinned,
     isClosed: this.props.isClosed,
     howClosed: this.props.howClosed,
-    userGroups: this.props.userGroups === undefined ? [] : this.props.userGroups
+    userGroups: this.props.userGroups === undefined ? [] : this.props.userGroups,
+    annoGroups: this.props.annoGroups === undefined ? [] : this.props.annoGroups,
+    readCount: this.props.readCount === undefined ? 0 : this.props.readCount
   };
 
   updateData = () => {
@@ -167,6 +169,7 @@ class Annotation extends Component {
   };
 
   submitButtonHandler = (CardWrapperState, id) => {
+    this.setState({ annoGroups: CardWrapperState.groups });
     chrome.runtime.sendMessage({
       msg: 'ANNOTATION_UPDATED',
       from: 'content',
@@ -203,7 +206,8 @@ class Annotation extends Component {
           type: this.state.annotationType,
           sharedId: id,
           author: this.props.currentUser.uid,
-          tags: this.state.tags
+          tags: this.state.tags,
+          groups: this.state.annoGroups
         }
       });
     });
@@ -246,12 +250,21 @@ class Annotation extends Component {
     }
     else {
       this.setState({ collapsed: false });
+      // this.setState({ readCount: this.state.readCount + 1 })
+      chrome.runtime.sendMessage({
+        msg: 'UPDATE_READ_COUNT',
+        from: 'content',
+        payload: {
+          id: this.props.id,
+          readCount: this.state.readCount
+        }
+      })
     }
   }
 
   render() {
     const { anchor, idx, id, active, authorId, currentUser, trashed, timeStamp, url, currentUrl, childAnchor, xpath, replies, isPrivate, adopted } = this.props;
-    const { editing, collapsed, tags, content, annotationType, pinned, isClosed, howClosed, userGroups, annoGroups } = this.state;
+    const { editing, collapsed, tags, content, annotationType, pinned, isClosed, howClosed, userGroups, annoGroups, readCount } = this.state;
     const author = this.props.author === undefined ? "anonymous" : this.props.author;
     if (annotationType === 'default' && !trashed) {
       return (<DefaultAnnotation

@@ -160,7 +160,8 @@ export const createAnnotation = async ({
   pinned,
   isPrivate,
   author,
-  groups
+  groups,
+  readCount
 }) => {
   authorId = authorId ? authorId : getCurrentUserId();
   if (!authorId) {
@@ -189,7 +190,8 @@ export const createAnnotation = async ({
     private: isPrivate,
     adopted: false,
     author,
-    groups
+    groups,
+    readCount
   };
   return db.collection(DB_COLLECTIONS.ANNOTATIONS).add(newAnnotation);
 };

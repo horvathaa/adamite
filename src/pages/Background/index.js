@@ -364,6 +364,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       });
     });
   }
+  else if (request.msg === 'UPDATE_READ_COUNT' && request.from === 'content') {
+    const { id, readCount } = request.payload;
+    updateAnnotationById(id, {
+      readCount: readCount + 1
+    }).then(function () {
+      broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
+    });
+  }
   // maybe switch to passing in tabId here instead of querying
   else if (request.msg === 'SHOW_GROUP' && request.from === 'content') {
     chrome.tabs.query({ active: true, lastFocusedWindow: true },
@@ -427,7 +435,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       childAnchor: [],
       isPrivate: false,
       author,
-      groups: [] // later have this be a default group
+      groups: [], // later have this be a default group
+      readCount: 0
     });
   }
   else if (request.from === 'content' && request.msg === 'UNARCHIVE') {
@@ -488,7 +497,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       childAnchor: [],
       isPrivate: content.private,
       author,
-      groups: content.groups
+      groups: content.groups,
+      readCount: 0
     }).then(value => {
       sendResponse({
         msg: 'DONE',
@@ -514,7 +524,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       hostname: hostname,
       AnnotationTags: [],
       childAnchor: [],
-      isPrivate: false
+      isPrivate: false,
+      groups: newAnno.groups,
+      readCount: 0
     }).then(value => {
       let highlightObj = {
         id: value.id,

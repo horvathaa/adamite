@@ -62,6 +62,7 @@ class AnnotationList extends Component {
               author={annotation.author}
               userGroups={this.props.groups}
               annoGroups={annotation.groups}
+              readCount={annotation.readCount}
             />
           );
         })}

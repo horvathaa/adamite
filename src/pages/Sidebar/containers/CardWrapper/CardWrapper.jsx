@@ -74,7 +74,6 @@ export default class CardWrapper extends React.Component {
     }
 
     submitPassthrough = () => {
-        console.log('state', this.state);
         this.setState({ edit: this.props.submitButtonHandler(this.state) });
     }
 

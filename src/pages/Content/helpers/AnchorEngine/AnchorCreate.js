@@ -8,6 +8,8 @@ import '../../../../assets/img/SVGs/Highlight.svg';
 import '../../../../assets/img/SVGs/Todo.svg';
 import '../../../../assets/img/SVGs/Question.svg';
 import '../../../../assets/img/SVGs/Issue.svg';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 var queue = [];
 var replyQueue = [];
@@ -46,6 +48,7 @@ const Popover = ({ selection, xpathToNode, offsets, removePopover }) => {
         event.stopPropagation();
         if (selected) {
             alertBackgroundOfNewSelection(selected, offsets, xpathToNode, "default");
+            selection.removeAllRanges()
             removePopover();
         }
     };
@@ -54,6 +57,7 @@ const Popover = ({ selection, xpathToNode, offsets, removePopover }) => {
         event.stopPropagation();
         if (selected) {
             alertBackgroundOfNewSelection(selected, offsets, xpathToNode, "to-do");
+            selection.removeAllRanges();
             removePopover();
         }
     };
@@ -62,6 +66,7 @@ const Popover = ({ selection, xpathToNode, offsets, removePopover }) => {
         event.stopPropagation();
         if (selected) {
             alertBackgroundOfNewSelection(selected, offsets, xpathToNode, "question");
+            selection.removeAllRanges();
             removePopover();
         }
     };
@@ -70,6 +75,7 @@ const Popover = ({ selection, xpathToNode, offsets, removePopover }) => {
         event.stopPropagation();
         if (selected) {
             alertBackgroundOfNewSelection(selected, offsets, xpathToNode, "issue");
+            selection.removeAllRanges();
             removePopover();
         }
     };
@@ -78,6 +84,7 @@ const Popover = ({ selection, xpathToNode, offsets, removePopover }) => {
         event.stopPropagation();
         const questionContent = "What is this?";
         alertBackgroundOfNewSelection(selected, offsets, xpathToNode, "question", questionContent);
+        selection.removeAllRanges();
         removePopover();
     };
 
@@ -85,6 +92,7 @@ const Popover = ({ selection, xpathToNode, offsets, removePopover }) => {
         event.stopPropagation();
         const questionContent = "How do I use this?";
         alertBackgroundOfNewSelection(selected, offsets, xpathToNode, "question", questionContent);
+        selection.removeAllRanges();
         removePopover();
     };
 
@@ -233,6 +241,45 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             });
             selection.removeRange(rect);
         }
+        else {
+            console.log('about to sync');
+            let positionString = "";
+            chrome.storage.sync.get(['sidebarOnLeft'], result => {
+                if (result.sidebarOnLeft === undefined || result.sidebarOnLeft) {
+                    positionString = "top-right";
+                }
+                else {
+                    positionString = "top-left";
+                }
+                toast.warning('Select text on the page to add a new anchor', {
+                    position: positionString,
+                    autoClose: 3000,
+                    hideProgressBar: true,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                });
+                let modal = document.createElement("div");
+                modal.classList.add("success-notif-div");
+                document.body.appendChild(modal);
+                const toastModal = <ToastContainer
+                    position={positionString}
+                    autoClose={3000}
+                    hideProgressBar
+                    newestOnTop={false}
+                    closeOnClick
+                    rtl={false}
+                    pauseOnFocusLoss
+                    draggable
+                    pauseOnHover
+                />;
+                ReactDOM.render(toastModal, modal);
+            })
+
+            // })
+
+        }
     }
     else if (request.msg === 'ADD_REPLY_ANCHOR') {
         var selection = window.getSelection();
@@ -313,6 +360,7 @@ export const createAnnotation = (event) => {
 
         const rectPopover = selection.getRangeAt(0).getBoundingClientRect();
         displayPopoverBasedOnRectPosition(rectPopover, { selection, xpathToNode, offsets });
+
         return;
     }
     else {
