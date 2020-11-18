@@ -801,7 +801,6 @@ class Sidebar extends React.Component {
     const pinnedNumChildAnchs = pinnedAnnosCopy.filter(anno => anno.SharedId !== null);
 
     const numChildAnchs = renderedAnnotations.filter(anno => anno.SharedId !== null);
-    // console.log('rendered?', renderedAnnotations);
 
     let tempSearchCount;
     if (this.state.showPinned) {
@@ -886,13 +885,15 @@ class Sidebar extends React.Component {
 
             </div>
             <div className="userQuestions">
-              <div className="userQuestionButtonContainer">
-                <div className="ModifyFilter userQuestions" onClick={_ => {
-                  this.setState({ showPinned: !this.state.showPinned })
-                }}>
-                  {this.state.showPinned ? ("Hide " + (pinnedAnnosCopy.length - pinnedNumChildAnchs.length) + " Pinned Annotations") : ("Show " + (pinnedAnnosCopy.length - pinnedNumChildAnchs.length) + " Pinned Annotations")}
+              {pinnedAnnosCopy.length && (
+                <div className="userQuestionButtonContainer">
+                  <div className="ModifyFilter userQuestions" onClick={_ => {
+                    this.setState({ showPinned: !this.state.showPinned })
+                  }}>
+                    {this.state.showPinned ? ("Hide " + (pinnedAnnosCopy.length - pinnedNumChildAnchs.length) + " Pinned Annotations") : ("Show " + (pinnedAnnosCopy.length - pinnedNumChildAnchs.length) + " Pinned Annotations")}
+                  </div>
                 </div>
-              </div>
+              )}
               {this.state.showPinned ? (
                 <React.Fragment>
                   <AnnotationList
@@ -904,11 +905,13 @@ class Sidebar extends React.Component {
                     requestFilterUpdate={this.requestChildAnchorFilterUpdate}
                     notifyParentOfPinning={this.handlePinnedAnnotation}
                   />
-                  <div className="userQuestionButtonContainer">
-                    <div className="ModifyFilter userQuestions" onClick={_ => { this.setState({ showPinned: !this.state.showPinned }) }}>
-                      {this.state.showPinned ? ("Hide " + (pinnedAnnosCopy.length - pinnedNumChildAnchs.length) + " Pinned Annotations") : ("Show " + (pinnedAnnosCopy.length - pinnedNumChildAnchs.length) + " Pinned Annotations")}
+                  {pinnedAnnosCopy.length && (
+                    <div className="userQuestionButtonContainer">
+                      <div className="ModifyFilter userQuestions" onClick={_ => { this.setState({ showPinned: !this.state.showPinned }) }}>
+                        {this.state.showPinned ? ("Hide " + (pinnedAnnosCopy.length - pinnedNumChildAnchs.length) + " Pinned Annotations") : ("Show " + (pinnedAnnosCopy.length - pinnedNumChildAnchs.length) + " Pinned Annotations")}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </React.Fragment>
               ) : (null)
               }

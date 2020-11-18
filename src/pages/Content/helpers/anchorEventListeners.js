@@ -1,7 +1,7 @@
 
 //import './AnchorEngine/AnchorCreate';
-import { updateXpaths, removeSpans } from './AnchorEngine/AnchorDestroy';
-import { highlightRange, highlightReplyRange } from './AnchorEngine/AnchorHighlight';
+import { updateXpaths, removeSpans, removeTempHighlight } from './AnchorEngine/AnchorDestroy';
+import { tempHighlight, highlightRange, highlightReplyRange } from './AnchorEngine/AnchorHighlight';
 import { createAnnotation, removeAnnotationWidget } from './AnchorEngine/AnchorCreate';
 
 
@@ -120,5 +120,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     else if (request.msg === 'ANNOTATION_ADDED') {
         request.newAnno.content = request.newAnno.annotation;
         highlightRange(request.newAnno);
+    }
+    else if (request.msg === 'TEMP_ANNOTATION_ADDED') {
+        // request.newAnno.content = request.newAnno.annotation;
+        tempHighlight(request.newAnno);
+    }
+    else if (request.msg === 'REMOVE_TEMP_ANNOTATION') {
+        removeTempHighlight();
+        sendResponse({ msg: 'REMOVED' });
     }
 });

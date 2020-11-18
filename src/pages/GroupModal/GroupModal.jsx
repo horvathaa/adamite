@@ -2,7 +2,6 @@ import React from 'react';
 import './GroupModal.css';
 import profile from '../../assets/img/SVGs/Profile.svg';
 import { AiOutlineUsergroupAdd, AiOutlineDelete } from 'react-icons/ai';
-import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 // import { copySync } from 'fs-extra';
 
@@ -36,7 +35,6 @@ class Groups extends React.Component {
                 request.from === 'helper' &&
                 request.msg === 'GROUP_MODAL_CLOSED'
             ) {
-                // console.log("closed called reset state")
                 this.setState({
                     ownerUid: initstate.ownerUid,
                     ownerEmail: initstate.ownerEmail,
@@ -44,7 +42,7 @@ class Groups extends React.Component {
                     uids: initstate.uids,
                     groupName: "",
                     groupDescription: "",
-                    emails: initstate.emails,
+                    emails: [initstate.ownerEmail],
                     invalidUser: "",
                     invalidName: "",
                     editState: false,
@@ -199,13 +197,13 @@ class Groups extends React.Component {
                             : null
                         }
                         <div className="input-modal">
-                            <input value={groupName} onChange={value => this.nameHandleChange(value)} placeholder="Name Me!" className="input" />
+                            <input value={groupName} onChange={value => this.nameHandleChange(value)} placeholder="Please add a name" className="input" />
                         </div>
                         <div>
                             <h3>Description</h3>
                         </div>
                         <div className="input-modal-description">
-                            <textarea placeholder="Give me a Descript!" value={groupDescription} onChange={value => this.groupDescriptionHandleChange(value)} className="input-description" />
+                            <textarea placeholder="Please add a description" value={groupDescription} onChange={value => this.groupDescriptionHandleChange(value)} className="input-description" />
                         </div>
                         <div>
                             <h3>Share</h3>
@@ -217,7 +215,7 @@ class Groups extends React.Component {
                             : null
                         }
                         <div className="input-modal">
-                            <input type="email" placeholder="Add People to your Group by Email" className="input" onKeyDown={this.onKeyDown} />
+                            <input type="email" placeholder="Add people to your group by email" className="input" onKeyDown={this.onKeyDown} />
                         </div>
                         <table className="table" cellSpacing="0" cellPadding="0">
                             <tbody>

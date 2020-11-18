@@ -17,9 +17,10 @@ class AnnotationList extends Component {
     let altChildAnnos = altAnnotationList.filter(anno => anno.SharedId !== null);
     // console.log(altChildAnnos, 'wahthathat');
     listOfChildAnnos = listOfChildAnnos.concat(altChildAnnos);
+    let annotationsToRender = annotations.concat(altAnnotationList);
     // console.log('lol', listOfChildAnnos);
     listOfChildAnnos.forEach(anno => {
-      for (let parentAnno of annotations) {
+      for (let parentAnno of annotationsToRender) {
         if (typeof anno.SharedId !== "undefined") {
           // console.log('anno in loop', anno);
           if (parentAnno.id === anno.SharedId && !parentAnno.childAnchor.includes(anno)) {
@@ -31,7 +32,8 @@ class AnnotationList extends Component {
 
     // console.log('before filter', annotations);
 
-    const annotationsCopy = annotations.filter(anno => anno.SharedId === null || "undefined" === typeof (anno['SharedId']));
+    let annotationsCopy = annotations.filter(anno => anno.SharedId === null || "undefined" === typeof (anno['SharedId']));
+    annotationsCopy = annotationsCopy.concat(annotationsToRender.filter(anno => anno.childAnchor !== null && anno.childAnchor !== undefined && anno.childAnchor.length))
     // console.log('afterfilter', annotationsCopy);
     // this.props.requestFilterUpdate(annotationsCopy);
     return (

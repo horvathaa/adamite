@@ -92,6 +92,36 @@ export const highlightReplyRange = (xpath, annoId, replyId) => {
 /*
 * Finds Range and highlights each element
 */
+
+export const tempHighlight = (anno) => {
+    let newRange;
+    // console.log('sending in this anno', anno);
+    try {
+        if (anno.xpath instanceof Array) {
+            newRange = xpathRange.toRange(anno.xpath[0].start, anno.xpath[0].startOffset, anno.xpath[0].end, anno.xpath[0].endOffset, document);
+        } else {
+            newRange = xpathRange.toRange(anno.xpath.start, anno.xpath.startOffset, anno.xpath.end, anno.xpath.endOffset, document);
+        }
+    } catch (err) {
+        // console.log('got error- ', err);
+        return;
+    }
+    // console.log('anno', anno, 'range', newRange);
+    highlight(newRange, anno.xpath.startOffset, anno.xpath.endOffset, function (node, match, offset) {
+
+        var span = document.createElement("span");
+        span.setAttribute("name", "annoPreview");
+
+
+        span.textContent = match;
+        // span.onclick = anchorClick;
+        span.className = "highlight-adamite-annotation-preview";
+        console.log('span', span);
+        node.parentNode.insertBefore(span, node.nextSibling);
+        node.parentNode.normalize()
+    });
+}
+
 export const highlightRange = (anno, annoId, replyId) => {
 
     var wordPath = [];

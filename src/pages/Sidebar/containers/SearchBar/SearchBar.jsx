@@ -290,7 +290,7 @@ class SearchBar extends React.Component {
 
         const inputProps = {
             ref: this.inputRef,
-            placeholder: 'Search annotation content here',
+            placeholder: 'Search annotations',
             value,
             width: '500000px',
             onKeyDown: this.onKeyDown,

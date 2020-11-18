@@ -17,6 +17,13 @@ function sendUpdateXpaths(toUpdate) {
     );
 }
 
+export const removeTempHighlight = () => {
+    const temp = document.querySelector(".highlight-adamite-annotation-preview");
+    const parent = temp.parentNode;
+    $(temp).contents().unwrap();
+    parent.normalize();
+}
+
 /**
  * Removes span from HTML DOM
  * @param {Array} collection 

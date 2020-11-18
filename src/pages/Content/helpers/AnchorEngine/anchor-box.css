@@ -13,6 +13,12 @@
     display: inline;
 }
 
+.highlight-adamite-annotation-preview {
+    background-color: #7cce7299;
+    cursor: help;
+    display: inline;
+}
+
 [data-tooltip] {
 
     position: inherit;
