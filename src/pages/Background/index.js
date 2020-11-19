@@ -287,6 +287,9 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
   }
   else {
     chrome.tabs.get(activeInfo.tabId, (tab) => {
+      console.log('tab', tab);
+      const hostname = new URL(tab.url).hostname;
+      console.log('host', hostname);
       publicListener = setUpGetAllAnnotationsByUrlListener(tab.url, annotations);
       privateListener = promiseToComeBack(tab.url, annotations);
     });
