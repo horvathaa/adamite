@@ -11,18 +11,19 @@ import { GoThreeBars } from 'react-icons/go';
 // import '../../../Background/test.html';
 import { useState } from 'react';
 import { BsFilePlus } from 'react-icons/bs';
+import addPage from '../../../../assets/img/SVGs/file-add.svg';
 
 import './Title.css';
 
-const addAnnotationToggle = React.forwardRef(({ children, onClick }, ref) => (
-  <a ref={ref}
-    onClick={(e) => {
-      e.preventDefault();
-      onClick(e);
-    }}><BsFilePlus className="profile" />
-    {children}
-  </a>
-));
+// const addAnnotationToggle = React.forwardRef(({ children, onClick }, ref) => (
+//   <a ref={ref}
+//     onClick={(e) => {
+//       e.preventDefault();
+//       onClick(e);
+//     }}><BsFilePlus className="profile" />
+//     {children}
+//   </a>
+// ));
 
 
 export default class Title extends React.Component {
@@ -32,8 +33,11 @@ export default class Title extends React.Component {
     this.toggle = this.toggle.bind(this);
     this.onMouseEnter = this.onMouseEnter.bind(this);
     this.onMouseLeave = this.onMouseLeave.bind(this);
+    this.onMouseEnterAdd = this.onMouseEnterAdd.bind(this);
+    this.onMouseLeaveAdd = this.onMouseLeaveAdd.bind(this);
     this.state = {
       dropdownOpen: false,
+      dropdownOpenAdd: false,
       newAnnotationDropDownOpen: false
     };
     this.currentUser = this.props.currentUser;
@@ -42,7 +46,8 @@ export default class Title extends React.Component {
 
   toggle() {
     this.setState(prevState => ({
-      dropdownOpen: !prevState.dropdownOpen
+      dropdownOpen: !prevState.dropdownOpen,
+      dropdownOpenAdd: !prevState.dropdownOpenAdd
     }));
   }
 
@@ -52,6 +57,17 @@ export default class Title extends React.Component {
 
   onMouseLeave() {
     this.setState({ dropdownOpen: false });
+  }
+
+  onMouseEnterAdd() {
+    this.setState({ dropdownOpenAdd: true });
+  }
+
+  onMouseLeaveAdd() {
+    setTimeout(() => {
+      this.setState({ dropdownOpenAdd: false });
+    }, 300)
+
   }
 
   signOutClickedHandler = e => {
@@ -80,12 +96,12 @@ export default class Title extends React.Component {
                 <div className="row2">
                   <div className="col2 ">
                     <div className="NewAnnotationButtonContainer">
-                      <Dropdown className="Filter" >
-                        <Dropdown.Toggle as={addAnnotationToggle} id="dropdown-basic">
-
+                      <Dropdown onMouseOver={this.onMouseEnterAdd} onMouseLeave={this.onMouseLeaveAdd} show={this.state.dropdownOpenAdd} toggle={this.toggle.toString()} >
+                        <Dropdown.Toggle id="dropdown-basic" className="vertical-center">
+                          <img src={addPage} alt="profile" className="profile" />
                         </Dropdown.Toggle>
                         <Dropdown.Menu >
-                          <Dropdown.Item as="button" onSelect={this.props.handleShowAnnotatePage}>
+                          <Dropdown.Item onClick={this.props.handleShowAnnotatePage}>
                             Add Page Annotation
                         </Dropdown.Item>
                         </Dropdown.Menu>

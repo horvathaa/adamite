@@ -24,7 +24,7 @@ html, body {
 }
 
 .table-row:hover {
-    background-color: red;
+    background-color:#e6e7e8;
     -moz-border-radius: 20px;
     -webkit-border-radius: 20px;
     -khtml-border-radius: 20px;
@@ -104,6 +104,20 @@ table tbody tr th {
     margin-right: .75em;
     display: inline-block;
     font-size: 1.75em;
+}
+
+.header-icon-container-right {
+    padding: 4px;
+    width: .5em;
+    height: .5em;
+    border-radius: 50%;
+    /* background-color: #EBECF0; */
+    text-align: center;
+    margin-right: .75em;
+    margin-left: auto;
+    display: inline-block;
+    font-size: 1.75em;
+    cursor: pointer;
 }
 
 .profile {

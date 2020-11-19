@@ -389,6 +389,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         );
       });
   }
+  else if (request.msg === 'HIDE_GROUP' && request.from === 'modal') {
+    chrome.tabs.query({ active: true, lastFocusedWindow: true },
+      (tabs) => {
+        chrome.tabs.sendMessage(
+          tabs[0].id,
+          {
+            msg: 'HIDE_GROUP',
+            from: 'background',
+          }
+        );
+      });
+  }
   else if (request.msg === 'UNSUBSCRIBE' && request.from === 'content') {
     if (typeof privateListener === "function") {
       privateListener();
@@ -404,9 +416,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
   }
   else if (request.msg === 'ANNOTATION_UPDATED' && request.from === 'content') {
-    const { id, content, type, tags, isPrivate } = request.payload;
+    const { id, content, type, tags, isPrivate, groups } = request.payload;
     updateAnnotationById(id, {
-      content, type, tags, isPrivate,
+      content, type, tags, private: isPrivate, groups,
       createdTimestamp: new Date().getTime(),
       deletedTimestamp: 0
     }).then(function () {
@@ -440,7 +452,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       pinned: false,
       AnnotationTags: [],
       childAnchor: [],
-      isPrivate: false,
+      isPrivate: true,
       author,
       groups: [], // later have this be a default group
       readCount: 0,

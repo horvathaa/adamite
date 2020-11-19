@@ -1,7 +1,7 @@
 import React from 'react';
 import './GroupModal.css';
 import profile from '../../assets/img/SVGs/Profile.svg';
-import { AiOutlineUsergroupAdd, AiOutlineDelete } from 'react-icons/ai';
+import { AiOutlineUsergroupAdd, AiOutlineDelete, AiOutlineClose } from 'react-icons/ai';
 import 'react-toastify/dist/ReactToastify.css';
 // import { copySync } from 'fs-extra';
 
@@ -185,6 +185,14 @@ class Groups extends React.Component {
                             </div>
                             <div>
                                 <h1 className="title"> {editState ? "Edit" : "Create"} Group </h1>
+                            </div>
+                            <div className="header-icon-container-right" onClick={() => {
+                                chrome.runtime.sendMessage({
+                                    msg: 'HIDE_GROUP',
+                                    from: 'modal'
+                                })
+                            }}>
+                                <AiOutlineClose className="profile" />
                             </div>
                         </div>
                         <div>

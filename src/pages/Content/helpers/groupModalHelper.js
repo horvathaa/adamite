@@ -7,6 +7,7 @@ import 'react-toastify/dist/ReactToastify.css';
 chrome.runtime.onMessage.addListener((request) => {
     if (request.msg === 'CREATE_GROUP' && request.from === 'background') { renderModal(request.owner); }
     else if (request.msg === 'SHOW_GROUP' && request.from === 'background') { showModal(); }
+    else if (request.msg === 'HIDE_GROUP' && request.from === 'background') { hideModal(); }
     else if (request.msg === 'GROUP_CREATE_SUCCESS' && request.from === 'background') {
         let positionString = "";
         chrome.storage.sync.get(['sidebarOnLeft'], result => {
@@ -134,6 +135,15 @@ const showModal = () => {
     dialog.showModal();
 
     hideOnClickOutside(dialog);
+}
+
+const hideModal = () => {
+    const dialog = document.querySelector('dialog');
+    dialog.close();
+    chrome.runtime.sendMessage({
+        msg: 'GROUP_MODAL_CLOSED',
+        from: 'helper'
+    });
 }
 
 const renderModal = (owner) => {
