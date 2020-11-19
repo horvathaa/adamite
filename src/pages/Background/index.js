@@ -3,6 +3,7 @@ import '../../assets/img/icon-128.png';
 import './helpers/authHelper';
 import './helpers/sidebarHelper';
 import './helpers/elasticSearchWrapper';
+import { toggleSidebar } from './helpers/sidebarHelper';
 import { clean } from './helpers/objectCleaner';
 import {
   getAllAnnotationsByUrl,
@@ -75,6 +76,7 @@ let pinnedPublicListener;
 let publicListener;
 let privateListener;
 let groupListener;
+let clicked = false;
 
 const broadcastAnnotationsUpdated = (message, annotations) => {
   chrome.runtime.sendMessage({
@@ -290,6 +292,11 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
     });
   }
 });
+
+chrome.browserAction.onClicked.addListener(function () {
+  clicked = !clicked;
+  toggleSidebar(clicked);
+})
 
 const showModal = () => {
   const modal = document.createElement("dialog");

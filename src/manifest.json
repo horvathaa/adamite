@@ -5,7 +5,10 @@
     "page": "background.html",
     "persistent": true
   },
-  "browser_action": {},
+  "browser_action": {
+    "default_icon": "icon-34.png",
+    "default_title": "ADAMITE"
+  },
   "permissions": [
     "chrome://favicon/",
     "tabs",
