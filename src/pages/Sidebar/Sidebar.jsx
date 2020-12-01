@@ -533,6 +533,13 @@ class Sidebar extends React.Component {
     })
   }
 
+  clearSelectedAnno = () => {
+    this.setState({
+      showClearClickedAnnotation: false,
+      filteredAnnotations: this.state.annotations
+    });
+  }
+
   handleSearchBarInputText = (searchAnnotations) => {
     this.setState({
       searchState: searchAnnotations.searchState,
@@ -841,6 +848,8 @@ class Sidebar extends React.Component {
                   uid={currentUser.uid}
                   updateSidebarGroup={this.updateSidebarGroup}
                   tempSearchCount={tempSearchCount}
+                  showingSelectedAnno={this.state.showClearClickedAnnotation}
+                  clearSelectedAnno={this.clearSelectedAnno}
                 // activeGroup={activeGroups.length ? activeGroup : "Public"}
                 />
               }

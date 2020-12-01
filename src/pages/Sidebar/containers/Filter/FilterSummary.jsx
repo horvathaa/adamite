@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './FilterSummary.css';
 import { GoEye } from 'react-icons/go';
 import { AiFillClockCircle, AiOutlineCheck, AiOutlineCloseCircle, AiOutlineUsergroupAdd } from 'react-icons/ai';
-import { BsChatSquareDots } from 'react-icons/bs';
+import { BsChatSquareDots, BsXCircle } from 'react-icons/bs';
 import tag from '../../../../assets/img/SVGs/tag.svg';
 import { Dropdown } from 'react-bootstrap';
 import GroupMultiSelect from '../MultiSelect/MultiSelect'
@@ -163,20 +163,38 @@ class FilterSummary extends React.Component {
             });
         }
 
-        return (
+        const clear = (
             <div className="FilterSummaryContainer">
                 <div className="FilterSectionRow">
-                    <div className="FilterSection">Groups</div>
-                    <GroupMultiSelect
-                        uid={this.props.uid}
-                        groups={groups}
-                        handleNotifySidebar={this.handleNotifySidebar}
-                        addNewGroup={this.addNewGroup}
-                    />
-                </div>
-                <div className="FilterSectionRow">
                     <div className="FilterSection">Filters</div>
-                    {/* <div className="FilterSection">
+                    <div className="FilterSection" onClick={this.props.clearSelectedAnno}>
+                        Showing selected annotation
+                        <div className="FilterIconContainer" onClick={this.props.clearSelectedAnno}>
+                            <BsXCircle className="filterReactIcon" />
+                        </div>
+                    </div>
+                </div >
+            </div>
+        )
+
+        if (this.props.showingSelectedAnno) {
+            return (clear);
+        }
+        else {
+            return (
+                <div className="FilterSummaryContainer">
+                    <div className="FilterSectionRow">
+                        <div className="FilterSection">Groups</div>
+                        <GroupMultiSelect
+                            uid={this.props.uid}
+                            groups={groups}
+                            handleNotifySidebar={this.handleNotifySidebar}
+                            addNewGroup={this.addNewGroup}
+                        />
+                    </div>
+                    <div className="FilterSectionRow">
+                        <div className="FilterSection">Filters</div>
+                        {/* <div className="FilterSection">
                         {this.createDropDown({
                             Icon: GoEye,
                             activeFilter: filter.userScope.includes('public') ? 'Anyone' : 'Only Me',
@@ -185,78 +203,75 @@ class FilterSummary extends React.Component {
                             items: [{ visible: "Anyone", value: 'public' }, { visible: "Only Me", value: 'onlyMe' }]
                         })}
                     </div> */}
-                    <div className="FilterSection">
-                        {this.createDropDown({
-                            Icon: AiFillClockCircle,
-                            activeFilter: this.translateTime(filter.timeRange),
-                            header: "Posted date",
-                            updateFunction: this.updateTimeRange,
-                            items: [{ visible: "All Time", value: "all" },
-                            { visible: "Past Year", value: "year" },
-                            { visible: "Past Month", value: "month" },
-                            { visible: "Past Week", value: "week" },
-                            { visible: "Past Day", value: "day" }]
-                        })}
-                    </div>
-                    <div className="FilterSection">
-                        {this.createDropDown({
-                            Icon: BsChatSquareDots,
-                            activeFilter: annoType,
-                            header: "Annotation Type",
-                            updateFunction: this.updateAnnoType,
-                            items: [{ visible: "All Types", value: 'all' },
-                            { visible: "Normal", value: 'default' },
-                            { visible: "Highlight", value: 'highlight' },
-                            { visible: "To-do", value: 'to-do' },
-                            { visible: "Question", value: 'question' },
-                            { visible: "Issue", value: 'issue' }]
-                        })}
-                    </div>
-                    {filter.tags.length ? (
                         <div className="FilterSection">
-                            <div className="FilterIconContainer">
-                                <img src={tag} alt="tag icon" />
-                            </div>
-                        &nbsp; &nbsp;
-                            <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
-                                {filter.tags.map((tag, idx) => {
-                                    if (idx !== (filter.tags.length - 1)) {
-                                        return (<li key={idx} style={{ display: "inline" }}>
-                                            {tag},&nbsp;
-                                        </li>);
-                                    }
-                                    else {
-                                        return (<li key={idx} style={{ display: "inline" }}>
-                                            {tag}
-                                        </li>);
-                                    }
-                                })}
-                            </ul>
+                            {this.createDropDown({
+                                Icon: AiFillClockCircle,
+                                activeFilter: this.translateTime(filter.timeRange),
+                                header: "Posted date",
+                                updateFunction: this.updateTimeRange,
+                                items: [{ visible: "All Time", value: "all" },
+                                { visible: "Past Year", value: "year" },
+                                { visible: "Past Month", value: "month" },
+                                { visible: "Past Week", value: "week" },
+                                { visible: "Past Day", value: "day" }]
+                            })}
                         </div>
-                    ) : (null)}
-                    <Tooltip title={this.props.tempSearchCount + " annotations"} aria-label="annotation count">
-                        <div className="outerSearchBar">
-                            <div className="SearchResultsCountContainer">
-                                <div
-                                    className={classNames({
-                                        SearchResultsCount: true,
-                                        NoResults: this.props.tempSearchCount === 0,
-                                        Success: this.props.tempSearchCount >= 1,
-                                        //Searching: suggestions.length > 0 && searchCount > 1,
+                        <div className="FilterSection">
+                            {this.createDropDown({
+                                Icon: BsChatSquareDots,
+                                activeFilter: annoType,
+                                header: "Annotation Type",
+                                updateFunction: this.updateAnnoType,
+                                items: [{ visible: "All Types", value: 'all' },
+                                { visible: "Normal", value: 'default' },
+                                { visible: "Highlight", value: 'highlight' },
+                                { visible: "To-do", value: 'to-do' },
+                                { visible: "Question", value: 'question' },
+                                { visible: "Issue", value: 'issue' }]
+                            })}
+                        </div>
+                        {filter.tags.length ? (
+                            <div className="FilterSection">
+                                <div className="FilterIconContainer">
+                                    <img src={tag} alt="tag icon" />
+                                </div>
+                        &nbsp; &nbsp;
+                                <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
+                                    {filter.tags.map((tag, idx) => {
+                                        if (idx !== (filter.tags.length - 1)) {
+                                            return (<li key={idx} style={{ display: "inline" }}>
+                                                {tag},&nbsp;
+                                            </li>);
+                                        }
+                                        else {
+                                            return (<li key={idx} style={{ display: "inline" }}>
+                                                {tag}
+                                            </li>);
+                                        }
                                     })}
-                                >
-                                    {this.props.tempSearchCount}
+                                </ul>
+                            </div>
+                        ) : (null)}
+                        <Tooltip title={this.props.tempSearchCount + " annotations"} aria-label="annotation count">
+                            <div className="outerSearchBar">
+                                <div className="SearchResultsCountContainer">
+                                    <div
+                                        className={classNames({
+                                            SearchResultsCount: true,
+                                            NoResults: this.props.tempSearchCount === 0,
+                                            Success: this.props.tempSearchCount >= 1,
+                                            //Searching: suggestions.length > 0 && searchCount > 1,
+                                        })}
+                                    >
+                                        {this.props.tempSearchCount}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </Tooltip>
-                </div>
-            </div >
-
-
-
-        );
-
+                        </Tooltip>
+                    </div>
+                </div >
+            );
+        }
     }
 }
 
