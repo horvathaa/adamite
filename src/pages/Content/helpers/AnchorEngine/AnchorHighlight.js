@@ -2,6 +2,13 @@ import './anchor-box.css';
 import { xpathConversion, xpathToNode, flatten, getDescendants, getNodesInRange, pullXpathfromLocal } from './AnchorHelpers';
 // import $ from 'jquery';
 var xpathRange = require('xpath-range');
+let textPosition = require('dom-anchor-text-position');
+
+// helper method from
+// https://stackoverflow.com/questions/2540969/remove-querystring-from-url
+function getPathFromUrl(url) {
+    return url.split(/[?#]/)[0];
+}
 
 function anchorClick(e) {
     // console.log("in Anchor click", e)
@@ -41,7 +48,7 @@ function anchorClick(e) {
         msg: 'ANCHOR_CLICKED',
         from: 'content',
         payload: {
-            url: window.location.href,
+            url: getPathFromUrl(window.location.href),
             target: target,
         },
     });
@@ -51,7 +58,7 @@ function anchorClick(e) {
 * Alternative way to use highlightRange
 */
 export const highlightReplyRange = (xpath, annoId, replyId) => {
-    console.log('are we even IN HERE')
+    // console.log('are we even IN HERE')
     var wordPath = [];
     // console.log("ANNO ")
     // console.log(anno)
@@ -60,8 +67,9 @@ export const highlightReplyRange = (xpath, annoId, replyId) => {
     try {
         newRange = xpathRange.toRange(xpath.start, xpath.startOffset, xpath.end, xpath.endOffset, document);
     } catch (err) {
-        // console.log('got error- ', err);
-        return;
+        console.log('got error- ', err);
+
+        // return;
     }
     // console.log('anno', anno, 'range', newRange);
     highlight(newRange, xpath.startOffset, xpath.endOffset, function (node, match, offset) {
@@ -84,10 +92,40 @@ export const highlightReplyRange = (xpath, annoId, replyId) => {
 /*
 * Finds Range and highlights each element
 */
+
+export const tempHighlight = (anno) => {
+    let newRange;
+    // console.log('sending in this anno', anno);
+    try {
+        if (anno.xpath instanceof Array) {
+            newRange = xpathRange.toRange(anno.xpath[0].start, anno.xpath[0].startOffset, anno.xpath[0].end, anno.xpath[0].endOffset, document);
+        } else {
+            newRange = xpathRange.toRange(anno.xpath.start, anno.xpath.startOffset, anno.xpath.end, anno.xpath.endOffset, document);
+        }
+    } catch (err) {
+        // console.log('got error- ', err);
+        return;
+    }
+    // console.log('anno', anno, 'range', newRange);
+    highlight(newRange, anno.xpath.startOffset, anno.xpath.endOffset, function (node, match, offset) {
+
+        var span = document.createElement("span");
+        span.setAttribute("name", "annoPreview");
+
+
+        span.textContent = match;
+        // span.onclick = anchorClick;
+        span.className = "highlight-adamite-annotation-preview";
+        console.log('span', span);
+        node.parentNode.insertBefore(span, node.nextSibling);
+        node.parentNode.normalize()
+    });
+}
+
 export const highlightRange = (anno, annoId, replyId) => {
 
     var wordPath = [];
-    console.log('highlighting', anno, annoId, replyId);
+    // console.log('highlighting', anno, annoId, replyId);
     // console.log("ANNO ")
     // console.log(anno)
     let newRange;

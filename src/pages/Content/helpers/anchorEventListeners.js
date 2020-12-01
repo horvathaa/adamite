@@ -1,7 +1,7 @@
 
 //import './AnchorEngine/AnchorCreate';
-import { updateXpaths, removeSpans } from './AnchorEngine/AnchorDestroy';
-import { highlightRange, highlightReplyRange } from './AnchorEngine/AnchorHighlight';
+import { updateXpaths, removeSpans, removeTempHighlight } from './AnchorEngine/AnchorDestroy';
+import { tempHighlight, highlightRange, highlightReplyRange } from './AnchorEngine/AnchorHighlight';
 import { createAnnotation, removeAnnotationWidget } from './AnchorEngine/AnchorCreate';
 
 
@@ -35,7 +35,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         updateXpaths(collection, request.id)
     }
     else if (request.msg === 'HIGHLIGHT_ANNOTATIONS') {
-        console.log('in highlightr_annotations');
+        // console.log('in highlightr_annotations');
         const annotationsOnPage = request.payload;
         if (annotationsOnPage.length) {
             annotationsOnPage.reverse().forEach(anno => {
@@ -53,15 +53,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
     }
     else if (request.msg === 'ADD_REPLY_HIGHLIGHT') {
-        console.log('doin it');
+        // console.log('doin it');
         const { xpath, id } = request.payload;
         highlightReplyRange(xpath, id);
     }
     else if (request.msg === 'REFRESH_HIGHLIGHTS') {
-        console.log('in refresh');
+        // console.log('in refresh');
         var span = document.getElementsByClassName("highlight-adamite-annotation");
-        // removeSpans(span);
-        // console.log("in here", request)
+
         const annotationsOnPage = request.payload;
         if (annotationsOnPage.length) {
             annotationsOnPage.reverse().forEach(anno => {
@@ -121,5 +120,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     else if (request.msg === 'ANNOTATION_ADDED') {
         request.newAnno.content = request.newAnno.annotation;
         highlightRange(request.newAnno);
+    }
+    else if (request.msg === 'TEMP_ANNOTATION_ADDED') {
+        // request.newAnno.content = request.newAnno.annotation;
+        tempHighlight(request.newAnno);
+    }
+    else if (request.msg === 'REMOVE_TEMP_ANNOTATION') {
+        removeTempHighlight();
+        sendResponse({ msg: 'REMOVED' });
     }
 });

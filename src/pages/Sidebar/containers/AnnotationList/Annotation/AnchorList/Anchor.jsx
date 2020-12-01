@@ -8,13 +8,19 @@ import anchorOnOtherPage from '../../../../../../assets/img/SVGs/Anchor_otherpag
 import '../Annotation.css';
 import './Anchor.css';
 
+// helper method from
+// https://stackoverflow.com/questions/2540969/remove-querystring-from-url
+function getPathFromUrl(url) {
+    return url.split(/[?#]/)[0];
+}
+
 class Anchor extends Component {
     handleOnLocalOnClick = () => {
         if (this.props.id === null) {
             return;
         }
         chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-            let url = tabs[0].url;
+            const url = getPathFromUrl(tabs[0].url);
             if (this.props.url === url) {
                 chrome.tabs.sendMessage(
                     tabs[0].id,
@@ -33,7 +39,7 @@ class Anchor extends Component {
             return;
         }
         chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-            let url = tabs[0].url;
+            const url = getPathFromUrl(tabs[0].url);
             if (this.props.url === url) {
                 chrome.tabs.sendMessage(
                     tabs[0].id,
@@ -52,7 +58,7 @@ class Anchor extends Component {
             return;
         }
         chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-            let url = tabs[0].url;
+            const url = getPathFromUrl(tabs[0].url);
             if (this.props.url === url) {
                 chrome.tabs.sendMessage(
                     tabs[0].id,
@@ -66,21 +72,24 @@ class Anchor extends Component {
         });
     }
 
-    handleExternalAnchor(url) {
-        chrome.runtime.sendMessage({ msg: "LOAD_EXTERNAL_ANCHOR", from: 'content', payload: url });
+    // handleOnClick = ()
+
+    handleExternalAnchor = () => {
+        chrome.runtime.sendMessage({ msg: "LOAD_EXTERNAL_ANCHOR", from: 'content', payload: this.props.url });
     }
 
     render() {
         const { currentUrl, collapsed, url, anchorContent, pageAnchor } = this.props;
         let anchorIcon;
+
         if (pageAnchor) {
-            anchorIcon = <BsFileEarmarkText className="AnchorIcon" onClick={_ => this.handleExternalAnchor(url)} />;
+            anchorIcon = <BsFileEarmarkText className="AnchorIcon" />;
         }
         else if (url === currentUrl) {
-            anchorIcon = <img src={anchorOnPage} className="AnchorIcon" alt='anchor on page' onClick={_ => this.handleOnLocalOnClick()} />;
+            anchorIcon = <img src={anchorOnPage} className="AnchorIcon" alt='anchor on page' />;
         }
         else {
-            anchorIcon = <img src={anchorOnOtherPage} className="AnchorIcon" alt='anchor on other page' onClick={_ => this.handleExternalAnchor(url)} />;
+            anchorIcon = <img src={anchorOnOtherPage} className="AnchorIcon" alt='anchor on other page' />;
         }
         return (
             <div
@@ -90,6 +99,7 @@ class Anchor extends Component {
                 })}
                 onMouseEnter={this.handleOnLocalOnMouseEnter}
                 onMouseLeave={this.handleOnLocalOnMouseLeave}
+                onClick={(pageAnchor || currentUrl !== url) ? this.handleExternalAnchor : this.handleOnLocalOnClick}
             >
                 <div className="AnchorIconContainer">
                     {anchorIcon}
@@ -101,11 +111,10 @@ class Anchor extends Component {
                 ) : (
                         <div className="AnchorTextContainer">
                             {anchorContent}
-                            <div className="AnchorUrlContainer" onClick={_ => this.handleExternalAnchor(url)}>
+                            <div className="AnchorUrlContainer" onClick={this.handleExternalAnchor}>
                                 {url}
                             </div>
                         </div>
-
                     )}
             </div>
         );

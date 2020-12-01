@@ -7,6 +7,9 @@
     display: flex;
     padding: 0px 0px 0px 8px;
 }
+.multi-select-wrapper{
+    width: 80%
+}
 
 .FilterSection {
     position: relative;
@@ -20,6 +23,7 @@
 .FilterIconContainer {
     width: 20px;
     height: 20px;
+    margin-left: 3px;
 }
 .FilterSummaryContainer{
     padding: 5px;
@@ -33,4 +37,31 @@
     position: relative;
     font-size: 0.9rem;
     color: #6B778C;
+}
+
+/* #author-visibility::after{
+    display: none; 
+ } */
+
+.filterDropDown{
+    font-size: 0.9rem !important;
+    color: #6B778C !important;
+    background-color: transparent !important;
+    padding: 0px !important;
+    border: none !important;
+    display: flex !important;
+}
+.filterDropDown::after{
+    display: none !important; 
+}
+.filterDropDown:hover{
+    color: #6b778ca1 !important;
+}
+.filterDropDown:focus{
+    box-shadow: none !important;
+}
+.filterReactIcon{
+    width: 18px;
+    height: 20px;
+    cursor: pointer;
 }

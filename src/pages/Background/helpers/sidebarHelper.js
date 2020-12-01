@@ -55,7 +55,7 @@ const persistShouldShrinkBodyStatus = (status) => {
   });
 };
 
-const toggleSidebar = (toStatus = null) => {
+export const toggleSidebar = (toStatus = null) => {
   if (toStatus === null || toStatus === undefined) {
     sidebarOpen = !sidebarOpen;
   } else {

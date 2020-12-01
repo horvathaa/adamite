@@ -4,6 +4,7 @@ import {
   signUpWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
+  getElasticApiKey,
 } from '../../../firebase/index';
 
 let currentUser = null;
@@ -13,6 +14,17 @@ auth.onAuthStateChanged(user => {
   broadcastAuthStatus(currentUser);
   if (user !== null) {
     updateUserProfile();
+    getElasticApiKey().then(function (e) {
+      chrome.storage.sync.set({
+        'ElasticAPIKey': e,
+      });
+      // console.log("set");
+    })
+  }
+  else {
+    chrome.storage.sync.set({
+      'ElasticAPIKey': '',
+    });
   }
 });
 

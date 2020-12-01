@@ -1,6 +1,10 @@
 import { DB_COLLECTIONS, db, getCurrentUserId } from '../index';
 import firebase from '../firebase';
 
+export const getUserByUserId = uid => {
+  return db.collection(DB_COLLECTIONS.USERS).where('uid', '==', uid);
+};
+
 export const getAllAnnotationsByUserId = uid => {
   return db.collection(DB_COLLECTIONS.ANNOTATIONS).where('authorId', '==', uid);
 };
@@ -9,6 +13,31 @@ export const getAllAnnotationsByUrl = url => {
   return db.collection(DB_COLLECTIONS.ANNOTATIONS)
     .where('url', '==', url)
     .where('private', '==', false);
+};
+
+export const getAllUserGroups = uid => {
+  return db.collection(DB_COLLECTIONS.GROUPS)
+    .where('uids', 'array-contains', uid);
+}
+
+export const addNewGroup = async ({
+  name,
+  description,
+  owner,
+  emails
+}) => {
+  let newGroup = {
+    name,
+    description,
+    emails,
+    uids: [owner],
+    owner
+  };
+  db.collection(DB_COLLECTIONS.GROUPS).add(newGroup).then(ref => {
+    db.collection(DB_COLLECTIONS.GROUPS).doc(ref.id).update({
+      gid: ref.id
+    });
+  });
 };
 
 export const getPrivateAnnotationsByUrl = (url, uid) => {
@@ -63,6 +92,14 @@ export const getAllPinnedAnnotationsByUserId = (uid) => {
     .where('private', '==', false);
 };
 
+export const getGroupAnnotationsByGroupId = (gid) => {
+  console.log('in annofunctions', gid);
+  return db
+    .collection(DB_COLLECTIONS.ANNOTATIONS)//.doc("06OlxrYfO08cofa2mDb9");
+    .where('groups', 'array-contains-any', gid) // switch to array-contains-any to look across all groups that user is in
+    .where('private', '==', true);
+};
+
 export const getAllPrivatePinnedAnnotationsByUserId = (uid) => {
   return db
     .collection(DB_COLLECTIONS.ANNOTATIONS)
@@ -75,12 +112,20 @@ export const getAnnotationById = id => {
   return db.collection(DB_COLLECTIONS.ANNOTATIONS).doc(id);
 };
 
+export const getGroupByGid = gid => {
+  return db.collection(DB_COLLECTIONS.GROUPS).doc(gid);
+}
+
 export const trashAnnotationById = id => {
   getAnnotationById(id).update({ trashed: true });
 };
 
 export const deleteAnnotationForeverById = (id) => {
   return getAnnotationById(id).delete();
+};
+
+export const deleteGroupForeverByGid = (gid) => {
+  return getGroupByGid(gid).delete();
 };
 
 export const updateAnnotationById = (id, newAnnotationFields = {}) => {
@@ -93,8 +138,7 @@ export const updateAllAnnotations = () => {
     .then(function (querySnapshot) {
       querySnapshot.forEach(function (doc) {
         doc.ref.update({
-
-          // fill in here what needs updating
+          // fill in here
         });
       });
     });
@@ -114,7 +158,10 @@ export const createAnnotation = async ({
   xpath,
   childAnchor,
   pinned,
-  isPrivate
+  isPrivate,
+  author,
+  groups,
+  readCount
 }) => {
   authorId = authorId ? authorId : getCurrentUserId();
   if (!authorId) {
@@ -140,8 +187,12 @@ export const createAnnotation = async ({
     childAnchor,
     pinned: AnnotationType === 'question' || AnnotationType === 'to-do',
     replies: [],
-    private: isPrivate, //just for user study - should be set to 'isPrivate'
-    adopted: false
+    private: isPrivate,
+    adopted: false,
+    author,
+    groups,
+    readCount,
+    deleted: false
   };
   return db.collection(DB_COLLECTIONS.ANNOTATIONS).add(newAnnotation);
 };

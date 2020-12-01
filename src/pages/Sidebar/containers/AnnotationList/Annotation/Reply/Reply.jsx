@@ -34,7 +34,6 @@ class Reply extends Component {
 
     transmitAdoptedToParent = () => {
         this.handleAdopted().then(adoptedState => {
-            // this.props.notifyParentOfAdopted(this.props.annoId, this.props.replyId, adoptedState) 
             this.props.answerIsAdopted(this.props.replyId, adoptedState);
         })
     }
@@ -55,7 +54,6 @@ class Reply extends Component {
         var day = date.getDate();
         var hour = date.getHours();
         var min = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
-        // var sec = date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
         var time = hour + ':' + min + ' ' + day + ' ' + month + ' ' + year;
         return time;
     }
@@ -97,7 +95,6 @@ class Reply extends Component {
                                 </div>
                                 <div className="userProfileContainer">
                                     <div className="author">
-                                        {/* anonymous */}
                                         {author}
                                     </div>
                                     <div className="timestamp">
@@ -130,10 +127,6 @@ class Reply extends Component {
                                     pageAnchor={xpath === null}
                                 />) : (null)}
                             <div className="annotationContent">
-                                <div className="QuestionAnswerMarker">
-                                    {answer !== undefined && answer ? "A" : (null)}
-                                    {question !== undefined && question ? "Q" : (null)}
-                                </div>
                                 <div className="contentBody">
                                     {content}
                                 </div>

@@ -2,6 +2,8 @@ import '../../assets/img/Adamite.png';
 import '../../assets/img/icon-128.png';
 import './helpers/authHelper';
 import './helpers/sidebarHelper';
+import './helpers/elasticSearchWrapper';
+import { toggleSidebar } from './helpers/sidebarHelper';
 import { clean } from './helpers/objectCleaner';
 import {
   getAllAnnotationsByUrl,
@@ -14,9 +16,15 @@ import {
   getAllPinnedAnnotationsByUserId,
   getAllPrivatePinnedAnnotationsByUserId,
   deleteAnnotationForeverById,
+  deleteGroupForeverByGid,
   getCurrentUserId,
+  getAllGroupsByUserId,
   getPrivateAnnotationsAcrossSite,
-  updateAllAnnotations
+  updateAllAnnotations, getAnnotationById,
+  getGroupAnnotationsByGroupId,
+  getUserByUserId,
+  getAllUserGroups,
+  addNewGroup
 } from '../../firebase/index';
 import firebase from '../../firebase/firebase';
 
@@ -60,8 +68,15 @@ let annotationsAcrossWholeSite = [];
 let annotations = [];
 let publicAnnotations = [];
 let privateAnnotations = [];
+let publicPinnedAnnotations = [];
+let privatePinnedAnnotations = [];
+let pinnedAnnotations = [];
+let pinnedPrivateListener;
+let pinnedPublicListener;
 let publicListener;
 let privateListener;
+let groupListener;
+let clicked = false;
 
 const broadcastAnnotationsUpdated = (message, annotations) => {
   chrome.runtime.sendMessage({
@@ -73,6 +88,7 @@ const broadcastAnnotationsUpdated = (message, annotations) => {
 
 const broadcastAnnotationsUpdatedTab = (message, annotations, tabId) => {
   chrome.tabs.query({ active: true }, tabs => {
+    console.log("here are the annotation", annotations)
     chrome.tabs.sendMessage(
       tabId,
       {
@@ -84,233 +100,351 @@ const broadcastAnnotationsUpdatedTab = (message, annotations, tabId) => {
   });
 };
 
+const broadcastGroupsUpdated = (message, groups) => {
+  chrome.runtime.sendMessage({
+    msg: message,
+    from: 'background',
+    payload: groups,
+  });
+}
+
+function setUpGetGroupListener(uid) {
+  // console.log('in setupgrouplistener', uid);
+  return new Promise((resolve, reject) => {
+    resolve(getAllUserGroups(uid).onSnapshot(querySnapshot => {
+      let groups = [];
+      querySnapshot.forEach(snapshot => {
+        groups.push({
+          gid: snapshot.id,
+          ...snapshot.data()
+        });
+      })
+      // console.log('groups in back', groups);
+      broadcastGroupsUpdated("GROUPS_UPDATED", groups);
+    }))
+  })
+
+}
+
+function getAllPrivatePinnedAnnotationsListener() {
+  return new Promise((resolve, reject) => {
+    resolve(getAllPrivatePinnedAnnotationsByUserId(getCurrentUserId()).onSnapshot(querySnapshot2 => {
+      let tempPrivatePinnedAnnotations = [];
+      querySnapshot2.forEach(snapshot => {
+        tempPrivatePinnedAnnotations.push({
+          id: snapshot.id,
+          ...snapshot.data(),
+        });
+      })
+      // console.log("temp", tempPublicAnnotations);
+      pinnedAnnotations = tempPrivatePinnedAnnotations.concat(publicPinnedAnnotations);
+      privatePinnedAnnotations = tempPrivatePinnedAnnotations;
+      // chrome.tabs.query({ active: true }, tabs => {
+      //   if (containsObjectWithId(tabs[0].id, tabAnnotationCollect)) {
+      //     tabAnnotationCollect = updateList(tabAnnotationCollect, tabs[0].id, annotationsToBroadcast);
+      //   }
+      //   else {
+      //     tabAnnotationCollect.push({ tabId: tabs[0].id, annotations: annotationsToBroadcast });
+      //   }
+      // });
+      // broadcastAnnotationsUpdated("CONTENT_UPDATED", annotationsToBroadcast);
+      broadcastAnnotationsUpdated("PINNED_CHANGED", pinnedAnnotations);
+      // publicAnnotations = tempPublicAnnotations;
+      // chrome.tabs.query({}, tabs => {
+      //   tabs = tabs.filter(e => getPathFromUrl(e.url) === url)
+      //   tabs.forEach(function (tab) {
+      //     chrome.tabs.sendMessage(tab.id, {
+      //       msg: 'REFRESH_HIGHLIGHTS',
+      //       payload: annotationsToBroadcast,
+      //     });
+      //   });
+      // });
+    }))
+  })
+}
+
+function getAllPublicPinnedAnnotationsListener() {
+  return new Promise((resolve, reject) => {
+    resolve(getAllPinnedAnnotationsByUserId(getCurrentUserId()).onSnapshot(querySnapshot2 => {
+      let tempPublicPinnedAnnotations = [];
+      querySnapshot2.forEach(snapshot => {
+        tempPublicPinnedAnnotations.push({
+          id: snapshot.id,
+          ...snapshot.data(),
+        });
+      })
+      // console.log('in get all public pinned');
+      // console.log("temp", tempPublicAnnotations);
+      pinnedAnnotations = tempPublicPinnedAnnotations.concat(privatePinnedAnnotations);
+      publicPinnedAnnotations = tempPublicPinnedAnnotations;
+      // chrome.tabs.query({ active: true }, tabs => {
+      //   if (containsObjectWithId(tabs[0].id, tabAnnotationCollect)) {
+      //     tabAnnotationCollect = updateList(tabAnnotationCollect, tabs[0].id, annotationsToBroadcast);
+      //   }
+      //   else {
+      //     tabAnnotationCollect.push({ tabId: tabs[0].id, annotations: annotationsToBroadcast });
+      //   }
+      // });
+      broadcastAnnotationsUpdated("PINNED_CHANGED", pinnedAnnotations);
+      // publicAnnotations = tempPublicAnnotations;
+      // chrome.tabs.query({}, tabs => {
+      //   tabs = tabs.filter(e => getPathFromUrl(e.url) === url)
+      //   tabs.forEach(function (tab) {
+      //     chrome.tabs.sendMessage(tab.id, {
+      //       msg: 'REFRESH_HIGHLIGHTS',
+      //       payload: annotationsToBroadcast,
+      //     });
+      //   });
+      // });
+    }))
+  })
+}
+
 
 function setUpGetAllAnnotationsByUrlListener(url, annotations) {
-  // pageannotationsActive.push({
-  //   url: url,
-  //   annotations: null,
-  //   timeout: 500,
-  //   unsubscribe: null
-  // });
   return new Promise((resolve, reject) => {
-    let tempPublicAnnotations = [];
     resolve(getAllAnnotationsByUrl(url, getCurrentUser().uid).onSnapshot(querySnapshot2 => {
+      let tempPublicAnnotations = [];
       querySnapshot2.forEach(snapshot => {
         tempPublicAnnotations.push({
           id: snapshot.id,
           ...snapshot.data(),
         });
       })
-      // console.log('public annos', tempPublicAnnotations);
-      // var pos = pageannotationsActive.map(function (e) { return e.url; }).indexOf(url);
-      // let host = new URL(url).hostname;
-      // if (annotationsAcrossWholeSite[host] !== undefined) {
-      //   annotations.concat(annotationsAcrossWholeSite[host].annotations);
+      // console.log("temp", tempPublicAnnotations);
       let annotationsToBroadcast = tempPublicAnnotations.concat(privateAnnotations);
-      annotationsToBroadcast = removeDuplicates(annotationsToBroadcast);
-      chrome.tabs.query({ active: true }, tabs => {
-        // console.log('here be public tabs idk what happened', tabs, annotationsToBroadcast);
+      annotationsToBroadcast = annotationsToBroadcast.filter(anno => !anno.deleted);
+      chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
         if (containsObjectWithId(tabs[0].id, tabAnnotationCollect)) {
           tabAnnotationCollect = updateList(tabAnnotationCollect, tabs[0].id, annotationsToBroadcast);
-          // console.log('updated tabAnnotationCollect', tabAnnotationCollect);
-          // tabAnnotationCollect[tabs[0].id] = annotationsToBroadcast;
         }
         else {
           tabAnnotationCollect.push({ tabId: tabs[0].id, annotations: annotationsToBroadcast });
         }
       });
-
-      // annotations = removeDuplicates(annotations);
-      // }
-      // pageannotationsActive[pos].annotations = annotations;
-      // pageannotationsActive[pos].annotations = pageannotationsActive[pos].annotations.sort((a, b) =>
-      //   (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
-      // );
-      // pageannotationsActive[pos].annotations = removeDuplicates(pageannotationsActive[pos].annotations);
-      // console.log('bout to broadcast sigh', annotations);
       broadcastAnnotationsUpdated("CONTENT_UPDATED", annotationsToBroadcast);
+      const numChildAnchs = annotationsToBroadcast.filter(anno => anno.SharedId !== null);
+      chrome.browserAction.setBadgeText({ text: String(annotationsToBroadcast.length - numChildAnchs.length) });
       publicAnnotations = tempPublicAnnotations;
       chrome.tabs.query({}, tabs => {
-        tabs = tabs.filter(e => e.url === url)
+        tabs = tabs.filter(e => getPathFromUrl(e.url) === url)
         tabs.forEach(function (tab) {
           chrome.tabs.sendMessage(tab.id, {
             msg: 'REFRESH_HIGHLIGHTS',
             payload: annotationsToBroadcast,
           });
         });
-        // console.log("these are changed tabs", tabs)
       });
     }))
   })
 }
 
 function promiseToComeBack(url, annotations) {
-  // pageannotationsActive.push({
-  //   url: url,
-  //   annotations: null,
-  //   timeout: 500,
-  //   unsubscribe: null
-  // });
   return new Promise((resolve, reject) => {
-    let tempPrivateAnnotations = [];
+
     resolve(getPrivateAnnotationsByUrl(url, getCurrentUser().uid).onSnapshot(querySnapshot2 => {
+      let tempPrivateAnnotations = [];
       querySnapshot2.forEach(snapshot => {
         tempPrivateAnnotations.push({
           id: snapshot.id,
           ...snapshot.data(),
         });
       });
-
-      // var pos = pageannotationsActive.map(function (e) { return e.url; }).indexOf(url);
-      // let host = new URL(url).hostname;
-      // if (annotationsAcrossWholeSite[host] !== undefined) {
-      //   annotations.concat(annotationsAcrossWholeSite[host].annotations);
-
       let annotationsToBroadcast = tempPrivateAnnotations.concat(publicAnnotations);
-      annotationsToBroadcast = removeDuplicates(annotationsToBroadcast);
-      chrome.tabs.query({ active: true }, tabs => {
-        // console.log('here be tabs idk what happened', tabs, annotationsToBroadcast);
+      annotationsToBroadcast = annotationsToBroadcast.filter(anno => !anno.deleted);
+      chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
         if (containsObjectWithId(tabs[0].id, tabAnnotationCollect)) {
           tabAnnotationCollect = updateList(tabAnnotationCollect, tabs[0].id, annotationsToBroadcast);
-          // console.log('updated tabAnnotationCollect', tabAnnotationCollect);
         }
         else {
           tabAnnotationCollect.push({ tabId: tabs[0].id, annotations: annotationsToBroadcast });
         }
       });
-      // }
-      // pageannotationsActive[pos].annotations = annotations;
-      // pageannotationsActive[pos].annotations = pageannotationsActive[pos].annotations.sort((a, b) =>
-      //   (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
-      // );
-      // pageannotationsActive[pos].annotations = removeDuplicates(pageannotationsActive[pos].annotations);
-      // console.log('bout to broadcast in private sigh', annotationsToBroadcast);
+      // console.log("annotations", annotationsToBroadcast)
       broadcastAnnotationsUpdated("CONTENT_UPDATED", annotationsToBroadcast);
+      const numChildAnchs = annotationsToBroadcast.filter(anno => anno.SharedId !== null);
+      chrome.browserAction.setBadgeText({ text: String(annotationsToBroadcast.length - numChildAnchs.length) });
       privateAnnotations = tempPrivateAnnotations;
       chrome.tabs.query({}, tabs => {
-        tabs = tabs.filter(e => e.url === url)
+        tabs = tabs.filter(e => getPathFromUrl(e.url) === url)
         tabs.forEach(function (tab) {
+          // console.log('refreshing highlights');
           chrome.tabs.sendMessage(tab.id, {
             msg: 'REFRESH_HIGHLIGHTS',
             payload: annotationsToBroadcast,
           });
         });
-        // console.log("these are changed tabs", tabs)
       });
     }))
   })
 }
 
 chrome.tabs.onActivated.addListener(function (activeInfo) {
-  // console.log('change tab', tabAnnotationCollect);
   if (containsObjectWithId(activeInfo.tabId, tabAnnotationCollect)) {
     const tabInfo = tabAnnotationCollect.filter(obj => obj.tabId === activeInfo.tabId);
     broadcastAnnotationsUpdated('CONTENT_UPDATED', tabInfo[0].annotations);
+    chrome.browserAction.setBadgeText({ text: String(tabInfo[0].annotations.length) });
   }
   else {
-    // publicListener = setUpGetAllAnnotationsByUrlListener(request.url, annotations);
-    // privateListener = promiseToComeBack(request.url, annotations);
+    chrome.tabs.get(activeInfo.tabId, (tab) => {
+      publicListener = setUpGetAllAnnotationsByUrlListener(tab.url, annotations);
+      privateListener = promiseToComeBack(tab.url, annotations);
+    });
   }
 });
 
+chrome.browserAction.onClicked.addListener(function () {
+  clicked = !clicked;
+  toggleSidebar(clicked);
+});
+
+const showModal = () => {
+  const modal = document.createElement("dialog");
+  modal.setAttribute("style", `height:450px;border: none;top:150px;border-radius:20px;background-color:white;position: fixed; box-shadow: 0px 12px 48px rgba(29, 5, 64, 0.32);`);
+}
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.msg === 'REQUEST_TAB_URL') {
+  if (request.msg === 'REQUEST_TAB_INFO') {
     const cleanUrl = getPathFromUrl(sender.tab.url);
-    sendResponse({ url: cleanUrl });
+    const tabId = sender.tab.id;
+    sendResponse({ url: cleanUrl, tabId });
   }
   else if (request.msg === 'GET_ANNOTATIONS_PAGE_LOAD') {
-    // var findActiveUrl = pageannotationsActive.filter(e => e.url === request.url)
-    // if (findActiveUrl.length !== 0) {
-    //   let annotationsToTransmit = findActiveUrl[0].annotations.filter(anno => {
-    //     if (anno.private && anno.authorId === getCurrentUser().uid) {
-    //       return true;
-    //     }
-    //     else if (!anno.private) {
-    //       return true;
-    //     }
-    //     else {
-    //       return false;
-    //     }
-    //   });
-    //   annotationsToTransmit = annotationsToTransmit.sort((a, b) =>
-    //     (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
-    //   );
-    //   annotationsToTransmit = removeDuplicates(annotationsToTransmit);
-    //   broadcastAnnotationsUpdatedTab("CONTENT_UPDATED", annotationsToTransmit, sender.tab.id);
-    //   broadcastAnnotationsUpdatedTab("HIGHLIGHT_ANNOTATIONS", annotationsToTransmit, sender.tab.id);
-    // }
-    // else {
-    // let snapshotSubscriptions = [];
-    // let annotations = [];
-    // console.log('requesting annotations for url', request.url);
-    // console.log('gonna update all annotations');
-    // updateAllAnnotations();
+    console.log("GET_ANNOTATIONS_PAGE_LOAD")
+
+    let email = getCurrentUser().email;
+    let userName = email.substring(0, getCurrentUser().email.indexOf('@'));
+
+    chrome.tabs.sendMessage(
+      request.tabId,
+      {
+        msg: 'CREATE_GROUP',
+        from: 'background',
+        owner: {
+          uid: request.uid,
+          email: email,
+          userName: userName
+        }
+      }
+    );
+
     publicListener = setUpGetAllAnnotationsByUrlListener(request.url, annotations);
     privateListener = promiseToComeBack(request.url, annotations);
-    // setUpGetAllAnnotationsByUrlListener(request.url, annotations).then(function (e) {
-    //   snapshotSubscriptions.push(e);
-    //   promiseToComeBack(request.url, annotations)
-    //     .then(function (f) {
-    //       // console.log('at end of then', annotations);
-    //       snapshotSubscriptions.push(f);
-    //       // snapshotSubscriptions.forEach(sub => sub());
-    //     });
-    // })
+    console.log('annos', annotations);
+    chrome.browserAction.setBadgeText({ text: String(annotations.length) });
+  }
+  else if (request.msg === 'SET_UP_PIN' && request.from === 'content') {
+    // console.log('in pin listener');
+    pinnedPrivateListener = getAllPrivatePinnedAnnotationsListener();
+    pinnedPublicListener = getAllPublicPinnedAnnotationsListener();
+  }
+  else if (request.msg === 'ADD_NEW_GROUP' && request.from === 'content') {
+    // console.log("this is the request for a new group", request);
+    addNewGroup({
+      name: request.group.name,
+      description: request.group.description,
+      owner: request.group.owner,
+      emails: request.group.emails
+    }).then(value => {
+      chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+        const tabId = tabs[0].id;
+        chrome.tabs.sendMessage(
+          tabId,
+          {
+            msg: 'GROUP_CREATE_SUCCESS',
+            from: 'background',
+          }
+        );
+      });
 
-    // }
+    })
+  }
+  else if (request.msg === "DELETE_GROUP" && request.from === 'modal') {
+    console.log("this is the request for a delete group", request.gid);
+    const { gid } = request;
+    deleteGroupForeverByGid(gid).then(value => {
+      chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+        const tabId = tabs[0].id;
+        chrome.tabs.sendMessage(
+          tabId,
+          {
+            msg: 'GROUP_DELETE_SUCCESS',
+            from: 'background',
+          }
+        );
+      });
+    });
+  }
+  else if (request.msg === 'UPDATE_READ_COUNT' && request.from === 'content') {
+    const { id, readCount } = request.payload;
+    updateAnnotationById(id, {
+      readCount: readCount + 1
+    }).then(function () {
+      broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
+    });
+  }
+  // maybe switch to passing in tabId here instead of querying
+  else if (request.msg === 'SHOW_GROUP' && request.from === 'content') {
+    chrome.tabs.query({ active: true, lastFocusedWindow: true },
+      (tabs) => {
+        chrome.tabs.sendMessage(
+          tabs[0].id,
+          {
+            msg: 'SHOW_GROUP',
+            from: 'background',
+          }
+        );
+      });
+  }
+  else if (request.msg === 'HIDE_GROUP' && request.from === 'modal') {
+    chrome.tabs.query({ active: true, lastFocusedWindow: true },
+      (tabs) => {
+        chrome.tabs.sendMessage(
+          tabs[0].id,
+          {
+            msg: 'HIDE_GROUP',
+            from: 'background',
+          }
+        );
+      });
   }
   else if (request.msg === 'UNSUBSCRIBE' && request.from === 'content') {
-    privateListener();
-    publicListener();
+    if (typeof privateListener === "function") {
+      privateListener();
+    }
+    if (typeof publicListener === "function") {
+      publicListener();
+    }
+    if (typeof pinnedPrivateListener === "function") {
+      pinnedPrivateListener();
+    }
+    if (typeof pinnedPublicListener === "function") {
+      pinnedPublicListener();
+    }
   }
   else if (request.msg === 'ANNOTATION_UPDATED' && request.from === 'content') {
-    const { id, content, type, tags, isPrivate } = request.payload;
+    const { id, content, type, tags, isPrivate, groups } = request.payload;
     updateAnnotationById(id, {
-      content, type, tags, isPrivate,
+      content, type, tags, private: isPrivate, groups,
       createdTimestamp: new Date().getTime(),
       deletedTimestamp: 0
     }).then(function () {
-      // console.log('in annotation updated');
-      if (containsObjectWithId(sender.tab.id, tabAnnotationCollect)) {
-        const tabInfo = tabAnnotationCollect.filter(obj => obj.tabId === sender.tab.id);
-        // console.log('tabInfo', tabInfo);
-        let annotations = tabInfo[0].annotations;
-        let anno = annotations.filter(anno => id === anno.id);
-        let updatedAnno = anno[0];
-        Object.assign(updatedAnno, { id, content, type, tags, isPrivate });
-        let temp2 = annotations.filter(anno => anno.id !== id);
-        temp2.push(updatedAnno);
-        temp2 = removeDuplicates(temp2);
-        broadcastAnnotationsUpdated('CONTENT_UPDATED', temp2);
-      }
-      else {
-        let temp = publicAnnotations.concat(privateAnnotations);
-        let anno = temp.filter(anno => id === anno.id);
-        let updatedAnno = anno[0];
-        Object.assign(updatedAnno, { id, content, type, tags, isPrivate });
-        let temp2 = temp.filter(anno => anno.id !== id);
-        temp2.push(updatedAnno);
-        temp2 = removeDuplicates(temp2);
-        // console.log('updated thing', temp2, updatedAnno);
-        broadcastAnnotationsUpdated('CONTENT_UPDATED', temp2);
-      }
+      broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
     })
   }
   else if (request.msg === 'ANNOTATION_DELETED' && request.from === 'content') {
-    deleteAnnotationForeverById(request.payload.id).then(function () {
-      annotations = publicAnnotations.concat(privateAnnotations);
-      annotations = annotations.filter(anno => anno.id !== request.payload.id);
-      annotations = removeDuplicates(annotations);
-      broadcastAnnotationsUpdated("CONTENT_UPDATED", annotations);
+    const { id } = request.payload;
+    updateAnnotationById(id, {
+      deletedTimestamp: new Date().getTime(),
+      deleted: true
+    }).then(function () {
+      broadcastAnnotationsUpdated("ELASTIC_CONTENT_DELETED", id);
     });
   }
   else if (request.msg === 'SAVE_HIGHLIGHT') {
     let { url, anchor, xpath, offsets } = request.payload;
     const hostname = new URL(url).hostname;
-
-    // firebase: in action
-    //content = JSON.parse(content); // consider just pass content as an object
+    const author = getCurrentUser().email.substring(0, getCurrentUser().email.indexOf('@'));
     createAnnotation({
       taskId: null,
       SharedId: null,
@@ -319,13 +453,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       AnnotationAnchorPath: null,
       offsets: offsets,
       xpath: xpath,
-      AnnotationType: "highlight", // could be other types (string)
+      AnnotationType: "highlight",
       url,
       hostname,
       pinned: false,
       AnnotationTags: [],
       childAnchor: [],
-      isPrivate: false
+      isPrivate: true,
+      author,
+      groups: [], // later have this be a default group
+      readCount: 0,
+      deleted: false
     });
   }
   else if (request.from === 'content' && request.msg === 'UNARCHIVE') {
@@ -334,32 +472,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       createdTimestamp: new Date().getTime(),
       trashed: false
     }).then(function () {
-      let temp = publicAnnotations.concat(privateAnnotations);
-      let anno = temp.filter(anno => id === anno.id);
-      let updatedAnno = anno[0];
-      updatedAnno.trashed = false;
-      updatedAnno.createdTimestamp = new Date().getTime();
-      let temp2 = temp.filter(anno => anno.id !== id);
-      temp2.push(updatedAnno);
-      temp2 = removeDuplicates(temp2);
-      broadcastAnnotationsUpdated('CONTENT_UPDATED', temp2);
+      broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
     });
   }
-  else if (request.from === 'content' && request.msg === 'FINISH_TODO') {
+  else if (request.from === 'content' && (request.msg === 'FINISH_TODO' || request.msg === 'UNARCHIVE')) {
     const { id } = request.payload;
     updateAnnotationById(id, {
       createdTimestamp: new Date().getTime(),
-      trashed: true
+      trashed: request.msg === 'FINISH_TODO' ? true : false
     }).then(function () {
-      let temp = publicAnnotations.concat(privateAnnotations);
-      let anno = temp.filter(anno => id === anno.id);
-      let updatedAnno = anno[0];
-      updatedAnno.trashed = true;
-      updatedAnno.createdTimestamp = new Date().getTime();
-      let temp2 = temp.filter(anno => anno.id !== id);
-      temp2.push(updatedAnno);
-      temp2 = removeDuplicates(temp2);
-      broadcastAnnotationsUpdated('CONTENT_UPDATED', temp2);
+      broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
     });
   }
   else if (request.from === 'content' && request.msg === 'UPDATE_QUESTION') {
@@ -368,15 +490,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       isClosed,
       howClosed
     }).then(function () {
-      let temp = publicAnnotations.concat(privateAnnotations);
-      let anno = temp.filter(anno => id === anno.id);
-      let updatedAnno = anno[0];
-      updatedAnno.isClosed = isClosed;
-      updatedAnno.howClosed = howClosed;
-      let temp2 = temp.filter(anno => anno.id !== id);
-      temp2.push(updatedAnno);
-      temp2 = removeDuplicates(temp2);
-      broadcastAnnotationsUpdated('CONTENT_UPDATED', temp2);
+      broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
     });
   }
   else if (request.msg === 'FILTER_BY_TAG' && request.from === 'content') {
@@ -389,6 +503,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   else if (request.msg === 'SAVE_ANNOTATED_TEXT') {
     let { url, content } = request.payload;
     const hostname = new URL(url).hostname;
+    const author = getCurrentUser().email.substring(0, getCurrentUser().email.indexOf('@'));
 
     // firebase: in action
     //content = JSON.parse(content); // consider just pass content as an object
@@ -407,7 +522,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       pinned: false,
       AnnotationTags: content.tags,
       childAnchor: [],
-      isPrivate: content.private
+      isPrivate: content.private,
+      author,
+      groups: content.groups,
+      readCount: 0,
+      deleted: false
     }).then(value => {
       sendResponse({
         msg: 'DONE',
@@ -416,9 +535,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
   } else if (request.from === 'content' && request.msg === 'SAVE_NEW_ANCHOR') {
     let { newAnno, xpath, url, anchor, offsets, hostname } = request.payload;
+    const author = getCurrentUser().email.substring(0, getCurrentUser().email.indexOf('@'));
     createAnnotation({
       taskId: null,
       childAnchor: null,
+      author,
       AnnotationContent: newAnno.content,
       AnnotationType: newAnno.type,
       SharedId: newAnno.sharedId,
@@ -431,7 +552,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       hostname: hostname,
       AnnotationTags: [],
       childAnchor: [],
-      isPrivate: false
+      isPrivate: false,
+      groups: newAnno.groups,
+      readCount: 0
     }).then(value => {
       let highlightObj = {
         id: value.id,
@@ -447,9 +570,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           }
         );
       });
+      value.get().then(function (doc) {
+        broadcastAnnotationsUpdated('ELASTIC_CHILD_ANCHOR_ADDED', { id: value.id, ...doc.data() });
+      });
     });
   } else if (request.msg === 'ADD_NEW_REPLY') {
-    const { id, reply, replyTags, answer, question, replyId, xpath, anchor, hostname, url, offsets } = request.payload;
+    const { id, reply, replyTags, answer, question, replyId, xpath, anchor, hostname, url, offsets, adopted } = request.payload;
     const author = getCurrentUser().email.substring(0, getCurrentUser().email.indexOf('@'));
     const replies = Object.assign({}, {
       replyId: replyId,
@@ -464,26 +590,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       anchor: anchor !== undefined ? anchor : "",
       hostname: hostname !== undefined ? hostname : "",
       url: url !== undefined ? url : "",
-      offsets: offsets !== undefined ? offsets : null
+      offsets: offsets !== undefined ? offsets : null,
+      adopted: adopted !== undefined ? adopted : false
     });
     updateAnnotationById(id, {
       createdTimestamp: new Date().getTime(),
       replies: firebase.firestore.FieldValue.arrayUnion({
         ...replies
       })
-    }).then(function () {
-      let temp = publicAnnotations.concat(privateAnnotations);
-      let anno = temp.filter(anno => id === anno.id);
-      let updatedAnno = anno[0];
-      if (updatedAnno.replies !== undefined && updatedAnno.replies !== null && updatedAnno.replies.length) {
-        updatedAnno.replies = updatedAnno.replies.concat(replies);
-      } else {
-        updatedAnno.replies = [replies];
-      }
-      let temp2 = temp.filter(anno => anno.id !== id);
-      temp2.push(updatedAnno);
-      temp2 = removeDuplicates(temp2);
-      broadcastAnnotationsUpdated('CONTENT_UPDATED', temp2);
+    }).then(function (e) {
+      broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
+      sendResponse({ msg: 'DONE' });
     });
   }
   else if (request.msg === 'UPDATE_REPLIES') {
@@ -491,16 +608,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       createdTimestamp: new Date().getTime(),
       replies: request.payload.replies
     }).then(function () {
-      let temp = publicAnnotations.concat(privateAnnotations);
-      let anno = temp.filter(anno => request.payload.id === anno.id);
-      let updatedAnno = anno[0];
-      if (updatedAnno.replies.length) {
-        updatedAnno.replies = request.payload.replies;
-      }
-      let temp2 = temp.filter(anno => anno.id !== request.payload.id);
-      temp2.push(updatedAnno);
-      temp2 = removeDuplicates(temp2);
-      broadcastAnnotationsUpdated('CONTENT_UPDATED', temp2);
+      broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', request.payload.id);
     });
   }
   else if (request.from === 'content' && request.msg === 'CONTENT_SELECTED') {
@@ -518,145 +626,37 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
   }
   else if (request.from === 'content' && request.msg === 'GET_PINNED_ANNOTATIONS') {
-    let pinnedAnnotations = [];
-    getAllPinnedAnnotationsByUserId(getCurrentUserId()).get().then(function (doc) {
-      doc.docs.forEach(anno => {
-        pinnedAnnotations.push({ id: anno.id, ...anno.data() });
-      });
-      getAllPrivatePinnedAnnotationsByUserId(getCurrentUserId()).get().then(function (doc) {
-        doc.docs.forEach(anno => {
-          pinnedAnnotations.push({ id: anno.id, ...anno.data() });
-        });
-        // annotations = annotations.filter(anno => anno.isClosed === false);
-        sendResponse({ annotations: pinnedAnnotations });
-      })
-    });
+    sendResponse({ annotations: pinnedAnnotations });
+  }
+  else if (request.from === 'content' && request.msg === 'GET_GROUPS_PAGE_LOAD') {
+    groupListener = setUpGetGroupListener(request.uid);
   }
   else if (request.from === 'content' && request.msg === 'REQUEST_PIN_UPDATE') {
     const { id, pinned } = request.payload;
     updateAnnotationById(id, { pinned: pinned }).then(function () {
-      let temp = publicAnnotations.concat(privateAnnotations);
-      let anno = temp.filter(anno => id === anno.id);
-      let updatedAnno = anno[0];
-      updatedAnno.pinned = pinned;
-      let temp2 = temp.filter(anno => anno.id !== id);
-      temp2.push(updatedAnno);
-      temp2 = removeDuplicates(temp2);
-      broadcastAnnotationsUpdated('CONTENT_UPDATED', temp2);
+      broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
     });
   }
   else if (request.from === 'content' && request.msg === 'REQUEST_ADOPTED_UPDATE') {
     const { annoId, replyId, adoptedState } = request.payload;
     if (adoptedState) {
       updateAnnotationById(annoId, { adopted: replyId }).then(function () {
-        let temp = publicAnnotations.concat(privateAnnotations);
-        let anno = temp.filter(anno => annoId === anno.id);
-        let updatedAnno = anno[0];
-        updatedAnno.adopted = replyId;
-        let temp2 = temp.filter(anno => anno.id !== annoId);
-        temp2.push(updatedAnno);
-        temp2 = removeDuplicates(temp2);
-        broadcastAnnotationsUpdated('CONTENT_UPDATED', temp2);
-      });;
+        broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', annoId);
+      });
     } else {
       updateAnnotationById(annoId, { adopted: false }).then(function () {
-        let temp = publicAnnotations.concat(privateAnnotations);
-        let anno = temp.filter(anno => annoId === anno.id);
-        let updatedAnno = anno[0];
-        updatedAnno.adopted = false;
-        let temp2 = temp.filter(anno => anno.id !== annoId);
-        temp2.push(updatedAnno);
-        temp2 = removeDuplicates(temp2);
-        broadcastAnnotationsUpdated('CONTENT_UPDATED', temp2);
-      });;
+        broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', annoId);
+      });
     }
   }
-  else if (request.from === 'content' && request.msg === 'REQUEST_PAGINATED_ACROSS_SITE_ANNOTATIONS') {
-    const { hostname, url } = request.payload;
-    let cursor = undefined;
-    if (hostname in annotationsAcrossWholeSite) {
-      cursor = annotationsAcrossWholeSite[hostname].cursor;
-    }
-    else {
-      annotationsAcrossWholeSite[hostname] = { cursor: undefined, annotations: [] };
-      // console.log(annotationsAcrossWholeSite);
-    }
-    if (cursor === 'DONE') {
-      sendResponse({ annotations: annotationsAcrossWholeSite[hostname].annotations, cursor: "DONE" });
-      return;
-    }
-    if (cursor !== undefined) {
-      // use startAfter 
-      getAnnotationsAcrossSite(hostname).startAfter(annotationsAcrossWholeSite[hostname].cursor).get().then(function (doc) {
-        // let currPage = pageannotationsActive.filter(page => page.url === url);
-        // annotationsAcrossWholeSite[hostname].annotations.push(...currPage[0].annotations);
-        if (!doc.empty) {
-          doc.docs.forEach(anno => {
-            annotationsAcrossWholeSite[hostname].annotations.push({ id: anno.id, ...anno.data() });
-          });
-        }
-        else {
-          annotationsAcrossWholeSite[hostname].cursor = 'DONE';
-          sendResponse({ annotations: annotationsAcrossWholeSite[hostname].annotations, cursor: "DONE" });
-          return;
-        }
-        // this isn't a perfect check - if the set of annotations happens to be divisible by 15 we will get one last
-        // read from the query with a length of 15 but the next query will return 0
-        if (doc.docs.length < 15) {
-          annotationsAcrossWholeSite[hostname].cursor = 'DONE';
-        }
-        else {
-          annotationsAcrossWholeSite[hostname].cursor = doc.docs[doc.docs.length - 1];
-        }
-        sendResponse({ annotations: annotationsAcrossWholeSite[hostname].annotations });
-      }).catch(function (error) {
-        console.log('could not get doc: ', error);
-      });
-    }
-    else {
-      // first time requesting across whole site annotations from this hostname
-      getAnnotationsAcrossSite(hostname).get().then(function (doc) {
-        getPrivateAnnotationsAcrossSite(hostname, getCurrentUserId()).get().then(function (doc2) {
-          // let currPage = pageannotationsActive.filter(page => page.url === url);
-          // annotationsAcrossWholeSite[hostname].annotations.push(...currPage[0].annotations);
-          if (!doc.empty) {
-            doc.docs.forEach(anno => {
-              annotationsAcrossWholeSite[hostname].annotations.push({ id: anno.id, ...anno.data() });
-            });
-          }
-          else {
-            annotationsAcrossWholeSite[hostname].cursor = 'DONE';
-            sendResponse({ annotations: annotationsAcrossWholeSite[hostname].annotations });
-            return;
-          }
-          if (!doc2.empty) {
-            doc2.docs.forEach(anno => {
-              annotationsAcrossWholeSite[hostname].annotations.push({ id: anno.id, ...anno.data() });
-            });
-          }
-          else {
-            annotationsAcrossWholeSite[hostname].cursor = 'DONE';
-            sendResponse({ annotations: annotationsAcrossWholeSite[hostname].annotations });
-            return;
-          }
-          // same issue as stated above
-          if (doc.docs.length < 15) {
-            annotationsAcrossWholeSite[hostname].cursor = 'DONE';
-          }
-          else {
-            annotationsAcrossWholeSite[hostname].cursor = doc.docs[doc.docs.length - 1];
-          }
-          sendResponse({ annotations: annotationsAcrossWholeSite[hostname].annotations, cursor: "NOT_DONE" });
-        }).catch(function (error) {
-          console.log('could not get doc: ', error);
-        });
+  else if (request.from === 'content' && request.msg === 'GET_ANNOTATION_BY_ID') {
+    const { id } = request.payload;
+    getAnnotationById(id).get().then(function (doc) {
+      sendResponse({ annotation: { id: id, ...doc.data() } });
+    }).catch(function (error) {
+      console.log('getAnnotationById error', error);
+    });
 
-      });
-      // need to think about use case where user's current URL has the majority of annotations on it - pagination will result
-      // in many duplicate annotations that need to be filtered out and then keep reading to find unique annotations?
-      // it seems like we need to do the comparison locally which sucks ass fuck u firebase
-
-    }
   }
   else if (request.msg === 'SEARCH_BY_TAG' && request.from === 'content') {
     const { tag } = request.payload;
@@ -690,18 +690,3 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
   return true;
 });
-
-
-  // else if (request.msg === 'REQUEST_ANNOTATED_TEXT_ON_THIS_PAGE') {
-  //   const { url } = request.payload;
-  //   //console.log("REQUEST ANNOTATED TEXT ON THIS PAGE", annotations)
-  //   // var test = getAllAnnotationsByUrlCache(url).then(function (cacheAnno) {
-  //   //   var test = cacheAnno.filter(e => e.url === url);
-  //   //   const annotationsOnPage = test // can use this later so we get all annotations that match our filter criterias
-  //   //   console.log("THIS IS HIGHLIGHTS", test)
-  //   //   //sendResponse({ annotationsOnPage });
-  //   // });
-
-  //   // const annotationsOnPage = test // can use this later so we get all annotations that match our filter criterias
-  //   // sendResponse({ annotationsOnPage });
-  // } 

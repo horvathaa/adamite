@@ -26,11 +26,12 @@ export default class CardWrapper extends React.Component {
         addedTag: false,
         annotationContent: this.props.annotationContent.trim() === '' ? '' : this.props.annotationContent,
         annotationType: this.props.annotationType === undefined ? "Default" : this.props.annotationType,
-        tags: this.props.tags.length === 0 ? [] : this.props.tags,
+        tags: this.props.tags !== undefined && this.props.tags.length === 0 ? [] : this.props.tags,
         elseContent: this.props.elseContent,
         pageAnnotation: this.props.pageAnnotation,
         collapsed: this.props.collapsed,
-        private: true
+        private: true,
+        groups: []
     };
 
     updateData = () => {
@@ -88,7 +89,7 @@ export default class CardWrapper extends React.Component {
         if (option.value === 'Normal') {
             this.setState({ annotationType: "default" });
         }
-        else if (option.value === 'Empty') {
+        else if (option.value === 'highlight') {
             this.setState({ annotationType: "highlight" });
         }
         else {
@@ -99,13 +100,21 @@ export default class CardWrapper extends React.Component {
     render() {
 
         const options = [
-            'Normal', 'To-do', 'Question', 'Empty', 'Navigation', 'Issue'
+            'Normal', 'To-do', 'Question', 'Highlight', 'Issue'
         ];
         const defaultOption = options[0];
 
 
-        const { annotationContent, tags, elseContent, id, annotationType } = this.state;
-        const splitButtonText = this.state.private ? "Post to Only Me" : "Post to Public";
+        const { annotationContent, tags, elseContent, id, annotationType, groups } = this.state;
+        const { userGroups } = this.props;
+        let splitButtonText;
+        if (groups.length) {
+            const name = userGroups.filter(g => g.gid === groups[0])[0].name;
+            splitButtonText = "Post to " + name;
+        }
+        else {
+            splitButtonText = this.state.private ? "Post as Private" : "Post to Public";
+        }
         let annoTypeDropDownValue;
         if (annotationType === 'default') {
             annoTypeDropDownValue = 'normal';
@@ -143,14 +152,17 @@ export default class CardWrapper extends React.Component {
                                     </button>
                                     &nbsp; &nbsp;
                                 <SplitButton
-                                    key="publicPrivate"
+                                    key="publicPrivateGroup"
                                     id="dropdown-split-variants-secondary"
                                     variant="secondary"
                                     title={splitButtonText}
                                     onClick={this.submitPassthrough}
                                 >
-                                    <BootstrapDropdown.Item onClick={_ => this.setState({ private: true })} eventKey="1">Only Me</BootstrapDropdown.Item>
+                                    <BootstrapDropdown.Item onClick={_ => this.setState({ private: true })} eventKey="1">Private</BootstrapDropdown.Item>
                                     <BootstrapDropdown.Item onClick={_ => this.setState({ private: false })} eventKey="2">Public</BootstrapDropdown.Item>
+                                    {userGroups.map((group, i) => {
+                                        return <BootstrapDropdown.Item onClick={_ => this.setState({ groups: [group.gid] })} eventKey={i + 2}>{group.name}</BootstrapDropdown.Item>
+                                    })}
                                 </SplitButton>
                             </div>
                         </div>

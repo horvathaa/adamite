@@ -5,6 +5,11 @@
     cursor: pointer;
 }
 
+.Filter:hover {
+    color: #242424;
+    cursor: pointer;
+  }
+
 .FilterContainer {
     padding: 5px;
     background: white;

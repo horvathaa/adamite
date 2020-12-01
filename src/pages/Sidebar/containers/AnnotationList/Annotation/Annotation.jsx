@@ -23,14 +23,17 @@ class Annotation extends Component {
   state = {
     tags: this.props.tags,
     content: this.props.content,
-    collapsed: false,
+    collapsed: true,
     annotationType: this.props.type,
     editing: false,
     id: this.props.id,
     authorId: this.props.authorId,
     pinned: this.props.pinned,
     isClosed: this.props.isClosed,
-    howClosed: this.props.howClosed
+    howClosed: this.props.howClosed,
+    userGroups: this.props.userGroups === undefined ? [] : this.props.userGroups,
+    annoGroups: this.props.annoGroups === undefined ? [] : this.props.annoGroups,
+    readCount: this.props.readCount === undefined ? 0 : this.props.readCount
   };
 
   updateData = () => {
@@ -38,28 +41,11 @@ class Annotation extends Component {
     this.setState({
       tags, content, annotationType: type, authorId, pinned, isClosed, howClosed
     });
-
   }
 
-  // probably switch to just storing text version of username in the annotation table so we cut down
-  // on this read
   async componentDidMount() {
     document.addEventListener('keydown', this.keydown, false);
     this.updateData();
-    let authorDoc = getUserProfileById(this.props.authorId);
-    // let user = "anonymous";
-    let user;
-    await authorDoc.get().then(function (doc) {
-      if (doc.exists) {
-        user = doc.data().email.substring(0, doc.data().email.indexOf('@'));
-      }
-      else {
-        user = "anonymous";
-      }
-    }).catch(function (error) {
-      console.log('could not get doc:', error);
-    });
-    this.setState({ author: user });
   }
 
   componentDidUpdate(prevProps) {
@@ -69,7 +55,8 @@ class Annotation extends Component {
       prevProps.authorId !== this.props.authorId ||
       prevProps.pinned !== this.props.pinned ||
       prevProps.isClosed !== this.props.isClosed ||
-      prevProps.howClosed !== this.props.howClosed) {
+      prevProps.howClosed !== this.props.howClosed ||
+      prevProps.author !== this.props.author) {
       this.updateData();
     }
   }
@@ -86,9 +73,30 @@ class Annotation extends Component {
     var day = date.getDate();
     var hour = date.getHours();
     var min = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
-    // var sec = date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
     var time = hour + ':' + min + ' ' + day + ' ' + month + ' ' + year;
     return time;
+  }
+
+  getGroupName = () => {
+    let matches = [];
+    if (this.props.userGroups !== undefined && this.props.annoGroups !== undefined) {
+      matches = this.props.userGroups.filter(group => this.props.annoGroups.includes(group.gid));
+    }
+    if (matches.length > 0) {
+      let formattedString = "";
+      matches.forEach((group, i) => {
+        if (i === (matches.length - 1)) {
+          formattedString += group.name;
+        }
+        else {
+          formattedString += group.name + ", ";
+        }
+      });
+      return formattedString;
+    }
+    else {
+      return this.props.isPrivate ? "Private" : "Public";
+    }
   }
 
   handleDoneToDo(id) {
@@ -97,6 +105,7 @@ class Annotation extends Component {
       from: 'content',
       payload: { id }
     });
+    this.transmitPinToParent();
   }
 
   handleExpertReview = () => {
@@ -114,6 +123,7 @@ class Annotation extends Component {
       from: 'content',
       payload: { id }
     });
+    this.transmitPinToParent();
   }
 
   handleTrashClick(id) {
@@ -159,6 +169,7 @@ class Annotation extends Component {
   };
 
   submitButtonHandler = (CardWrapperState, id) => {
+    this.setState({ annoGroups: CardWrapperState.groups });
     chrome.runtime.sendMessage({
       msg: 'ANNOTATION_UPDATED',
       from: 'content',
@@ -167,7 +178,8 @@ class Annotation extends Component {
         type: CardWrapperState.annotationType.toLowerCase(),
         content: CardWrapperState.annotationContent,
         tags: CardWrapperState.tags,
-        isPrivate: CardWrapperState.private
+        isPrivate: CardWrapperState.private,
+        groups: CardWrapperState.groups
       }
     });
     this.setState({ editing: false });
@@ -186,7 +198,6 @@ class Annotation extends Component {
   }
 
   handleNewAnchor = (id) => {
-    alert('Select the text you want to anchor this annotation to!')
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
       chrome.tabs.sendMessage(tabs[0].id, {
         msg: 'ADD_NEW_ANCHOR',
@@ -195,7 +206,8 @@ class Annotation extends Component {
           type: this.state.annotationType,
           sharedId: id,
           author: this.props.currentUser.uid,
-          tags: this.state.tags
+          tags: this.state.tags,
+          groups: this.state.annoGroups
         }
       });
     });
@@ -238,12 +250,22 @@ class Annotation extends Component {
     }
     else {
       this.setState({ collapsed: false });
+      // this.setState({ readCount: this.state.readCount + 1 })
+      chrome.runtime.sendMessage({
+        msg: 'UPDATE_READ_COUNT',
+        from: 'content',
+        payload: {
+          id: this.props.id,
+          readCount: this.state.readCount
+        }
+      })
     }
   }
 
   render() {
     const { anchor, idx, id, active, authorId, currentUser, trashed, timeStamp, url, currentUrl, childAnchor, xpath, replies, isPrivate, adopted } = this.props;
-    const { editing, collapsed, tags, content, annotationType, author, pinned, isClosed, howClosed } = this.state;
+    const { editing, collapsed, tags, content, annotationType, pinned, isClosed, howClosed, userGroups, annoGroups, readCount } = this.state;
+    const author = this.props.author === undefined ? "anonymous" : this.props.author;
     if (annotationType === 'default' && !trashed) {
       return (<DefaultAnnotation
         idx={idx}
@@ -273,6 +295,8 @@ class Annotation extends Component {
         isPrivate={isPrivate}
         replies={replies}
         notifyParentOfAdopted={this.notifyParentOfAdopted}
+        getGroupName={this.getGroupName}
+        userGroups={userGroups}
       />);
     }
     else if (annotationType === 'to-do' && !trashed && currentUser.uid === authorId) {
@@ -305,10 +329,9 @@ class Annotation extends Component {
         replies={replies}
         isPrivate={isPrivate}
         notifyParentOfAdopted={this.notifyParentOfAdopted}
+        getGroupName={this.getGroupName}
+        userGroups={userGroups}
       />);
-    }
-    else if (annotationType === 'navigation') {
-      return (null);
     }
     else if (annotationType === 'highlight') {
       return (
@@ -340,6 +363,8 @@ class Annotation extends Component {
           replies={replies}
           isPrivate={isPrivate}
           notifyParentOfAdopted={this.notifyParentOfAdopted}
+          getGroupName={this.getGroupName}
+          userGroups={userGroups}
         />
       );
     }
@@ -376,6 +401,8 @@ class Annotation extends Component {
           howClosed={howClosed}
           adopted={adopted}
           notifyParentOfAdopted={this.notifyParentOfAdopted}
+          getGroupName={this.getGroupName}
+          userGroups={userGroups}
         />
       );
     }
@@ -409,6 +436,8 @@ class Annotation extends Component {
           handleExpandCollapse={this.handleExpandCollapse}
           replies={replies}
           isPrivate={isPrivate}
+          getGroupName={this.getGroupName}
+          userGroups={userGroups}
         />
       );
     }

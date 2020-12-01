@@ -3,6 +3,7 @@ import classNames from 'classnames';
 import { Dropdown } from 'react-bootstrap';
 // import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { APP_NAME_FULL } from '../../../../shared/constants';
+import { RiGroupLine } from 'react-icons/ri';
 import { AiOutlineUser } from 'react-icons/ai';
 import '../../../../assets/img/Adamite.png';
 import profile from '../../../../assets/img/SVGs/Profile.svg';
@@ -10,18 +11,20 @@ import { GoThreeBars } from 'react-icons/go';
 // import '../../../Background/test.html';
 import { useState } from 'react';
 import { BsFilePlus } from 'react-icons/bs';
+import addPage from '../../../../assets/img/SVGs/file-add.svg';
 
 import './Title.css';
 
-const addAnnotationToggle = React.forwardRef(({ children, onClick }, ref) => (
-  <a ref={ref}
-    onClick={(e) => {
-      e.preventDefault();
-      onClick(e);
-    }}><BsFilePlus className="profile" />
-    {children}
-  </a>
-));
+// const addAnnotationToggle = React.forwardRef(({ children, onClick }, ref) => (
+//   <a ref={ref}
+//     onClick={(e) => {
+//       e.preventDefault();
+//       onClick(e);
+//     }}><BsFilePlus className="profile" />
+//     {children}
+//   </a>
+// ));
+
 
 export default class Title extends React.Component {
   constructor(props) {
@@ -30,16 +33,21 @@ export default class Title extends React.Component {
     this.toggle = this.toggle.bind(this);
     this.onMouseEnter = this.onMouseEnter.bind(this);
     this.onMouseLeave = this.onMouseLeave.bind(this);
+    this.onMouseEnterAdd = this.onMouseEnterAdd.bind(this);
+    this.onMouseLeaveAdd = this.onMouseLeaveAdd.bind(this);
     this.state = {
       dropdownOpen: false,
+      dropdownOpenAdd: false,
       newAnnotationDropDownOpen: false
     };
     this.currentUser = this.props.currentUser;
   }
 
+
   toggle() {
     this.setState(prevState => ({
-      dropdownOpen: !prevState.dropdownOpen
+      dropdownOpen: !prevState.dropdownOpen,
+      dropdownOpenAdd: !prevState.dropdownOpenAdd
     }));
   }
 
@@ -51,6 +59,17 @@ export default class Title extends React.Component {
     this.setState({ dropdownOpen: false });
   }
 
+  onMouseEnterAdd() {
+    this.setState({ dropdownOpenAdd: true });
+  }
+
+  onMouseLeaveAdd() {
+    setTimeout(() => {
+      this.setState({ dropdownOpenAdd: false });
+    }, 300)
+
+  }
+
   signOutClickedHandler = e => {
     e.preventDefault();
     chrome.runtime.sendMessage({ msg: 'USER_SIGNOUT' });
@@ -59,6 +78,7 @@ export default class Title extends React.Component {
 
   render() {
     const { currentUser } = this.props;
+
     return (
 
       <div className="TitleContainer">
@@ -68,6 +88,7 @@ export default class Title extends React.Component {
               <div className="Header">
                 <img className="TitleIcon" src={chrome.extension.getURL('Adamite.png')} alt="Adamite logo"></img>
                 <div className="Title">{APP_NAME_FULL}</div>
+
               </div>
             </div>
             {currentUser !== null && (
@@ -75,16 +96,13 @@ export default class Title extends React.Component {
                 <div className="row2">
                   <div className="col2 ">
                     <div className="NewAnnotationButtonContainer">
-                      <Dropdown className="Filter" >
-                        <Dropdown.Toggle as={addAnnotationToggle} id="dropdown-basic">
-
+                      <Dropdown onMouseOver={this.onMouseEnterAdd} onMouseLeave={this.onMouseLeaveAdd} show={this.state.dropdownOpenAdd} toggle={this.toggle.toString()} >
+                        <Dropdown.Toggle id="dropdown-basic" className="vertical-center">
+                          <img src={addPage} alt="profile" className="profile" />
                         </Dropdown.Toggle>
                         <Dropdown.Menu >
-                          <Dropdown.Item as="button" onSelect={this.props.handleShowAnnotatePage}>
+                          <Dropdown.Item onClick={this.props.handleShowAnnotatePage}>
                             Add Page Annotation
-                        </Dropdown.Item>
-                          <Dropdown.Item as="button" onSelect={this.props.handleUnanchoredAnnotation}>
-                            Add Unanchored Annotation
                         </Dropdown.Item>
                         </Dropdown.Menu>
                       </Dropdown>

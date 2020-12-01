@@ -6,6 +6,7 @@ import '../Annotation.css';
 import './ReplyEditor.css';
 import '../../../CardWrapper/CardWrapper.css';
 import addAnchor from '../../../../../../assets/img/SVGs/NewAnchor2.svg';
+import { SplitButton, Button, Dropdown as BootstrapDropdown } from 'react-bootstrap';
 
 class ReplyEditor extends Component {
 
@@ -23,7 +24,8 @@ class ReplyEditor extends Component {
         url: this.props.url ? this.props.url : "",
         anchor: this.props.anchor ? this.props.anchor : "",
         offsets: this.props.offsets ? this.props.offsets : undefined,
-        hostname: this.props.hostname ? this.props.hostname : ""
+        hostname: this.props.hostname ? this.props.hostname : "",
+        adopted: this.props.adopted ? this.props.adopted : false
     }
 
     componentDidMount() {
@@ -65,7 +67,6 @@ class ReplyEditor extends Component {
     }
 
     requestNewAnchor = () => {
-        alert('Select the text you want to anchor this answer to!');
         const { id, replies } = this.props;
         let replyId;
         if (this.props.replyId === undefined) {
@@ -90,9 +91,7 @@ class ReplyEditor extends Component {
         });
     }
 
-    // when submitting reply on annotation that is not on current page, uses cache so reply isn't represented
-    // probably not good solution
-    submitReply = () => {
+    submitReply = (e, adopted, answer) => {
         if (this.props.edit) {
             const newReply = {
                 replyId: this.props.replyId,
@@ -107,7 +106,8 @@ class ReplyEditor extends Component {
                 anchor: this.state.anchor,
                 hostname: this.state.hostname,
                 url: this.state.url,
-                offsets: this.state.offsets
+                offsets: this.state.offsets,
+                adopted: this.state.adopted
             };
             let replies = this.props.replies.filter(reply => reply.replyId !== this.props.replyId);
             const repliesToTransmit = replies.concat(newReply);
@@ -127,39 +127,82 @@ class ReplyEditor extends Component {
                     id: this.props.id,
                     reply: this.state.reply,
                     replyTags: this.state.replyTags,
-                    answer: this.state.answer,
+                    answer: answer !== undefined ? answer : false,
                     question: this.state.question,
-                    xpath: this.state.xpath,
+                    xpath: this.state.xpath !== undefined ? this.state.xpath : null,
                     anchor: this.state.anchor,
                     hostname: this.state.hostname,
                     url: this.state.url,
-                    offsets: this.state.offsets
+                    offsets: this.state.offsets !== undefined ? this.state.offsets : null,
+                    adopted: adopted !== undefined ? adopted : false
+                }
+            }, (response) => {
+                if (response.msg === 'DONE') {
+                    if (adopted) {
+                        const replyId = this.props.replies !== undefined ? this.props.replies.length : 0;
+                        chrome.runtime.sendMessage({
+                            msg: 'REQUEST_ADOPTED_UPDATE',
+                            from: 'content',
+                            payload: {
+                                annoId: this.props.id, replyId, adoptedState: adopted
+                            }
+                        });
+                        // consider changing to callback to parent so we can also unpin annotation
+                        chrome.runtime.sendMessage({
+                            msg: 'UPDATE_QUESTION',
+                            from: 'content',
+                            payload: {
+                                id: this.props.id,
+                                isClosed: true,
+                                howClosed: "Answered"
+                            }
+                        });
+                    }
+                    if (this.state.xpath !== undefined) {
+                        chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+                            chrome.tabs.sendMessage(tabs[0].id, {
+                                msg: 'ADD_REPLY_HIGHLIGHT',
+                                payload: {
+                                    replyId: this.props.replies !== undefined ? this.props.replies.length : 0,
+                                    id: this.props.id,
+                                    xpath: this.state.xpath
+                                }
+                            });
+                        });
+                    }
                 }
             });
-            if (this.state.xpath !== undefined) {
-                chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-                    chrome.tabs.sendMessage(tabs[0].id, {
-                        msg: 'ADD_REPLY_HIGHLIGHT',
-                        payload: {
-                            replyId: this.props.replies !== undefined ? this.props.replies.length : 0,
-                            id: this.props.id,
-                            xpath: this.state.xpath
-                        }
-                    });
-                });
-            }
         }
         this.props.finishReply();
     }
 
     render() {
-        const { showQuestionAnswerInterface, edit } = this.props;
+        const { edit } = this.props;
         const { anchor } = this.state;
         let content = undefined;
         if (edit !== undefined && edit) {
             content = this.props.replyContent;
         }
         const { replyTags } = this.state;
+
+        let submission = this.props.showQuestionAnswerInterface ? (
+            <SplitButton
+                key="typeOfReply"
+                id="dropdown-split-variants-secondary"
+                variant="secondary"
+                title={"Post Answer"}
+                onClick={_ => this.submitReply(true, true)}
+            >
+                {this.props.showQuestionAnswerInterface && <BootstrapDropdown.Item onClick={_ => { this.setState({ adopted: false, answer: false }); this.submitReply(false, false) }} eventKey="2">Reply</BootstrapDropdown.Item>}
+            </SplitButton>) : (
+                <Button
+                    key="replySubmit"
+                    id="dropdown-split-variants-secondary"
+                    variant="secondary"
+                    title={"Post Reply"}
+                    onClick={this.submitReply}
+                >Post Reply </Button>
+            )
         return (
             <React.Fragment>
                 <div className="ReplyHeader">
@@ -180,22 +223,15 @@ class ReplyEditor extends Component {
                         </div>
                     </div>
                     <div className="ReplyButtonRow">
-                        <div className={classNames({ buttonCol: true, question: showQuestionAnswerInterface })}>
-                            {showQuestionAnswerInterface && (
-                                <div className="buttonRow">
-                                    <div onClick={this.markQuestion} className={classNames({ MarkQuestionAnswer: true, question: this.state.question })}>Q</div>
-                                    <div onClick={this.markAnswer} className={classNames({ MarkQuestionAnswer: true, answered: this.state.answer })} >A</div>
-                                    <img src={addAnchor} alt='add new anchor' onClick={this.requestNewAnchor} />
-                                </div>
-                            )}
+                        <div className={classNames({ buttonCol: true })}>
+                            <div className="buttonRow">
+                                <img src={addAnchor} alt='add new anchor' onClick={this.requestNewAnchor} />
+                            </div>
                             &nbsp; &nbsp;
                             <div className="cancelButtonContainer">
                                 <button onClick={this.cancelReply} className="Cancel-Button">Cancel</button> &nbsp; &nbsp;
                             </div>
-                            <div className="publishButtonContainer">
-                                <button onClick={this.submitReply} className="Publish-Button">Submit</button>
-                            </div>
-
+                            {submission}
                         </div>
                     </div>
                 </div>

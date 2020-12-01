@@ -41,10 +41,25 @@ class NewAnnotation extends React.Component {
 
   componentDidMount() {
     document.addEventListener('keydown', this.keydown, false);
+    const { xpath, offsets } = this.props;
+    const annotationInfo = {
+      xpath: xpath,
+      offsets: offsets,
+    };
+    chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+      chrome.tabs.sendMessage(
+        tabs[0].id,
+        {
+          msg: 'TEMP_ANNOTATION_ADDED',
+          newAnno: annotationInfo,
+        }
+      );
+    });
   }
 
   componentWillUnmount() {
     document.removeEventListener('keydown', this.keydown, false);
+
   }
 
   //TODO: FIX FOR NEW RICH TEXT ANNOTATOR
@@ -83,57 +98,79 @@ class NewAnnotation extends React.Component {
   }
 
   cancelButtonHandler = () => {
+    chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+      chrome.tabs.sendMessage(
+        tabs[0].id,
+        {
+          msg: 'REMOVE_TEMP_ANNOTATION',
+        }
+      );
+    });
     this.props.resetNewSelection();
   }
 
   submitButtonHandler = (CardWrapperState) => {
     this.setState({ submitted: true });
-
-    const { url, newSelection, xpath, offsets } = this.props;
-    const annotationInfo = {
-      anchor: newSelection,
-      annotation: CardWrapperState.annotationContent,
-      xpath: xpath,
-      offsets: offsets,
-      tags: CardWrapperState.tags,
-      annotationType: CardWrapperState.annotationType.toLowerCase(),
-      private: CardWrapperState.private
-    };
-    chrome.runtime.sendMessage(
-      {
-        msg: 'SAVE_ANNOTATED_TEXT',
-        payload: {
-          content: annotationInfo,
-          url,
+    chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+      chrome.tabs.sendMessage(
+        tabs[0].id,
+        {
+          msg: 'REMOVE_TEMP_ANNOTATION',
         },
-      },
-      response => {
-        if (response.msg === 'DONE') {
-          annotationInfo.id = response.value;
-          if (annotationInfo.xpath !== null) {
-            chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-              chrome.tabs.sendMessage(
-                tabs[0].id,
-                {
-                  msg: 'ANNOTATION_ADDED',
-                  newAnno: annotationInfo,
-                }
-              );
-            });
-          }
+        response => {
+          if (response.msg === 'REMOVED') {
+            const { url, newSelection, xpath, offsets } = this.props;
+            const annotationInfo = {
+              anchor: newSelection,
+              annotation: CardWrapperState.annotationContent,
+              xpath: xpath,
+              offsets: offsets,
+              tags: CardWrapperState.tags,
+              annotationType: CardWrapperState.annotationType.toLowerCase(),
+              private: CardWrapperState.private,
+              groups: CardWrapperState.groups
+            };
+            chrome.runtime.sendMessage(
+              {
+                msg: 'SAVE_ANNOTATED_TEXT',
+                payload: {
+                  content: annotationInfo,
+                  url,
+                },
+              },
+              response => {
+                if (response.msg === 'DONE') {
+                  annotationInfo.id = response.value;
+                  if (annotationInfo.xpath !== null) {
+                    chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+                      chrome.tabs.sendMessage(
+                        tabs[0].id,
+                        {
+                          msg: 'ANNOTATION_ADDED',
+                          newAnno: annotationInfo,
+                        }
+                      );
+                    });
+                  }
 
-          this.setState({ submitted: false });
-          this.props.resetNewSelection();
+                  this.setState({ submitted: false });
+                  this.props.resetNewSelection();
+                }
+              }
+            );
+          }
         }
-      }
-    );
+      );
+    });
+
+
   };
 
   render() {
-    const { newSelection, type, annoContent } = this.props;
+    const { newSelection, type, annoContent, userGroups } = this.props;
 
     const options = [
-      'Default', 'To-do', 'Highlight', 'Navigation', 'Issue'
+      'Default', 'To-do', 'Highlight', 'Issue'
     ];
 
     const submittedLoadState = (
@@ -159,7 +196,7 @@ class NewAnnotation extends React.Component {
           edit={!submitted}
           pageAnnotation={newSelection}
           annotationType={type}
-
+          userGroups={userGroups}
           cancelButtonHandler={this.cancelButtonHandler}
           submitButtonHandler={this.submitButtonHandler}
           elseContent={submittedLoadState} />

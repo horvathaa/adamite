@@ -2,7 +2,9 @@
   width: 100%;
   display: flex;
   position: relative;
-  padding: 15px 15px 5px 15px;
+  /* padding: 15px 15px 5px 15px; */
+  padding: 15px 5px 5px 5px;
+  margin-bottom: 2%;
 }
 
 .InnerNewAnnotation {
@@ -21,6 +23,18 @@
   flex-shrink: 0;
   width: 8px;
   height: 8px;
+}
+
+.groupName {
+  margin: 0px 4px;
+  font-size: 12px;
+  font-style: italic;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  text-overflow: ellipsis;
+  /* width: min-content; */
+  max-width: 250px;
+  overflow-wrap: break-word;
 }
 
 .AnnotationContainerPadActive {
@@ -54,6 +68,7 @@
 .timestamp {
   padding: 0px 0px 0px 4px;
   color: #6B778C;
+  font-size: 12px;
 }
 
 .profileContainer{
@@ -81,8 +96,10 @@
 .AnnotationContainer {
   padding: 5px;
   background: white;
-  border: 1px solid #bfbebe;
-  box-shadow: 2px 2px 2px #88888887;
+  border: 1px solid #a6a6a694;
+    box-shadow: 5px 5px 2px #88888866;
+  /* border: 1px solid #bfbebe;
+  box-shadow: 2px 2px 2px #88888887; */
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
   border-top-left-radius: 8px;
@@ -252,6 +269,11 @@
   font-weight: bold;
   line-height: 1.5;
   border-radius: 0.2rem;
+  border: none;
+}
+
+.Unarchive:hover {
+  filter: brightness(.8);
 }
 
 .ToDo-Button{
@@ -263,8 +285,13 @@
   font-weight: bold;
   line-height: 1.5;
   border-radius: 0.2rem;
-  
+  border: none;
 }
+
+.ToDo-Button:hover {
+  filter: brightness(1.2);
+}
+
 
 .Issue-Button{
   position: relative;
@@ -275,7 +302,11 @@
   font-weight: bold;
   line-height: 1.5;
   border-radius: 0.2rem;
-  
+  border: none;
+}
+
+.Issue-Button:hover {
+  filter: brightness(1.2);
 }
 
 .ContentContainer {
@@ -514,6 +545,7 @@
   font-size: 1rem;
   line-height: 1.5;
   border-radius: 0.25rem;
+  height: 100%;
   transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
   position: relative;
   background-color: #6969692b !important;

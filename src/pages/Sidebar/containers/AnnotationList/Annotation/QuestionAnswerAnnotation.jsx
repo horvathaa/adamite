@@ -27,11 +27,6 @@ class QuestionAnswerAnnotation extends Component {
     state = {
         replying: false,
         showReplies: false,
-        selected: false
-    }
-
-    setSelected = () => {
-        this.setState({ selected: !this.state.selected })
     }
 
     handleNewAnchorRequest = () => {
@@ -136,7 +131,7 @@ class QuestionAnswerAnnotation extends Component {
         const closeoutOptions = closedStrings.filter(str => str !== closeOutText);
 
         return (
-            <li key={idx} onClick={this.setSelected} id={id} className={classNames({ AnnotationItem: true })}>
+            <li key={idx} id={id} className={classNames({ AnnotationItem: true })}>
                 <div
                     className={classNames({
                         AnnotationContainerPad: true,
@@ -166,15 +161,7 @@ class QuestionAnswerAnnotation extends Component {
                                     }
 
                                 </div>
-                                <div className="badgeContainer">
-                                    {isPrivate ? (
-                                        <img src={view} alt='private badge' />
-                                    ) :
-                                        (<img src={viewPublic} alt='public badge' />)}
-
-                                </div>
                             </div>
-
                         </div>
                     </div>
                     {!collapsed ? (
@@ -192,6 +179,9 @@ class QuestionAnswerAnnotation extends Component {
 
                                     <div className="author">
                                         {author}
+                                    </div>
+                                    <div className="groupName">
+                                        {this.props.getGroupName()}
                                     </div>
                                     <div className="timestamp">
                                         {this.props.formatTimestamp()}
@@ -258,7 +248,8 @@ class QuestionAnswerAnnotation extends Component {
                             cancelButtonHandler={this.props.cancelButtonHandler}
                             submitButtonHandler={this.props.submitButtonHandler}
                             elseContent={annotationContent}
-                            collapsed={collapsed} />
+                            collapsed={collapsed}
+                            userGroups={this.props.userGroups} />
                     </React.Fragment>
 
                     {!collapsed &&
@@ -277,7 +268,7 @@ class QuestionAnswerAnnotation extends Component {
                         </div>
                     }
 
-                    {tags.length && !collapsed && !editing ? (
+                    {tags !== undefined && tags.length && !collapsed && !editing ? (
                         <div className={classNames({
                             TagRow: true
                         })}>
@@ -365,7 +356,7 @@ class QuestionAnswerAnnotation extends Component {
                             </ul>
                         </div>
                     ) : (null)}
-                    {replies !== undefined && !showReplies && replies.length ? (
+                    {replies !== undefined && !showReplies && !collapsed && replies.length ? (
                         <div className="ShowHideReplies" onClick={this.handleShowReplies} >
                             <div className="ExpandCollapse">
                                 <img src={expand} className="Icon" id="ShowReplies" alt="Show replies" onClick={this.handleShowReplies} />

@@ -10,23 +10,31 @@ class AnnotationList extends Component {
   }
 
   render() {
-    const { annotations, currentUser } = this.props;
+    const { annotations, altAnnotationList, currentUser } = this.props;
+    // console.log('what am i DOING', altAnnotationList);
 
-    /* {annotationsCopy.map((annotation, idx) => { */
-    // this is just for the user study - do not keep this in real version of app!
-    // const annotationsCopy = annotations.filter(anno => anno.authorId === currentUser.uid || anno.authorId === 'XRCVPsHHNANyhefwAaLBBCAecRz1');
     let listOfChildAnnos = annotations.filter(anno => anno.SharedId !== null);
+    let altChildAnnos = altAnnotationList.filter(anno => anno.SharedId !== null);
+    // console.log(altChildAnnos, 'wahthathat');
+    listOfChildAnnos = listOfChildAnnos.concat(altChildAnnos);
+    let annotationsToRender = annotations.concat(altAnnotationList);
+    // console.log('lol', listOfChildAnnos);
     listOfChildAnnos.forEach(anno => {
-      for (let parentAnno of annotations) {
-        if (parentAnno.id === anno.SharedId && !parentAnno.childAnchor.includes(anno)) {
-          parentAnno.childAnchor.push(anno);
+      for (let parentAnno of annotationsToRender) {
+        if (typeof anno.SharedId !== "undefined") {
+          // console.log('anno in loop', anno);
+          if (parentAnno.id === anno.SharedId && !parentAnno.childAnchor.includes(anno)) {
+            parentAnno.childAnchor.push(anno);
+          }
         }
       }
     });
 
     // console.log('before filter', annotations);
 
-    const annotationsCopy = annotations.filter(anno => anno.SharedId === null || "undefined" === typeof (anno['SharedId']));
+    let annotationsCopy = annotations.filter(anno => anno.SharedId === null || "undefined" === typeof (anno['SharedId']));
+    annotationsCopy = annotationsCopy.concat(annotationsToRender.filter(anno => anno.childAnchor !== null && anno.childAnchor !== undefined && anno.childAnchor.length && anno.url === this.props.url)) // temp fix
+    // console.log('afterfilter', annotationsCopy);
     // this.props.requestFilterUpdate(annotationsCopy);
     return (
       <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
@@ -57,6 +65,10 @@ class AnnotationList extends Component {
               isClosed={annotation.isClosed}
               howClosed={annotation.howClosed}
               adopted={annotation.adopted}
+              author={annotation.author}
+              userGroups={this.props.groups}
+              annoGroups={annotation.groups}
+              readCount={annotation.readCount}
             />
           );
         })}

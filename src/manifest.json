@@ -5,7 +5,9 @@
     "page": "background.html",
     "persistent": true
   },
-  "browser_action": {},
+  "browser_action": {
+    "default_title": "ADAMITE"
+  },
   "permissions": [
     "chrome://favicon/",
     "tabs",
@@ -32,6 +34,7 @@
   ],
   "web_accessible_resources": [
     "sidebar.html",
+    "groupmodal.html",
     "content.styles.css",
     "icon-128.png",
     "icon-34.png",
