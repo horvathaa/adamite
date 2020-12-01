@@ -9,6 +9,7 @@ import GroupMultiSelect from '../MultiSelect/MultiSelect'
 import classNames from 'classnames';
 import Tooltip from '@material-ui/core/Tooltip';
 
+
 /** assumes array elements are primitive types
 * check whether 2 arrays are equal sets.
 * @param  {} a1 is an array

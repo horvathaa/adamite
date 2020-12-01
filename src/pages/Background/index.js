@@ -631,6 +631,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   else if (request.from === 'content' && request.msg === 'GET_GROUPS_PAGE_LOAD') {
     groupListener = setUpGetGroupListener(request.uid);
   }
+  else if (request.from === 'content' && request.msg === 'GET_GROUP_ANNOTATIONS') {
+    let GroupAnnotations = [];
+    getGroupAnnotationsByGroupId(getCurrentUserId()).get().then(function (doc) {
+      doc.docs.forEach(anno => {
+        pinnedAnnotations.push({ id: anno.id, ...anno.data() });
+      });
+      getAllPrivatePinnedAnnotationsByUserId(getCurrentUserId()).get().then(function (doc) {
+        doc.docs.forEach(anno => {
+          pinnedAnnotations.push({ id: anno.id, ...anno.data() });
+        });
+        // annotations = annotations.filter(anno => anno.isClosed === false);
+        sendResponse({ annotations: pinnedAnnotations });
+      })
+    });
+  }
   else if (request.from === 'content' && request.msg === 'REQUEST_PIN_UPDATE') {
     const { id, pinned } = request.payload;
     updateAnnotationById(id, { pinned: pinned }).then(function () {
