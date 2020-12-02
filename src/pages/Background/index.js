@@ -222,6 +222,7 @@ function setUpGetAllAnnotationsByUrlListener(url, annotations) {
           tabAnnotationCollect.push({ tabId: tabs[0].id, annotations: annotationsToBroadcast });
         }
       });
+      // consider switching this to be in a chrome.tabs.query - check active URL
       broadcastAnnotationsUpdated("CONTENT_UPDATED", annotationsToBroadcast);
       const numChildAnchs = annotationsToBroadcast.filter(anno => anno.SharedId !== null);
       chrome.browserAction.setBadgeText({ text: String(annotationsToBroadcast.length - numChildAnchs.length) });
@@ -377,8 +378,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
   else if (request.msg === 'UPDATE_READ_COUNT' && request.from === 'content') {
     const { id, readCount } = request.payload;
+    const eventTime = new Date().getTime();
+    const author = getCurrentUser().email.substring(0, getCurrentUser().email.indexOf('@'));
+    const editEvent = Object.assign({}, {
+      timestamp: eventTime,
+      user: author,
+      event: request.msg
+    })
     updateAnnotationById(id, {
-      readCount: readCount + 1
+      readCount: readCount + 1,
+      events: firebase.firestore.FieldValue.arrayUnion({
+        ...editEvent
+      })
     }).then(function () {
       broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
     });
@@ -424,19 +435,50 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
   else if (request.msg === 'ANNOTATION_UPDATED' && request.from === 'content') {
     const { id, content, type, tags, isPrivate, groups } = request.payload;
-    updateAnnotationById(id, {
-      content, type, tags, private: isPrivate, groups,
-      createdTimestamp: new Date().getTime(),
-      deletedTimestamp: 0
-    }).then(function () {
-      broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
-    })
+    const eventTime = new Date().getTime();
+    getAnnotationById(id).get().then(function (doc) {
+      const anno = doc.data();
+      const editEvent = Object.assign({}, {
+        timestamp: eventTime,
+        user: anno.author,
+        event: request.msg,
+        oldContent: anno.content,
+        oldType: anno.type,
+        oldTags: anno.tags,
+        oldGroups: anno.groups,
+        oldPrivate: anno.private
+      })
+      // these nested thens are bad lmao consider changing cardWrapper/Annotation.jsx to just
+      // send the old content in the runtime message - even better to actually tease apart which
+      // part of the anno has been updated
+      updateAnnotationById(id, {
+        content, type, tags, private: isPrivate, groups,
+        createdTimestamp: new Date().getTime(),
+        deletedTimestamp: 0,
+        events: firebase.firestore.FieldValue.arrayUnion({
+          ...editEvent
+        }),
+      }).then(function () {
+        broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
+      })
+    });
+
   }
   else if (request.msg === 'ANNOTATION_DELETED' && request.from === 'content') {
     const { id } = request.payload;
+    const author = getCurrentUser().email.substring(0, getCurrentUser().email.indexOf('@'));
+    const eventTime = new Date().getTime();
+    const editEvent = Object.assign({}, {
+      timestamp: eventTime,
+      user: author,
+      event: request.msg
+    })
     updateAnnotationById(id, {
       deletedTimestamp: new Date().getTime(),
-      deleted: true
+      deleted: true,
+      events: firebase.firestore.FieldValue.arrayUnion({
+        ...editEvent
+      }),
     }).then(function () {
       broadcastAnnotationsUpdated("ELASTIC_CONTENT_DELETED", id);
     });
@@ -463,32 +505,63 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       author,
       groups: [], // later have this be a default group
       readCount: 0,
-      deleted: false
+      deleted: false,
+      events: []
     });
   }
   else if (request.from === 'content' && request.msg === 'UNARCHIVE') {
     const { id } = request.payload;
+    const author = getCurrentUser().email.substring(0, getCurrentUser().email.indexOf('@'));
+    const eventTime = new Date().getTime();
+    const editEvent = Object.assign({}, {
+      timestamp: eventTime,
+      user: author,
+      event: request.msg
+    })
     updateAnnotationById(id, {
       createdTimestamp: new Date().getTime(),
-      trashed: false
+      trashed: false,
+      events: firebase.firestore.FieldValue.arrayUnion({
+        ...editEvent
+      })
     }).then(function () {
       broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
     });
   }
-  else if (request.from === 'content' && (request.msg === 'FINISH_TODO' || request.msg === 'UNARCHIVE')) {
+  else if (request.from === 'content' && request.msg === 'FINISH_TODO') {
     const { id } = request.payload;
+    const author = getCurrentUser().email.substring(0, getCurrentUser().email.indexOf('@'));
+    const eventTime = new Date().getTime();
+    const editEvent = Object.assign({}, {
+      timestamp: eventTime,
+      user: author,
+      event: request.msg
+    })
     updateAnnotationById(id, {
       createdTimestamp: new Date().getTime(),
-      trashed: request.msg === 'FINISH_TODO' ? true : false
+      trashed: true,
+      events: firebase.firestore.FieldValue.arrayUnion({
+        ...editEvent
+      })
     }).then(function () {
       broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
     });
   }
   else if (request.from === 'content' && request.msg === 'UPDATE_QUESTION') {
     const { id, isClosed, howClosed } = request.payload;
+    const author = getCurrentUser().email.substring(0, getCurrentUser().email.indexOf('@'));
+    const eventTime = new Date().getTime();
+    const editEvent = Object.assign({}, {
+      timestamp: eventTime,
+      user: author,
+      event: request.msg
+    })
     updateAnnotationById(id, {
       isClosed,
-      howClosed
+      howClosed,
+      events: firebase.firestore.FieldValue.arrayUnion({
+        ...editEvent
+      })
     }).then(function () {
       broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
     });
@@ -526,7 +599,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       author,
       groups: content.groups,
       readCount: 0,
-      deleted: false
+      deleted: false,
+      events: []
     }).then(value => {
       sendResponse({
         msg: 'DONE',
@@ -536,6 +610,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   } else if (request.from === 'content' && request.msg === 'SAVE_NEW_ANCHOR') {
     let { newAnno, xpath, url, anchor, offsets, hostname } = request.payload;
     const author = getCurrentUser().email.substring(0, getCurrentUser().email.indexOf('@'));
+    const eventTime = new Date().getTime();
+    const editEvent = Object.assign({}, {
+      timestamp: eventTime,
+      user: author,
+      event: request.msg
+    })
     createAnnotation({
       taskId: null,
       childAnchor: null,
@@ -554,7 +634,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       childAnchor: [],
       isPrivate: false,
       groups: newAnno.groups,
-      readCount: 0
+      readCount: 0,
+      events: []
     }).then(value => {
       let highlightObj = {
         id: value.id,
@@ -574,15 +655,26 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         broadcastAnnotationsUpdated('ELASTIC_CHILD_ANCHOR_ADDED', { id: value.id, ...doc.data() });
       });
     });
+    updateAnnotationById(newAnno.sharedId, {
+      events: firebase.firestore.FieldValue.arrayUnion({
+        ...editEvent
+      })
+    });
   } else if (request.msg === 'ADD_NEW_REPLY') {
     const { id, reply, replyTags, answer, question, replyId, xpath, anchor, hostname, url, offsets, adopted } = request.payload;
     const author = getCurrentUser().email.substring(0, getCurrentUser().email.indexOf('@'));
+    const eventTime = new Date().getTime();
+    const editEvent = Object.assign({}, {
+      timestamp: eventTime,
+      user: author,
+      event: request.msg
+    })
     const replies = Object.assign({}, {
       replyId: replyId,
       replyContent: reply,
       author: author,
       authorId: getCurrentUserId(),
-      timestamp: new Date().getTime(),
+      timestamp: eventTime,
       answer: answer,
       question: question,
       tags: replyTags,
@@ -594,7 +686,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       adopted: adopted !== undefined ? adopted : false
     });
     updateAnnotationById(id, {
-      createdTimestamp: new Date().getTime(),
+      events: firebase.firestore.FieldValue.arrayUnion({
+        ...editEvent
+      }),
       replies: firebase.firestore.FieldValue.arrayUnion({
         ...replies
       })
@@ -604,8 +698,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
   }
   else if (request.msg === 'UPDATE_REPLIES') {
+    const eventTime = new Date().getTime();
+    const user = getCurrentUser().email.substring(0, getCurrentUser().email.indexOf('@'));
+    const editEvent = Object.assign({}, {
+      timestamp: eventTime,
+      user: user,
+      event: request.msg
+    });
     updateAnnotationById(request.payload.id, {
-      createdTimestamp: new Date().getTime(),
+      events: firebase.firestore.FieldValue.arrayUnion({
+        ...editEvent
+      }),
       replies: request.payload.replies
     }).then(function () {
       broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', request.payload.id);
@@ -648,18 +751,46 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
   else if (request.from === 'content' && request.msg === 'REQUEST_PIN_UPDATE') {
     const { id, pinned } = request.payload;
-    updateAnnotationById(id, { pinned: pinned }).then(function () {
+    const eventTime = new Date().getTime();
+    const author = getCurrentUser().email.substring(0, getCurrentUser().email.indexOf('@'));
+    const editEvent = Object.assign({}, {
+      timestamp: eventTime,
+      user: author,
+      event: "PIN_UPDATE",
+      is_pinned: pinned ? "TRUE" : "FALSE"
+    })
+    updateAnnotationById(id, {
+      pinned: pinned, events: firebase.firestore.FieldValue.arrayUnion({
+        ...editEvent
+      })
+    }).then(function () {
       broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
     });
   }
   else if (request.from === 'content' && request.msg === 'REQUEST_ADOPTED_UPDATE') {
     const { annoId, replyId, adoptedState } = request.payload;
+    const eventTime = new Date().getTime();
+    const author = getCurrentUser().email.substring(0, getCurrentUser().email.indexOf('@'));
+    const editEvent = Object.assign({}, {
+      timestamp: eventTime,
+      user: author,
+      event: "ANSWER_ADOPTED_UPDATE",
+      is_question_answered: adoptedState ? "TRUE" : "FALSE"
+    })
     if (adoptedState) {
-      updateAnnotationById(annoId, { adopted: replyId }).then(function () {
+      updateAnnotationById(annoId, {
+        adopted: replyId, events: firebase.firestore.FieldValue.arrayUnion({
+          ...editEvent
+        })
+      }).then(function () {
         broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', annoId);
       });
     } else {
-      updateAnnotationById(annoId, { adopted: false }).then(function () {
+      updateAnnotationById(annoId, {
+        adopted: false, events: firebase.firestore.FieldValue.arrayUnion({
+          ...editEvent
+        })
+      }).then(function () {
         broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', annoId);
       });
     }

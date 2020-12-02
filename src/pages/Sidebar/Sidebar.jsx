@@ -894,7 +894,7 @@ class Sidebar extends React.Component {
 
             </div>
             <div className="userQuestions">
-              {pinnedAnnosCopy.length && (
+              {pinnedAnnosCopy.length ? (
                 <div className="userQuestionButtonContainer">
                   <div className="ModifyFilter userQuestions" onClick={_ => {
                     this.setState({ showPinned: !this.state.showPinned })
@@ -902,7 +902,7 @@ class Sidebar extends React.Component {
                     {this.state.showPinned ? ("Hide " + (pinnedAnnosCopy.length - pinnedNumChildAnchs.length) + " Pinned Annotations") : ("Show " + (pinnedAnnosCopy.length - pinnedNumChildAnchs.length) + " Pinned Annotations")}
                   </div>
                 </div>
-              )}
+              ) : (null)}
               {this.state.showPinned ? (
                 <React.Fragment>
                   <AnnotationList

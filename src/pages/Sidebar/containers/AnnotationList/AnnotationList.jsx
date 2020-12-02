@@ -33,7 +33,7 @@ class AnnotationList extends Component {
     // console.log('before filter', annotations);
 
     let annotationsCopy = annotations.filter(anno => anno.SharedId === null || "undefined" === typeof (anno['SharedId']));
-    annotationsCopy = annotationsCopy.concat(annotationsToRender.filter(anno => anno.childAnchor !== null && anno.childAnchor !== undefined && anno.childAnchor.length && anno.url === this.props.url)) // temp fix
+    // annotationsCopy = annotationsCopy.concat(annotationsToRender.filter(anno => anno.childAnchor !== null && anno.childAnchor !== undefined && anno.childAnchor.length && anno.url === this.props.url)) // temp fix
     // console.log('afterfilter', annotationsCopy);
     // this.props.requestFilterUpdate(annotationsCopy);
     return (
