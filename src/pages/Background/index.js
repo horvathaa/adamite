@@ -615,30 +615,22 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       timestamp: eventTime,
       user: author,
       event: request.msg
+    });
+
+    const newAnchor = Object.assign({}, {
+      parentId: newAnno.sharedId, id: eventTime, anchor, url, offsets, hostname, xpath
     })
-    createAnnotation({
-      taskId: null,
-      childAnchor: null,
-      author,
-      AnnotationContent: newAnno.content,
-      AnnotationType: newAnno.type,
-      SharedId: newAnno.sharedId,
-      xpath: xpath,
-      url: url,
-      AnnotationTags: newAnno.tags,
-      AnnotationAnchorContent: anchor,
-      offsets: offsets,
-      pinned: false,
-      hostname: hostname,
-      AnnotationTags: [],
-      childAnchor: [],
-      isPrivate: false,
-      groups: newAnno.groups,
-      readCount: 0,
-      events: []
+
+    updateAnnotationById(newAnno.sharedId, {
+      childAnchor: firebase.firestore.FieldValue.arrayUnion({
+        ...newAnchor
+      }),
+      events: firebase.firestore.FieldValue.arrayUnion({
+        ...editEvent
+      })
     }).then(value => {
       let highlightObj = {
-        id: value.id,
+        id: newAnno.sharedId + "-" + eventTime,
         content: newAnno.content,
         xpath: xpath
       }
@@ -651,15 +643,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           }
         );
       });
-      value.get().then(function (doc) {
-        broadcastAnnotationsUpdated('ELASTIC_CHILD_ANCHOR_ADDED', { id: value.id, ...doc.data() });
-      });
+      broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', newAnno.sharedId);
     });
-    updateAnnotationById(newAnno.sharedId, {
-      events: firebase.firestore.FieldValue.arrayUnion({
-        ...editEvent
-      })
-    });
+
   } else if (request.msg === 'ADD_NEW_REPLY') {
     const { id, reply, replyTags, answer, question, replyId, xpath, anchor, hostname, url, offsets, adopted } = request.payload;
     const author = getCurrentUser().email.substring(0, getCurrentUser().email.indexOf('@'));

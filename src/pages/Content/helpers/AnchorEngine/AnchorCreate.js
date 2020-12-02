@@ -242,7 +242,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             selection.removeRange(rect);
         }
         else {
-            console.log('about to sync');
             let positionString = "";
             chrome.storage.sync.get(['sidebarOnLeft'], result => {
                 if (result.sidebarOnLeft === undefined || result.sidebarOnLeft) {

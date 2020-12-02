@@ -143,6 +143,7 @@ export const highlightRange = (anno, annoId, replyId) => {
     // console.log('anno', anno, 'range', newRange);
     highlight(newRange, anno.xpath.startOffset, anno.xpath.endOffset, function (node, match, offset) {
 
+        console.log('whatup', annoId, replyId);
         var span = document.createElement("span");
         if (annoId !== undefined && replyId === undefined) {
             span.setAttribute("name", annoId.toString());

@@ -798,13 +798,13 @@ class Sidebar extends React.Component {
       (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
     );
 
-    renderedAnnotations = renderedAnnotations.filter(anno => !anno.deleted);
+    renderedAnnotations = renderedAnnotations.filter(anno => !anno.deleted && anno.SharedId === null);
 
     let pinnedAnnosCopy = pinnedAnnos.sort((a, b) =>
       (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
     );
 
-    pinnedAnnosCopy = pinnedAnnosCopy.filter(anno => !anno.deleted);
+    pinnedAnnosCopy = pinnedAnnosCopy.filter(anno => !anno.deleted && anno.SharedId === null);
     const pinnedNumChildAnchs = pinnedAnnosCopy.filter(anno => anno.SharedId !== null);
 
     const numChildAnchs = renderedAnnotations.filter(anno => anno.SharedId !== null);
@@ -820,15 +820,11 @@ class Sidebar extends React.Component {
       <div className="SidebarContainer" >
         <Title currentUser={currentUser}
           handleShowAnnotatePage={this.handleShowAnnotatePage}
-        // handleUnanchoredAnnotation={this.handleUnanchoredAnnotation}
         />
         {currentUser === null && <Authentication />}
         {currentUser !== null && (
           <div>
             <div className={classNames({ TopRow: true, filterOpen: this.state.showFilter })}>
-              {/* <div className="FilterButton">
-                <img src={filter} alt="Filter icon" onClick={this.handleShowFilter} className="Filter" />
-              </div> */}
               <SearchBar
                 searchBarInputText={searchBarInputText}
                 handleSearchBarInputText={this.handleSearchBarInputText}
@@ -856,7 +852,6 @@ class Sidebar extends React.Component {
 
               {this.state.newSelection !== null &&
                 !this.state.annotatingPage &&
-                // this.state.newSelection.trim().length > 0 && 
                 (
                   <NewAnnotation
                     url={this.state.url}
@@ -880,18 +875,6 @@ class Sidebar extends React.Component {
                   userGroups={groups}
                 />
               }
-              {/* {this.state.unanchored &&
-                <NewAnnotation
-                  url={this.state.url}
-                  newSelection={''}
-                  resetNewSelection={this.resetNewSelection}
-                  annoContent={''}
-                  offsets={null}
-                  xpath={null}
-                  userGroups={groups}
-                />
-              } */}
-
             </div>
             <div className="userQuestions">
               {pinnedAnnosCopy.length ? (
@@ -904,10 +887,11 @@ class Sidebar extends React.Component {
                 </div>
               ) : (null)}
               {this.state.showPinned ? (
+
                 <React.Fragment>
                   <AnnotationList
                     annotations={pinnedAnnosCopy}
-                    altAnnotationList={renderedAnnotations}
+                    // altAnnotationList={renderedAnnotations}
                     groups={groups}
                     currentUser={currentUser}
                     url={this.state.url}
@@ -933,7 +917,7 @@ class Sidebar extends React.Component {
                 </div>
               ) : (
                   <AnnotationList annotations={renderedAnnotations}
-                    altAnnotationList={pinnedAnnosCopy}
+                    // altAnnotationList={pinnedAnnosCopy}
                     groups={groups}
                     currentUser={currentUser}
                     url={this.state.url}
