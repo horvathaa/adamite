@@ -5,7 +5,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 chrome.runtime.onMessage.addListener((request) => {
-    if (request.msg === 'CREATE_GROUP' && request.from === 'background') { console.log('rendering'); renderModal(request.owner); }
+    if (request.msg === 'CREATE_GROUP' && request.from === 'background') { renderModal(request.owner); }
     else if (request.msg === 'SHOW_GROUP' && request.from === 'background') { showModal(); }
     else if (request.msg === 'HIDE_GROUP' && request.from === 'background') { hideModal(); }
     else if (request.msg === 'GROUP_CREATE_SUCCESS' && request.from === 'background') {
@@ -132,7 +132,6 @@ function hideOnClickOutside(element) {
 
 const showModal = () => {
     const dialog = document.getElementById("blurg");
-    console.log('dialog', dialog);
     if (dialog.classList.contains('new-group-modal-hidden')) {
         dialog.classList.remove("new-group-modal-hidden")
         dialog.classList.add('new-group-modal-shown');

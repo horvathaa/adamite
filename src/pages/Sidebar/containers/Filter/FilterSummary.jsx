@@ -174,8 +174,25 @@ class FilterSummary extends React.Component {
                             <BsXCircle className="filterReactIcon" />
                         </div>
                     </div>
+                    <Tooltip title={this.props.tempSearchCount + " annotations"} aria-label="annotation count">
+                        <div className="outerSearchBar">
+                            <div className="SearchResultsCountContainer">
+                                <div
+                                    className={classNames({
+                                        SearchResultsCount: true,
+                                        NoResults: this.props.tempSearchCount === 0,
+                                        Success: this.props.tempSearchCount >= 1,
+                                        //Searching: suggestions.length > 0 && searchCount > 1,
+                                    })}
+                                >
+                                    {this.props.tempSearchCount}
+                                </div>
+                            </div>
+                        </div>
+                    </Tooltip>
                 </div >
             </div>
+
         )
 
         if (this.props.showingSelectedAnno) {

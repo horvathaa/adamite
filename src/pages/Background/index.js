@@ -331,7 +331,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     publicListener = setUpGetAllAnnotationsByUrlListener(request.url, annotations);
     privateListener = promiseToComeBack(request.url, annotations);
-    console.log('annos', annotations);
     chrome.browserAction.setBadgeText({ text: String(annotations.length) });
   }
   else if (request.msg === 'SET_UP_PIN' && request.from === 'content') {

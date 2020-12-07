@@ -145,6 +145,7 @@ class Sidebar extends React.Component {
       },
       currentUserData => {
         this.setState({ currentUser: currentUserData.payload.currentUser });
+        console.log('currentUserData.payload.currentUser', currentUserData.payload.currentUser);
         if (currentUserData.payload.currentUser) {
           // console.log('in this set up groups listener');
           this.setUpGroupsListener(
@@ -928,7 +929,7 @@ class Sidebar extends React.Component {
             {this.state.showClearClickedAnnotation && (
               <div className="userQuestionButtonContainer">
                 <div className="ModifyFilter userQuestions" onClick={_ => { this.setState({ showClearClickedAnnotation: false }); this.setState({ filteredAnnotations: this.state.annotations }) }}>
-                  Clear Selected Annotation
+                  Hide Selected Annotation(s)
                 </div>
               </div>
             )}
