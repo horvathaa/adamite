@@ -88,7 +88,6 @@ export default class Title extends React.Component {
       userName = currentUser.email.substring(0, currentUser.email.indexOf('@'));
     }
 
-
     return (
 
       <div className="TitleContainer">
