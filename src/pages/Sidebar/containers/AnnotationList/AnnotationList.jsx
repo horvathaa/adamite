@@ -10,61 +10,8 @@ class AnnotationList extends Component {
   }
 
   render() {
-    const { annotations, altAnnotationList, currentUser } = this.props;
-    // console.log('what am i DOING', altAnnotationList);
-    // let listOfChildAnnos, annotationSuperSet, annotationsToRender = [];
-    // console.log('hmm', annotations, altAnnotationList);
-    // if (altAnnotationList !== undefined) {
-    //   console.log('sigh')
-    //   listOfChildAnnos = annotations.filter(anno => anno.SharedId !== null);
-    //   let altChildAnnos = altAnnotationList.filter(anno => anno.SharedId !== null && anno.url === this.props.url);
-    //   // console.log(altChildAnnos, 'wahthathat');
-    //   listOfChildAnnos = listOfChildAnnos.concat(altChildAnnos);
-    //   annotationSuperSet = annotations.concat(altAnnotationList);
-    //   // console.log('lol', listOfChildAnnos);
-    // } else {
-    //   console.log('why is this so bad lmao else');
-    //   listOfChildAnnos = annotations.filter(anno => anno.SharedId !== null);
-    //   annotationSuperSet = annotations;
-    // }
+    const { annotations, currentUser } = this.props;
 
-
-
-    // listOfChildAnnos.forEach(anno => {
-    //   for (let parentAnno of annotationSuperSet) {
-    //     if (altAnnotationList !== undefined) {
-    //       annotationsToRender = annotationSuperSet;
-    //     }
-    //     if (typeof anno.SharedId !== "undefined") {
-    //       // console.log('anno in loop', anno);
-    //       if (parentAnno.id === anno.SharedId && !parentAnno.childAnchor.includes(anno)) {
-    //         parentAnno.childAnchor.push(anno);
-    //         if (altAnnotationList !== undefined) {
-    //           if ((parentAnno.url === this.props.url || anno.url === this.props.url) && !annotationsToRender.includes(parentAnno)) {
-    //             annotationsToRender.push(parentAnno);
-    //           }
-    //         }
-    //         else {
-    //           annotationsToRender.push(parentAnno);
-    //         }
-    //       }
-
-    //     }
-    //   }
-
-    // });
-
-    // console.log('before filter', annotationsToRender);
-
-    // let annotationsCopy = annotationsToRender.filter(anno => anno.SharedId === null || "undefined" === typeof (anno['SharedId']));
-    // // annotationsCopy = annotationsCopy.concat(annotationsToRender.filter(anno => {
-    // //   return anno.childAnchor !== null &&
-    // //     anno.childAnchor !== undefined &&
-    // //     anno.childAnchor.length &&
-    // //     anno.url === this.props.url
-    // // })) // temp fix
-    // console.log('afterfilter', annotationsCopy);
-    // // this.props.requestFilterUpdate(annotationsCopy);
     return (
       <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
         {annotations.map((annotation, idx) => {

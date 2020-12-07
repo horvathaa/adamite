@@ -1,4 +1,4 @@
-.new-group-modal {
+.new-group-modal-hidden {
     /* pointer-events: none; */
     height: 70%;
     width: 40%;
@@ -10,6 +10,21 @@
     background-color:white;
     position: fixed; 
     box-shadow: 0px 12px 48px rgba(29, 5, 64, 0.32);
+    display: none;
+}
+
+.new-group-modal-shown {
+    height: 70%;
+    width: 40%;
+    border: none;
+    top: 20%;
+    padding: 1em;
+    margin: auto;
+    border-radius:20px;
+    background-color:white;
+    position: fixed; 
+    box-shadow: 0px 12px 48px rgba(29, 5, 64, 0.32);
+    display: inline-block;
 }
 
 .w3-animate-show {

@@ -5,7 +5,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 chrome.runtime.onMessage.addListener((request) => {
-    if (request.msg === 'CREATE_GROUP' && request.from === 'background') { renderModal(request.owner); }
+    if (request.msg === 'CREATE_GROUP' && request.from === 'background') { console.log('rendering'); renderModal(request.owner); }
     else if (request.msg === 'SHOW_GROUP' && request.from === 'background') { showModal(); }
     else if (request.msg === 'HIDE_GROUP' && request.from === 'background') { hideModal(); }
     else if (request.msg === 'GROUP_CREATE_SUCCESS' && request.from === 'background') {
@@ -131,14 +131,23 @@ function hideOnClickOutside(element) {
 }
 
 const showModal = () => {
-    const dialog = document.querySelector("dialog");
+    const dialog = document.getElementById("blurg");
+    console.log('dialog', dialog);
+    if (dialog.classList.contains('new-group-modal-hidden')) {
+        dialog.classList.remove("new-group-modal-hidden")
+        dialog.classList.add('new-group-modal-shown');
+    }
     dialog.showModal();
 
     hideOnClickOutside(dialog);
 }
 
 const hideModal = () => {
-    const dialog = document.querySelector('dialog');
+    const dialog = document.getElementById('blurg');
+    if (dialog.classList.contains('new-group-modal-shown')) {
+        dialog.classList.remove("new-group-modal-shown")
+        dialog.classList.add('new-group-modal-hidden');
+    }
     dialog.close();
     chrome.runtime.sendMessage({
         msg: 'GROUP_MODAL_CLOSED',
@@ -148,7 +157,7 @@ const hideModal = () => {
 
 const renderModal = (owner) => {
     let modal = document.createElement("dialog");
-    modal.classList.add("new-group-modal");
+    modal.classList.add("new-group-modal-hidden");
     document.body.appendChild(modal);
     modal.setAttribute('id', 'blurg');
     // console.log("rendering")

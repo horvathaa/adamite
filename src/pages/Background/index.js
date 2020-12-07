@@ -578,8 +578,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     const hostname = new URL(url).hostname;
     const author = getCurrentUser().email.substring(0, getCurrentUser().email.indexOf('@'));
 
-    // firebase: in action
-    //content = JSON.parse(content); // consider just pass content as an object
     createAnnotation({
       taskId: null,
       SharedId: null,
