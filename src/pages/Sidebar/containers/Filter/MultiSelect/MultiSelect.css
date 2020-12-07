@@ -99,7 +99,7 @@
 }
 
 .dropdown-content {
-    width: 300px !important;
+    width: 200px !important;
 }
 
 .panel-content{
@@ -108,7 +108,7 @@
 }
 
 .select-panel ul {
-    width: 300px !important;
+    width: 200px !important;
     overflow-x: hidden;
 }
 

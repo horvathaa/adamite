@@ -145,7 +145,6 @@ class Sidebar extends React.Component {
       },
       currentUserData => {
         this.setState({ currentUser: currentUserData.payload.currentUser });
-        console.log('currentUserData.payload.currentUser', currentUserData.payload.currentUser);
         if (currentUserData.payload.currentUser) {
           // console.log('in this set up groups listener');
           this.setUpGroupsListener(

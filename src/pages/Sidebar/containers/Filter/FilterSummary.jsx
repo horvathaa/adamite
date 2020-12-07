@@ -5,7 +5,7 @@ import { AiFillClockCircle, AiOutlineCheck, AiOutlineCloseCircle, AiOutlineUserg
 import { BsChatSquareDots, BsXCircle } from 'react-icons/bs';
 import tag from '../../../../assets/img/SVGs/tag.svg';
 import { Dropdown } from 'react-bootstrap';
-import GroupMultiSelect from '../MultiSelect/MultiSelect'
+import GroupMultiSelect from './MultiSelect/MultiSelect'
 import classNames from 'classnames';
 import Tooltip from '@material-ui/core/Tooltip';
 
