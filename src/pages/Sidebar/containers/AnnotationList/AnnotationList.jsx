@@ -10,35 +10,11 @@ class AnnotationList extends Component {
   }
 
   render() {
-    const { annotations, altAnnotationList, currentUser } = this.props;
-    // console.log('what am i DOING', altAnnotationList);
+    const { annotations, currentUser } = this.props;
 
-    let listOfChildAnnos = annotations.filter(anno => anno.SharedId !== null);
-    let altChildAnnos = altAnnotationList.filter(anno => anno.SharedId !== null);
-    // console.log(altChildAnnos, 'wahthathat');
-    listOfChildAnnos = listOfChildAnnos.concat(altChildAnnos);
-    let annotationsToRender = annotations.concat(altAnnotationList);
-    // console.log('lol', listOfChildAnnos);
-    listOfChildAnnos.forEach(anno => {
-      for (let parentAnno of annotationsToRender) {
-        if (typeof anno.SharedId !== "undefined") {
-          // console.log('anno in loop', anno);
-          if (parentAnno.id === anno.SharedId && !parentAnno.childAnchor.includes(anno)) {
-            parentAnno.childAnchor.push(anno);
-          }
-        }
-      }
-    });
-
-    // console.log('before filter', annotations);
-
-    let annotationsCopy = annotations.filter(anno => anno.SharedId === null || "undefined" === typeof (anno['SharedId']));
-    annotationsCopy = annotationsCopy.concat(annotationsToRender.filter(anno => anno.childAnchor !== null && anno.childAnchor !== undefined && anno.childAnchor.length && anno.url === this.props.url)) // temp fix
-    // console.log('afterfilter', annotationsCopy);
-    // this.props.requestFilterUpdate(annotationsCopy);
     return (
       <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
-        {annotationsCopy.map((annotation, idx) => {
+        {annotations.map((annotation, idx) => {
           return (
             <Annotation
               key={idx}
