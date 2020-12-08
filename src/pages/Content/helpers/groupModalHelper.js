@@ -49,6 +49,8 @@ chrome.runtime.onMessage.addListener((request) => {
             from: 'helper'
         });
         const dialogEl = document.getElementById('blurg');
+        dialogEl.classList.remove("new-group-modal-shown")
+        dialogEl.classList.add('new-group-modal-hidden');
         dialogEl.close();
     }
     else if (request.msg === 'GROUP_DELETE_SUCCESS' && request.from === 'background') {
@@ -92,6 +94,8 @@ chrome.runtime.onMessage.addListener((request) => {
             from: 'helper'
         });
         const dialogEl = document.getElementById('blurg');
+        dialogEl.classList.remove("new-group-modal-shown")
+        dialogEl.classList.add('new-group-modal-hidden');
         dialogEl.close();
     }
 });
