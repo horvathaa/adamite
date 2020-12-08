@@ -125,11 +125,7 @@ export const tempHighlight = (anno) => {
 export const highlightRange = (anno, annoId, replyId) => {
 
     var wordPath = [];
-    // console.log('highlighting', anno, annoId, replyId);
-    // console.log("ANNO ")
-    // console.log(anno)
     let newRange;
-    // console.log('sending in this anno', anno);
     try {
         if (anno.xpath instanceof Array) {
             newRange = xpathRange.toRange(anno.xpath[0].start, anno.xpath[0].startOffset, anno.xpath[0].end, anno.xpath[0].endOffset, document);
@@ -137,12 +133,9 @@ export const highlightRange = (anno, annoId, replyId) => {
             newRange = xpathRange.toRange(anno.xpath.start, anno.xpath.startOffset, anno.xpath.end, anno.xpath.endOffset, document);
         }
     } catch (err) {
-        // console.log('got error- ', err);
         return;
     }
-    // console.log('anno', anno, 'range', newRange);
     highlight(newRange, anno.xpath.startOffset, anno.xpath.endOffset, function (node, match, offset) {
-
         var span = document.createElement("span");
         if (annoId !== undefined && replyId === undefined) {
             span.setAttribute("name", annoId.toString());
@@ -150,9 +143,6 @@ export const highlightRange = (anno, annoId, replyId) => {
         else if (annoId !== undefined && replyId !== undefined) {
             span.setAttribute("name", annoId.toString() + "-" + replyId.toString());
         }
-        // else {
-        //     span.setAttribute("name", anno.id.toString() + annoId.toString());
-        // }
         span.textContent = match;
         span.onclick = anchorClick;
         span.className = "highlight-adamite-annotation";

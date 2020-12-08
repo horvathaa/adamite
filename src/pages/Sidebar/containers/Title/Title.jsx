@@ -56,7 +56,9 @@ export default class Title extends React.Component {
   }
 
   onMouseLeave() {
-    this.setState({ dropdownOpen: false });
+    setTimeout(() => {
+      this.setState({ dropdownOpen: false });
+    }, 300)
   }
 
   onMouseEnterAdd() {
@@ -78,6 +80,13 @@ export default class Title extends React.Component {
 
   render() {
     const { currentUser } = this.props;
+    let userName;
+    if (currentUser === null) {
+      userName = ""
+    }
+    else {
+      userName = currentUser.email.substring(0, currentUser.email.indexOf('@'));
+    }
 
     return (
 
@@ -95,6 +104,23 @@ export default class Title extends React.Component {
               <div className="col">
                 <div className="row2">
                   <div className="col2 ">
+
+                    <Dropdown onMouseOver={this.onMouseEnter} onMouseLeave={this.onMouseLeave} show={this.state.dropdownOpen} toggle={this.toggle.toString()}>
+
+                      <Dropdown.Toggle id="dropdown-menu" className="vertical-center">
+                        <div className="UserNameIconContainer">
+                          <div className="UserNameSection">
+                            {userName}
+                          </div>
+                          <img src={profile} alt="profile" className="profile" />
+                        </div>
+                      </Dropdown.Toggle>
+                      <Dropdown.Menu >
+                        <Dropdown.Item onClick={this.signOutClickedHandler}>
+                          Sign Out
+                          </Dropdown.Item>
+                      </Dropdown.Menu>
+                    </Dropdown>
                     <div className="NewAnnotationButtonContainer">
                       <Dropdown onMouseOver={this.onMouseEnterAdd} onMouseLeave={this.onMouseLeaveAdd} show={this.state.dropdownOpenAdd} toggle={this.toggle.toString()} >
                         <Dropdown.Toggle id="dropdown-basic" className="vertical-center">
@@ -107,18 +133,6 @@ export default class Title extends React.Component {
                         </Dropdown.Menu>
                       </Dropdown>
                     </div>
-
-                    <Dropdown onMouseOver={this.onMouseEnter} onMouseLeave={this.onMouseLeave} show={this.state.dropdownOpen} toggle={this.toggle.toString()}>
-                      <Dropdown.Toggle id="dropdown-menu" className="vertical-center">
-                        <img src={profile} alt="profile" className="profile" />
-                      </Dropdown.Toggle>
-                      <Dropdown.Menu >
-                        <Dropdown.Item onClick={this.signOutClickedHandler}>
-                          Sign Out
-                          </Dropdown.Item>
-                      </Dropdown.Menu>
-
-                    </Dropdown>
 
 
                   </div>

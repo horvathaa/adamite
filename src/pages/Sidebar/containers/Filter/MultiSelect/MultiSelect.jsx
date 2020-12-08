@@ -124,48 +124,6 @@ class GroupMultiSelect extends React.Component {
             </React.Fragment>
         )
     }
-    // const [selected, setSelected] = useState(null);
 }
-// export const GroupMultiSelect = ({ groups, handleNotifySidebar, addNewGroup }) => {
-
-
-
-//     const [selected, setSelected] = useState(null);
-//     // console.log('function', updateSidebarGroup);
-//     let options = groups.map(group => {
-//         return { label: group.name, value: group.gid };
-//     });
-
-//     function handleSelection(selection) {
-//         setSelected(selection);
-//         // console.log('selection', selection, selected);
-//         handleNotifySidebar(selection);
-//         // console.log('calling function', handleNotifySidebar);
-//     }
-
-//     return (
-//         <React.Fragment>
-//             <div className="FilterIconContainer">
-//                 <BiGroup className="filterReactIcon" />
-//             </div>
-//             <div className="multi-select-wrapper">
-//                 <MultiSelect
-//                     options={options}
-//                     value={selected}
-//                     onChange={handleSelection}
-//                     labelledBy={"Select"}
-//                     ClearIcon={<AiOutlineCloseCircle />}
-//                     ClearSelectedIcon={<AiOutlineCloseCircle />}
-//                     ItemRenderer={DefaultItemRenderer}
-//                 />
-//             </div>
-//             <div className="filterDropDown">
-//                 <div className="FilterIconContainer">
-//                     <AiOutlineUsergroupAdd className="filterReactIcon" onClick={_ => this.addNewGroup()} />
-//                 </div>
-//             </div>
-//         </React.Fragment>
-//     )
-// }
 
 export default GroupMultiSelect;

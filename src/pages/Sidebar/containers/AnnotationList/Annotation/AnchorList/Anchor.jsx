@@ -27,7 +27,7 @@ class Anchor extends Component {
                     {
                         msg: 'ANNOTATION_FOCUS_ONCLICK',
                         id: this.props.id,
-                        replyId: this.props.replyId
+                        replyId: this.props.replyId,
                     }
                 );
             }

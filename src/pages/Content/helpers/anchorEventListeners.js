@@ -49,6 +49,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                         }
                     })
                 }
+                if (anno.childAnchor !== undefined && anno.childAnchor.length) {
+                    anno.childAnchor.forEach(child => {
+                        if (child.xpath !== undefined && child.xpath !== null) {
+                            highlightRange(child, anno.id, child.id);
+                        }
+                    })
+                }
             });
         }
     }
@@ -71,6 +78,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     anno.replies.forEach(reply => {
                         if (reply.xpath !== undefined && reply.xpath !== null) {
                             highlightRange(reply, anno.id, reply.replyId);
+                        }
+                    })
+                }
+                if (anno.childAnchor !== undefined && anno.childAnchor.length) {
+                    anno.childAnchor.forEach(child => {
+                        if (child.xpath !== undefined && child.xpath !== null) {
+                            highlightRange(child, anno.id, child.id);
                         }
                     })
                 }

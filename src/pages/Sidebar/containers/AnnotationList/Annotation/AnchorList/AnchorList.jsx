@@ -23,11 +23,12 @@ class AnchorList extends Component {
                 {childAnchor.map((childAnch, idx) => {
                     return (<li key={idx} className='Anchor'>
                         <Anchor
-                            id={childAnch.id}
+                            id={childAnch.parentId}
+                            replyId={childAnch.id}
                             currentUrl={currentUrl}
                             collapsed={collapsed}
                             url={childAnch.url}
-                            anchorContent={childAnch.anchorContent}
+                            anchorContent={childAnch.anchor}
                             pageAnchor={childAnch.xpath === null}
                         />
                     </li>
