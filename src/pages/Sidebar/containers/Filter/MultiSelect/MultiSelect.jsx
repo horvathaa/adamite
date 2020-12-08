@@ -72,11 +72,17 @@ class GroupMultiSelect extends React.Component {
     };
 
     handleSelection = (selection) => {
-        this.setState({
-            selected: selection
-        })
-        // console.log('selection', selection, selected);
-        this.props.handleNotifySidebar(selection);
+        if (selection.some(g => g.label === "Create Group" && g.value === "creategroup" && g.owner === "")) {
+            this.props.addNewGroup();
+        }
+        else {
+            this.setState({
+                selected: selection
+            })
+            console.log('selection', selection, this.state.selected);
+            this.props.handleNotifySidebar(selection);
+        }
+
         // console.log('calling function', handleNotifySidebar);
     }
 
@@ -84,6 +90,12 @@ class GroupMultiSelect extends React.Component {
         const { selected } = this.state;
 
         let options = [];
+
+        options.push({
+            label: "Create Group",
+            value: "creategroup",
+            owner: ""
+        });
 
         options.push({
             label: "Public",

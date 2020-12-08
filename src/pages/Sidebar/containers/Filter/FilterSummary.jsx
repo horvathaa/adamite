@@ -201,7 +201,7 @@ class FilterSummary extends React.Component {
         else {
             return (
                 <div className="FilterSummaryContainer">
-                    <div className="FilterSectionRow">
+                    <div className="FilterSectionRow" id="GroupFilterSection">
                         <div className="FilterSection">Groups</div>
                         <GroupMultiSelect
                             uid={this.props.uid}
