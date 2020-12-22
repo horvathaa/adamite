@@ -330,42 +330,52 @@ export const removeAnnotationWidget = (event) => {
 }
 
 export const createAnnotation = (event) => {
-    var selection = window.getSelection();
+    chrome.runtime.sendMessage({
+        msg: 'REQUEST_SIDEBAR_STATUS',
+        from: 'content'
+    }, response => {
+        console.log('sidebarOpen', response.sidebarOpen);
+        if (response.sidebarOpen) {
+            var selection = window.getSelection();
 
-    if (selection.type === 'Range') {
-        const rect = selection.getRangeAt(0);
+            if (selection.type === 'Range') {
+                const rect = selection.getRangeAt(0);
 
-        //Text nodes that were highlighted by user
-        var textNodes = getNodesInRange(rect).filter(function (element) {
-            return element.nodeType === 3 && element.data.trim() !== "";
-        });
+                //Text nodes that were highlighted by user
+                var textNodes = getNodesInRange(rect).filter(function (element) {
+                    return element.nodeType === 3 && element.data.trim() !== "";
+                });
 
-        const offsets = {
-            startOffset: rect.startOffset,
-            endOffset: rect.endOffset,
-        };
+                const offsets = {
+                    startOffset: rect.startOffset,
+                    endOffset: rect.endOffset,
+                };
 
-        var tempArry = []
-        for (var i = 0; i < textNodes.length; i++) {
-            tempArry.push(xpathConversion(textNodes[i].parentNode))
+                var tempArry = []
+                for (var i = 0; i < textNodes.length; i++) {
+                    tempArry.push(xpathConversion(textNodes[i].parentNode))
+                }
+
+                var xpathToNode = {
+                    start: xpathConversion(textNodes[0]),
+                    end: xpathConversion(textNodes[textNodes.length - 1]),
+                    startOffset: rect.startOffset,
+                    endOffset: rect.endOffset
+                };
+
+                const rectPopover = selection.getRangeAt(0).getBoundingClientRect();
+                displayPopoverBasedOnRectPosition(rectPopover, { selection, xpathToNode, offsets });
+
+                return;
+            }
+            else {
+                if (!popOverAnchor.contains(event.target)) {
+                    removePopover();
+                }
+            }
         }
-
-        var xpathToNode = {
-            start: xpathConversion(textNodes[0]),
-            end: xpathConversion(textNodes[textNodes.length - 1]),
-            startOffset: rect.startOffset,
-            endOffset: rect.endOffset
-        };
-
-        const rectPopover = selection.getRangeAt(0).getBoundingClientRect();
-        displayPopoverBasedOnRectPosition(rectPopover, { selection, xpathToNode, offsets });
-
-        return;
-    }
-    else {
-        if (!popOverAnchor.contains(event.target)) {
-            removePopover();
+        else {
+            return;
         }
-    }
-
+    });
 }

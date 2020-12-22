@@ -17,6 +17,15 @@ function sendUpdateXpaths(toUpdate) {
     );
 }
 
+export const removeHighlights = () => {
+    const highlights = document.querySelectorAll(".highlight-adamite-annotation");
+    highlights.forEach(h => {
+        let parent = h.parentNode;
+        $(h).contents().unwrap();
+        parent.normalize();
+    });
+}
+
 export const removeTempHighlight = () => {
     const temp = document.querySelector(".highlight-adamite-annotation-preview");
     const parent = temp.parentNode;
