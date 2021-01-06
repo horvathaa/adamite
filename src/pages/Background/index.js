@@ -228,7 +228,6 @@ function setUpGetAllAnnotationsByUrlListener(url, annotations) {
       chrome.browserAction.setBadgeText({ text: String(annotationsToBroadcast.length - numChildAnchs.length) });
       publicAnnotations = tempPublicAnnotations;
       chrome.storage.local.get(['sidebarOpen'], response => {
-        console.log('re', response);
         if (response.sidebarOpen !== undefined && response.sidebarOpen) {
           chrome.tabs.query({}, tabs => {
             tabs = tabs.filter(e => getPathFromUrl(e.url) === url);
@@ -273,7 +272,6 @@ function promiseToComeBack(url, annotations) {
       chrome.browserAction.setBadgeText({ text: String(annotationsToBroadcast.length - numChildAnchs.length) });
       privateAnnotations = tempPrivateAnnotations;
       chrome.storage.local.get(['sidebarOpen'], response => {
-        console.log('re', response);
         if (response.sidebarOpen !== undefined && response.sidebarOpen) {
           chrome.tabs.query({}, tabs => {
             tabs = tabs.filter(e => getPathFromUrl(e.url) === url);
