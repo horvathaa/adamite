@@ -111,7 +111,7 @@ class FilterSummary extends React.Component {
 
     createDropDown = (args) => {
         const listItems = args.items.map((option, idx) => {
-            let active = args.activeFilter.indexOf(option.visible) > -1 ? true : false
+            let active = args.activeFilter.includes(option.visible) ? true : false
             return <Dropdown.Item key={idx} onSelect={args.updateFunction} data-value={option.value}> {active ? <AiOutlineCheck /> : ""} {option.visible} </Dropdown.Item>
         });
 
