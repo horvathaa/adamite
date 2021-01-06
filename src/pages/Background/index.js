@@ -227,15 +227,20 @@ function setUpGetAllAnnotationsByUrlListener(url, annotations) {
       const numChildAnchs = annotationsToBroadcast.filter(anno => anno.SharedId !== null);
       chrome.browserAction.setBadgeText({ text: String(annotationsToBroadcast.length - numChildAnchs.length) });
       publicAnnotations = tempPublicAnnotations;
-      chrome.tabs.query({}, tabs => {
-        tabs = tabs.filter(e => getPathFromUrl(e.url) === url)
-        tabs.forEach(function (tab) {
-          chrome.tabs.sendMessage(tab.id, {
-            msg: 'REFRESH_HIGHLIGHTS',
-            payload: annotationsToBroadcast,
+      chrome.storage.local.get(['sidebarOpen'], response => {
+        if (response.sidebarOpen !== undefined && response.sidebarOpen) {
+          chrome.tabs.query({}, tabs => {
+            tabs = tabs.filter(e => getPathFromUrl(e.url) === url);
+            tabs.forEach(function (tab) {
+              chrome.tabs.sendMessage(tab.id, {
+                msg: 'REFRESH_HIGHLIGHTS',
+                payload: annotationsToBroadcast,
+              });
+            });
           });
-        });
-      });
+        }
+      })
+
     }))
   })
 }
@@ -266,16 +271,19 @@ function promiseToComeBack(url, annotations) {
       const numChildAnchs = annotationsToBroadcast.filter(anno => anno.SharedId !== null);
       chrome.browserAction.setBadgeText({ text: String(annotationsToBroadcast.length - numChildAnchs.length) });
       privateAnnotations = tempPrivateAnnotations;
-      chrome.tabs.query({}, tabs => {
-        tabs = tabs.filter(e => getPathFromUrl(e.url) === url)
-        tabs.forEach(function (tab) {
-          // console.log('refreshing highlights');
-          chrome.tabs.sendMessage(tab.id, {
-            msg: 'REFRESH_HIGHLIGHTS',
-            payload: annotationsToBroadcast,
+      chrome.storage.local.get(['sidebarOpen'], response => {
+        if (response.sidebarOpen !== undefined && response.sidebarOpen) {
+          chrome.tabs.query({}, tabs => {
+            tabs = tabs.filter(e => getPathFromUrl(e.url) === url);
+            tabs.forEach(function (tab) {
+              chrome.tabs.sendMessage(tab.id, {
+                msg: 'REFRESH_HIGHLIGHTS',
+                payload: annotationsToBroadcast,
+              });
+            });
           });
-        });
-      });
+        }
+      })
     }))
   })
 }
@@ -297,6 +305,26 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
 chrome.browserAction.onClicked.addListener(function () {
   clicked = !clicked;
   toggleSidebar(clicked);
+  if (clicked) {
+    console.log('in clicked');
+    chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+      if (containsObjectWithId(tabs[0].id, tabAnnotationCollect)) {
+        const tabInfo = tabAnnotationCollect.filter(obj => obj.tabId === tabs[0].id);
+        chrome.tabs.sendMessage(tabs[0].id, {
+          msg: 'HIGHLIGHT_ANNOTATIONS',
+          payload: tabInfo[0].annotations
+        })
+      }
+    })
+  }
+  else {
+    console.log('in remove');
+    chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+      chrome.tabs.sendMessage(tabs[0].id, {
+        msg: 'REMOVE_HIGHLIGHTS'
+      })
+    })
+  }
 });
 
 const showModal = () => {

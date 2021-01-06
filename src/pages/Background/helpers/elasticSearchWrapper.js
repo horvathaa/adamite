@@ -99,7 +99,7 @@ function findWhereMatched(res, value) {
     if (res["anchorContent"].toLowerCase().indexOf(value) >= 0) return "Anchor Content";
     if (res["content"].toLowerCase().indexOf(value) >= 0) return "User Description";
     if (res["hostname"] !== undefined && res["hostname"].toLowerCase().indexOf(value) >= 0) return "Hostname";
-    if (res["tags"].length !== 0 && res["tags"].indexOf(value) >= 0) return "Tag";
+    if (res["tags"] !== undefined && res["tags"].length !== 0 && res["tags"].indexOf(value) >= 0) return "Tag";
 }
 
 function searchByID(id) {

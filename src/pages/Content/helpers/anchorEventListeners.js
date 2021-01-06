@@ -1,6 +1,6 @@
 
 //import './AnchorEngine/AnchorCreate';
-import { updateXpaths, removeSpans, removeTempHighlight } from './AnchorEngine/AnchorDestroy';
+import { updateXpaths, removeSpans, removeHighlights, removeTempHighlight } from './AnchorEngine/AnchorDestroy';
 import { tempHighlight, highlightRange, highlightReplyRange } from './AnchorEngine/AnchorHighlight';
 import { createAnnotation, removeAnnotationWidget } from './AnchorEngine/AnchorCreate';
 
@@ -35,7 +35,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         updateXpaths(collection, request.id)
     }
     else if (request.msg === 'HIGHLIGHT_ANNOTATIONS') {
-        // console.log('in highlightr_annotations');
         const annotationsOnPage = request.payload;
         if (annotationsOnPage.length) {
             annotationsOnPage.reverse().forEach(anno => {
@@ -142,5 +141,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     else if (request.msg === 'REMOVE_TEMP_ANNOTATION') {
         removeTempHighlight();
         sendResponse({ msg: 'REMOVED' });
+    }
+    else if (request.msg === 'REMOVE_HIGHLIGHTS') {
+        removeHighlights();
     }
 });

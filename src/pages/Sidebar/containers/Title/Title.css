@@ -46,6 +46,7 @@
   padding-right: 15px;
   padding-left: 0px;
   display: inline-flex;
+  flex-wrap: wrap;
 }
 
 .TitleContainer .container {

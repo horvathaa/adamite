@@ -3,6 +3,10 @@
     flex-wrap: wrap;
 }
 
+#GroupFilterSection {
+    flex-wrap: nowrap !important;
+}
+
 .FilterSectionRow#Header {
     display: flex;
     padding: 0px 0px 0px 8px;

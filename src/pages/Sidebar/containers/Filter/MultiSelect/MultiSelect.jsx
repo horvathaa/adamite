@@ -72,11 +72,16 @@ class GroupMultiSelect extends React.Component {
     };
 
     handleSelection = (selection) => {
-        this.setState({
-            selected: selection
-        })
-        // console.log('selection', selection, selected);
-        this.props.handleNotifySidebar(selection);
+        if (selection.some(g => g.label === "Create Group" && g.value === "creategroup" && g.owner === "")) {
+            this.props.addNewGroup();
+        }
+        else {
+            this.setState({
+                selected: selection
+            })
+            this.props.handleNotifySidebar(selection);
+        }
+
         // console.log('calling function', handleNotifySidebar);
     }
 
@@ -84,6 +89,12 @@ class GroupMultiSelect extends React.Component {
         const { selected } = this.state;
 
         let options = [];
+
+        options.push({
+            label: "Create Group",
+            value: "creategroup",
+            owner: ""
+        });
 
         options.push({
             label: "Public",
@@ -103,22 +114,24 @@ class GroupMultiSelect extends React.Component {
 
         return (
             <React.Fragment>
-                <div className="filterDropDown">
-                    <div className="FilterIconContainer2">
-                        <AiOutlineUsergroupAdd className="filterReactIcon" onClick={_ => this.props.addNewGroup()} />
-                    </div>
-                </div>
+
                 <div className="multi-select-wrapper">
-                    <MultiSelect
-                        options={options}
-                        value={selected}
-                        onChange={this.handleSelection}
-                        labelledBy={"Select"}
-                        ClearIcon={<AiOutlineCloseCircle />}
-                        ClearSelectedIcon={<AiOutlineCloseCircle />}
-                        ItemRenderer={this.DefaultItemRenderer}
-                        disableSearch={true}
-                    />
+                    <div className="filterDropDown">
+                        <div className="FilterIconContainer2">
+                            <BiGroup className="filterReactIcon" />
+                        </div>
+                        <MultiSelect
+                            options={options}
+                            value={selected}
+                            onChange={this.handleSelection}
+                            labelledBy={"Select"}
+                            ClearIcon={<AiOutlineCloseCircle />}
+                            ClearSelectedIcon={<AiOutlineCloseCircle />}
+                            ItemRenderer={this.DefaultItemRenderer}
+                            disableSearch={true}
+                        />
+                    </div>
+
                 </div>
 
             </React.Fragment>
