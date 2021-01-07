@@ -64,26 +64,55 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         highlightReplyRange(xpath, id);
     }
     else if (request.msg === 'REFRESH_HIGHLIGHTS') {
-        // console.log('in refresh');
-        var span = document.getElementsByClassName("highlight-adamite-annotation");
-
         const annotationsOnPage = request.payload;
         if (annotationsOnPage.length) {
             annotationsOnPage.reverse().forEach(anno => {
                 if (anno.xpath !== undefined && anno.xpath !== null) {
                     highlightRange(anno, anno.id)
+                    let findSpan = document.getElementsByName(anno.id);
+                    if (findSpan.length === 0) {
+                        chrome.runtime.sendMessage({
+                            msg: "ANCHOR_BROKEN",
+                            from: 'content',
+                            payload: {
+                                'id': anno.id
+                            }
+                        });
+                    }
                 }
-                if (anno.replies !== undefined && anno.replies.length) {
+                if (anno.replies !== undefined && anno.replies !== null && anno.replies.length) {
                     anno.replies.forEach(reply => {
                         if (reply.xpath !== undefined && reply.xpath !== null) {
                             highlightRange(reply, anno.id, reply.replyId);
+                            let findSpan = document.getElementsByName(anno.id + '-' + reply.replyId);
+                            if (findSpan.length === 0) {
+                                chrome.runtime.sendMessage({
+                                    msg: "ANCHOR_BROKEN",
+                                    from: 'content',
+                                    payload: {
+                                        'id': anno.id,
+                                        'replyId': reply.replyId
+                                    }
+                                });
+                            }
                         }
                     })
                 }
-                if (anno.childAnchor !== undefined && anno.childAnchor.length) {
+                if (anno.childAnchor !== undefined && anno.childAnchor !== null && anno.childAnchor.length) {
                     anno.childAnchor.forEach(child => {
                         if (child.xpath !== undefined && child.xpath !== null) {
                             highlightRange(child, anno.id, child.id);
+                            let findSpan = document.getElementsByName(anno.id + '-' + child.id);
+                            if (findSpan.length === 0) {
+                                chrome.runtime.sendMessage({
+                                    msg: "ANCHOR_BROKEN",
+                                    from: 'content',
+                                    payload: {
+                                        'id': anno.id,
+                                        'childId': child.id
+                                    }
+                                });
+                            }
                         }
                     })
                 }

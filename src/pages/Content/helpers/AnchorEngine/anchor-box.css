@@ -9,13 +9,13 @@
 } */
 .highlight-adamite-annotation {
     background-color: #ffff0099;
-    cursor: help;
+    cursor: pointer;
     display: inline;
 }
 
 .highlight-adamite-annotation-preview {
     background-color: #7cce7299;
-    cursor: help;
+    cursor: pointer;
     display: inline;
 }
 /* 

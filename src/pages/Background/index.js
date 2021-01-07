@@ -229,7 +229,7 @@ function setUpGetAllAnnotationsByUrlListener(url, annotations) {
       publicAnnotations = tempPublicAnnotations;
       chrome.storage.local.get(['sidebarOpen'], response => {
         if (response.sidebarOpen !== undefined && response.sidebarOpen) {
-          chrome.tabs.query({}, tabs => {
+          chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
             tabs = tabs.filter(e => getPathFromUrl(e.url) === url);
             tabs.forEach(function (tab) {
               chrome.tabs.sendMessage(tab.id, {
@@ -273,7 +273,7 @@ function promiseToComeBack(url, annotations) {
       privateAnnotations = tempPrivateAnnotations;
       chrome.storage.local.get(['sidebarOpen'], response => {
         if (response.sidebarOpen !== undefined && response.sidebarOpen) {
-          chrome.tabs.query({}, tabs => {
+          chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
             tabs = tabs.filter(e => getPathFromUrl(e.url) === url);
             tabs.forEach(function (tab) {
               chrome.tabs.sendMessage(tab.id, {

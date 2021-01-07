@@ -224,27 +224,14 @@ class Sidebar extends React.Component {
           pinnedAnnos: request.payload
         });
       }
+      // else if (request.from === 'content' && request.msg === 'ANCHOR_BROKEN') {
+      //   console.log('this worked', request.payload);
+      // }
       else if (
         request.from === 'content' &&
         request.msg === 'ANCHOR_CLICKED'
       ) {
         const { target } = request.payload;
-
-        chrome.runtime.sendMessage(
-          {
-            from: 'content',
-            msg: 'REQUEST_SIDEBAR_STATUS',
-          },
-          (response) => {
-            let sidebarOpen = response.sidebarOpen;
-            if (!sidebarOpen) {
-              chrome.runtime.sendMessage({
-                from: 'content',
-                msg: 'REQUEST_TOGGLE_SIDEBAR',
-              });
-            }
-          }
-        );
         this.setState({
           filteredAnnotations: this.state.annotations.filter(element => {
             if (element.childAnchor !== undefined && element.childAnchor !== null && element.childAnchor.length) {
@@ -282,31 +269,8 @@ class Sidebar extends React.Component {
         request.from === 'background' &&
         request.msg === 'CONTENT_UPDATED'
       ) {
-        this.setState({ annotations: request.payload })
-        // if (this.state.searchedAnnotations.length !== 0) {
-        //   this.ElasticSearch("REFRESH_FOR_CONTENT_UPDATED").then(res => {
-        //     console.log("THESE RESUsssssLTS", res.response.data)
-        //     const results = res.response.data.hits.hits.map(h => h._source)
-        //     console.log("THESE RESULTS", res.response)
-        //     this.setState({
-        //       searchedAnnotations: results
-        //     })
-        //   })
-
-        // }
-        // let mostRecentAnno, secondMostRecentAnno;
-        // const filteredAnnotationsCopy = request.payload.sort((a, b) =>
-        //   (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
-        // );
-        // if (this.state.filteredAnnotations.length) {
-        //   mostRecentAnno = filteredAnnotationsCopy[0];
-        //   secondMostRecentAnno = filteredAnnotationsCopy[1];
-        //   if (mostRecentAnno.type === 'question' && secondMostRecentAnno.type === 'question' && !secondMostRecentAnno.isClosed) {
-        //     this.setState({ askAboutRelatedAnnos: true });
-        //   }
-        // }
+        this.setState({ annotations: request.payload });
         this.requestFilterUpdate();
-        // console.log("HERE is johnnnnn", request.payload)
       }
       else if (request.from === 'background' && request.msg === 'ELASTIC_CONTENT_UPDATED') {
         if (this.state.searchedAnnotations.length !== 0) {
