@@ -334,7 +334,6 @@ export const createAnnotation = (event) => {
         msg: 'REQUEST_SIDEBAR_STATUS',
         from: 'content'
     }, response => {
-        console.log('sidebarOpen', response.sidebarOpen);
         if (response.sidebarOpen) {
             var selection = window.getSelection();
 

@@ -67,9 +67,9 @@ export const highlightReplyRange = (xpath, annoId, replyId) => {
     try {
         newRange = xpathRange.toRange(xpath.start, xpath.startOffset, xpath.end, xpath.endOffset, document);
     } catch (err) {
-        console.log('got error- ', err);
+        // console.log('got error- ', err);
 
-        // return;
+        return;
     }
     // console.log('anno', anno, 'range', newRange);
     highlight(newRange, xpath.startOffset, xpath.endOffset, function (node, match, offset) {
@@ -116,7 +116,7 @@ export const tempHighlight = (anno) => {
         span.textContent = match;
         // span.onclick = anchorClick;
         span.className = "highlight-adamite-annotation-preview";
-        console.log('span', span);
+
         node.parentNode.insertBefore(span, node.nextSibling);
         node.parentNode.normalize()
     });
@@ -133,10 +133,12 @@ export const highlightRange = (anno, annoId, replyId) => {
             newRange = xpathRange.toRange(anno.xpath.start, anno.xpath.startOffset, anno.xpath.end, anno.xpath.endOffset, document);
         }
     } catch (err) {
+        //console.log('in catch', err);
         return;
     }
     highlight(newRange, anno.xpath.startOffset, anno.xpath.endOffset, function (node, match, offset) {
         var span = document.createElement("span");
+
         if (annoId !== undefined && replyId === undefined) {
             span.setAttribute("name", annoId.toString());
         }
@@ -147,7 +149,7 @@ export const highlightRange = (anno, annoId, replyId) => {
         span.onclick = anchorClick;
         span.className = "highlight-adamite-annotation";
         node.parentNode.insertBefore(span, node.nextSibling);
-        node.parentNode.normalize()
+        node.parentNode.normalize();
     });
 }
 

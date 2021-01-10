@@ -94,7 +94,7 @@ class QuestionAnswerAnnotation extends Component {
     render() {
         const { idx, id, collapsed, author, pin, currentUser, authorId,
             childAnchor, currentUrl, url, anchor, xpath, tags, annotationType,
-            annotationContent, editing, replies, isPrivate, isClosed, howClosed, adopted } = this.props;
+            annotationContent, editing, replies, isPrivate, isClosed, howClosed, adopted, brokenAnchor, brokenChild, brokenReply } = this.props;
         const { replying, showReplies } = this.state;
         const closedStrings = ['Unanswered Question', 'No Longer Relevant', 'Answered'];
         let replyCountString = "";
@@ -223,7 +223,8 @@ class QuestionAnswerAnnotation extends Component {
                             url={url}
                             collapsed={collapsed}
                             anchorContent={anchor}
-                            pageAnchor={xpath === null} />
+                            pageAnchor={xpath === null}
+                            brokenAnchor={brokenAnchor} />
                     ) : (
                             <React.Fragment>
                                 <Anchor
@@ -232,8 +233,9 @@ class QuestionAnswerAnnotation extends Component {
                                     url={url}
                                     collapsed={collapsed}
                                     anchorContent={anchor}
-                                    pageAnchor={xpath === null} />
-                                <AnchorList childAnchor={childAnchor} currentUrl={currentUrl} collapsed={collapsed} />
+                                    pageAnchor={xpath === null}
+                                    brokenAnchor={brokenAnchor} />
+                                <AnchorList childAnchor={childAnchor} currentUrl={currentUrl} collapsed={collapsed} brokenChild={brokenChild} />
                             </React.Fragment>
                         )}
 
@@ -304,6 +306,7 @@ class QuestionAnswerAnnotation extends Component {
                                 url={replies[adopted].url}
                                 collapsed={collapsed}
                                 anchorContent={replies[adopted].anchor}
+                                brokenAnchor={brokenReply.includes(adopted)}
                             />}
                             <div className="annotationContent">
                                 {adoptedContent}
@@ -349,6 +352,7 @@ class QuestionAnswerAnnotation extends Component {
                                             answerIsAdopted={this.answerIsAdopted}
                                             // notifyParentOfAdopted={this.props.notifyParentOfAdopted}
                                             adopted={this.props.adopted === reply.replyId}
+                                            brokenAnchor={brokenReply.includes(reply.replyId)}
                                         />
                                     )
                                 }

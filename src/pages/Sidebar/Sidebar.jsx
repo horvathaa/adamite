@@ -61,7 +61,6 @@ class Sidebar extends React.Component {
 
 
   setUpAnnotationsListener = (uid, url, tabId) => {
-
     chrome.runtime.sendMessage(
       {
         msg: 'GET_ANNOTATIONS_PAGE_LOAD',
@@ -152,24 +151,27 @@ class Sidebar extends React.Component {
           );
           this.setUpPinnedListener();
         }
-        chrome.runtime.sendMessage(
-          {
-            msg: 'REQUEST_TAB_INFO',
-          },
-          tabInfo => {
-            this.setState({ url: tabInfo.url, tabId: tabInfo.tabId });
-            if (currentUserData.payload.currentUser) {
-              this.setUpAnnotationsListener(
-                currentUserData.payload.currentUser.uid,
-                tabInfo.url,
-                tabInfo.tabId
-              );
-            } else {
-              if (this.unsubscribeAnnotations) {
-                this.unsubscribeAnnotations();
-              }
+        // chrome.runtime.sendMessage(
+        //   {
+        //     msg: 'REQUEST_TAB_INFO',
+        //   },
+        //   tabInfo => {
+        chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+          let tab = tabs[0];
+          this.setState({ url: tab.url, tabId: tabs[0].id });
+          if (currentUserData.payload.currentUser) {
+            this.setUpAnnotationsListener(
+              currentUserData.payload.currentUser.uid,
+              tab.url,
+              tab.id
+            );
+          } else {
+            if (this.unsubscribeAnnotations) {
+              this.unsubscribeAnnotations();
             }
           }
+          // })
+        }
         );
       }
     );
@@ -224,27 +226,14 @@ class Sidebar extends React.Component {
           pinnedAnnos: request.payload
         });
       }
+      // else if (request.from === 'content' && request.msg === 'ANCHOR_BROKEN') {
+      //   console.log('this worked', request.payload);
+      // }
       else if (
         request.from === 'content' &&
         request.msg === 'ANCHOR_CLICKED'
       ) {
         const { target } = request.payload;
-
-        chrome.runtime.sendMessage(
-          {
-            from: 'content',
-            msg: 'REQUEST_SIDEBAR_STATUS',
-          },
-          (response) => {
-            let sidebarOpen = response.sidebarOpen;
-            if (!sidebarOpen) {
-              chrome.runtime.sendMessage({
-                from: 'content',
-                msg: 'REQUEST_TOGGLE_SIDEBAR',
-              });
-            }
-          }
-        );
         this.setState({
           filteredAnnotations: this.state.annotations.filter(element => {
             if (element.childAnchor !== undefined && element.childAnchor !== null && element.childAnchor.length) {
@@ -279,34 +268,25 @@ class Sidebar extends React.Component {
         this.setState({ groups: request.payload });
       }
       else if (
-        request.from === 'background' &&
+        request.from === 'content' &&
         request.msg === 'CONTENT_UPDATED'
       ) {
-        this.setState({ annotations: request.payload })
-        // if (this.state.searchedAnnotations.length !== 0) {
-        //   this.ElasticSearch("REFRESH_FOR_CONTENT_UPDATED").then(res => {
-        //     console.log("THESE RESUsssssLTS", res.response.data)
-        //     const results = res.response.data.hits.hits.map(h => h._source)
-        //     console.log("THESE RESULTS", res.response)
-        //     this.setState({
-        //       searchedAnnotations: results
-        //     })
-        //   })
+        chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+          if (tabs[0].id === request.payload.tabId) {
+            this.setState({ annotations: request.payload.annotations, tabId: request.payload.tabId });
+            chrome.browserAction.setBadgeText({ tabId: request.payload.tabId, text: String(request.payload.annotations.length) });
+            chrome.storage.local.get(['sidebarOpen'], response => {
+              if (response.sidebarOpen !== undefined && response.sidebarOpen) {
+                chrome.tabs.sendMessage(tabs[0].id, {
+                  msg: 'HIGHLIGHT_ANNOTATIONS',
+                  payload: request.payload.annotations,
+                });
+                this.requestFilterUpdate();
+              }
+            });
+          }
+        })
 
-        // }
-        // let mostRecentAnno, secondMostRecentAnno;
-        // const filteredAnnotationsCopy = request.payload.sort((a, b) =>
-        //   (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
-        // );
-        // if (this.state.filteredAnnotations.length) {
-        //   mostRecentAnno = filteredAnnotationsCopy[0];
-        //   secondMostRecentAnno = filteredAnnotationsCopy[1];
-        //   if (mostRecentAnno.type === 'question' && secondMostRecentAnno.type === 'question' && !secondMostRecentAnno.isClosed) {
-        //     this.setState({ askAboutRelatedAnnos: true });
-        //   }
-        // }
-        this.requestFilterUpdate();
-        // console.log("HERE is johnnnnn", request.payload)
       }
       else if (request.from === 'background' && request.msg === 'ELASTIC_CONTENT_UPDATED') {
         if (this.state.searchedAnnotations.length !== 0) {
@@ -808,6 +788,7 @@ class Sidebar extends React.Component {
     const pinnedNumChildAnchs = pinnedAnnosCopy.filter(anno => anno.SharedId !== null);
 
     const numChildAnchs = renderedAnnotations.filter(anno => anno.SharedId !== null);
+    // chrome.browserAction.setBadgeText({ tabId: this.state.tabId, text: String(renderedAnnotations.length) });
 
     let tempSearchCount;
     if (this.state.showPinned) {

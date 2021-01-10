@@ -5,6 +5,8 @@ import { FiMapPin } from 'react-icons/fi';
 import { BsFileEarmarkText } from 'react-icons/bs';
 import anchorOnPage from '../../../../../../assets/img/SVGs/Anchor_onpage.svg';
 import anchorOnOtherPage from '../../../../../../assets/img/SVGs/Anchor_otherpage_1.svg';
+import anchorBroken from '../../../../../../assets/img/SVGs/Anchor_broken.svg';
+import Tooltip from '@material-ui/core/Tooltip';
 import '../Annotation.css';
 import './Anchor.css';
 
@@ -15,6 +17,11 @@ function getPathFromUrl(url) {
 }
 
 class Anchor extends Component {
+
+    state = {
+        broken: false
+    }
+
     handleOnLocalOnClick = () => {
         if (this.props.id === null) {
             return;
@@ -79,45 +86,77 @@ class Anchor extends Component {
     }
 
     render() {
-        const { currentUrl, collapsed, url, anchorContent, pageAnchor } = this.props;
+        const { currentUrl, collapsed, url, anchorContent, pageAnchor, brokenAnchor } = this.props;
+
         let anchorIcon;
 
-        if (pageAnchor) {
-            anchorIcon = <BsFileEarmarkText className="AnchorIcon" />;
-        }
-        else if (url === currentUrl) {
-            anchorIcon = <img src={anchorOnPage} className="AnchorIcon" alt='anchor on page' />;
+        if (brokenAnchor && currentUrl === url) {
+            anchorIcon = <img src={anchorBroken} className="AnchorIcon" alt='anchor broken' />;
         }
         else {
-            anchorIcon = <img src={anchorOnOtherPage} className="AnchorIcon" alt='anchor on other page' />;
+            if (pageAnchor) {
+                anchorIcon = <BsFileEarmarkText className="AnchorIcon" />;
+            }
+            else if (url === currentUrl) {
+                anchorIcon = <img src={anchorOnPage} className="AnchorIcon" alt='anchor on page' />;
+            }
+            else {
+                anchorIcon = <img src={anchorOnOtherPage} className="AnchorIcon" alt='anchor on other page' />;
+            }
         }
-        return (
-            <div
-                className={classNames({
-                    AnchorContainer: true,
-                    Truncated: collapsed
-                })}
-                onMouseEnter={this.handleOnLocalOnMouseEnter}
-                onMouseLeave={this.handleOnLocalOnMouseLeave}
-                onClick={(pageAnchor || currentUrl !== url) ? this.handleExternalAnchor : this.handleOnLocalOnClick}
-            >
-                <div className="AnchorIconContainer">
-                    {anchorIcon}
-                </div>
-                {currentUrl === url && !pageAnchor ? (
+
+        if (brokenAnchor && currentUrl === url) {
+            return (
+                <div
+                    className={classNames({
+                        AnchorContainer: true,
+                        Truncated: collapsed
+                    })}
+
+                >
+                    <Tooltip title={"broken anchor"} aria-label="annotation count">
+                        <div className="AnchorIconContainer">
+                            {anchorIcon}
+                        </div>
+                    </Tooltip>
+
                     <div className="AnchorTextContainer">
                         {anchorContent}
                     </div>
-                ) : (
+                </div>
+            )
+        }
+        else {
+            return (
+                <div
+                    className={classNames({
+                        AnchorContainer: true,
+                        Truncated: collapsed
+                    })}
+                    onMouseEnter={this.handleOnLocalOnMouseEnter}
+                    onMouseLeave={this.handleOnLocalOnMouseLeave}
+                    onClick={(pageAnchor || currentUrl !== url) ? this.handleExternalAnchor : this.handleOnLocalOnClick}
+                >
+                    <div className="AnchorIconContainer">
+                        {anchorIcon}
+                    </div>
+                    {currentUrl === url && !pageAnchor ? (
                         <div className="AnchorTextContainer">
                             {anchorContent}
-                            <div className="AnchorUrlContainer" onClick={this.handleExternalAnchor}>
-                                {url}
-                            </div>
                         </div>
-                    )}
-            </div>
-        );
+                    ) : (
+                            <div className="AnchorTextContainer">
+                                {anchorContent}
+                                <div className="AnchorUrlContainer" onClick={this.handleExternalAnchor}>
+                                    {url}
+                                </div>
+                            </div>
+                        )}
+                </div>
+            );
+        }
+
+
     }
 }
 

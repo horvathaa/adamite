@@ -111,7 +111,7 @@ class FilterSummary extends React.Component {
 
     createDropDown = (args) => {
         const listItems = args.items.map((option, idx) => {
-            let active = args.activeFilter.indexOf(option.visible) > -1 ? true : false
+            let active = args.activeFilter.includes(option.visible) ? true : false
             return <Dropdown.Item key={idx} onSelect={args.updateFunction} data-value={option.value}> {active ? <AiOutlineCheck /> : ""} {option.visible} </Dropdown.Item>
         });
 
@@ -146,19 +146,25 @@ class FilterSummary extends React.Component {
         else {
             filter.annoType.map((type, idx) => {
                 if (idx !== (filter.annoType.length - 1)) {
-                    if (type !== 'question') {
+                    if (type !== 'question' && type !== 'default') {
                         annoType += (type.charAt(0).toUpperCase() + type.slice(1)) + ", ";
+                    }
+                    else if (type === 'default') {
+                        annoType += "Normal, ";
                     }
                     else if (type === 'question') {
                         annoType += "Question/Answer, ";
                     }
                 }
                 else {
-                    if (type !== 'question') {
+                    if (type !== 'question' && type !== 'default') {
                         annoType += (type.charAt(0).toUpperCase() + type.slice(1));
                     }
                     else if (type === 'question') {
                         annoType += "Question/Answer";
+                    }
+                    else if (type === 'default') {
+                        annoType += "Normal";
                     }
                 }
             });
