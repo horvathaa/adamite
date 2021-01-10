@@ -34,36 +34,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         let collection = document.getElementsByName(request.id);
         updateXpaths(collection, request.id)
     }
-    else if (request.msg === 'HIGHLIGHT_ANNOTATIONS') {
-        const annotationsOnPage = request.payload;
-        if (annotationsOnPage.length) {
-            annotationsOnPage.reverse().forEach(anno => {
-                if (anno.xpath !== undefined && anno.xpath !== null) {
-                    highlightRange(anno, anno.id)
-                }
-                if (anno.replies !== undefined && anno.replies.length) {
-                    anno.replies.forEach(reply => {
-                        if (reply.xpath !== undefined && reply.xpath !== null) {
-                            highlightRange(reply, anno.id, reply.replyId);
-                        }
-                    })
-                }
-                if (anno.childAnchor !== undefined && anno.childAnchor.length) {
-                    anno.childAnchor.forEach(child => {
-                        if (child.xpath !== undefined && child.xpath !== null) {
-                            highlightRange(child, anno.id, child.id);
-                        }
-                    })
-                }
-            });
-        }
-    }
     else if (request.msg === 'ADD_REPLY_HIGHLIGHT') {
         // console.log('doin it');
         const { xpath, id } = request.payload;
         highlightReplyRange(xpath, id);
     }
-    else if (request.msg === 'REFRESH_HIGHLIGHTS') {
+    else if (request.msg === 'HIGHLIGHT_ANNOTATIONS') {
         const annotationsOnPage = request.payload;
         if (annotationsOnPage.length) {
             annotationsOnPage.reverse().forEach(anno => {

@@ -146,19 +146,25 @@ class FilterSummary extends React.Component {
         else {
             filter.annoType.map((type, idx) => {
                 if (idx !== (filter.annoType.length - 1)) {
-                    if (type !== 'question') {
+                    if (type !== 'question' && type !== 'default') {
                         annoType += (type.charAt(0).toUpperCase() + type.slice(1)) + ", ";
+                    }
+                    else if (type === 'default') {
+                        annoType += "Normal, ";
                     }
                     else if (type === 'question') {
                         annoType += "Question/Answer, ";
                     }
                 }
                 else {
-                    if (type !== 'question') {
+                    if (type !== 'question' && type !== 'default') {
                         annoType += (type.charAt(0).toUpperCase() + type.slice(1));
                     }
                     else if (type === 'question') {
                         annoType += "Question/Answer";
+                    }
+                    else if (type === 'default') {
+                        annoType += "Normal";
                     }
                 }
             });

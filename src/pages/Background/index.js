@@ -87,14 +87,14 @@ const broadcastAnnotationsUpdated = (message, annotations) => {
 };
 
 const broadcastAnnotationsUpdatedTab = (message, annotations, tabId) => {
-  chrome.tabs.query({ active: true }, tabs => {
-    console.log("here are the annotation", annotations)
+  chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
     chrome.tabs.sendMessage(
-      tabId,
+      tabs[0].id,
       {
         msg: message,
         from: 'background',
         payload: annotations,
+        tabId: tabs[0].id
       }
     );
   });
@@ -109,7 +109,6 @@ const broadcastGroupsUpdated = (message, groups) => {
 }
 
 function setUpGetGroupListener(uid) {
-  // console.log('in setupgrouplistener', uid);
   return new Promise((resolve, reject) => {
     resolve(getAllUserGroups(uid).onSnapshot(querySnapshot => {
       let groups = [];
@@ -119,7 +118,6 @@ function setUpGetGroupListener(uid) {
           ...snapshot.data()
         });
       })
-      // console.log('groups in back', groups);
       broadcastGroupsUpdated("GROUPS_UPDATED", groups);
     }))
   })
@@ -136,29 +134,9 @@ function getAllPrivatePinnedAnnotationsListener() {
           ...snapshot.data(),
         });
       })
-      // console.log("temp", tempPublicAnnotations);
       pinnedAnnotations = tempPrivatePinnedAnnotations.concat(publicPinnedAnnotations);
       privatePinnedAnnotations = tempPrivatePinnedAnnotations;
-      // chrome.tabs.query({ active: true }, tabs => {
-      //   if (containsObjectWithId(tabs[0].id, tabAnnotationCollect)) {
-      //     tabAnnotationCollect = updateList(tabAnnotationCollect, tabs[0].id, annotationsToBroadcast);
-      //   }
-      //   else {
-      //     tabAnnotationCollect.push({ tabId: tabs[0].id, annotations: annotationsToBroadcast });
-      //   }
-      // });
-      // broadcastAnnotationsUpdated("CONTENT_UPDATED", annotationsToBroadcast);
       broadcastAnnotationsUpdated("PINNED_CHANGED", pinnedAnnotations);
-      // publicAnnotations = tempPublicAnnotations;
-      // chrome.tabs.query({}, tabs => {
-      //   tabs = tabs.filter(e => getPathFromUrl(e.url) === url)
-      //   tabs.forEach(function (tab) {
-      //     chrome.tabs.sendMessage(tab.id, {
-      //       msg: 'REFRESH_HIGHLIGHTS',
-      //       payload: annotationsToBroadcast,
-      //     });
-      //   });
-      // });
     }))
   })
 }
@@ -173,29 +151,9 @@ function getAllPublicPinnedAnnotationsListener() {
           ...snapshot.data(),
         });
       })
-      // console.log('in get all public pinned');
-      // console.log("temp", tempPublicAnnotations);
       pinnedAnnotations = tempPublicPinnedAnnotations.concat(privatePinnedAnnotations);
       publicPinnedAnnotations = tempPublicPinnedAnnotations;
-      // chrome.tabs.query({ active: true }, tabs => {
-      //   if (containsObjectWithId(tabs[0].id, tabAnnotationCollect)) {
-      //     tabAnnotationCollect = updateList(tabAnnotationCollect, tabs[0].id, annotationsToBroadcast);
-      //   }
-      //   else {
-      //     tabAnnotationCollect.push({ tabId: tabs[0].id, annotations: annotationsToBroadcast });
-      //   }
-      // });
       broadcastAnnotationsUpdated("PINNED_CHANGED", pinnedAnnotations);
-      // publicAnnotations = tempPublicAnnotations;
-      // chrome.tabs.query({}, tabs => {
-      //   tabs = tabs.filter(e => getPathFromUrl(e.url) === url)
-      //   tabs.forEach(function (tab) {
-      //     chrome.tabs.sendMessage(tab.id, {
-      //       msg: 'REFRESH_HIGHLIGHTS',
-      //       payload: annotationsToBroadcast,
-      //     });
-      //   });
-      // });
     }))
   })
 }
@@ -211,10 +169,9 @@ function setUpGetAllAnnotationsByUrlListener(url, annotations) {
           ...snapshot.data(),
         });
       })
-      // console.log("temp", tempPublicAnnotations);
       let annotationsToBroadcast = tempPublicAnnotations.concat(privateAnnotations);
       annotationsToBroadcast = annotationsToBroadcast.filter(anno => !anno.deleted);
-      chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+      chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
         if (containsObjectWithId(tabs[0].id, tabAnnotationCollect)) {
           tabAnnotationCollect = updateList(tabAnnotationCollect, tabs[0].id, annotationsToBroadcast);
         }
@@ -222,24 +179,9 @@ function setUpGetAllAnnotationsByUrlListener(url, annotations) {
           tabAnnotationCollect.push({ tabId: tabs[0].id, annotations: annotationsToBroadcast });
         }
       });
-      // consider switching this to be in a chrome.tabs.query - check active URL
-      broadcastAnnotationsUpdated("CONTENT_UPDATED", annotationsToBroadcast);
-      const numChildAnchs = annotationsToBroadcast.filter(anno => anno.SharedId !== null);
-      chrome.browserAction.setBadgeText({ text: String(annotationsToBroadcast.length - numChildAnchs.length) });
+      broadcastAnnotationsUpdatedTab("CONTENT_UPDATED", annotationsToBroadcast);
+
       publicAnnotations = tempPublicAnnotations;
-      chrome.storage.local.get(['sidebarOpen'], response => {
-        if (response.sidebarOpen !== undefined && response.sidebarOpen) {
-          chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-            tabs = tabs.filter(e => getPathFromUrl(e.url) === url);
-            tabs.forEach(function (tab) {
-              chrome.tabs.sendMessage(tab.id, {
-                msg: 'REFRESH_HIGHLIGHTS',
-                payload: annotationsToBroadcast,
-              });
-            });
-          });
-        }
-      })
 
     }))
   })
@@ -258,7 +200,7 @@ function promiseToComeBack(url, annotations) {
       });
       let annotationsToBroadcast = tempPrivateAnnotations.concat(publicAnnotations);
       annotationsToBroadcast = annotationsToBroadcast.filter(anno => !anno.deleted);
-      chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+      chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
         if (containsObjectWithId(tabs[0].id, tabAnnotationCollect)) {
           tabAnnotationCollect = updateList(tabAnnotationCollect, tabs[0].id, annotationsToBroadcast);
         }
@@ -266,24 +208,8 @@ function promiseToComeBack(url, annotations) {
           tabAnnotationCollect.push({ tabId: tabs[0].id, annotations: annotationsToBroadcast });
         }
       });
-      // console.log("annotations", annotationsToBroadcast)
-      broadcastAnnotationsUpdated("CONTENT_UPDATED", annotationsToBroadcast);
-      const numChildAnchs = annotationsToBroadcast.filter(anno => anno.SharedId !== null);
-      chrome.browserAction.setBadgeText({ text: String(annotationsToBroadcast.length - numChildAnchs.length) });
+      broadcastAnnotationsUpdatedTab("CONTENT_UPDATED", annotationsToBroadcast);
       privateAnnotations = tempPrivateAnnotations;
-      chrome.storage.local.get(['sidebarOpen'], response => {
-        if (response.sidebarOpen !== undefined && response.sidebarOpen) {
-          chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-            tabs = tabs.filter(e => getPathFromUrl(e.url) === url);
-            tabs.forEach(function (tab) {
-              chrome.tabs.sendMessage(tab.id, {
-                msg: 'REFRESH_HIGHLIGHTS',
-                payload: annotationsToBroadcast,
-              });
-            });
-          });
-        }
-      })
     }))
   })
 }
@@ -291,8 +217,7 @@ function promiseToComeBack(url, annotations) {
 chrome.tabs.onActivated.addListener(function (activeInfo) {
   if (containsObjectWithId(activeInfo.tabId, tabAnnotationCollect)) {
     const tabInfo = tabAnnotationCollect.filter(obj => obj.tabId === activeInfo.tabId);
-    broadcastAnnotationsUpdated('CONTENT_UPDATED', tabInfo[0].annotations);
-    chrome.browserAction.setBadgeText({ text: String(tabInfo[0].annotations.length) });
+    broadcastAnnotationsUpdatedTab('CONTENT_UPDATED', tabInfo[0].annotations);
   }
   else {
     chrome.tabs.get(activeInfo.tabId, (tab) => {
@@ -306,7 +231,6 @@ chrome.browserAction.onClicked.addListener(function () {
   clicked = !clicked;
   toggleSidebar(clicked);
   if (clicked) {
-    console.log('in clicked');
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
       if (containsObjectWithId(tabs[0].id, tabAnnotationCollect)) {
         const tabInfo = tabAnnotationCollect.filter(obj => obj.tabId === tabs[0].id);
@@ -318,7 +242,6 @@ chrome.browserAction.onClicked.addListener(function () {
     })
   }
   else {
-    console.log('in remove');
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
       chrome.tabs.sendMessage(tabs[0].id, {
         msg: 'REMOVE_HIGHLIGHTS'
@@ -339,7 +262,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     sendResponse({ url: cleanUrl, tabId });
   }
   else if (request.msg === 'GET_ANNOTATIONS_PAGE_LOAD') {
-    console.log("GET_ANNOTATIONS_PAGE_LOAD")
+    console.log("GET_ANNOTATIONS_PAGE_LOAD");
 
     let email = getCurrentUser().email;
     let userName = email.substring(0, getCurrentUser().email.indexOf('@'));
