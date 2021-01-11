@@ -375,6 +375,7 @@ function searchBarSuccess(res, args) {
 }
 
 
+
 function search(key, args) {
     return new Promise((resolve, reject) => {
         var query = args.query;
