@@ -35,7 +35,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         updateXpaths(collection, request.id)
     }
     else if (request.msg === 'ADD_REPLY_HIGHLIGHT') {
-        // console.log('doin it');
         const { xpath, id } = request.payload;
         highlightReplyRange(xpath, id);
     }
@@ -43,7 +42,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         const annotationsOnPage = request.payload;
         if (annotationsOnPage.length) {
             annotationsOnPage.reverse().forEach(anno => {
-                if (anno.xpath !== undefined && anno.xpath !== null) {
+                if (anno.xpath !== undefined && anno.xpath !== null && anno.url[0] === request.url) {
                     highlightRange(anno, anno.id)
                     let findSpan = document.getElementsByName(anno.id);
                     if (findSpan.length === 0) {
@@ -58,7 +57,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 }
                 if (anno.replies !== undefined && anno.replies !== null && anno.replies.length) {
                     anno.replies.forEach(reply => {
-                        if (reply.xpath !== undefined && reply.xpath !== null) {
+                        if (reply.xpath !== undefined && reply.xpath !== null && reply.url === request.url) {
                             highlightRange(reply, anno.id, reply.replyId);
                             let findSpan = document.getElementsByName(anno.id + '-' + reply.replyId);
                             if (findSpan.length === 0) {
@@ -76,7 +75,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 }
                 if (anno.childAnchor !== undefined && anno.childAnchor !== null && anno.childAnchor.length) {
                     anno.childAnchor.forEach(child => {
-                        if (child.xpath !== undefined && child.xpath !== null) {
+                        if (child.xpath !== undefined && child.xpath !== null && child.url === request.url) {
                             highlightRange(child, anno.id, child.id);
                             let findSpan = document.getElementsByName(anno.id + '-' + child.id);
                             if (findSpan.length === 0) {

@@ -236,7 +236,8 @@ chrome.browserAction.onClicked.addListener(function () {
         const tabInfo = tabAnnotationCollect.filter(obj => obj.tabId === tabs[0].id);
         chrome.tabs.sendMessage(tabs[0].id, {
           msg: 'HIGHLIGHT_ANNOTATIONS',
-          payload: tabInfo[0].annotations
+          payload: tabInfo[0].annotations,
+          url: tabs[0].url
         })
       }
     })
@@ -264,6 +265,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   else if (request.msg === 'GET_ANNOTATIONS_PAGE_LOAD') {
     console.log("GET_ANNOTATIONS_PAGE_LOAD");
 
+    // updateAllAnnotations();
+
     let email = getCurrentUser().email;
     let userName = email.substring(0, getCurrentUser().email.indexOf('@'));
 
@@ -282,7 +285,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     publicListener = setUpGetAllAnnotationsByUrlListener(request.url, annotations);
     privateListener = promiseToComeBack(request.url, annotations);
-    chrome.browserAction.setBadgeText({ text: String(annotations.length) });
+    chrome.browserAction.setBadgeText({ tabId: request.tabId, text: String(annotations.length) });
   }
   else if (request.msg === 'SET_UP_PIN' && request.from === 'content') {
     // console.log('in pin listener');
@@ -446,7 +449,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       offsets: offsets,
       xpath: xpath,
       AnnotationType: "highlight",
-      url,
+      url: [url],
       hostname,
       pinned: false,
       AnnotationTags: [],
@@ -537,7 +540,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       offsets: content.offsets,
       xpath: content.xpath,
       AnnotationType: content.annotationType, // could be other types (string)
-      url,
+      url: [url],
       hostname,
       isClosed: false,
       pinned: false,
@@ -567,7 +570,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     const newAnchor = Object.assign({}, {
       parentId: newAnno.sharedId, id: eventTime, anchor, url, offsets, hostname, xpath
-    })
+    });
 
     updateAnnotationById(newAnno.sharedId, {
       childAnchor: firebase.firestore.FieldValue.arrayUnion({
@@ -575,7 +578,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       }),
       events: firebase.firestore.FieldValue.arrayUnion({
         ...editEvent
-      })
+      }),
+      url: firebase.firestore.FieldValue.arrayUnion(url)
     }).then(value => {
       let highlightObj = {
         id: newAnno.sharedId + "-" + eventTime,
@@ -619,17 +623,34 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       offsets: offsets !== undefined ? offsets : null,
       adopted: adopted !== undefined ? adopted : false
     });
-    updateAnnotationById(id, {
-      events: firebase.firestore.FieldValue.arrayUnion({
-        ...editEvent
-      }),
-      replies: firebase.firestore.FieldValue.arrayUnion({
-        ...replies
-      })
-    }).then(function (e) {
-      broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
-      sendResponse({ msg: 'DONE' });
-    });
+    if (url !== undefined && url !== "") {
+      updateAnnotationById(id, {
+        events: firebase.firestore.FieldValue.arrayUnion({
+          ...editEvent
+        }),
+        replies: firebase.firestore.FieldValue.arrayUnion({
+          ...replies
+        }),
+        url: firebase.firestore.FieldValue.arrayUnion(url)
+      }).then(function (e) {
+        broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
+        sendResponse({ msg: 'DONE' });
+      });
+    }
+    else {
+      updateAnnotationById(id, {
+        events: firebase.firestore.FieldValue.arrayUnion({
+          ...editEvent
+        }),
+        replies: firebase.firestore.FieldValue.arrayUnion({
+          ...replies
+        })
+      }).then(function (e) {
+        broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
+        sendResponse({ msg: 'DONE' });
+      });
+    }
+
   }
   else if (request.msg === 'UPDATE_REPLIES') {
     const eventTime = new Date().getTime();
