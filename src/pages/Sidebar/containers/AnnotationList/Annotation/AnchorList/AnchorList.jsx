@@ -30,6 +30,7 @@ class AnchorList extends Component {
                             url={childAnch.url}
                             anchorContent={childAnch.anchor}
                             pageAnchor={childAnch.xpath === null}
+                            brokenAnchor={this.props.brokenChild.includes(childAnch.id)}
                         />
                     </li>
                     );

@@ -9,6 +9,7 @@ import ToDoAnnotation from './ToDoAnnotation';
 import HighlightAnnotation from './HighlightAnnnotation';
 import IssueAnnotation from './IssueAnnotation';
 import QuestionAnswerAnnotation from './QuestionAnswerAnnotation';
+import { RiTruckLine } from 'react-icons/ri';
 
 
 class Annotation extends Component {
@@ -29,6 +30,9 @@ class Annotation extends Component {
     id: this.props.id,
     authorId: this.props.authorId,
     pinned: this.props.pinned,
+    brokenAnchor: false,
+    brokenReply: [],
+    brokenChild: [],
     isClosed: this.props.isClosed,
     howClosed: this.props.howClosed,
     userGroups: this.props.userGroups === undefined ? [] : this.props.userGroups,
@@ -45,6 +49,27 @@ class Annotation extends Component {
 
   async componentDidMount() {
     document.addEventListener('keydown', this.keydown, false);
+    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+      if (request.from === 'content' && request.msg === 'ANCHOR_BROKEN' && request.payload.id === this.props.id) {
+        if (this.props.url === this.props.currentUrl &&
+          request.payload.replyId !== undefined) {
+          const broken = this.props.replies.filter(r => r.replyId === request.payload.replyId);
+          let temp = this.state.brokenReply;
+          temp.push(String(broken[0].replyId));
+          this.setState({ brokenReply: temp });
+        }
+        else if (this.props.url === this.props.currentUrl &&
+          request.payload.childId !== undefined) {
+          const broken = this.props.childAnchor.filter(c => c.id === request.payload.childId);
+          let temp = this.state.brokenChild;
+          temp.push(broken[0].id);
+          this.setState({ brokenChild: temp });
+        }
+        else if (this.props.url === this.props.currentUrl) {
+          this.setState({ brokenAnchor: true });
+        }
+      }
+    })
     this.updateData();
   }
 
@@ -264,7 +289,7 @@ class Annotation extends Component {
 
   render() {
     const { anchor, idx, id, active, authorId, currentUser, trashed, timeStamp, url, currentUrl, childAnchor, xpath, replies, isPrivate, adopted } = this.props;
-    const { editing, collapsed, tags, content, annotationType, pinned, isClosed, howClosed, userGroups, annoGroups, readCount } = this.state;
+    const { editing, collapsed, tags, content, annotationType, pinned, isClosed, howClosed, userGroups, annoGroups, readCount, brokenAnchor, brokenReply, brokenChild } = this.state;
     const author = this.props.author === undefined ? "anonymous" : this.props.author;
     if (annotationType === 'default' && !trashed) {
       return (<DefaultAnnotation
@@ -297,6 +322,9 @@ class Annotation extends Component {
         notifyParentOfAdopted={this.notifyParentOfAdopted}
         getGroupName={this.getGroupName}
         userGroups={userGroups}
+        brokenAnchor={brokenAnchor}
+        brokenReply={brokenReply}
+        brokenChild={brokenChild}
       />);
     }
     else if (annotationType === 'to-do' && !trashed && currentUser.uid === authorId) {
@@ -331,6 +359,9 @@ class Annotation extends Component {
         notifyParentOfAdopted={this.notifyParentOfAdopted}
         getGroupName={this.getGroupName}
         userGroups={userGroups}
+        brokenAnchor={brokenAnchor}
+        brokenReply={brokenReply}
+        brokenChild={brokenChild}
       />);
     }
     else if (annotationType === 'highlight') {
@@ -365,6 +396,9 @@ class Annotation extends Component {
           notifyParentOfAdopted={this.notifyParentOfAdopted}
           getGroupName={this.getGroupName}
           userGroups={userGroups}
+          brokenAnchor={brokenAnchor}
+          brokenReply={brokenReply}
+          brokenChild={brokenChild}
         />
       );
     }
@@ -403,6 +437,9 @@ class Annotation extends Component {
           notifyParentOfAdopted={this.notifyParentOfAdopted}
           getGroupName={this.getGroupName}
           userGroups={userGroups}
+          brokenAnchor={brokenAnchor}
+          brokenReply={brokenReply}
+          brokenChild={brokenChild}
         />
       );
     }
@@ -438,6 +475,9 @@ class Annotation extends Component {
           isPrivate={isPrivate}
           getGroupName={this.getGroupName}
           userGroups={userGroups}
+          brokenAnchor={brokenAnchor}
+          brokenReply={brokenReply}
+          brokenChild={brokenChild}
         />
       );
     }

@@ -60,7 +60,7 @@ class Reply extends Component {
 
     render() {
         const { content, author, currentUser, authorId, idx, tags, answer, question,
-            showQuestionAnswerInterface, xpath, anchor, hostname, url, offsets } = this.props;
+            showQuestionAnswerInterface, xpath, anchor, hostname, url, offsets, brokenAnchor } = this.props;
         const adoptedStar = this.state.adopted ?
             <FaStar className="profile" onClick={this.transmitAdoptedToParent} /> :
             <FaRegStar className="profile" onClick={this.transmitAdoptedToParent} />;
@@ -125,6 +125,7 @@ class Reply extends Component {
                                     url={url}
                                     anchorContent={anchor}
                                     pageAnchor={xpath === null}
+                                    brokenAnchor={brokenAnchor}
                                 />) : (null)}
                             <div className="annotationContent">
                                 <div className="contentBody">

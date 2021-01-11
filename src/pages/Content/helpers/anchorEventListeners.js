@@ -1,7 +1,7 @@
 
 //import './AnchorEngine/AnchorCreate';
 import { updateXpaths, removeSpans, removeHighlights, removeTempHighlight } from './AnchorEngine/AnchorDestroy';
-import { tempHighlight, highlightRange, highlightReplyRange, anchorClick, highlightAnnotations } from './AnchorEngine/AnchorHighlight';
+import { tempHighlight, highlightRange, highlightReplyRange, anchorClick, highlightAnnotation } from './AnchorEngine/AnchorHighlight';
 import { createAnnotation, removeAnnotationWidget } from './AnchorEngine/AnchorCreate';
 import { getAllPaths } from "./AnchorEngine/domhelper"
 import { getNodesInRange } from "./AnchorEngine/AnchorHelpers"
@@ -28,78 +28,74 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         let collection = document.getElementsByName(request.id);
         updateXpaths(collection, request.id)
     }
-    else if (request.msg === 'HIGHLIGHT_ANNOTATIONS') {
-        console.log("Highlight Annotations")
-        const annotationsOnPage = request.payload;
-        if (annotationsOnPage.length) {
-            annotationsOnPage.reverse().forEach(anno => {
-                if (anno.xpath !== undefined && anno.xpath !== null) {
-                    highlightRange(anno, anno.id)
-                }
-                if (anno.replies !== undefined && anno.replies.length) {
-                    anno.replies.forEach(reply => {
-                        if (reply.xpath !== undefined && reply.xpath !== null) {
-                            highlightRange(reply, anno.id, reply.replyId);
-                        }
-                    })
-                }
-                if (anno.childAnchor !== undefined && anno.childAnchor.length) {
-                    anno.childAnchor.forEach(child => {
-                        if (child.xpath !== undefined && child.xpath !== null) {
-                            highlightRange(child, anno.id, child.id);
-                        }
-                    })
-                }
-            });
-        }
-    }
     else if (request.msg === 'ADD_REPLY_HIGHLIGHT') {
         console.log('doin it');
         const { xpath, id } = request.payload;
         highlightReplyRange(xpath, id);
     }
     else if (request.msg === 'REFRESH_HIGHLIGHTS') {
-        console.log('in refresh');
-        var span = document.getElementsByClassName("highlight-adamite-annotation");
-        // if (allPaths == null) allPaths = getAllPaths();
-        // console.log(allPaths);
-
+        function brokenAnchorMessage(payload) {
+            chrome.runtime.sendMessage({
+                msg: "ANCHOR_BROKEN",
+                from: 'content',
+                payload: { ...payload }
+            });
+        }
         const annotationsOnPage = request.payload;
 
         if (annotationsOnPage.length) {
             annotationsOnPage.reverse().forEach(anno => {
-                let annos = [{ ...anno, type: "root" }]
+
+                highlightAnnotation(anno, anno.id.toString(), "root");
+                let findSpan = document.getElementsByName(anno.id);
+                if (findSpan.length === 0) {
+                    chrome.runtime.sendMessage({
+                        msg: "ANCHOR_BROKEN",
+                        from: 'content',
+                        payload: {
+                            "id": anno.id
+                        }
+                    });
+                }
+
                 if (anno.childAnchor !== undefined && anno.childAnchor.length) {
                     anno.childAnchor.forEach(child => {
                         if (child.xpath !== undefined && child.xpath !== null) {
-                            annos.push({ ...child, id: (anno.id.toString() + "-" + child.id.toString()), type: "child" })
+                            let domId = anno.id.toString() + "-" + child.id.toString();
+                            highlightAnnotation(child, domId, "child")
+                            let findSpan = document.getElementsByName(domId);
+                            if (findSpan.length === 0) {
+                                chrome.runtime.sendMessage({
+                                    msg: "ANCHOR_BROKEN",
+                                    from: 'content',
+                                    payload: {
+                                        "id": anno.id,
+                                        "childId": child.id
+                                    }
+                                });
+                            }
                         }
-                    })
+                    });
                 }
-                if (anno.replies !== undefined && anno.replies.length) {
+                if (anno.replies !== undefined && anno.replies !== null && anno.replies.length) {
                     anno.replies.forEach(reply => {
                         if (reply.xpath !== undefined && reply.xpath !== null) {
-                            annos.push({ ...reply, id: (anno.id.toString() + "-" + reply.replyId.toString()), type: "reply" })
+                            let domId = anno.id.toString() + "-" + reply.replyId.toString();
+                            highlightAnnotation(reply, domId, "reply")
+                            let findSpan = document.getElementsByName(domId);
+                            if (findSpan.length === 0) {
+                                chrome.runtime.sendMessage({
+                                    msg: "ANCHOR_BROKEN",
+                                    from: 'content',
+                                    payload: {
+                                        "id": anno.id,
+                                        "replyId": reply.replyId
+                                    }
+                                });
+                            }
                         }
                     })
                 }
-                highlightAnnotations(annos);
-
-                // annos.forEach((annotation) => {
-                //     if (annotation.xpath === undefined || annotation.xpath === null) return;
-                //     let xp = (annotation.xpath instanceof Array) ? annotation.xpath[0] : annotation.xpath;
-                //     // xp.start = xp.start.replaceAll("[1]", "");
-                //     //xp.end = xp.end.replaceAll("[1]", "")
-                //     console.log(xp);
-                //     try {
-                //         let newRange = xpathRange.toRange(xp.start, xp.startOffset, xp.end, xp.endOffset, document);
-                //         console.log(newRange);
-                //     } catch (err) {
-                //         console.log('got error- ', err);
-                //         return;
-                //     }
-                //     return;
-                // })
             });
         }
     }
@@ -198,4 +194,5 @@ var splitReinsertText = function (node, substring, callback) {
 function parentPath(path) {
     return path.substr(0, path.lastIndexOf("/"));
 };
+
 

@@ -354,8 +354,8 @@
 }
 
 .AnchorIconContainer {
-  width:14px;
-  height:14px;
+  width:20px;
+  height:20px;
   padding: 2px;
 }
 
@@ -365,10 +365,10 @@
 }
 
 .AnchorIcon {
-  width: 14px;
+  width: 18px;
   /* color:  #6B778C; */
   filter: brightness(.8);
-  height: 14px;
+  height: 18px;
   cursor: pointer;
 }
 

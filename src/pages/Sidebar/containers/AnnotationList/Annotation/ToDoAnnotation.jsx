@@ -53,7 +53,7 @@ class ToDoAnnotation extends Component {
     render() {
         const { idx, id, collapsed, author, pin, currentUser, authorId,
             childAnchor, currentUrl, url, anchor, xpath, tags, annotationType,
-            annotationContent, editing, replies, isPrivate } = this.props;
+            annotationContent, editing, replies, isPrivate, brokenAnchor, brokenReply, brokenChild } = this.props;
         const { replying, showReplies } = this.state;
         let replyCountString = "";
         if (replies !== undefined) {
@@ -149,7 +149,8 @@ class ToDoAnnotation extends Component {
                             url={url}
                             collapsed={collapsed}
                             anchorContent={anchor}
-                            pageAnchor={xpath === null} />
+                            pageAnchor={xpath === null}
+                            brokenAnchor={brokenAnchor} />
                     ) : (
                             <React.Fragment>
                                 <Anchor
@@ -158,8 +159,9 @@ class ToDoAnnotation extends Component {
                                     url={url}
                                     collapsed={collapsed}
                                     anchorContent={anchor}
-                                    pageAnchor={xpath === null} />
-                                <AnchorList childAnchor={childAnchor} currentUrl={currentUrl} collapsed={collapsed} />
+                                    pageAnchor={xpath === null}
+                                    brokenAnchor={brokenAnchor} />
+                                <AnchorList childAnchor={childAnchor} currentUrl={currentUrl} collapsed={collapsed} brokenChild={brokenChild} />
                             </React.Fragment>
                         )}
 
@@ -239,6 +241,7 @@ class ToDoAnnotation extends Component {
                                             offsets={reply.offsets}
                                             currentUrl={currentUrl}
                                             notifyParentOfAdopted={this.props.notifyParentOfAdopted}
+                                            brokenAnchor={brokenReply.includes(reply.replyId)}
                                         />
                                     )
                                 }
