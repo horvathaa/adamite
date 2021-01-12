@@ -561,7 +561,7 @@ class Sidebar extends React.Component {
     if (siteScope.includes('onPage') && !siteScope.includes('acrossWholeSite')) {
       // to-do make this check smarter by ignoring parts of the url (#, ?, etc.)
       // - just get substring and compare
-      return annotation.includes(this.state.url);
+      return annotation.url.includes(this.state.url);
     }
     else if (siteScope.includes('acrossWholeSite')) {
       return new Promise((resolve, reject) => {
