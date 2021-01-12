@@ -1,5 +1,6 @@
 import './anchor-box.css';
 import { xpathConversion, xpathToNode, flatten, getDescendants, getNodesInRange, pullXpathfromLocal } from './AnchorHelpers';
+import { startIndexMatchesContent, getCorrectStartSubstring, endIndexMatchesContent, getCorrectEndSubstring } from './domhelper';
 // import $ from 'jquery';
 var xpathRange = require('xpath-range');
 let textPosition = require('dom-anchor-text-position');
@@ -61,9 +62,7 @@ export const highlightAnnotation = (annotation, domId, type) => {
     //will show annotation type
     if (annotation.xpath === undefined || annotation.xpath === null) return;
     let xp = (annotation.xpath instanceof Array) ? annotation.xpath[0] : annotation.xpath;
-    let fullContentString = annotation.anchorContent;
     let range, nodes;
-    if (!fullContentString && annotation.anchor) fullContentString = annotation.anchor;
 
     let findSpan = document.getElementsByName(domId);
     if (findSpan && findSpan.length > 0) { return; }
@@ -74,19 +73,20 @@ export const highlightAnnotation = (annotation, domId, type) => {
         // console.log(range);console.log("SUCCESS") //console.log(fullContentString);console.log(range);console.log(xp);
     } catch (err) {
         // Error happens when reloaded changes xPath
-        console.log("ERROR"); console.log(annotation);
+        // console.log("ERROR"); console.log(annotation);
         // console.log(fullContentString); console.log(range); // console.log(xp); console.log('got error- ', err); todo see if text is in content
         return;
     }
 
+    let fullContentString = annotation.anchorContent;
+    if (!fullContentString && annotation.anchor) fullContentString = annotation.anchor;
     // If annotation spans a single xpath
+
+
     if ((xp.start === xp.end) && nodes.length === 1) {
-        //console.log("Single");
-        let substring = fullContentString;
-        // nodes[0].data.substring(xp.startOffset, xp.endOffset ? xp.endOffset : nodes[0].data.length);
-        // if (substring !== fullContentString && nodes[0].data.includes(fullContentString)) {
-        //     substring = fullContentString;
-        // }
+        // If content string exists use that otherwise use indexes
+        let substring = fullContentString && nodes[0].data.substring(xp.startOffset, xp.endOffset ? xp.endOffset : nodes[0].data.length);
+
         // Highlight
         return splitReinsertText(nodes[0], substring, function (node, match, offset) {
             //console.log("highlight");
@@ -105,42 +105,24 @@ export const highlightAnnotation = (annotation, domId, type) => {
         let start = true;
         let substring = "";
         fullContentString = fullContentString.toString().trim().replace(/\n/g, " ").replace(/[ ][ ]+/g, " ");
-        let remainingContent = fullContentString;
+
         for (let i = 0; i < nodes.length; i++) {
             if (nodes[i].nodeType === 3) {
                 if (xp.startOffset !== 0 && start) {
                     substring = nodes[i].data.substring(xp.startOffset, nodes[i].data.length);
-                    // check if string is too long by shortening it
-                    if (!remainingContent.includes(substring) && substring.length > 0) {
-                        // console.log("Start Match Error - Too Long", substring);
-                        while (!remainingContent.includes(substring) && substring.length > 0) {
-                            substring = substring.substring(1);
-                        }  // if (substring.length === 0){    console.log("NO MATCH", fullContentString)}
-                    }
-                    // check if string is too short by expanding it.
-                    else if (remainingContent.substring(0, substring.length) !== substring) {
-                        //console.log("Start Match Error - Too Short", substring);
-                        while (remainingContent.substring(0, substring.length) !== substring && substring.length < nodes[i].data.length) {
-                            substring = nodes[i].data.substring(nodes[i].data.length - (substring.length + 1));
-                        }   // if (substring.length === nodes[i].data.length) {console.log("NO MATCHES FOUND", fullContentString)}
+                    if (!startIndexMatchesContent(fullContentString, nodes[i].data, substring)) {
+                        console.log("Start Error");
+                        console.log(substring);
+                        substring = getCorrectStartSubstring(fullContentString, nodes[i].data, substring);
+                        console.log(substring);
                     }
                     start = false;
                 }
                 else if (xp.endOffset !== 0 && i == nodes.length - 1) {
                     substring = nodes[i].data.substring(0, xp.endOffset);
-                    // check if string is too long by shortening it
-                    if (!remainingContent.includes(substring) && substring.length > 0) {
-                        //console.log("End Match Error - Too Long", substring);
-                        while (!remainingContent.includes(substring) && substring.length > 0) {
-                            substring = substring.substring(0, substring.length - 1);
-                        }// if (substring.length === 0)    console.log("NO MATCH", fullContentString)
-                    }
-                    // check if string is too short by expanding it.
-                    else if (substring.length < nodes[i].data.length && remainingContent.includes(nodes[i].data.substring(0, substring.length + 2))) {
-                        //console.log("End Match Error - Too Short", substring);
-                        while (substring.length < nodes[i].data.length && remainingContent.includes(substring)) {
-                            substring = nodes[i].data.substring(0, substring.length + 1);
-                        } // if (substring.length === nodes[i].data.length) {    console.log("NO MATCHES FOUND", fullContentString)}
+                    if (!endIndexMatchesContent(fullContentString, nodes[i].data, substring)) {
+                        console.log("End Error");
+                        substring = getCorrectEndSubstring(fullContentString, nodes[i].data, substring);
                     }
                 }
                 else {
@@ -163,12 +145,15 @@ export const highlightAnnotation = (annotation, domId, type) => {
 
 
 
+
+
 /*
 * Finds Range and highlights each element
 */
 
 export const tempHighlight = (annotation) => {
     console.log(annotation);
+
     if (annotation.xpath === undefined || annotation.xpath === null) return;
     let xp = (annotation.xpath instanceof Array) ? annotation.xpath[0] : annotation.xpath;
     let range, nodes;
@@ -184,8 +169,6 @@ export const tempHighlight = (annotation) => {
         let substring = nodes[0].data.substring(xp.startOffset, xp.endOffset ? xp.endOffset : nodes[0].data.length);//fullContentString;
         return splitReinsertText(nodes[0], substring, function (node, match, offset) {
             //console.log("highlight");
-
-
             var span = document.createElement("span");
             span.setAttribute("name", "annoPreview");
             span.textContent = match;
@@ -259,16 +242,12 @@ export const highlightRange = (anno, annoId, replyId) => {
 */
 export const highlightReplyRange = (xpath, annoId, replyId) => {
     // console.log('are we even IN HERE')
-    var wordPath = [];
-    // console.log("ANNO ")
-    // console.log(anno)
     let newRange;
     // console.log('sending in this anno', anno);
     try {
         newRange = xpathRange.toRange(xpath.start, xpath.startOffset, xpath.end, xpath.endOffset, document);
     } catch (err) {
         console.log('got error- ', err);
-
         // return;
     }
     // console.log('anno', anno, 'range', newRange);
@@ -315,7 +294,6 @@ function highlight(range, startOffset, endOffset, callback) {
             else {
                 substring = nodes[i].data;
             }
-
             splitReinsertText(nodes[i], substring, callback);
         }
     }

@@ -187,6 +187,8 @@ const alertBackgroundOfNewSelection = (selection, offsets, xpath, type, content)
     // supporting creation of annotations in sidebar
     const annoContent = content === undefined ? "" : content;
     // console.log('transmitting content selected', annoContent);
+    //Here's where issue would be 
+
     chrome.runtime.sendMessage({
         msg: 'CONTENT_SELECTED',
         from: 'content',
