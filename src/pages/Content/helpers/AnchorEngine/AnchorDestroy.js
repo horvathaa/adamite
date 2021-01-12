@@ -1,5 +1,5 @@
 import { xpathConversion, flatten, getDescendants, getNodesInRange, filterArrayFromArray } from './AnchorHelpers';
-import { highlightRange } from './AnchorHighlight';
+import { highlightAnnotation, highlightRange } from './AnchorHighlight';
 import $ from 'jquery';
 
 /**
@@ -27,10 +27,16 @@ export const removeHighlights = () => {
 }
 
 export const removeTempHighlight = () => {
-    const temp = document.querySelector(".highlight-adamite-annotation-preview");
-    const parent = temp.parentNode;
-    $(temp).contents().unwrap();
-    parent.normalize();
+    // const temp = document.querySelector(".highlight-adamite-annotation-preview");
+    // const parent = temp.parentNode;
+    // $(temp).contents().unwrap();
+    // parent.normalize();
+    const temp = document.querySelectorAll(".highlight-adamite-annotation-preview");
+    temp.forEach(h => {
+        let parent = h.parentNode;
+        $(h).contents().unwrap();
+        parent.normalize();
+    });
 }
 
 /**
@@ -326,7 +332,7 @@ function updateXpathResponse(spanCollection, id, annotation) {
 //span in span in span 
 function highlight(nodeRange, annotation) {
     if (nodeRange.start !== null && nodeRange.end !== null) {
-        highlightRange(nodeRange);
+        highlightAnnotation(annotation);
     }
     else {
         oldXpathsToHighlight(nodeRange, annotation)
@@ -350,5 +356,5 @@ function oldXpathsToHighlight(nodeRange, annotation) {
         updatedAnnotationById.xpath.end = nodeRange.end
         updatedAnnotationById.xpath.endOffset = nodeRange.endOffset
     }
-    highlightRange(updatedAnnotationById);
+    highlightAnnotation(updatedAnnotationById, updatedAnnotationByI.id);
 }
