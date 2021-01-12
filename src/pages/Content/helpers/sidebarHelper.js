@@ -130,7 +130,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       {
         from: 'content',
         msg: 'CONTENT_UPDATED',
-        payload: { annotations: request.payload, tabId: request.tabId }
+        payload: { annotations: request.payload, tabId: request.tabId, url: request.url }
       }
     )
   }

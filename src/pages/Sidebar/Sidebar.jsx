@@ -276,19 +276,20 @@ class Sidebar extends React.Component {
         this.setState({ groups: request.payload });
       }
       else if (
-        request.from === 'content' &&
+        request.from === 'background' &&
         request.msg === 'CONTENT_UPDATED'
       ) {
         chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-          if (tabs[0].id === request.payload.tabId) {
-            this.setState({ annotations: request.payload.annotations, tabId: request.payload.tabId });
-            chrome.browserAction.setBadgeText({ tabId: request.payload.tabId, text: String(request.payload.annotations.length) });
+          const tab = tabs.filter(t => t.id === this.state.tabId && t.url === this.state.url);
+          if (tab.length && tab[0].url === this.state.url && tab[0].id === this.state.tabId) {
+            this.setState({ annotations: request.payload });
+            chrome.browserAction.setBadgeText({ tabId: tab[0].id, text: String(request.payload.length) });
             chrome.storage.local.get(['sidebarOpen'], response => {
               if (response.sidebarOpen !== undefined && response.sidebarOpen) {
-                chrome.tabs.sendMessage(tabs[0].id, {
+                chrome.tabs.sendMessage(tab[0].id, {
                   msg: 'HIGHLIGHT_ANNOTATIONS',
-                  payload: request.payload.annotations,
-                  url: this.state.url
+                  payload: request.payload,
+                  url: tab[0].url
                 });
               }
               this.requestFilterUpdate();

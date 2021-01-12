@@ -40,6 +40,7 @@ const Popover = ({ selection, xpathToNode, offsets, removePopover }) => {
                     url: getPathFromUrl(window.location.href),
                 },
             });
+            selection.removeAllRanges();
             removePopover();
         }
     };

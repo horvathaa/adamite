@@ -30,7 +30,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         highlightReplyRange(xpath, id);
     }
     else if (request.msg === 'HIGHLIGHT_ANNOTATIONS') {
-
         const annotationsOnPage = request.payload;
 
         if (annotationsOnPage.length) {

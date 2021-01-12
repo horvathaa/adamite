@@ -78,27 +78,30 @@ let privateListener;
 let groupListener;
 let clicked = false;
 
-const broadcastAnnotationsUpdated = (message, annotations) => {
+const broadcastAnnotationsUpdated = (message, annotations, url, tabId) => {
   chrome.runtime.sendMessage({
     msg: message,
     from: 'background',
     payload: annotations,
+    url,
+    tabId
   });
 };
 
-const broadcastAnnotationsUpdatedTab = (message, annotations, tabId) => {
-  chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-    chrome.tabs.sendMessage(
-      tabs[0].id,
-      {
-        msg: message,
-        from: 'background',
-        payload: annotations,
-        tabId: tabs[0].id
-      }
-    );
-  });
-};
+// const broadcastAnnotationsUpdatedTab = (message, annotations, url) => {
+//   chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+//     chrome.tabs.sendMessage(
+//       tabs[0].id,
+//       {
+//         msg: message,
+//         from: 'background',
+//         payload: annotations,
+//         tabId: tabs[0].id,
+//         url
+//       }
+//     );
+//   });
+// };
 
 const broadcastGroupsUpdated = (message, groups) => {
   chrome.runtime.sendMessage({
@@ -178,8 +181,9 @@ function setUpGetAllAnnotationsByUrlListener(url, annotations) {
         else {
           tabAnnotationCollect.push({ tabId: tabs[0].id, annotations: annotationsToBroadcast });
         }
+        broadcastAnnotationsUpdated("CONTENT_UPDATED", annotationsToBroadcast, url, tabs[0].id);
       });
-      broadcastAnnotationsUpdatedTab("CONTENT_UPDATED", annotationsToBroadcast);
+
 
       publicAnnotations = tempPublicAnnotations;
 
@@ -207,8 +211,9 @@ function promiseToComeBack(url, annotations) {
         else {
           tabAnnotationCollect.push({ tabId: tabs[0].id, annotations: annotationsToBroadcast });
         }
+        broadcastAnnotationsUpdated("CONTENT_UPDATED", annotationsToBroadcast, url, tabs[0].id);
       });
-      broadcastAnnotationsUpdatedTab("CONTENT_UPDATED", annotationsToBroadcast);
+      // broadcastAnnotationsUpdatedTab("CONTENT_UPDATED", annotationsToBroadcast, url);
       privateAnnotations = tempPrivateAnnotations;
     }))
   })
@@ -217,7 +222,7 @@ function promiseToComeBack(url, annotations) {
 chrome.tabs.onActivated.addListener(function (activeInfo) {
   if (containsObjectWithId(activeInfo.tabId, tabAnnotationCollect)) {
     const tabInfo = tabAnnotationCollect.filter(obj => obj.tabId === activeInfo.tabId);
-    broadcastAnnotationsUpdatedTab('CONTENT_UPDATED', tabInfo[0].annotations);
+    broadcastAnnotationsUpdated('CONTENT_UPDATED', tabInfo[0].annotations, "", activeInfo.tabId);
   }
   else {
     chrome.tabs.get(activeInfo.tabId, (tab) => {

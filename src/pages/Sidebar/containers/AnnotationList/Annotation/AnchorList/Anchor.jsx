@@ -90,22 +90,21 @@ class Anchor extends Component {
 
         let anchorIcon;
 
-        if (brokenAnchor && url === currentUrl) {
-            anchorIcon = <img src={anchorBroken} className="AnchorIcon" alt='anchor broken' />;
-        }
-        else {
-            if (pageAnchor) {
-                anchorIcon = <BsFileEarmarkText className="AnchorIcon" />;
-            }
-            else if (url === currentUrl) {
-                anchorIcon = <img src={anchorOnPage} className="AnchorIcon" alt='anchor on page' />;
-            }
-            else {
-                anchorIcon = <img src={anchorOnOtherPage} className="AnchorIcon" alt='anchor on other page' />;
-            }
+        if (pageAnchor) {
+            anchorIcon = <BsFileEarmarkText className="AnchorIcon" />;
         }
 
-        if (brokenAnchor && url === currentUrl) {
+        else if (brokenAnchor && url === currentUrl) {
+            anchorIcon = <img src={anchorBroken} className="AnchorIcon" alt='anchor broken' />;
+        }
+        else if (url === currentUrl) {
+            anchorIcon = <img src={anchorOnPage} className="AnchorIcon" alt='anchor on page' />;
+        }
+        else {
+            anchorIcon = <img src={anchorOnOtherPage} className="AnchorIcon" alt='anchor on other page' />;
+        }
+
+        if (brokenAnchor && url === currentUrl && !pageAnchor) {
             return (
                 <div
                     className={classNames({
