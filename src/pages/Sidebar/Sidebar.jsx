@@ -120,6 +120,12 @@ class Sidebar extends React.Component {
     });
   }
 
+  // helper method from
+  // https://stackoverflow.com/questions/2540969/remove-querystring-from-url
+  getPathFromUrl = (url) => {
+    return url.split(/[?#]/)[0];
+  }
+
   handleScroll = (event, filterSelection) => {
     const scrollIsAtTheBottom = (document.documentElement.scrollHeight - window.innerHeight) - 1 <= Math.floor(window.scrollY);
     if (scrollIsAtTheBottom && this.state.searchState) {
@@ -158,11 +164,11 @@ class Sidebar extends React.Component {
         //   tabInfo => {
         chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
           let tab = tabs[0];
-          this.setState({ url: tab.url, tabId: tabs[0].id });
+          this.setState({ url: this.getPathFromUrl(tab.url), tabId: tabs[0].id });
           if (currentUserData.payload.currentUser) {
             this.setUpAnnotationsListener(
               currentUserData.payload.currentUser.uid,
-              tab.url,
+              this.getPathFromUrl(tab.url),
               tab.id
             );
           } else {

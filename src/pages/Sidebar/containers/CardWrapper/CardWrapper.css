@@ -238,14 +238,14 @@
   
   .Dropdown-Col{
     position: relative;
-    width: 100%;
+    /* width: 100%;
     padding-right: 15px;
      padding-left: 0px;
      flex-basis: 0;
      -ms-flex-positive: 1;
-     flex-grow: 1;
-     min-width: 0;
-     max-width: 100%;
+     flex-grow: 1; */
+     min-width: fit-content;
+     /* max-width: 100%; */
   }
   
   .Publish-Button{

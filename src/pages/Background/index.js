@@ -221,8 +221,8 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
   }
   else {
     chrome.tabs.get(activeInfo.tabId, (tab) => {
-      publicListener = setUpGetAllAnnotationsByUrlListener(tab.url, annotations);
-      privateListener = promiseToComeBack(tab.url, annotations);
+      publicListener = setUpGetAllAnnotationsByUrlListener(getPathFromUrl(tab.url), annotations);
+      privateListener = promiseToComeBack(getPathFromUrl(tab.url), annotations);
     });
   }
 });
@@ -237,7 +237,7 @@ chrome.browserAction.onClicked.addListener(function () {
         chrome.tabs.sendMessage(tabs[0].id, {
           msg: 'HIGHLIGHT_ANNOTATIONS',
           payload: tabInfo[0].annotations,
-          url: tabs[0].url
+          url: getPathFromUrl(tabs[0].url)
         })
       }
     })
@@ -283,8 +283,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       }
     );
 
-    publicListener = setUpGetAllAnnotationsByUrlListener(request.url, annotations);
-    privateListener = promiseToComeBack(request.url, annotations);
+    publicListener = setUpGetAllAnnotationsByUrlListener(getPathFromUrl(request.url), annotations);
+    privateListener = promiseToComeBack(getPathFromUrl(request.url), annotations);
     chrome.browserAction.setBadgeText({ tabId: request.tabId, text: String(annotations.length) });
   }
   else if (request.msg === 'SET_UP_PIN' && request.from === 'content') {
