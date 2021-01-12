@@ -4,12 +4,64 @@ let USE_THREAD_TBODY = true;
 let USE_TABLE_TEXT = true;
 
 let CONTEXT_LENGTH = 32;
-
-
 let restricted = false;
 let allPaths, oldRanges, rootNode;
 
 let debug = false;
+
+
+
+
+export function startIndexMatchesContent(annoContent, nodeContent, substring) {
+    return (!annoContent) || (annoContent.includes(substring) && substring.length > 0 &&
+        annoContent.substring(0, substring.length) === substring);
+}
+
+export function getCorrectStartSubstring(annoContent, nodeContent, substring) {
+    // check if string is too long by shortening it
+    if (!annoContent.includes(substring) && substring.length > 0) {
+        // console.log("Start Match Error - Too Long", substring);
+        while (!annoContent.includes(substring) && substring.length > 0) {
+            substring = substring.substring(1);
+        }  // if (substring.length === 0){    console.log("NO MATCH", fullContentString)}
+    }
+    // check if string is too short by expanding it.
+    else if (!annoContent.substring(0, substring.length) !== substring) {
+        //console.log("Start Match Error - Too Short", substring);
+        while (annoContent.substring(0, substring.length) !== substring && substring.length < nodeContent.length) {
+            substring = nodeContent.substring(nodeContent.length - (substring.length + 1));
+        }   // if (substring.length === nodes[i].data.length) {console.log("NO MATCHES FOUND", fullContentString)}
+    }
+    return substring;
+}
+export function endIndexMatchesContent(annoContent, nodeContent, substring) {
+    return (!annoContent) || (annoContent.includes(substring) && substring.length > 0) &&
+        !(substring.length < nodeContent.length && annoContent.includes(nodeContent.substring(0, substring.length + 2)));
+}
+
+export function getCorrectEndSubstring(annoContent, nodeContent, substring) {
+    // check if string is too long by shortening it
+    if (!annoContent.includes(substring) && substring.length > 0) {
+        //console.log("End Match Error - Too Long", substring);
+        while (!annoContent.includes(substring) && substring.length > 0) {
+            substring = substring.substring(0, substring.length - 1);
+        }// if (substring.length === 0)    console.log("NO MATCH", fullContentString)
+    }
+    // check if string is too short by expanding it.
+    else if (substring.length < nodeContent.length && annoContent.includes(nodeContent.substring(0, substring.length + 2))) {
+        //console.log("End Match Error - Too Short", substring);
+        while (substring.length < nodeContent.length && annoContent.includes(substring)) {
+            substring = nodeContent.substring(0, substring.length + 1);
+        } // if (su
+    }
+    return substring;
+}
+
+
+
+
+
+
 
 export const getAllPaths = () => {
     debug = false;
@@ -58,8 +110,6 @@ function collectPathsForNode(node) {
     }
     return null;
 };
-
-
 
 
 
