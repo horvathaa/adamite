@@ -1,238 +1,89 @@
+import { transmitMessage } from '../anchorEventTransmitter';
 import './anchor-box.css';
-import { xpathConversion, xpathToNode, flatten, getDescendants, getNodesInRange, pullXpathfromLocal } from './AnchorHelpers';
-import { startIndexMatchesContent, getCorrectStartSubstring, endIndexMatchesContent, getCorrectEndSubstring } from './domhelper';
-// import $ from 'jquery';
-var xpathRange = require('xpath-range');
-let textPosition = require('dom-anchor-text-position');
-
-// helper method from
-// https://stackoverflow.com/questions/2540969/remove-querystring-from-url
-function getPathFromUrl(url) {
-    return url.split(/[?#]/)[0];
-}
+import { addHighlightToSubstring } from './AnchorDomChanges';
+import { getNodeSubstringPairs } from './AnchorHelpers';
 
 
-export function anchorClick(e) {
-    // console.log("in Anchor click", e)
-    // console.log("spanz", document.getElementsByName(e.target.attributes.getNamedItem("name").value));
-    //console.log(target);
-    var ids = [e.target.attributes.getNamedItem("name").value];
 
-    var spans = document.getElementsByName(ids[0])
-
-
-    for (var i = 0; i < spans.length; i++) {
-        //children
-        var arr = [].slice.call(spans[i].children);
-        var arr = arr.filter((function (element) {
-            return element.className === 'highlight-adamite-annotation';
-        }));
-        arr.forEach(element => {
-            ids.push(element.attributes.getNamedItem("name").value)
-        });
-        //parents
-        var parentNode = spans[i].parentNode
-        while (parentNode.className === 'highlight-adamite-annotation') {
-            ids.push(parentNode.attributes.getNamedItem("name").value)
-            parentNode = parentNode.parentNode;
-        }
+function checkIfBrokenAnchor(spanId, errorPayload) {
+    // TODO this doesn't work very well -- need to ficute out what the issue is
+    let findSpan = document.getElementsByName(spanId);
+    if (findSpan.length === 0) {
+        transmitMessage({ msg: "ANCHOR_BROKEN", data: { payload: errorPayload }, sentFrom: "AnchorHighlight" })
+        return true;
     }
-    // ids = ids.filter(function (item, pos) {
-    //     return ids.indexOf(item) == pos;
-    // });
-
-    var ids = [...new Set(ids)]
-    console.log(ids);
-    // console.log("here is the ids", ids)
-    //);
-    const target = ids;
-    // const target = e.target.attributes.getNamedItem("name").value;
-    chrome.runtime.sendMessage({
-        msg: 'ANCHOR_CLICKED',
-        from: 'content',
-        payload: {
-            url: getPathFromUrl(window.location.href),
-            target: target,
-        },
-    });
+    return false;
 }
+
+
+export const highlightAnnotationDeep = (anno) => {
+    //will show annotation type
+    highlightAnnotation(anno, anno.id.toString(), "root");
+    checkIfBrokenAnchor(anno.id.toString(), { "id": anno.id });
+
+    if (anno.childAnchor !== undefined && anno.childAnchor.length) {
+        anno.childAnchor.forEach(child => {
+            if (child.xpath !== undefined && child.xpath !== null) {
+                let domId = anno.id.toString() + "-" + child.id.toString();
+                highlightAnnotation(child, domId, "child")
+                checkIfBrokenAnchor(domId, { "id": anno.id, "childId": child.id });
+            }
+        });
+    }
+    if (anno.replies !== undefined && anno.replies !== null && anno.replies.length) {
+        anno.replies.forEach(reply => {
+            if (reply.xpath !== undefined && reply.xpath !== null) {
+                let domId = anno.id.toString() + "-" + reply.replyId.toString();
+                highlightAnnotation(reply, domId, "reply")
+                checkIfBrokenAnchor(domId, { "id": anno.id, "replyId": reply.replyId });
+            }
+        })
+    }
+}
+
+
+
+
 
 
 export const highlightAnnotation = (annotation, domId, type) => {
     //will show annotation type
-    if (annotation.xpath === undefined || annotation.xpath === null) return;
-    let xp = (annotation.xpath instanceof Array) ? annotation.xpath[0] : annotation.xpath;
-    let range, nodes;
-
-    let findSpan = document.getElementsByName(domId);
-    if (findSpan && findSpan.length > 0) { return; }
-
-    try {
-        range = xpathRange.toRange(xp.start, xp.startOffset, xp.end, xp.endOffset, document);
-        nodes = getNodesInRange(range).filter(function (element) { return element.nodeType === 3 && element.data.trim() !== ""; });
-        // console.log(range);console.log("SUCCESS") //console.log(fullContentString);console.log(range);console.log(xp);
-    } catch (err) {
-        // Error happens when reloaded changes xPath
-        // console.log("ERROR"); console.log(annotation);
-        // console.log(fullContentString); console.log(range); // console.log(xp); console.log('got error- ', err); todo see if text is in content
+    let nodePairs = getNodeSubstringPairs({ annotation: annotation, type: type });
+    if (!nodePairs || nodePairs.length == 0) {
+        console.log("no matches");
         return;
     }
-
-    let fullContentString = annotation.anchorContent;
-    if (!fullContentString && annotation.anchor) fullContentString = annotation.anchor;
-    // If annotation spans a single xpath
-
-
-    if ((xp.start === xp.end) && nodes.length === 1) {
-        // If content string exists use that otherwise use indexes
-        let substring = fullContentString && nodes[0].data.substring(xp.startOffset, xp.endOffset ? xp.endOffset : nodes[0].data.length);
-
-        // Highlight
-        return splitReinsertText(nodes[0], substring, function (node, match, offset) {
-            //console.log("highlight");
-            var span = document.createElement("span");
-            if (annotation.id !== undefined) {
-                span.setAttribute("name", domId);
-            }
-            span.textContent = match;
-            span.onclick = anchorClick;
-            span.className = "highlight-adamite-annotation";
-            node.parentNode.insertBefore(span, node.nextSibling);
-            node.parentNode.normalize()
-        });
-    }
-    else if (nodes.length > 1) {
-        let start = true;
-        let substring = "";
-        fullContentString = fullContentString.toString().trim().replace(/\n/g, " ").replace(/[ ][ ]+/g, " ");
-
-        for (let i = 0; i < nodes.length; i++) {
-            if (nodes[i].nodeType === 3) {
-                if (xp.startOffset !== 0 && start) {
-                    substring = nodes[i].data.substring(xp.startOffset, nodes[i].data.length);
-                    if (!startIndexMatchesContent(fullContentString, nodes[i].data, substring)) {
-                        console.log("Start Error");
-                        console.log(substring);
-                        substring = getCorrectStartSubstring(fullContentString, nodes[i].data, substring);
-                        console.log(substring);
-                    }
-                    start = false;
-                }
-                else if (xp.endOffset !== 0 && i == nodes.length - 1) {
-                    substring = nodes[i].data.substring(0, xp.endOffset);
-                    if (!endIndexMatchesContent(fullContentString, nodes[i].data, substring)) {
-                        console.log("End Error");
-                        substring = getCorrectEndSubstring(fullContentString, nodes[i].data, substring);
-                    }
-                }
-                else {
-                    substring = nodes[i].data;// if (!remainingContent.includes(substring)) {   console.log("Middle substring error") }
-                }
-                splitReinsertText(nodes[i], substring, function (node, match, offset) {
-                    //console.log("highlight");
-                    var span = document.createElement("span");
-                    span.setAttribute("name", domId);
-                    span.textContent = match;
-                    span.onclick = anchorClick;
-                    span.className = "highlight-adamite-annotation";
-                    node.parentNode.insertBefore(span, node.nextSibling);
-                    node.parentNode.normalize()
-                });
-            }
-        }
-    }
+    nodePairs.forEach((pair) => {
+        addHighlightToSubstring({ node: pair.node, substring: pair.substring, spanId: domId, isPreview: false });
+    });
 }
-
-
-
-
 
 /*
 * Finds Range and highlights each element
 */
-
 export const tempHighlight = (annotation) => {
     console.log(annotation);
-
-    if (annotation.xpath === undefined || annotation.xpath === null) return;
-    let xp = (annotation.xpath instanceof Array) ? annotation.xpath[0] : annotation.xpath;
-    let range, nodes;
-    try {
-        range = xpathRange.toRange(xp.start, xp.startOffset, xp.end, xp.endOffset, document);
-        nodes = getNodesInRange(range).filter(function (element) { return element.nodeType === 3 && element.data.trim() !== ""; });
-        // console.log(range);console.log("SUCCESS") //console.log(fullContentString);console.log(range);console.log(xp);
-    } catch (err) { return; }
-
-    // If annotation spans a single xpath
-    if ((xp.start === xp.end) && nodes.length === 1) {
-
-        let substring = nodes[0].data.substring(xp.startOffset, xp.endOffset ? xp.endOffset : nodes[0].data.length);//fullContentString;
-        return splitReinsertText(nodes[0], substring, function (node, match, offset) {
-            //console.log("highlight");
-            var span = document.createElement("span");
-            span.setAttribute("name", "annoPreview");
-            span.textContent = match;
-            span.className = "highlight-adamite-annotation-preview";
-            node.parentNode.insertBefore(span, node.nextSibling);
-            node.parentNode.normalize()
-        });
+    let nodePairs = getNodeSubstringPairs({ annotation: annotation, type: "temp" });
+    if (!nodePairs || nodePairs.length == 0) {
+        console.log("no matches");
+        return;
     }
-    if (nodes.length > 1) {
-        let start = true;
-        let substring = "";
-        for (let i = 0; i < nodes.length; i++) {
-            if (nodes[i].nodeType === 3) {
-                if (xp.startOffset !== 0 && start) {
-                    substring = nodes[i].data.substring(xp.startOffset, nodes[i].data.length);
-                    start = false;
-                }
-                else if (xp.endOffset !== 0 && i == nodes.length - 1) {
-                    substring = nodes[i].data.substring(0, xp.endOffset);
-                }
-                else { substring = nodes[i].data; }
-                splitReinsertText(nodes[i], substring, function (node, match, offset) {
-                    var span = document.createElement("span");
-                    span.setAttribute("name", "annoPreview");
-                    span.textContent = match;
-                    span.className = "highlight-adamite-annotation-preview";
-                    node.parentNode.insertBefore(span, node.nextSibling);
-                    node.parentNode.normalize()
-                });
-            }
-        }
-    }
+    nodePairs.forEach((pair) => {
+        addHighlightToSubstring({ node: pair.node, substring: pair.substring, isPreview: true });
+    });
 }
 
 
 
+
 export const highlightRange = (anno, annoId, replyId) => {
-
-    var wordPath = [];
-    let newRange;
-    try {
-        if (anno.xpath instanceof Array) {
-            newRange = xpathRange.toRange(anno.xpath[0].start, anno.xpath[0].startOffset, anno.xpath[0].end, anno.xpath[0].endOffset, document);
-        } else {
-            newRange = xpathRange.toRange(anno.xpath.start, anno.xpath.startOffset, anno.xpath.end, anno.xpath.endOffset, document);
-        }
-    } catch (err) {
-        //console.log('in catch', err);
-        return;
-    }
-    highlight(newRange, anno.xpath.startOffset, anno.xpath.endOffset, function (node, match, offset) {
-        var span = document.createElement("span");
-
-        if (annoId !== undefined && replyId === undefined) {
-            span.setAttribute("name", annoId.toString());
-        }
-        else if (annoId !== undefined && replyId !== undefined) {
-            span.setAttribute("name", annoId.toString() + "-" + replyId.toString());
-        }
-        span.textContent = match;
-        span.onclick = anchorClick;
-        span.className = "highlight-adamite-annotation";
-        node.parentNode.insertBefore(span, node.nextSibling);
-        node.parentNode.normalize();
+    let spanId = (annoId !== undefined && replyId === undefined) ? annoId.toString() :
+        (annoId !== undefined && replyId !== undefined) ? annoId.toString() + "-" + replyId.toString() :
+            null;
+    let type = (replyId !== undefined) ? "reply" : "annotation";
+    let nodePairs = getNodeSubstringPairs({ annotation: anno, type: type });
+    nodePairs.forEach((pair) => {
+        addHighlightToSubstring({ node: pair.node, substring: pair.substring, spanId: spanId });
     });
 }
 
@@ -240,82 +91,11 @@ export const highlightRange = (anno, annoId, replyId) => {
 /*
 * Alternative way to use highlightRange
 */
+//TODO
 export const highlightReplyRange = (xpath, annoId, replyId) => {
-    // console.log('are we even IN HERE')
-    let newRange;
-    // console.log('sending in this anno', anno);
-    try {
-        newRange = xpathRange.toRange(xpath.start, xpath.startOffset, xpath.end, xpath.endOffset, document);
-    } catch (err) {
-        console.log('got error- ', err);
-        // return;
-    }
-    // console.log('anno', anno, 'range', newRange);
-    highlight(newRange, xpath.startOffset, xpath.endOffset, function (node, match, offset) {
-
-        var span = document.createElement("span");
-        if (annoId !== undefined && replyId !== undefined) {
-            span.setAttribute("name", annoId.toString() + "-" + replyId.toString());
-        }
-        // else {
-        //     span.setAttribute("name", anno.id.toString() + annoId.toString());
-        // }
-        span.textContent = match;
-        span.onclick = anchorClick;
-        span.className = "highlight-adamite-annotation";
-        node.parentNode.insertBefore(span, node.nextSibling);
-        node.parentNode.normalize()
-    });
-}
-
-
-function highlight(range, startOffset, endOffset, callback) {
-    console.log("highlight");
-    var nodes = getNodesInRange(range).filter(function (element) {
-        return element.nodeType === 3 && element.data.trim() !== "";
-    });
-
-    let start = true;
-    let substring = "";
-    if (nodes.length === 1) {
-        substring = nodes[0].data.substring(startOffset, endOffset ? endOffset : nodes[0].data.length);
-        return splitReinsertText(nodes[0], substring, callback);
-    }
-    for (let i = 0; i < nodes.length; i++) {
-        if (nodes[i].nodeType === 3) {
-            if (startOffset !== 0 && start) {
-                substring = nodes[i].data.substring(startOffset, nodes[i].data.length);
-                substring = startOffset;
-                start = false;
-            }
-            else if (endOffset !== 0 && i == nodes.length - 1) {
-                substring = nodes[i].data.substring(0, endOffset);
-            }
-            else {
-                substring = nodes[i].data;
-            }
-            splitReinsertText(nodes[i], substring, callback);
-        }
-    }
+    highlightRange(xpath, annoId, replyId);
 }
 
 
 
 
-
-
-
-
-//Splits text in node and calls callback action to preform on middle node
-var splitReinsertText = function (node, substring, callback) {
-    node.data.replace(substring, function (all) {
-        var args = [].slice.call(arguments),
-            offset = args[args.length - 2],
-            newTextNode = node.splitText(offset);
-        newTextNode.data = newTextNode.data.substr(all.length);
-
-        callback.apply(window, [node].concat(args));
-        return newTextNode;
-
-    });
-}
