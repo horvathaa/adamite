@@ -26,7 +26,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         updateXpaths(collection, request.id)
     }
     else if (request.msg === 'ADD_REPLY_HIGHLIGHT') {
-        // console.log('doin it');
         const { xpath, id } = request.payload;
         highlightReplyRange(xpath, id);
     }

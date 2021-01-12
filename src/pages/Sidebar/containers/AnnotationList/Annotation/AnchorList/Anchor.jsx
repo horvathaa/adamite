@@ -90,7 +90,7 @@ class Anchor extends Component {
 
         let anchorIcon;
 
-        if (brokenAnchor && currentUrl === url) {
+        if (brokenAnchor && url === currentUrl) {
             anchorIcon = <img src={anchorBroken} className="AnchorIcon" alt='anchor broken' />;
         }
         else {
@@ -105,7 +105,7 @@ class Anchor extends Component {
             }
         }
 
-        if (brokenAnchor && currentUrl === url) {
+        if (brokenAnchor && url === currentUrl) {
             return (
                 <div
                     className={classNames({
@@ -135,12 +135,12 @@ class Anchor extends Component {
                     })}
                     onMouseEnter={this.handleOnLocalOnMouseEnter}
                     onMouseLeave={this.handleOnLocalOnMouseLeave}
-                    onClick={(pageAnchor || currentUrl !== url) ? this.handleExternalAnchor : this.handleOnLocalOnClick}
+                    onClick={(pageAnchor || url !== currentUrl) ? this.handleExternalAnchor : this.handleOnLocalOnClick}
                 >
                     <div className="AnchorIconContainer">
                         {anchorIcon}
                     </div>
-                    {currentUrl === url && !pageAnchor ? (
+                    {url.includes(currentUrl) && !pageAnchor ? (
                         <div className="AnchorTextContainer">
                             {anchorContent}
                         </div>

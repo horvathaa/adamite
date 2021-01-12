@@ -51,22 +51,24 @@ class Annotation extends Component {
     document.addEventListener('keydown', this.keydown, false);
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       if (request.from === 'content' && request.msg === 'ANCHOR_BROKEN' && request.payload.id === this.props.id) {
-        if (this.props.url === this.props.currentUrl &&
+        if (this.props.url.includes(this.props.currentUrl) &&
           request.payload.replyId !== undefined) {
           const broken = this.props.replies.filter(r => r.replyId === request.payload.replyId);
           let temp = this.state.brokenReply;
           temp.push(String(broken[0].replyId));
           this.setState({ brokenReply: temp });
         }
-        else if (this.props.url === this.props.currentUrl &&
+        else if (this.props.url.includes(this.props.currentUrl) &&
           request.payload.childId !== undefined) {
           const broken = this.props.childAnchor.filter(c => c.id === request.payload.childId);
           let temp = this.state.brokenChild;
           temp.push(broken[0].id);
           this.setState({ brokenChild: temp });
         }
-        else if (this.props.url === this.props.currentUrl) {
-          this.setState({ brokenAnchor: true });
+        else if (this.props.url[0] === this.props.currentUrl) {
+          if (sender.tab.url === this.props.currentUrl) {
+            this.setState({ brokenAnchor: true });
+          }
         }
       }
     })
@@ -156,7 +158,7 @@ class Annotation extends Component {
     if (confirm("Are you sure? This action cannot be reversed")) {
       chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
         let url = tabs[0].url;
-        if (this.props.url === url) {
+        if (this.props.url[0] === url) {
           chrome.tabs.sendMessage(
             tabs[0].id,
             {

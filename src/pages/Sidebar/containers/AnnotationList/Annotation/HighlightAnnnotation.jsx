@@ -148,7 +148,7 @@ class HighlightAnnotation extends Component {
                         <Anchor
                             id={id}
                             currentUrl={currentUrl}
-                            url={url}
+                            url={url[0]}
                             collapsed={collapsed}
                             anchorContent={anchor}
                             pageAnchor={xpath === null}
@@ -158,7 +158,7 @@ class HighlightAnnotation extends Component {
                                 <Anchor
                                     id={id}
                                     currentUrl={currentUrl}
-                                    url={url}
+                                    url={url[0]}
                                     collapsed={collapsed}
                                     anchorContent={anchor}
                                     pageAnchor={xpath === null}

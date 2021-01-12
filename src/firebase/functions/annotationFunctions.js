@@ -11,8 +11,15 @@ export const getAllAnnotationsByUserId = uid => {
 
 export const getAllAnnotationsByUrl = url => {
   return db.collection(DB_COLLECTIONS.ANNOTATIONS)
-    .where('url', '==', url)
+    .where('url', 'array-contains', url)
     .where('private', '==', false);
+};
+
+export const getPrivateAnnotationsByUrl = (url, uid) => {
+  return db.collection(DB_COLLECTIONS.ANNOTATIONS)
+    .where('url', 'array-contains', url)
+    .where('authorId', '==', uid)
+    .where('private', '==', true);
 };
 
 export const getAllUserGroups = uid => {
@@ -40,12 +47,6 @@ export const addNewGroup = async ({
   });
 };
 
-export const getPrivateAnnotationsByUrl = (url, uid) => {
-  return db.collection(DB_COLLECTIONS.ANNOTATIONS)
-    .where('url', '==', url)
-    .where('authorId', '==', uid)
-    .where('private', '==', true);
-};
 
 export const getAnnotationsAcrossSite = hostname => {
   return db.collection(DB_COLLECTIONS.ANNOTATIONS)
@@ -138,7 +139,7 @@ export const updateAllAnnotations = () => {
     .then(function (querySnapshot) {
       querySnapshot.forEach(function (doc) {
         doc.ref.update({
-          // fill in here
+          // add update here
         });
       });
     });

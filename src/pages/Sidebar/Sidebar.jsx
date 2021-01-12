@@ -234,24 +234,26 @@ class Sidebar extends React.Component {
         request.msg === 'ANCHOR_CLICKED'
       ) {
         const { target } = request.payload;
-        this.setState({
-          filteredAnnotations: this.state.annotations.filter(element => {
-            if (element.childAnchor !== undefined && element.childAnchor !== null && element.childAnchor.length) {
-              let doesContain = false;
-              element.childAnchor.forEach(anno => {
-                if (target.includes(anno.id)) {
-                  doesContain = true;
+        if (request.payload.url === this.state.url) {
+          this.setState({
+            filteredAnnotations: this.state.annotations.filter(element => {
+              if (element.childAnchor !== undefined && element.childAnchor !== null && element.childAnchor.length) {
+                let doesContain = false;
+                element.childAnchor.forEach(anno => {
+                  if (target.includes(anno.id)) {
+                    doesContain = true;
+                  }
+                })
+                if (!doesContain) {
+                  doesContain = target.includes(element.id);
                 }
-              })
-              if (!doesContain) {
-                doesContain = target.includes(element.id);
+                return doesContain;
               }
-              return doesContain;
-            }
-            return target.includes(element.id);
-          })
-        });
-        this.setState({ showClearClickedAnnotation: true });
+              return target.includes(element.id);
+            })
+          });
+          this.setState({ showClearClickedAnnotation: true });
+        }
       } else if (
         request.from === 'background' &&
         request.msg === 'TOGGLE_SIDEBAR'
@@ -280,9 +282,10 @@ class Sidebar extends React.Component {
                 chrome.tabs.sendMessage(tabs[0].id, {
                   msg: 'HIGHLIGHT_ANNOTATIONS',
                   payload: request.payload.annotations,
+                  url: this.state.url
                 });
-                this.requestFilterUpdate();
               }
+              this.requestFilterUpdate();
             });
           }
         })
@@ -558,7 +561,7 @@ class Sidebar extends React.Component {
     if (siteScope.includes('onPage') && !siteScope.includes('acrossWholeSite')) {
       // to-do make this check smarter by ignoring parts of the url (#, ?, etc.)
       // - just get substring and compare
-      return annotation.url === this.state.url;
+      return annotation.url.includes(this.state.url);
     }
     else if (siteScope.includes('acrossWholeSite')) {
       return new Promise((resolve, reject) => {
@@ -905,7 +908,13 @@ class Sidebar extends React.Component {
                     requestFilterUpdate={this.requestChildAnchorFilterUpdate}
                     notifyParentOfPinning={this.handlePinnedAnnotation} />
                 )}
+              {(this.state.url.includes("facebook.com") || this.state.url.includes("google.com") || this.state.url.includes("twitter.com")) && !this.state.url.includes("developer") ? (
+                <div className="whoops">
+                  NOTE: Adamite does not work well on dynamic webpages such as Facebook or Twitter where content is likely to change. Proceed with caution.
+                </div>
+              ) : (null)}
             </div>
+
             {this.state.showClearClickedAnnotation && (
               <div className="userQuestionButtonContainer">
                 <div className="ModifyFilter userQuestions" onClick={_ => { this.setState({ showClearClickedAnnotation: false }); this.setState({ filteredAnnotations: this.state.annotations }) }}>

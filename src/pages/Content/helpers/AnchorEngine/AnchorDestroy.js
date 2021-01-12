@@ -356,5 +356,5 @@ function oldXpathsToHighlight(nodeRange, annotation) {
         updatedAnnotationById.xpath.end = nodeRange.end
         updatedAnnotationById.xpath.endOffset = nodeRange.endOffset
     }
-    highlightAnnotation(updatedAnnotationById, updatedAnnotationByI.id);
+    highlightAnnotation(updatedAnnotationById, updatedAnnotationById.id);
 }
