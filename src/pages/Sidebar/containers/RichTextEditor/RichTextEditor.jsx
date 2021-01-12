@@ -30,6 +30,10 @@ export default class RichEditor extends React.Component {
 
     }
 
+    componentDidMount = () => {
+        this.focus();
+    }
+
     _handleKeyCommand(command) {
         const { editorState } = this.state;
         const newState = RichUtils.handleKeyCommand(editorState, command);

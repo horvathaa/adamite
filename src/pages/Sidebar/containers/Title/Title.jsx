@@ -7,7 +7,7 @@ import { RiGroupLine } from 'react-icons/ri';
 import { AiOutlineUser } from 'react-icons/ai';
 import '../../../../assets/img/Adamite.png';
 import profile from '../../../../assets/img/SVGs/Profile.svg';
-import { GoThreeBars } from 'react-icons/go';
+import { GiHamburgerMenu } from 'react-icons/gi';
 // import '../../../Background/test.html';
 import { useState } from 'react';
 import { BsFilePlus } from 'react-icons/bs';
@@ -124,7 +124,7 @@ export default class Title extends React.Component {
                     <div className="NewAnnotationButtonContainer">
                       <Dropdown onMouseOver={this.onMouseEnterAdd} onMouseLeave={this.onMouseLeaveAdd} show={this.state.dropdownOpenAdd} toggle={this.toggle.toString()} >
                         <Dropdown.Toggle id="dropdown-basic" className="vertical-center">
-                          <img src={addPage} alt="profile" className="profile" />
+                          <GiHamburgerMenu alt="Hamburger menu" className="profile" />
                         </Dropdown.Toggle>
                         <Dropdown.Menu >
                           <Dropdown.Item onClick={this.props.handleShowAnnotatePage}>

@@ -130,6 +130,16 @@ class QuestionAnswerAnnotation extends Component {
 
         const closeoutOptions = closedStrings.filter(str => str !== closeOutText);
 
+        let collapsedDiv = collapsed ? (
+            <div className="ExpandCollapse">
+                <img src={expand} alt="Expand" onClick={_ => this.props.handleExpandCollapse('expand')} className="Icon" />
+            </div>
+        ) : (
+                <div className="ExpandCollapse">
+                    <img src={expand} id="collapse" alt="Collapse" onClick={_ => this.props.handleExpandCollapse('collapse')} className="Icon" />
+                </div>
+            )
+
         return (
             <li key={idx} id={id} className={classNames({ AnnotationItem: true })}>
                 <div
@@ -368,18 +378,7 @@ class QuestionAnswerAnnotation extends Component {
                             {replies.length} {replyCountString}
                         </div>
                     ) : (null)}
-                    {collapsed && !replying ? (
-                        <div className="ExpandCollapse">
-                            <img src={expand} alt="Expand" onClick={_ => this.props.handleExpandCollapse('expand')} className="Icon" />
-                        </div>
-                    ) : (
-                            <React.Fragment>
-                                <div className="ExpandCollapse">
-                                    <img src={expand} id="collapse" alt="Collapse" onClick={_ => this.props.handleExpandCollapse('collapse')} className="Icon" />
-                                </div>
-                            </React.Fragment>
-                        )
-                    }
+                    {!editing && !replying ? (collapsedDiv) : (null)}
                 </div>
 
 

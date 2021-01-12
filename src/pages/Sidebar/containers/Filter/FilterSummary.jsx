@@ -208,7 +208,7 @@ class FilterSummary extends React.Component {
             return (
                 <div className="FilterSummaryContainer">
                     <div className="FilterSectionRow" id="GroupFilterSection">
-                        <div className="FilterSection">Groups</div>
+                        <div className="FilterSection" id="GroupFilterSectionText">Groups</div>
                         <GroupMultiSelect
                             uid={this.props.uid}
                             groups={groups}
@@ -217,7 +217,7 @@ class FilterSummary extends React.Component {
                         />
                     </div>
                     <div className="FilterSectionRow">
-                        <div className="FilterSection">Filters</div>
+                        <div className="FilterSection" id="FilterSectionText">Filters</div>
                         {/* <div className="FilterSection">
                         {this.createDropDown({
                             Icon: GoEye,
