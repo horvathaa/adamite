@@ -74,6 +74,9 @@ const Options = () => {
   return (
     <div className="OptionsContainer">
       <h2>Adamite Settings (version {pjson.version})</h2>
+      <div>
+        For full documentation, <a href="https://horvathaa.github.io/adamite-docs/">click here</a>.
+      </div>
       <div className="SettingEntryContainer">
         Sidebar position:&nbsp;
         <input
