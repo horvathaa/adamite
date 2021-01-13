@@ -234,47 +234,94 @@ class Sidebar extends React.Component {
         request.from === 'content' &&
         request.msg === 'ANCHOR_CLICKED'
       ) {
-        const { target } = request.payload;
+        const { target } = request.payload
+        let childAnchorId = [];
+        let replyAnchorId = [];
         if (request.payload.url === this.state.url) {
-          this.setState({
-            filteredAnnotations: this.state.annotations.filter(element => {
-              let repliesWithAnchors = element.replies !== undefined && element.replies !== null && element.replies.length ? this.containsReplyWithAnchor(element.replies) : [];
-              if (element.childAnchor !== undefined && element.childAnchor !== null && element.childAnchor.length) {
-                let doesContain = false;
-                element.childAnchor.forEach(c => {
-                  if (c.url === this.state.url) {
-                    target.forEach(id => {
-                      if ((String(c.parentId) + '-' + String(c.id)) === id) {
-                        doesContain = true;
-                      }
-                    })
-                  }
-                })
-                if (!doesContain) {
-                  doesContain = target.includes(element.id);
+          // this.setState({
+          let clickedAnnos = this.state.annotations.filter(element => {
+            let repliesWithAnchors = element.replies !== undefined && element.replies !== null && element.replies.length ? this.containsReplyWithAnchor(element.replies) : [];
+            if (element.childAnchor !== undefined && element.childAnchor !== null && element.childAnchor.length) {
+              let doesContain = false;
+              element.childAnchor.forEach(c => {
+                if (c.url === this.state.url) {
+                  target.forEach(id => {
+                    if ((String(c.parentId) + '-' + String(c.id)) === id) {
+                      childAnchorId.push(String(c.parentId) + '-' + String(c.id));
+                      doesContain = true;
+                    }
+                  })
                 }
-                return doesContain;
+              })
+              if (!doesContain) {
+                doesContain = target.includes(element.id);
               }
-              else if (repliesWithAnchors.length) {
-                let doesContain = false;
-                repliesWithAnchors.forEach(r => {
-                  if (r.url === this.state.url) {
-                    target.forEach(id => {
-                      if ((String(element.id) + '-' + String(r.replyId)) === id) {
-                        doesContain = true;
-                      }
-                    })
-                  }
-                })
-                if (!doesContain) {
-                  doesContain = target.includes(element.id);
+              return doesContain;
+            }
+            else if (repliesWithAnchors.length) {
+              let doesContain = false;
+              repliesWithAnchors.forEach(r => {
+                if (r.url === this.state.url) {
+                  target.forEach(id => {
+                    if ((String(element.id) + '-' + String(r.replyId)) === id) {
+                      doesContain = true;
+                      replyAnchorId.push(String(element.id) + '-' + String(r.replyId))
+                    }
+                  })
                 }
-                return doesContain;
+              })
+              if (!doesContain) {
+                doesContain = target.includes(element.id);
               }
-              return target.includes(element.id);
+              return doesContain;
+            }
+            return target.includes(element.id);
+          })
+          // });
+          // this.setState({ showClearClickedAnnotation: true });
+          // clickedAnnos = clickedAnnos.forEach(anno => {
+          //   console.log('id', id);
+          //   return anno.id.includes('-') ? id.substring(0, id.indexOf('-')) : id
+          // })
+          clickedAnnos.forEach(anno => {
+            // setTimeout(() => {
+            let annoDiv = document.getElementById(anno.id);
+            annoDiv.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
+            // annoDiv.style.backgroundColor = "purple";
+            let anchors = annoDiv.querySelectorAll(".AnchorContainer");
+            // console.log('anchors', anchors);
+            anchors.forEach(anch => {
+              anch.classList.add("Clicked")
             })
-          });
-          this.setState({ showClearClickedAnnotation: true });
+            chrome.tabs.sendMessage(
+              this.state.tabId,
+              {
+                msg: 'ANNOTATION_FOCUS',
+                id: anno.id,
+                // replyId: this.props.replyId
+              }
+            );
+            // }, 500);
+
+          })
+          setTimeout(() => {
+            clickedAnnos.forEach(anno => {
+              let annoDiv = document.getElementById(anno.id);
+              let anchors = annoDiv.querySelectorAll(".AnchorContainer");
+              anchors.forEach(anch => {
+                anch.classList.remove("Clicked")
+              })
+              chrome.tabs.sendMessage(
+                this.state.tabId,
+                {
+                  msg: 'ANNOTATION_DEFOCUS',
+                  id: anno.id,
+                  // replyId: this.props.replyId
+                }
+              );
+            })
+          }, 2500)
+
         }
       } else if (
         request.from === 'background' &&
