@@ -1,151 +1,104 @@
 
-//import './AnchorEngine/AnchorCreate';
-import { updateXpaths, removeSpans, removeHighlights, removeTempHighlight } from './AnchorEngine/AnchorDestroy';
-import { tempHighlight, highlightReplyRange, anchorClick, highlightAnnotation } from './AnchorEngine/AnchorHighlight';
-import { createAnnotation, removeAnnotationWidget } from './AnchorEngine/AnchorCreate';
-//import { getAllPaths } from "./AnchorEngine/domhelper"
-//import { getNodesInRange } from "./AnchorEngine/AnchorHelpers"
+// Transmitting messages to background and other parts of extension
+import { transmitMessage } from './anchorEventTransmitter';
+// Creating Annotations and anchors
+import { addNewAnchor, createAnnotationCallback, } from './AnchorEngine/AnchorCreate';
+// Changes to DOM
+import { removeHighlights, removeTempHighlight } from './AnchorEngine/AnchorDomChanges';
 
-//var xpathRange = require('xpath-range');
+// 
+import {
+    tempHighlight,
+    highlightReplyRange,
+    highlightAnnotation,
+    highlightAnnotationDeep
+} from './AnchorEngine/AnchorHighlight';
+
+import { updateXpaths, } from './AnchorEngine/AnchorDestroy';
 
 
 document.addEventListener('mouseup', event => {
-    createAnnotation(event);
+    transmitMessage({
+        msg: 'REQUEST_SIDEBAR_STATUS',
+        responseCallback: (response) => createAnnotationCallback(response, event),
+        sentFrom: "anchorEventListener"
+    });
+    //createAnnotation(event);
+
 });
 
 document.addEventListener('mousedown', event => {
-    removeAnnotationWidget(event);
+    transmitMessage({
+        msg: 'CONTENT_NOT_SELECTED',
+        sentFrom: "anchorEventListener"
+    });//removeAnnotationWidget(event);
 });
 
-
-
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-
-    if (request.msg === 'ANNOTATION_DELETED_ON_PAGE') {
-        let collection = document.getElementsByName(request.id);
-        updateXpaths(collection, request.id)
-    }
-    else if (request.msg === 'ADD_REPLY_HIGHLIGHT') {
+let messagesIn = {
+    'ANNOTATION_DELETED_ON_PAGE': (request, sender, sendResponse) => {
+        let findSpan = getSpanFromRequest(request);
+        updateXpaths(findSpan, request.id)
+    },
+    'ADD_NEW_ANCHOR': (request, sender, sendResponse) => {
+        addNewAnchor({ request: request, type: "child" });
+    },
+    'ADD_REPLY_ANCHOR': (request, sender, sendResponse) => {
+        addNewAnchor({ request: request, type: "reply" });
+    },
+    'ADD_REPLY_HIGHLIGHT': (request, sender, sendResponse) => {
+        console.log(request);
         const { xpath, id } = request.payload;
         highlightReplyRange(xpath, id);
-    }
-    else if (request.msg === 'HIGHLIGHT_ANNOTATIONS') {
+    },
+    'HIGHLIGHT_ANNOTATIONS': (request, sender, sendResponse) => {
         const annotationsOnPage = request.payload;
-
         if (annotationsOnPage.length) {
             annotationsOnPage.reverse().forEach(anno => {
-                console.log("anno")
-                highlightAnnotation(anno, anno.id.toString(), "root");
-                let findSpan = document.getElementsByName(anno.id);
-                if (findSpan.length === 0) {
-                    chrome.runtime.sendMessage({
-                        msg: "ANCHOR_BROKEN",
-                        from: 'content',
-                        payload: {
-                            "id": anno.id
-                        }
-                    });
-                }
-
-                if (anno.childAnchor !== undefined && anno.childAnchor.length) {
-                    anno.childAnchor.forEach(child => {
-                        if (child.xpath !== undefined && child.xpath !== null) {
-                            let domId = anno.id.toString() + "-" + child.id.toString();
-                            highlightAnnotation(child, domId, "child")
-                            let findSpan = document.getElementsByName(domId);
-                            if (findSpan.length === 0) {
-                                chrome.runtime.sendMessage({
-                                    msg: "ANCHOR_BROKEN",
-                                    from: 'content',
-                                    payload: {
-                                        "id": anno.id,
-                                        "childId": child.id
-                                    }
-                                });
-                            }
-                        }
-                    });
-                }
-                if (anno.replies !== undefined && anno.replies !== null && anno.replies.length) {
-                    anno.replies.forEach(reply => {
-                        if (reply.xpath !== undefined && reply.xpath !== null) {
-                            let domId = anno.id.toString() + "-" + reply.replyId.toString();
-                            highlightAnnotation(reply, domId, "reply")
-                            let findSpan = document.getElementsByName(domId);
-                            if (findSpan.length === 0) {
-                                chrome.runtime.sendMessage({
-                                    msg: "ANCHOR_BROKEN",
-                                    from: 'content',
-                                    payload: {
-                                        "id": anno.id,
-                                        "replyId": reply.replyId
-                                    }
-                                });
-                            }
-                        }
-                    })
-                }
+                highlightAnnotationDeep(anno);
             });
         }
-    }
-    else if (request.msg === 'ANNOTATION_FOCUS_ONCLICK') {
-        console.log(request);
-        let findSpan;
-        if (request.replyId !== undefined) {
-            findSpan = document.getElementsByName(request.id + "-" + request.replyId.toString());
-        }
-        else {
-            findSpan = document.getElementsByName(request.id);
-        }
-        if (findSpan.length === 0) {
-            console.log('len is 0?')
-            return;
-        }
+    },
+    'ANNOTATION_FOCUS_ONCLICK': (request, sender, sendResponse) => {
+        let findSpan = getSpanFromRequest(request);
+        if (findSpan.length === 0) { console.log('len is 0?'); return; }
         findSpan[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-    else if (request.msg === 'ANNOTATION_FOCUS') {
-        console.log(request);
-        let findSpan;
-        if (request.replyId !== undefined) {
-            findSpan = document.getElementsByName(request.id + "-" + request.replyId.toString());
-        }
-        else {
-            findSpan = document.getElementsByName(request.id.toString());
-        }
-        if (findSpan.length === 0) {
-            return;
-        }
+    },
+    'ANNOTATION_FOCUS': (request, sender, sendResponse) => {
+        let findSpan = getSpanFromRequest(request);
         findSpan.forEach(e => e.style.backgroundColor = '#7cce7299');
-    }
-    else if (request.msg === 'ANNOTATION_DEFOCUS') {
-        console.log(request);
-        let findSpan;
-        if (request.replyId !== undefined) {
-            findSpan = document.getElementsByName(request.id + "-" + request.replyId.toString());
-        }
-        else {
-            findSpan = document.getElementsByName(request.id.toString());
-        }
-        if (findSpan.length === 0) {
-            return;
-        }
+    },
+    'ANNOTATION_DEFOCUS': (request, sender, sendResponse) => {
+        let findSpan = getSpanFromRequest(request);
         findSpan.forEach(e => e.style.backgroundColor = null)
-    }
-    else if (request.msg === 'ANNOTATION_ADDED') {
+    },
+    'ANNOTATION_ADDED': (request, sender, sendResponse) => {
         request.newAnno.content = request.newAnno.annotation;
         highlightAnnotation(request.newAnno, request.newAnno.id)
-        //highlightRange(request.newAnno);
-    }
-    else if (request.msg === 'TEMP_ANNOTATION_ADDED') {
-        // request.newAnno.content = request.newAnno.annotation;
+    },
+    'TEMP_ANNOTATION_ADDED': (request, sender, sendResponse) => {
+        console.log(request);
         tempHighlight(request.newAnno);
-    }
-    else if (request.msg === 'REMOVE_TEMP_ANNOTATION') {
+    },
+    'REMOVE_TEMP_ANNOTATION': (request, sender, sendResponse) => {
         removeTempHighlight();
         sendResponse({ msg: 'REMOVED' });
-    }
-    else if (request.msg === 'REMOVE_HIGHLIGHTS') {
+    },
+    'REMOVE_HIGHLIGHTS': (request, sender, sendResponse) => {
         removeHighlights();
+    },
+}
+//
+
+function getSpanFromRequest(request) {
+    return (request.replyId !== undefined) ?
+        document.getElementsByName(request.id + "-" + request.replyId.toString()) :
+        document.getElementsByName(request.id.toString());
+
+}
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    console.log(request);
+    if (request.msg in messagesIn) {
+        messagesIn[request.msg](request, sender, sendResponse);
     }
 });
 
