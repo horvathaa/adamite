@@ -106,9 +106,7 @@ export const filterArrayFromArray = (arr, matchArr) => {
 }
 
 
-export function basicGetNodeSubstringPairs({ xpath, offset, type, }) {
 
-}
 
 
 export function getNodeSubstringPairs({ annotation, type, }) {
@@ -125,7 +123,7 @@ export function getNodeSubstringPairs({ annotation, type, }) {
         // Error happens when reloaded changes xPath
         // console.log("ERROR"); console.log(annotation);
         // console.log(fullContentString); console.log(range); // console.log(xp); console.log('got error- ', err); todo see if text is in content
-        return;
+        return false;
     }
 
     if ("anchorContent" in annotation) {

@@ -6,6 +6,7 @@ import { getNodeSubstringPairs } from './AnchorHelpers';
 
 
 function checkIfBrokenAnchor(spanId, errorPayload) {
+    console.log("Issue");
     // TODO this doesn't work very well -- need to ficute out what the issue is
     let findSpan = document.getElementsByName(spanId);
     if (findSpan.length === 0) {
@@ -18,15 +19,18 @@ function checkIfBrokenAnchor(spanId, errorPayload) {
 
 export const highlightAnnotationDeep = (anno) => {
     //will show annotation type
-    highlightAnnotation(anno, anno.id.toString(), "root");
-    checkIfBrokenAnchor(anno.id.toString(), { "id": anno.id });
+    if (!highlightAnnotation(anno, anno.id.toString(), "root")) {
+
+        checkIfBrokenAnchor(anno.id.toString(), { "id": anno.id });
+    }
 
     if (anno.childAnchor !== undefined && anno.childAnchor.length) {
         anno.childAnchor.forEach(child => {
             if (child.xpath !== undefined && child.xpath !== null) {
                 let domId = anno.id.toString() + "-" + child.id.toString();
-                highlightAnnotation(child, domId, "child")
-                checkIfBrokenAnchor(domId, { "id": anno.id, "childId": child.id });
+                if (!highlightAnnotation(child, domId, "child")) {
+                    checkIfBrokenAnchor(domId, { "id": anno.id, "childId": child.id });
+                }
             }
         });
     }
@@ -34,8 +38,9 @@ export const highlightAnnotationDeep = (anno) => {
         anno.replies.forEach(reply => {
             if (reply.xpath !== undefined && reply.xpath !== null) {
                 let domId = anno.id.toString() + "-" + reply.replyId.toString();
-                highlightAnnotation(reply, domId, "reply")
-                checkIfBrokenAnchor(domId, { "id": anno.id, "replyId": reply.replyId });
+                if (!highlightAnnotation(reply, domId, "reply")) {
+                    checkIfBrokenAnchor(domId, { "id": anno.id, "replyId": reply.replyId });
+                }
             }
         })
     }
@@ -51,11 +56,12 @@ export const highlightAnnotation = (annotation, domId, type) => {
     let nodePairs = getNodeSubstringPairs({ annotation: annotation, type: type });
     if (!nodePairs || nodePairs.length == 0) {
         console.log("no matches");
-        return;
+        return false;
     }
     nodePairs.forEach((pair) => {
         addHighlightToSubstring({ node: pair.node, substring: pair.substring, spanId: domId, isPreview: false });
     });
+    return true;
 }
 
 /*
@@ -66,11 +72,12 @@ export const tempHighlight = (annotation) => {
     let nodePairs = getNodeSubstringPairs({ annotation: annotation, type: "temp" });
     if (!nodePairs || nodePairs.length == 0) {
         console.log("no matches");
-        return;
+        return false;
     }
     nodePairs.forEach((pair) => {
         addHighlightToSubstring({ node: pair.node, substring: pair.substring, isPreview: true });
     });
+    return true;
 }
 
 
