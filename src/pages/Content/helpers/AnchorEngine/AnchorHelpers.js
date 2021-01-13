@@ -159,17 +159,17 @@ export function getNodeSubstringPairs({ annotation, type, }) {
                     substring = nodes[i].data.substring(xp.startOffset, nodes[i].data.length);
 
                     if (hasContent && !startIndexMatchesContent(fullContentString, nodes[i].data, substring)) {
-                        console.log("Start Error");
-                        console.log(substring);
+                        // console.log("Start Error");
+                        // console.log(substring);
                         substring = getCorrectStartSubstring(fullContentString, nodes[i].data, substring);
-                        console.log(substring);
+                        // console.log(substring);
                     }
                     start = false;
                 }
                 else if (xp.endOffset !== 0 && i == nodes.length - 1) {
                     substring = nodes[i].data.substring(0, xp.endOffset);
                     if (hasContent && !endIndexMatchesContent(fullContentString, nodes[i].data, substring)) {
-                        console.log("End Error");
+                        // console.log("End Error");
                         substring = getCorrectEndSubstring(fullContentString, nodes[i].data, substring);
                     }
                 }

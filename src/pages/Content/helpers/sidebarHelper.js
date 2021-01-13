@@ -123,17 +123,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     const { toStatus } = request;
     shouldShrinkBody = toStatus;
     Frame.shrinkBody();
-  } else if (
-    request.from === 'background' &&
-    request.msg === 'CONTENT_UPDATED') {
-    chrome.runtime.sendMessage(
-      {
-        from: 'content',
-        msg: 'CONTENT_UPDATED',
-        payload: { annotations: request.payload, tabId: request.tabId, url: request.url }
-      }
-    )
   }
+
+  // else if (
+  //   request.from === 'background' &&
+  //   request.msg === 'CONTENT_UPDATED') {
+  //   chrome.runtime.sendMessage(
+  //     {
+  //       from: 'content',
+  //       msg: 'CONTENT_UPDATED',
+  //       payload: { annotations: request.payload, tabId: request.tabId, url: request.url }
+  //     }
+  //   )
+  // }
 
 });
 

@@ -238,11 +238,32 @@ class Sidebar extends React.Component {
         if (request.payload.url === this.state.url) {
           this.setState({
             filteredAnnotations: this.state.annotations.filter(element => {
+              let repliesWithAnchors = element.replies !== undefined && element.replies !== null && element.replies.length ? this.containsReplyWithAnchor(element.replies) : [];
               if (element.childAnchor !== undefined && element.childAnchor !== null && element.childAnchor.length) {
                 let doesContain = false;
-                element.childAnchor.forEach(anno => {
-                  if (target.includes(anno.id)) {
-                    doesContain = true;
+                element.childAnchor.forEach(c => {
+                  if (c.url === this.state.url) {
+                    target.forEach(id => {
+                      if ((String(c.parentId) + '-' + String(c.id)) === id) {
+                        doesContain = true;
+                      }
+                    })
+                  }
+                })
+                if (!doesContain) {
+                  doesContain = target.includes(element.id);
+                }
+                return doesContain;
+              }
+              else if (repliesWithAnchors.length) {
+                let doesContain = false;
+                repliesWithAnchors.forEach(r => {
+                  if (r.url === this.state.url) {
+                    target.forEach(id => {
+                      if ((String(element.id) + '-' + String(r.replyId)) === id) {
+                        doesContain = true;
+                      }
+                    })
                   }
                 })
                 if (!doesContain) {
@@ -359,6 +380,13 @@ class Sidebar extends React.Component {
   containsObjectWithId(id, list) {
     const test = list.filter(obj => obj.id === id);
     return test.length !== 0;
+  }
+
+  // if length is 0 does not contain object, else does contain object
+  // stupid helper method made out of necessity
+  containsReplyWithAnchor(list) {
+    const test = list.filter(obj => obj.xpath !== null);
+    return test;
   }
 
   // helper method from 

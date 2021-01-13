@@ -111,7 +111,7 @@ const removePopover = () => {
 function displayPopoverBasedOnRectPosition(rect, props) {
     popOverAnchor.top = '0px';
     popOverAnchor.style.left = `0px`;
-    console.log("Display pop over")
+    // console.log("Display pop over")
     ReactDOM.render(
         <Popover removePopover={removePopover} {...props} />,
         popOverAnchor
@@ -205,7 +205,7 @@ export function addNewAnchor({ request, type }) {
             transmitMessage({ msg: 'TRANSMIT_REPLY_ANCHOR', data: { "payload": payload } });
         } else {
             payload['newAnno'] = request.payload;
-            console.log(payload);
+            // console.log(payload);
             transmitMessage({ msg: 'SAVE_NEW_ANCHOR', data: { "payload": payload } });
         }
         selection.removeRange(rect);
@@ -255,11 +255,11 @@ function openSelectAnchorToast() {
 
 
 export const createAnnotationCallback = (response, event) => {
-    console.log("c");
-    console.log(response);
+    // console.log("c");
+    // console.log(response);
     if (response.sidebarOpen) {
         var selection = window.getSelection();
-        console.log(selection);
+        // console.log(selection);
         if (selection.type === 'Range') {
             const rect = selection.getRangeAt(0);
             //Text nodes that were highlighted by user

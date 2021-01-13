@@ -66,7 +66,7 @@ var splitReinsertText = function (node, substring, callback) {
 }
 
 export function anchorClick(e) {
-    console.log("in Anchor click", e)
+    // console.log("in Anchor click", e)
     // console.log("spanz", document.getElementsByName(e.target.attributes.getNamedItem("name").value));
     //console.log(target);
     var ids = [e.target.attributes.getNamedItem("name").value];
@@ -95,7 +95,7 @@ export function anchorClick(e) {
     // });
 
     var ids = [...new Set(ids)]
-    console.log(ids);
+    // console.log(ids);
     // console.log("here is the ids", ids)
     //);
     const target = ids;

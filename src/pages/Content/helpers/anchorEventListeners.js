@@ -4,7 +4,7 @@ import { transmitMessage } from './anchorEventTransmitter';
 // Creating Annotations and anchors
 import { addNewAnchor, createAnnotationCallback, } from './AnchorEngine/AnchorCreate';
 // Changes to DOM
-import { removeHighlights, removeTempHighlight } from './AnchorEngine/AnchorDomChanges';
+import { removeHighlightSpans, removeTempHighlight } from './AnchorEngine/AnchorDomChanges';
 
 // 
 import {
@@ -51,6 +51,7 @@ let messagesIn = {
         highlightReplyRange(xpath, id);
     },
     'HIGHLIGHT_ANNOTATIONS': (request, sender, sendResponse) => {
+        removeHighlightSpans();
         const annotationsOnPage = request.payload;
         if (annotationsOnPage.length) {
             annotationsOnPage.reverse().forEach(anno => {
@@ -84,10 +85,10 @@ let messagesIn = {
         sendResponse({ msg: 'REMOVED' });
     },
     'REMOVE_HIGHLIGHTS': (request, sender, sendResponse) => {
-        removeHighlights();
+        removeHighlightSpans();
     },
 }
-//
+
 
 function getSpanFromRequest(request) {
     return (request.replyId !== undefined) ?
@@ -96,7 +97,7 @@ function getSpanFromRequest(request) {
 
 }
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    console.log(request);
+    // console.log(request);
     if (request.msg in messagesIn) {
         messagesIn[request.msg](request, sender, sendResponse);
     }

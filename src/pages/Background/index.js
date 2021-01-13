@@ -214,6 +214,7 @@ function promiseToComeBack(url, annotations) {
           else {
             tabAnnotationCollect.push({ tabId: tabs[0].id, annotations: annotationsToBroadcast });
           }
+          console.log('promise to come back about to broadcast');
           broadcastAnnotationsUpdated("CONTENT_UPDATED", annotationsToBroadcast, url, tabs[0].id);
         }
       });
@@ -243,6 +244,7 @@ chrome.browserAction.onClicked.addListener(function () {
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
       if (containsObjectWithId(tabs[0].id, tabAnnotationCollect)) {
         const tabInfo = tabAnnotationCollect.filter(obj => obj.tabId === tabs[0].id);
+        console.log('background  highlight');
         chrome.tabs.sendMessage(tabs[0].id, {
           msg: 'HIGHLIGHT_ANNOTATIONS',
           payload: tabInfo[0].annotations,
