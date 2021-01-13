@@ -120,12 +120,6 @@ class Sidebar extends React.Component {
     });
   }
 
-  // helper method from
-  // https://stackoverflow.com/questions/2540969/remove-querystring-from-url
-  getPathFromUrl = (url) => {
-    return url.split(/[?#]/)[0];
-  }
-
   handleScroll = (event, filterSelection) => {
     const scrollIsAtTheBottom = (document.documentElement.scrollHeight - window.innerHeight) - 1 <= Math.floor(window.scrollY);
     if (scrollIsAtTheBottom && this.state.searchState) {
@@ -164,7 +158,7 @@ class Sidebar extends React.Component {
         //   tabInfo => {
         chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
           let tab = tabs[0];
-          this.setState({ url: this.getPathFromUrl(tab.url), tabId: tabs[0].id });
+          this.setState({ url: this.getPathFromUrl(tab.url), tabId: tab.id });
           if (currentUserData.payload.currentUser) {
             this.setUpAnnotationsListener(
               currentUserData.payload.currentUser.uid,
@@ -281,7 +275,7 @@ class Sidebar extends React.Component {
       ) {
         chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
           const tab = tabs.filter(t => t.id === this.state.tabId && t.url === this.state.url);
-          if (tab.length && tab[0].url === this.state.url && tab[0].id === this.state.tabId) {
+          if (this.containsObjectWithUrl(this.state.url, request.payload) && tab.length && tab[0].url === this.state.url && tab[0].id === this.state.tabId) {
             this.setState({ annotations: request.payload });
             chrome.browserAction.setBadgeText({ tabId: tab[0].id, text: String(request.payload.length) });
             chrome.storage.local.get(['sidebarOpen'], response => {
@@ -346,6 +340,17 @@ class Sidebar extends React.Component {
         });
       }
     });
+  }
+
+  // helper method from
+  // https://stackoverflow.com/questions/2540969/remove-querystring-from-url
+  getPathFromUrl = (url) => {
+    return url.split(/[?#]/)[0];
+  }
+
+  containsObjectWithUrl = (url, list) => {
+    const test = list.filter(obj => obj.url.includes(url));
+    return test.length !== 0;
   }
 
   // if length is 0 does not contain object, else does contain object
