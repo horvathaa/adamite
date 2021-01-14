@@ -85,31 +85,13 @@ let messagesIn = {
         removeHighlights();
     },
 }
-//
+
 
 function getSpanFromRequest(request) {
     return (request.replyId !== undefined) ?
         document.getElementsByName(request.id + "-" + request.replyId.toString()) :
         document.getElementsByName(request.id.toString());
 
-}
-async function getCurrentUrl() {
-    // var getting = windows.getCurrent({ populate: true });
-    // getting.then(logTabs, onError);
-    await chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        var tab = tabs[0];
-        return tab.url;
-    })
-}
-
-function logTabs(windowInfo) {
-    for (let tabInfo of windowInfo.tabs) {
-        console.log(tabInfo.url);
-    }
-}
-
-function onError(error) {
-    console.log(`Error: ${error}`);
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {

@@ -97,6 +97,7 @@ export async function createAnnotationHighlight(request, sender, sendResponse) {
         events: []
     });
 }
+// 
 export async function createAnnotationReply(request, sender, sendResponse) {
 
 }
@@ -389,11 +390,13 @@ function getAllAnnotationsByUrlListener(url, annotations) {
         annotationsToBroadcast = annotationsToBroadcast.filter(anno => !anno.deleted);
 
         chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-            console.log(tabs[0].url);
-            if (containsObjectWithUrl(tabs[0].url, tabAnnotationCollect))
-                tabAnnotationCollect = updateList(tabAnnotationCollect, tabs[0].url, annotationsToBroadcast);
-            else
-                tabAnnotationCollect.push({ tabUrl: tabs[0].url, annotations: annotationsToBroadcast });
+            if (tabs && tabs.length > 0 && tabs[0].url) {
+                console.log(tabs[0].url);
+                if (containsObjectWithUrl(tabs[0].url, tabAnnotationCollect))
+                    tabAnnotationCollect = updateList(tabAnnotationCollect, tabs[0].url, annotationsToBroadcast);
+                else
+                    tabAnnotationCollect.push({ tabUrl: tabs[0].url, annotations: annotationsToBroadcast });
+            }
         });
         console.log(annotationsToBroadcast);
         broadcastAnnotationsUpdatedTab("CONTENT_UPDATED", annotationsToBroadcast);

@@ -130,37 +130,3 @@ chrome.browserAction.onClicked.addListener(function () {
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
     commands['HANDLE_TAB_URL_UPDATE'](tabId, changeInfo, tab);
 });
-
-
-/*
-    toggleSidebar(clicked);
-    if (clicked) {
-        chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-            if (containsObjectWithId(tabs[0].id, tabAnnotationCollect)) {
-                const tabInfo = tabAnnotationCollect.filter(obj => obj.tabId === tabs[0].id);
-                chrome.tabs.sendMessage(tabs[0].id, {
-                    msg: 'HIGHLIGHT_ANNOTATIONS',
-                    payload: tabInfo[0].annotations,
-                    url: tabs[0].url
-                })
-            }
-        })
-    }
-    else {
-        chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-            chrome.tabs.sendMessage(tabs[0].id, {
-                msg: 'REMOVE_HIGHLIGHTS'
-            })
-        })
-    }
-     if (containsObjectWithId(activeInfo.tabId, tabAnnotationCollect)) {
-        const tabInfo = tabAnnotationCollect.filter(obj => obj.tabId === activeInfo.tabId);
-        broadcastAnnotationsUpdatedTab('CONTENT_UPDATED', tabInfo[0].annotations);
-    }
-    else {
-        chrome.tabs.get(activeInfo.tabId, (tab) => {
-            publicListener = setUpGetAllAnnotationsByUrlListener(tab.url, annotations, false);
-            privateListener = promiseToComeBack(tab.url, annotations, false);
-        });
-    }
-*/

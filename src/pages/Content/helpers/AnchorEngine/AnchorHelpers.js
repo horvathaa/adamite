@@ -121,7 +121,7 @@ export function getNodeSubstringPairs({ annotation, type, }) {
         // console.log(range);console.log("SUCCESS") //console.log(fullContentString);console.log(range);console.log(xp);
     } catch (err) {
         // Error happens when reloaded changes xPath
-        // console.log("ERROR"); console.log(annotation);
+        console.log("ERROR"); console.log(annotation);
         // console.log(fullContentString); console.log(range); // console.log(xp); console.log('got error- ', err); todo see if text is in content
         return false;
     }
