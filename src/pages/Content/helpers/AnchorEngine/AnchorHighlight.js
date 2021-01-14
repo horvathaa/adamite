@@ -19,6 +19,7 @@ function checkIfBrokenAnchor(spanId, errorPayload) {
 
 export const highlightAnnotationDeep = (anno) => {
     //will show annotation type
+
     if (!highlightAnnotation(anno, anno.id.toString(), "root")) {
 
         checkIfBrokenAnchor(anno.id.toString(), { "id": anno.id });

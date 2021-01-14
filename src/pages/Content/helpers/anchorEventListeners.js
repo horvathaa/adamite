@@ -6,7 +6,6 @@ import { addNewAnchor, createAnnotationCallback, } from './AnchorEngine/AnchorCr
 // Changes to DOM
 import { removeHighlights, removeTempHighlight } from './AnchorEngine/AnchorDomChanges';
 
-// 
 import {
     tempHighlight,
     highlightReplyRange,
@@ -24,7 +23,6 @@ document.addEventListener('mouseup', event => {
         sentFrom: "anchorEventListener"
     });
     //createAnnotation(event);
-
 });
 
 document.addEventListener('mousedown', event => {
@@ -33,7 +31,6 @@ document.addEventListener('mousedown', event => {
         sentFrom: "anchorEventListener"
     });//removeAnnotationWidget(event);
 });
-
 let messagesIn = {
     'ANNOTATION_DELETED_ON_PAGE': (request, sender, sendResponse) => {
         let findSpan = getSpanFromRequest(request);
@@ -50,7 +47,8 @@ let messagesIn = {
         const { xpath, id } = request.payload;
         highlightReplyRange(xpath, id);
     },
-    'HIGHLIGHT_ANNOTATIONS': (request, sender, sendResponse) => {
+    'HIGHLIGHT_ANNOTATIONS': async (request, sender, sendResponse) => {
+        console.log('Highlight Annotations');
         const annotationsOnPage = request.payload;
         if (annotationsOnPage.length) {
             annotationsOnPage.reverse().forEach(anno => {
@@ -95,6 +93,25 @@ function getSpanFromRequest(request) {
         document.getElementsByName(request.id.toString());
 
 }
+async function getCurrentUrl() {
+    // var getting = windows.getCurrent({ populate: true });
+    // getting.then(logTabs, onError);
+    await chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        var tab = tabs[0];
+        return tab.url;
+    })
+}
+
+function logTabs(windowInfo) {
+    for (let tabInfo of windowInfo.tabs) {
+        console.log(tabInfo.url);
+    }
+}
+
+function onError(error) {
+    console.log(`Error: ${error}`);
+}
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log(request);
     if (request.msg in messagesIn) {

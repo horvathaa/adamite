@@ -2,19 +2,23 @@
 
 
 function sendMsg(msg, data, responseCallback) {
-    if (responseCallback !== undefined && responseCallback !== null) {
-        chrome.runtime.sendMessage({
-            msg: msg,
-            from: 'content',
-            ...data
-        }, responseCallback);
-    }
-    else {
-        chrome.runtime.sendMessage({
-            msg: msg,
-            from: 'content',
-            ...data
-        });
+    try {
+        if (responseCallback !== undefined && responseCallback !== null) {
+            chrome.runtime.sendMessage({
+                msg: msg,
+                from: 'content',
+                ...data
+            }, responseCallback);
+        }
+        else {
+            chrome.runtime.sendMessage({
+                msg: msg,
+                from: 'content',
+                ...data
+            });
+        }
+    } catch (e) {
+        console.log("Chrome runtime Issue at SendMsg")
     }
 }
 
