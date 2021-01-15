@@ -106,9 +106,7 @@ export const filterArrayFromArray = (arr, matchArr) => {
 }
 
 
-export function basicGetNodeSubstringPairs({ xpath, offset, type, }) {
 
-}
 
 
 export function getNodeSubstringPairs({ annotation, type, }) {
@@ -125,7 +123,7 @@ export function getNodeSubstringPairs({ annotation, type, }) {
         // Error happens when reloaded changes xPath
         // console.log("ERROR"); console.log(annotation);
         // console.log(fullContentString); console.log(range); // console.log(xp); console.log('got error- ', err); todo see if text is in content
-        return;
+        return false;
     }
 
     if ("anchorContent" in annotation) {
@@ -252,7 +250,7 @@ let debug = false;
 
 export const getAllPaths = () => {
     debug = false;
-    console.log("getAllPaths");
+    // console.log("getAllPaths");
     let pathStartNode = window.document.getElementsByTagName("body")[0];
     console.log(pathStartNode);
     let startTime = new Date().getTime();
@@ -260,7 +258,7 @@ export const getAllPaths = () => {
     // Creates a dict of all possible paths from body node
     collectPathsForNode(pathStartNode);
     let finishTime = new Date().getTime();
-    console.log("Path traversal took " + (finishTime - startTime) + " ms.");
+    // console.log("Path traversal took " + (finishTime - startTime) + " ms.");
     // Restricted -> don't save dom documents, just the content
     if (debug) { console.log("allPaths"); console.log(allPaths); }
 
@@ -268,7 +266,9 @@ export const getAllPaths = () => {
 }
 
 function collectPathsForNode(node) {
-    if (debug) { console.log("collectPathsForNode"); console.log(node); }
+    if (debug) {
+        // console.log("collectPathsForNode"); console.log(node); 
+    }
     // gets text from node
     let nodeContent = getNodeContent(node, false);
     // if path has text, add it to allPaths dictionary
@@ -289,8 +289,8 @@ function collectPathsForNode(node) {
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
             child = _ref[_i];
             if (debug) {
-                console.log("node children")
-                console.log(_ref);
+                // console.log("node children")
+                // console.log(_ref);
             }
             collectPathsForNode(child);
         }

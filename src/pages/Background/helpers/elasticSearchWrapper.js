@@ -3,67 +3,126 @@ import { getElasticApiKey } from '../../../firebase/index';
 
 const path = 'https://f1a4257d658c481787cc581e18b9c97e.us-central1.gcp.cloud.es.io:9243/annotations/_search';
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.msg === 'SEARCH_ELASTIC') {
-        console.log("SEARCH_ELASTIC", request)
-        keyWrapper(search, { userSearch: request.userSearch, query: searchBarQuery(request, true), url: request.url, successFunction: searchBarSuccess })
-            .then(e => sendResponse({ response: e }))
-            .catch(function (err) {
-                console.log("wrapper error", err.response.status)
-            });
-    }
-    else if (request.msg === 'GROUP_ELASTIC') {
-        console.log("GROUP_ELASTIC", request)
-        keyWrapper(search, { query: groupQuery(request.payload.gid), url: request.payload.url, successFunction: groupSearchSuccess })
-            .then(e => { console.log('sending response'); sendResponse({ response: e }) })
-            .catch(function (err) {
-                console.log("wrapper error", err.response.status)
-            });
-    }
-    else if (request.msg === 'SCROLL_ELASTIC') {
-        console.log("SCROLL_ELASTIC")
-        var query = '';
-        retrieveUrlQuery(request.url)
-            .then(function (query) {
-                keyWrapper(search, { userSearch: request.url, query: query, url: request.url, successFunction: paginationSuccess })
-                    .then(e => sendResponse({ response: e }))
-                    .catch(function (err) {
-                        console.log("wrapper error", err.response.status)
-                    });
-            })
-            .catch(function (err) {
-                console.log("Nothing was found", err);
-            });
-    }
-    else if (request.msg === "SEARCH_ELASTIC_BY_ID") {
-        console.log("SEARCH_ELASTIC_BY_ID", request)
-        keyWrapper(search, { userSearch: null, query: searchByID(request.id), url: request.url, successFunction: paginationSuccess })
-            .then(e => sendResponse({ response: e }))
-            .catch(function (err) {
-                console.log("wrapper error", err.response.status)
-            });
-    }
-    else if (request.msg === "REFRESH_FOR_CONTENT_UPDATED") {
-        console.log("REFRESH_FOR_CONTENT_UPDATED", request)
-        var query = '';
-        retrieveUrlQuery(request.url)
-            .then(function (query) {
-                query.from = 0;
-                keyWrapper(search, { userSearch: request.url, query: query, url: request.url, successFunction: refreshSuccess })
-                    .then(e => sendResponse({ response: e }))
-                    .catch(function (err) {
-                        console.log("wrapper error", err.response.status)
-                    });
-            })
-            .catch(function (err) {
-                console.log("Nothing was found", err);
-            });
-    }
-    else if (request.msg === 'REMOVE_PAGINATION_SEARCH_CACHE') {
-        console.log("REMOVE CACHE");
-        removeQueryForScroll(request.url);
-    }
-});
+export async function searchElastic(request, sender, sendResponse) {
+    keyWrapper(search, { userSearch: request.userSearch, query: searchBarQuery(request, true), url: request.url, successFunction: searchBarSuccess })
+        .then(e => sendResponse({ response: e }))
+        .catch(function (err) {
+            console.log("wrapper error", err.response.status)
+        });
+}
+
+export async function groupElastic(request, sender, sendResponse) {
+    keyWrapper(search, { query: groupQuery(request.payload.gid), url: request.payload.url, successFunction: groupSearchSuccess })
+        .then(e => { console.log('sending response'); sendResponse({ response: e }) })
+        .catch(function (err) {
+            console.log("wrapper error", err.response.status)
+        });
+}
+
+export async function scrollElastic(request, sender, sendResponse) {
+    var query = '';
+    retrieveUrlQuery(request.url)
+        .then(function (query) {
+            keyWrapper(search, { userSearch: request.url, query: query, url: request.url, successFunction: paginationSuccess })
+                .then(e => sendResponse({ response: e }))
+                .catch(function (err) {
+                    console.log("wrapper error", err.response.status)
+                });
+        })
+        .catch(function (err) {
+            console.log("Nothing was found", err);
+        });
+}
+
+export async function searchElasticById(request, sender, sendResponse) {
+    keyWrapper(search, { userSearch: null, query: searchByID(request.id), url: request.url, successFunction: paginationSuccess })
+        .then(e => sendResponse({ response: e }))
+        .catch(function (err) {
+            console.log("wrapper error", err.response.status)
+        });
+}
+
+export async function refreshContentUpdate(request, sender, sendResponse) {
+    var query = '';
+    retrieveUrlQuery(request.url)
+        .then(function (query) {
+            query.from = 0;
+            keyWrapper(search, { userSearch: request.url, query: query, url: request.url, successFunction: refreshSuccess })
+                .then(e => sendResponse({ response: e }))
+                .catch(function (err) {
+                    console.log("wrapper error", err.response.status)
+                });
+        })
+        .catch(function (err) {
+            console.log("Nothing was found", err);
+        });
+}
+
+export async function removePaginationSearchCache(request, sender, sendResponse) {
+    removeQueryForScroll(request.url);
+}
+
+// chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+//     if (request.msg === 'SEARCH_ELASTIC') {
+//         console.log("SEARCH_ELASTIC", request)
+//         keyWrapper(search, { userSearch: request.userSearch, query: searchBarQuery(request, true), url: request.url, successFunction: searchBarSuccess })
+//             .then(e => sendResponse({ response: e }))
+//             .catch(function (err) {
+//                 console.log("wrapper error", err.response.status)
+//             });
+//     }
+//     else if (request.msg === 'GROUP_ELASTIC') {
+//         console.log("GROUP_ELASTIC", request)
+//         keyWrapper(search, { query: groupQuery(request.payload.gid), url: request.payload.url, successFunction: groupSearchSuccess })
+//             .then(e => { console.log('sending response'); sendResponse({ response: e }) })
+//             .catch(function (err) {
+//                 console.log("wrapper error", err.response.status)
+//             });
+//     }
+//     else if (request.msg === 'SCROLL_ELASTIC') {
+//         console.log("SCROLL_ELASTIC")
+//         var query = '';
+//         retrieveUrlQuery(request.url)
+//             .then(function (query) {
+//                 keyWrapper(search, { userSearch: request.url, query: query, url: request.url, successFunction: paginationSuccess })
+//                     .then(e => sendResponse({ response: e }))
+//                     .catch(function (err) {
+//                         console.log("wrapper error", err.response.status)
+//                     });
+//             })
+//             .catch(function (err) {
+//                 console.log("Nothing was found", err);
+//             });
+//     }
+//     else if (request.msg === "SEARCH_ELASTIC_BY_ID") {
+//         console.log("SEARCH_ELASTIC_BY_ID", request)
+//         keyWrapper(search, { userSearch: null, query: searchByID(request.id), url: request.url, successFunction: paginationSuccess })
+//             .then(e => sendResponse({ response: e }))
+//             .catch(function (err) {
+//                 console.log("wrapper error", err.response.status)
+//             });
+//     }
+//     else if (request.msg === "REFRESH_FOR_CONTENT_UPDATED") {
+//         console.log("REFRESH_FOR_CONTENT_UPDATED", request)
+//         var query = '';
+//         retrieveUrlQuery(request.url)
+//             .then(function (query) {
+//                 query.from = 0;
+//                 keyWrapper(search, { userSearch: request.url, query: query, url: request.url, successFunction: refreshSuccess })
+//                     .then(e => sendResponse({ response: e }))
+//                     .catch(function (err) {
+//                         console.log("wrapper error", err.response.status)
+//                     });
+//             })
+//             .catch(function (err) {
+//                 console.log("Nothing was found", err);
+//             });
+//     }
+//     else if (request.msg === 'REMOVE_PAGINATION_SEARCH_CACHE') {
+//         console.log("REMOVE CACHE");
+//         removeQueryForScroll(request.url);
+//     }
+// });
 
 function regenKey() {
     return new Promise((resolve, reject) => {

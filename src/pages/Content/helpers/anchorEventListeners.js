@@ -6,7 +6,6 @@ import { addNewAnchor, createAnnotationCallback, } from './AnchorEngine/AnchorCr
 // Changes to DOM
 import { removeHighlightSpans, removeTempHighlight } from './AnchorEngine/AnchorDomChanges';
 
-// 
 import {
     tempHighlight,
     highlightReplyRange,
@@ -24,7 +23,6 @@ document.addEventListener('mouseup', event => {
         sentFrom: "anchorEventListener"
     });
     //createAnnotation(event);
-
 });
 
 document.addEventListener('mousedown', event => {
@@ -33,7 +31,6 @@ document.addEventListener('mousedown', event => {
         sentFrom: "anchorEventListener"
     });//removeAnnotationWidget(event);
 });
-
 let messagesIn = {
     'ANNOTATION_DELETED_ON_PAGE': (request, sender, sendResponse) => {
         let findSpan = getSpanFromRequest(request);
@@ -96,6 +93,7 @@ function getSpanFromRequest(request) {
         document.getElementsByName(request.id.toString());
 
 }
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // console.log(request);
     if (request.msg in messagesIn) {

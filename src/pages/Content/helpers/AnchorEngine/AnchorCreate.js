@@ -255,11 +255,10 @@ function openSelectAnchorToast() {
 
 
 export const createAnnotationCallback = (response, event) => {
-    // console.log("c");
-    // console.log(response);
-    if (response.sidebarOpen) {
+    // response is whether or not the sidebar is open
+    // we only want to show the pop up if the sidebar is open
+    if (response) {
         var selection = window.getSelection();
-        // console.log(selection);
         if (selection.type === 'Range') {
             const rect = selection.getRangeAt(0);
             //Text nodes that were highlighted by user

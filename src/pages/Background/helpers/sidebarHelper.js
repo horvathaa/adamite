@@ -12,6 +12,7 @@ chrome.storage.local.get(['sidebarOpen'], (result) => {
 });
 
 const persistSidebarOpenStatus = (status) => {
+  console.log('persist call', status);
   chrome.storage.local.set({
     sidebarOpen: status,
   });
@@ -132,33 +133,56 @@ const updateShouldShrinkBodyStatus = (toStatus) => {
   );
 };
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.from === 'content' && request.msg === 'REQUEST_SIDEBAR_STATUS') {
-    sendResponse({
-      sidebarOpen,
-    });
-  } else if (
-    request.from === 'content' &&
-    request.msg === 'REQUEST_TOGGLE_SIDEBAR'
-  ) {
-    toggleSidebar(request.toStatus);
-  } else if (request.from === 'content' && request.msg === 'WIDTH_CHANGED') {
-    updateSidebarWidth(request.width);
-  } else if (
-    request.from === 'settings' &&
-    request.msg === 'USER_CHANGE_SIDEBAR_LOCATION'
-  ) {
-    const { toStatus } = request;
-    sidebarOnLeft = toStatus;
-    persistSidebarOnLeftStatus(sidebarOnLeft);
-    updateSidebarOnLeftStatus(sidebarOnLeft);
-  } else if (
-    request.from === 'settings' &&
-    request.msg === 'USER_CHANGE_SIDEBAR_SHOULD_SHRINK_BODY'
-  ) {
-    const { toStatus } = request;
-    shouldShrinkBody = toStatus;
-    persistShouldShrinkBodyStatus(shouldShrinkBody);
-    updateShouldShrinkBodyStatus(shouldShrinkBody);
-  }
-});
+export async function requestSidebarStatus(request, sender, sendResponse) {
+  console.log('getting sidebar status', sidebarOpen);
+  sendResponse(sidebarOpen);
+}
+
+export async function requestToggleSidebar(request, sender, sendResponse) {
+  toggleSidebar(request.toStatus);
+}
+
+export async function userChangeSidebarLocation(request, sender, sendResponse) {
+  const { toStatus } = request;
+  sidebarOnLeft = toStatus;
+  persistSidebarOnLeftStatus(sidebarOnLeft);
+  updateSidebarOnLeftStatus(sidebarOnLeft);
+}
+
+export async function userChangeSidebarShouldShrink(request, sender, sendResponse) {
+  const { toStatus } = request;
+  shouldShrinkBody = toStatus;
+  persistShouldShrinkBodyStatus(shouldShrinkBody);
+  updateShouldShrinkBodyStatus(shouldShrinkBody);
+}
+
+// chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+//   if (request.from === 'content' && request.msg === 'REQUEST_SIDEBAR_STATUS') {
+//     sendResponse({
+//       sidebarOpen,
+//     });
+//   } else if (
+//     request.from === 'content' &&
+//     request.msg === 'REQUEST_TOGGLE_SIDEBAR'
+//   ) {
+//     toggleSidebar(request.toStatus);
+//   } else if (request.from === 'content' && request.msg === 'WIDTH_CHANGED') {
+//     updateSidebarWidth(request.width);
+//   } else if (
+//     request.from === 'settings' &&
+//     request.msg === 'USER_CHANGE_SIDEBAR_LOCATION'
+//   ) {
+//     const { toStatus } = request;
+//     sidebarOnLeft = toStatus;
+//     persistSidebarOnLeftStatus(sidebarOnLeft);
+//     updateSidebarOnLeftStatus(sidebarOnLeft);
+//   } else if (
+//     request.from === 'settings' &&
+//     request.msg === 'USER_CHANGE_SIDEBAR_SHOULD_SHRINK_BODY'
+//   ) {
+//     const { toStatus } = request;
+//     shouldShrinkBody = toStatus;
+//     persistShouldShrinkBodyStatus(shouldShrinkBody);
+//     updateShouldShrinkBodyStatus(shouldShrinkBody);
+//   }
+// });

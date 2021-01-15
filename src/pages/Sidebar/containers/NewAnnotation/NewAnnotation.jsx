@@ -9,6 +9,7 @@ import './NewAnnotation.css';
 // import TagsInput from 'react-tagsinput'
 // import Dropdown from 'react-dropdown';
 import CardWrapper from '../CardWrapper/CardWrapper'
+import { AiOutlineConsoleSql } from 'react-icons/ai';
 
 // function MyEditor() {
 //   const [editorState, setEditorState] = React.useState(
@@ -139,19 +140,21 @@ class NewAnnotation extends React.Component {
                 },
               },
               response => {
+                console.log('response', response);
                 if (response.msg === 'DONE') {
-                  annotationInfo.id = response.value;
-                  if (annotationInfo.xpath !== null) {
-                    chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-                      chrome.tabs.sendMessage(
-                        tabs[0].id,
-                        {
-                          msg: 'ANNOTATION_ADDED',
-                          newAnno: annotationInfo,
-                        }
-                      );
-                    });
-                  }
+                  console.log('response', response);
+                  // annotationInfo.id = response.value;
+                  // if (annotationInfo.xpath !== null) {
+                  //   chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+                  //     chrome.tabs.sendMessage(
+                  //       tabs[0].id,
+                  //       {
+                  //         msg: 'ANNOTATION_ADDED',
+                  //         newAnno: annotationInfo,
+                  //       }
+                  //     );
+                  //   });
+                  // }
 
                   this.setState({ submitted: false });
                   this.props.resetNewSelection();

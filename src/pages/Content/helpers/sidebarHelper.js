@@ -146,7 +146,7 @@ const checkSidebarStatus = () => {
       msg: 'REQUEST_SIDEBAR_STATUS',
     },
     (response) => {
-      let sidebarOpen = response.sidebarOpen;
+      let sidebarOpen = response;
       if (Frame.isReady()) {
         Frame.toggle(sidebarOpen);
       }

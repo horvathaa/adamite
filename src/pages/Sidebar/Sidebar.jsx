@@ -335,20 +335,19 @@ class Sidebar extends React.Component {
         }
       }
       else if (request.from === 'background' && request.msg === 'GROUPS_UPDATED') {
-        // console.log('in set state groups updated', request.payload);
-        this.setState({ groups: request.payload });
+        this.setState({ groups: request.groups });
       }
       else if (
         request.from === 'background' &&
         request.msg === 'CONTENT_UPDATED'
       ) {
         chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-          const tab = tabs.filter(t => t.id === this.state.tabId && t.url === this.state.url);
-          if (this.containsObjectWithUrl(this.state.url, request.payload) && tab.length && tab[0].url === this.state.url && tab[0].id === this.state.tabId) {
-            this.setState({ annotations: request.payload });
-            chrome.browserAction.setBadgeText({ tabId: tab[0].id, text: String(request.payload.length) });
+          const tab = tabs.filter(t => t.url === request.url);
+          if (this.containsObjectWithUrl(request.url, request.payload) && tab.length && request.url === tab[0].url && tab[0].id === request.tabId) {
+            // this is definitely the site that made the request
+            this.setState({ annotations: request.payload, url: request.url });
             chrome.storage.local.get(['sidebarOpen'], response => {
-              if (response.sidebarOpen !== undefined && response.sidebarOpen) {
+              if (response !== undefined && response.sidebarOpen) {
                 chrome.tabs.sendMessage(tab[0].id, {
                   msg: 'HIGHLIGHT_ANNOTATIONS',
                   payload: request.payload,
@@ -356,8 +355,18 @@ class Sidebar extends React.Component {
                 });
               }
               this.requestFilterUpdate();
+              chrome.browserAction.setBadgeText({ tabId: tab[0].id, text: String(request.payload.length) });
             });
           }
+          else if (this.state.url !== request.url && tab.length && tab[0].id === request.tabId) {
+            // current URL is out of date and this is the active tab
+            this.setState({ url: request.url, annotations: request.payload })
+            this.requestFilterUpdate();
+          }
+          else {
+            // ignore?
+          }
+
         })
 
       }
