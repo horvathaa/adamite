@@ -56,7 +56,7 @@ var splitReinsertText = function (node, substring, callback) {
     console.log("splitReinsertText");
 
     function formatText(string) {
-        return string.trim().replace(/\n/g, " ").replace(/[ ][ ]+/g, " ");
+        return string.replace(/\n/g, " ").replace(/[ ][ ]+/g, " ");
     }
     // Needed to format test strings to make sure matches are actually found
     let substringText1 = formatText(substring.toString());
