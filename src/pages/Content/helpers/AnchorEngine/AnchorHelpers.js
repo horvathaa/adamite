@@ -107,7 +107,8 @@ export const filterArrayFromArray = (arr, matchArr) => {
 
 
 
-
+// Scenario 1: Index off but text in same text node
+// Scenario 2: Range doesn't include all text nodes
 
 export function getNodeSubstringPairs({ annotation, type, }) {
     if (annotation.xpath === undefined || annotation.xpath === null) return;
@@ -125,6 +126,11 @@ export function getNodeSubstringPairs({ annotation, type, }) {
         // console.log(fullContentString); console.log(range); // console.log(xp); console.log('got error- ', err); todo see if text is in content
         return false;
     }
+
+    nodes.forEach((n) => {
+        console.log(n.data);
+
+    })
 
     if ("anchorContent" in annotation) {
         fullContentString = annotation.anchorContent;
@@ -156,20 +162,20 @@ export function getNodeSubstringPairs({ annotation, type, }) {
                 if (xp.startOffset !== 0 && start) {
                     substring = nodes[i].data.substring(xp.startOffset, nodes[i].data.length);
 
-                    if (hasContent && !startIndexMatchesContent(fullContentString, nodes[i].data, substring)) {
-                        // console.log("Start Error");
-                        // console.log(substring);
-                        substring = getCorrectStartSubstring(fullContentString, nodes[i].data, substring);
-                        // console.log(substring);
-                    }
+                    // if (hasContent && !startIndexMatchesContent(fullContentString, nodes[i].data, substring)) {
+                    //     // console.log("Start Error");
+                    //     // console.log(substring);
+                    //     substring = getCorrectStartSubstring(fullContentString, nodes[i].data, substring);
+                    //     // console.log(substring);
+                    // }
                     start = false;
                 }
                 else if (xp.endOffset !== 0 && i == nodes.length - 1) {
                     substring = nodes[i].data.substring(0, xp.endOffset);
-                    if (hasContent && !endIndexMatchesContent(fullContentString, nodes[i].data, substring)) {
-                        // console.log("End Error");
-                        substring = getCorrectEndSubstring(fullContentString, nodes[i].data, substring);
-                    }
+                    // if (hasContent && !endIndexMatchesContent(fullContentString, nodes[i].data, substring)) {
+                    //     // console.log("End Error");
+                    //     substring = getCorrectEndSubstring(fullContentString, nodes[i].data, substring);
+                    // }
                 }
                 else {
                     substring = nodes[i].data;// if (!remainingContent.includes(substring)) {   console.log("Middle substring error") }
@@ -181,10 +187,22 @@ export function getNodeSubstringPairs({ annotation, type, }) {
     }
 }
 
+function formatText(string) {
+    return string.trim().replace(/\n/g, " ").replace(/[ ][ ]+/g, " ");
+}
 
 
-
-
+function findTrueOffset(offset, unformattedString, formattedString) {
+    if (offset === 0 || (formattedString.length === unformattedString.length && formattedString === node.data)) {
+        return offset;
+    }
+    let original = offset;
+    while (unformattedString.length > offset
+        && formatText(unformattedString.substring(0, offset)) != formatText(formattedString.substring(0, original))) {
+        offset += 1;
+    }
+    return offset;
+}
 
 
 function startIndexMatchesContent(annoContent, nodeContent, substring) {
