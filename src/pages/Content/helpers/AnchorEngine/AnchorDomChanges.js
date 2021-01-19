@@ -4,10 +4,10 @@ import { transmitMessage } from "../anchorEventTransmitter";
 
 
 export function addHighlightToSubstring({ node, substring, spanId, isPreview = false }) {
+    let _spanId = isPreview ? "annoPreview" : spanId;
+    let _className = isPreview ? "highlight-adamite-annotation-preview" : "highlight-adamite-annotation";
     splitReinsertText(node, substring, function (node, match, offset) {
-        let spandId = isPreview ? "annoPreview" : spanId;
-        let className = isPreview ? "highlight-adamite-annotation-preview" : "highlight-adamite-annotation";
-        _addHighlightSpan({ match: match, node: node, spanId: spanId, className: className });
+        _addHighlightSpan({ match: match, node: node, spanId: _spanId, className: _className });
 
     });
 }
@@ -18,7 +18,8 @@ function _addHighlightSpan({ match, node, spanId, className }) {
     span.onclick = anchorClick;
     span.className = className;
     node.parentNode.insertBefore(span, node.nextSibling);
-    node.parentNode.normalize()
+    node.parentNode.normalize();
+    console.log("Done")
 }
 
 export const removeHighlightSpans = ({ isPreview = false }) => {

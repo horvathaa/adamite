@@ -6,7 +6,7 @@ import { getNodeSubstringPairs } from './AnchorHelpers';
 
 
 function checkIfBrokenAnchor(spanId, errorPayload) {
-    // console.log("Issue");
+    console.log("Issue");
     // TODO this doesn't work very well -- need to ficute out what the issue is
     let findSpan = document.getElementsByName(spanId);
     if (findSpan.length === 0) {
@@ -21,6 +21,7 @@ export const highlightAnnotationDeep = (anno) => {
     //will show annotation type
 
     if (!highlightAnnotation(anno, anno.id.toString(), "root")) {
+        console.log("ERROR"); console.log(anno);
         checkIfBrokenAnchor(anno.id.toString(), { "id": anno.id });
     }
 
