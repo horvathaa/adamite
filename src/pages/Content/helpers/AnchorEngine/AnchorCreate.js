@@ -21,7 +21,7 @@ function getPathFromUrl(url) {
     return url.split(/[?#]/)[0];
 }
 
-const Popover = ({ selection, xpathToNode, offsets, removePopover }) => {
+const Popover = ({ selection, xpathToNode, offsets, rectPopover, removePopover }) => {
     const [selected, setSelected] = useState(null);
     const [showQuestionMenu, setShowQuestionMenu] = useState(false);
 
@@ -32,7 +32,7 @@ const Popover = ({ selection, xpathToNode, offsets, removePopover }) => {
     const buttonClickedHandler = (event, type, content) => {
         event.stopPropagation();
         if (selected) {
-            alertBackgroundOfNewSelection(selected, offsets, xpathToNode, type, content);
+            alertBackgroundOfNewSelection(selected, offsets, xpathToNode, type, content, rectPopover);
             selection.removeAllRanges();
             removePopover();
         }
@@ -128,7 +128,7 @@ function displayPopoverBasedOnRectPosition(rect, props) {
 
 
 
-const alertBackgroundOfNewSelection = (selection, offsets, xpath, type, content) => {
+const alertBackgroundOfNewSelection = (selection, offsets, xpath, type, content, rectPopover) => {
     // supporting creation of annotations in sidebar
     const annoContent = content === undefined ? "" : content;
     // console.log('transmitting content selected', annoContent);
@@ -141,6 +141,7 @@ const alertBackgroundOfNewSelection = (selection, offsets, xpath, type, content)
                     anchor: selection,
                     xpath: xpath,
                     offsets: offsets,
+                    pageLocation: { top: rectPopover.top, left: rectPopover.left },
                     url: getPathFromUrl(window.location.href),
 
                 }
@@ -156,6 +157,7 @@ const alertBackgroundOfNewSelection = (selection, offsets, xpath, type, content)
                     offsets,
                     xpath,
                     type,
+                    pageLocation: { top: rectPopover.top, left: rectPopover.left },
                     annoContent
                 },
             }
@@ -282,9 +284,9 @@ export const createAnnotationCallback = (response, event) => {
                 endOffset: rect.endOffset
             };
 
-            const rectPopover = selection.getRangeAt(0).getBoundingClientRect();
-            // console.log("Display Popover");
-            displayPopoverBasedOnRectPosition(rectPopover, { selection, xpathToNode, offsets });
+            const rectPopover = rect.getBoundingClientRect();
+            console.log("Display Popover", rectPopover);
+            displayPopoverBasedOnRectPosition(rectPopover, { selection, xpathToNode, offsets, rectPopover });
 
             return;
         }

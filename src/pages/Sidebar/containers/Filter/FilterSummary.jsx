@@ -3,6 +3,7 @@ import './FilterSummary.css';
 import { GoEye } from 'react-icons/go';
 import { AiFillClockCircle, AiOutlineCheck, AiOutlineCloseCircle, AiOutlineUsergroupAdd } from 'react-icons/ai';
 import { BsChatSquareDots, BsXCircle } from 'react-icons/bs';
+import { BiSort } from 'react-icons/bi';
 import tag from '../../../../assets/img/SVGs/tag.svg';
 import { Dropdown } from 'react-bootstrap';
 import GroupMultiSelect from './MultiSelect/MultiSelect'
@@ -133,12 +134,17 @@ class FilterSummary extends React.Component {
         );
     }
 
+    updateSort = (option, event) => {
+        let sort = event.target.getAttribute('data-value');
+        this.props.notifySidebarSort(sort);
+    }
+
     handleNotifySidebar = (option) => {
         this.props.updateSidebarGroup(option);
     }
 
     render() {
-        const { filter, groups, activeGroup } = this.props;
+        const { filter, groups, currentSort, activeGroup } = this.props;
         let annoType = "";
         if (areArraysEqualSets(filter.annoType, ['default', 'to-do', 'question', 'highlight', 'issue'])) {
             annoType = "All Types";
@@ -252,6 +258,16 @@ class FilterSummary extends React.Component {
                                 { visible: "To-do", value: 'to-do' },
                                 { visible: "Question", value: 'question' },
                                 { visible: "Issue", value: 'issue' }]
+                            })}
+                        </div>
+                        <div className="FilterSection">
+                            {this.createDropDown({
+                                Icon: BiSort,
+                                activeFilter: currentSort === 'page' ? "Page" : "Time",
+                                header: "Sort By",
+                                updateFunction: this.updateSort,
+                                items: [{ visible: "Page", value: 'page' },
+                                { visible: "Time", value: 'time' }]
                             })}
                         </div>
                         {filter.tags.length ? (

@@ -2,15 +2,21 @@
 
 
 
-function sendMsg(msg, data, responseCallback, currentTab) {
+function sendMsg(msg, data, responseCallback, currentTab, specificTab) {
     try {
-        if (!currentTab) {
+        if (specificTab) {
+            chrome.tabs.sendMessage(data.tabId, {
+                msg: msg, tabId: data.tabId, from: 'background', ...data
+            });
+        }
+        else if (!currentTab) {
             if (responseCallback !== undefined && responseCallback !== null)
                 chrome.runtime.sendMessage({ msg: msg, from: 'background', ...data }, responseCallback);
             else
                 chrome.runtime.sendMessage({ msg: msg, from: 'background', ...data });
 
-        } else {
+        }
+        else {
             chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
                 if (tabs !== undefined && tabs.length) {
                     chrome.tabs.sendMessage(
@@ -50,9 +56,9 @@ let messagesOut = [
 ]
 
 
-export function transmitMessage({ msg, data, sentFrom, responseCallback = null, currentTab = false }) {
+export function transmitMessage({ msg, data, sentFrom, responseCallback = null, currentTab = false, specificTab = false }) {
     //  console.log(msg);
-    if (messagesOut.includes(msg)) sendMsg(msg, data, responseCallback, currentTab);
+    if (messagesOut.includes(msg)) sendMsg(msg, data, responseCallback, currentTab, specificTab);
     else console.log("ERR");
 }
 

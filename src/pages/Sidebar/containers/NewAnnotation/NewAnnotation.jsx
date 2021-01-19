@@ -120,7 +120,7 @@ class NewAnnotation extends React.Component {
         },
         response => {
           if (response.msg === 'REMOVED') {
-            const { url, newSelection, xpath, offsets } = this.props;
+            const { url, newSelection, xpath, offsets, pageLocation } = this.props;
             const annotationInfo = {
               anchor: newSelection,
               annotation: CardWrapperState.annotationContent,
@@ -129,7 +129,8 @@ class NewAnnotation extends React.Component {
               tags: CardWrapperState.tags,
               annotationType: CardWrapperState.annotationType.toLowerCase(),
               private: CardWrapperState.private,
-              groups: CardWrapperState.groups
+              groups: CardWrapperState.groups,
+              pageLocation
             };
             chrome.runtime.sendMessage(
               {

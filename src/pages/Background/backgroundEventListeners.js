@@ -8,7 +8,7 @@ import { toggleSidebar } from './helpers/sidebarHelper';
 
 // helper method from
 // https://stackoverflow.com/questions/2540969/remove-querystring-from-url
-function getPathFromUrl(url) {
+export function getPathFromUrl(url) {
     return url.split(/[?#]/)[0];
 }
 
@@ -87,7 +87,6 @@ let commands = {
     'HANDLE_BROWSER_ACTION_CLICK': () => {
         clicked = !clicked;
         toggleSidebar(clicked);
-        console.log('what is clicked', clicked);
         if (clicked) {
             chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
                 if (anno.containsObjectWithUrl(tabs[0].url, anno.tabAnnotationCollect)) {

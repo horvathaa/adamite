@@ -50,6 +50,7 @@ class Sidebar extends React.Component {
     relatedQuestions: [],
     searchCount: 0,
     pageName: '',
+    sortBy: 'page',
     filterSelection: {
       siteScope: ['onPage'],
       userScope: ['public'],
@@ -205,13 +206,14 @@ class Sidebar extends React.Component {
         request.from === 'background' &&
         request.msg === 'CONTENT_SELECTED'
       ) {
-        const { selection, offsets, xpath, type, annoContent } = request.payload;
+        const { selection, offsets, xpath, type, annoContent, pageLocation } = request.payload;
         this.setState({
           newSelection: selection,
           offsets: offsets,
           xpath: xpath,
           newAnnotationType: type,
-          newAnnotationContent: annoContent
+          newAnnotationContent: annoContent,
+          pageLocation
         });
       }
       //  else if (
@@ -341,33 +343,19 @@ class Sidebar extends React.Component {
         request.from === 'background' &&
         request.msg === 'CONTENT_UPDATED'
       ) {
-        chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-          const tab = tabs.filter(t => t.url === request.url);
-          if (this.containsObjectWithUrl(request.url, request.payload) && tab.length && request.url === tab[0].url && tab[0].id === request.tabId) {
-            // this is definitely the site that made the request
-            this.setState({ annotations: request.payload, url: request.url });
-            chrome.storage.local.get(['sidebarOpen'], response => {
-              if (response !== undefined && response.sidebarOpen) {
-                chrome.tabs.sendMessage(tab[0].id, {
-                  msg: 'HIGHLIGHT_ANNOTATIONS',
-                  payload: request.payload,
-                  url: tab[0].url
-                });
-              }
-              this.requestFilterUpdate();
-              chrome.browserAction.setBadgeText({ tabId: tab[0].id, text: String(request.payload.length) });
+        this.setState({ annotations: request.payload, url: request.url });
+        chrome.storage.local.get(['sidebarOpen'], response => {
+          if (response !== undefined && response.sidebarOpen) {
+            chrome.tabs.sendMessage(request.tabId, {
+              msg: 'HIGHLIGHT_ANNOTATIONS',
+              payload: request.payload,
+              url: request.url
             });
           }
-          else if (this.state.url !== request.url && tab.length && tab[0].id === request.tabId) {
-            // current URL is out of date and this is the active tab
-            this.setState({ url: request.url, annotations: request.payload })
-            this.requestFilterUpdate();
-          }
-          else {
-            // ignore?
-          }
+          this.requestFilterUpdate();
 
-        })
+        });
+        chrome.browserAction.setBadgeText({ tabId: request.tabId, text: request.payload.length ? String(request.payload.length) : "0" });
 
       }
       else if (request.from === 'background' && request.msg === 'ELASTIC_CONTENT_UPDATED') {
@@ -533,6 +521,10 @@ class Sidebar extends React.Component {
 
 
     // this.setState({ activeGroup: option[0].label })
+  }
+
+  notifySidebarSort = (option) => {
+    this.setState({ sortBy: option });
   }
 
   handleRelatedQuestions = () => {
@@ -846,7 +838,7 @@ class Sidebar extends React.Component {
   };
 
   render() {
-    const { currentUser, filteredAnnotations, searchBarInputText, searchedAnnotations, groupAnnotations, filteredGroupAnnotations, pinnedAnnos, groups, activeGroups } = this.state;
+    const { currentUser, filteredAnnotations, searchBarInputText, searchedAnnotations, groupAnnotations, filteredGroupAnnotations, pinnedAnnos, groups, activeGroups, sortBy } = this.state;
     if (currentUser === undefined) {
       return null;
     }
@@ -874,9 +866,24 @@ class Sidebar extends React.Component {
       renderedAnnotations = filteredAnnotations;
     }
 
-    renderedAnnotations = renderedAnnotations.sort((a, b) =>
-      (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
-    );
+    if (sortBy === 'page') {
+      renderedAnnotations = renderedAnnotations.sort((a, b) => {
+        if (a.pageLocation !== undefined && b.pageLocation !== undefined) {
+          return (a.pageLocation.top > b.pageLocation.top && a.pageLocation.left > b.pageLocation.left) || (a.pageLocation.top > b.pageLocation.top && a.pageLocation.left === b.pageLocation.left) ? 1 : -1
+        }
+        else {
+          return -1
+        }
+      }
+
+      );
+    }
+    else {
+      renderedAnnotations = renderedAnnotations.sort((a, b) =>
+        (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
+      );
+    }
+
 
     renderedAnnotations = renderedAnnotations.filter(anno => !anno.deleted && anno.SharedId === null);
 
@@ -927,6 +934,8 @@ class Sidebar extends React.Component {
                   tempSearchCount={tempSearchCount}
                   showingSelectedAnno={this.state.showClearClickedAnnotation}
                   clearSelectedAnno={this.clearSelectedAnno}
+                  notifySidebarSort={this.notifySidebarSort}
+                  currentSort={this.state.sortBy}
                 // activeGroup={activeGroups.length ? activeGroup : "Public"}
                 />
               }
@@ -943,6 +952,7 @@ class Sidebar extends React.Component {
                     type={this.state.newAnnotationType}
                     annoContent={this.state.newAnnotationContent}
                     userGroups={groups}
+                    pageLocation={this.state.pageLocation}
                   />
                 )}
               {this.state.annotatingPage &&
@@ -954,6 +964,7 @@ class Sidebar extends React.Component {
                   offsets={null}
                   xpath={null}
                   userGroups={groups}
+                  pageLocation={0}
                 />
               }
             </div>
