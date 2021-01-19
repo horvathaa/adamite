@@ -5,22 +5,12 @@ import { transmitMessage } from "../anchorEventTransmitter";
 
 export function addHighlightToSubstring({ node, substring, spanId, isPreview = false }) {
     splitReinsertText(node, substring, function (node, match, offset) {
-        if (isPreview)
-            addPreviewHighlightSpan({ match, node })
-        else
-            addHighlightSpan({ match: match, node: node, spanId: spanId })
+        let spandId = isPreview ? "annoPreview" : spanId;
+        let className = isPreview ? "highlight-adamite-annotation-preview" : "highlight-adamite-annotation";
+        _addHighlightSpan({ match: match, node: node, spanId: spanId, className: className });
+
     });
 }
-
-
-export function addPreviewHighlightSpan({ match, node }) {
-    _addHighlightSpan({ match: match, node: node, spanId: "annoPreview", className: "highlight-adamite-annotation-preview" })
-}
-
-export function addHighlightSpan({ match, node, spanId }) {
-    _addHighlightSpan({ match: match, node: node, spanId: spanId, className: "highlight-adamite-annotation" })
-}
-
 function _addHighlightSpan({ match, node, spanId, className }) {
     var span = document.createElement("span");
     span.setAttribute("name", spanId);
@@ -31,24 +21,15 @@ function _addHighlightSpan({ match, node, spanId, className }) {
     node.parentNode.normalize()
 }
 
-export const removeHighlightSpans = () => {
-    const highlights = document.querySelectorAll(".highlight-adamite-annotation");
+export const removeHighlightSpans = ({ isPreview = false }) => {
+    let className = isPreview ? ".highlight-adamite-annotation-preview" : ".highlight-adamite-annotation";
+    const highlights = document.querySelectorAll(className);
     highlights.forEach(h => {
         let parent = h.parentNode;
         $(h).contents().unwrap();
         parent.normalize();
     });
 }
-
-export const removeTempHighlight = () => {
-    const temp = document.querySelectorAll(".highlight-adamite-annotation-preview");
-    temp.forEach(h => {
-        let parent = h.parentNode;
-        $(h).contents().unwrap();
-        parent.normalize();
-    });
-}
-
 
 //1. Better matching of strings when faced with formatting issues
 //Splits text in node and calls callback action to preform on middle node

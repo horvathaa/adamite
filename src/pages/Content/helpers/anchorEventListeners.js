@@ -4,7 +4,7 @@ import { transmitMessage } from './anchorEventTransmitter';
 // Creating Annotations and anchors
 import { addNewAnchor, createAnnotationCallback, } from './AnchorEngine/AnchorCreate';
 // Changes to DOM
-import { removeHighlightSpans, removeTempHighlight } from './AnchorEngine/AnchorDomChanges';
+import { removeHighlightSpans } from './AnchorEngine/AnchorDomChanges';
 
 import {
     tempHighlight,
@@ -48,7 +48,7 @@ let messagesIn = {
         highlightReplyRange(xpath, id);
     },
     'HIGHLIGHT_ANNOTATIONS': (request, sender, sendResponse) => {
-        removeHighlightSpans();
+        removeHighlightSpans({ isPreview: false });
         const annotationsOnPage = request.payload;
         if (annotationsOnPage.length) {
             annotationsOnPage.reverse().forEach(anno => {
@@ -78,11 +78,11 @@ let messagesIn = {
         tempHighlight(request.newAnno);
     },
     'REMOVE_TEMP_ANNOTATION': (request, sender, sendResponse) => {
-        removeTempHighlight();
+        removeHighlightSpans({ isPreview: true });
         sendResponse({ msg: 'REMOVED' });
     },
     'REMOVE_HIGHLIGHTS': (request, sender, sendResponse) => {
-        removeHighlightSpans();
+        removeHighlightSpans({ isPreview: false });
     },
 }
 
