@@ -341,33 +341,19 @@ class Sidebar extends React.Component {
         request.from === 'background' &&
         request.msg === 'CONTENT_UPDATED'
       ) {
-        chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-          const tab = tabs.filter(t => t.url === request.url);
-          if (this.containsObjectWithUrl(request.url, request.payload) && tab.length && request.url === tab[0].url && tab[0].id === request.tabId) {
-            // this is definitely the site that made the request
-            this.setState({ annotations: request.payload, url: request.url });
-            chrome.storage.local.get(['sidebarOpen'], response => {
-              if (response !== undefined && response.sidebarOpen) {
-                chrome.tabs.sendMessage(tab[0].id, {
-                  msg: 'HIGHLIGHT_ANNOTATIONS',
-                  payload: request.payload,
-                  url: tab[0].url
-                });
-              }
-              this.requestFilterUpdate();
-              chrome.browserAction.setBadgeText({ tabId: tab[0].id, text: String(request.payload.length) });
+        this.setState({ annotations: request.payload, url: request.url });
+        chrome.storage.local.get(['sidebarOpen'], response => {
+          if (response !== undefined && response.sidebarOpen) {
+            chrome.tabs.sendMessage(request.tabId, {
+              msg: 'HIGHLIGHT_ANNOTATIONS',
+              payload: request.payload,
+              url: request.url
             });
           }
-          else if (this.state.url !== request.url && tab.length && tab[0].id === request.tabId) {
-            // current URL is out of date and this is the active tab
-            this.setState({ url: request.url, annotations: request.payload })
-            this.requestFilterUpdate();
-          }
-          else {
-            // ignore?
-          }
+          this.requestFilterUpdate();
 
-        })
+        });
+        chrome.browserAction.setBadgeText({ tabId: request.tabId, text: request.payload.length ? String(request.payload.length) : "0" });
 
       }
       else if (request.from === 'background' && request.msg === 'ELASTIC_CONTENT_UPDATED') {

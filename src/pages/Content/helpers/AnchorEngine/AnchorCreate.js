@@ -282,7 +282,7 @@ export const createAnnotationCallback = (response, event) => {
                 endOffset: rect.endOffset
             };
 
-            const rectPopover = selection.getRangeAt(0).getBoundingClientRect();
+            const rectPopover = rect.getBoundingClientRect();
             // console.log("Display Popover");
             displayPopoverBasedOnRectPosition(rectPopover, { selection, xpathToNode, offsets });
 
