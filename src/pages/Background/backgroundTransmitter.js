@@ -5,7 +5,6 @@
 function sendMsg(msg, data, responseCallback, currentTab, specificTab) {
     try {
         if (specificTab) {
-            console.log('in specificTab', data);
             chrome.tabs.sendMessage(data.tabId, {
                 msg: msg, tabId: data.tabId, from: 'background', ...data
             });

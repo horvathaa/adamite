@@ -72,7 +72,8 @@ export async function createAnnotation(request, sender, sendResponse) {
     sendResponse({ "msg": 'DONE' });
 }
 export async function createAnnotationHighlight(request, sender, sendResponse) {
-    let { url, anchor, xpath, offsets } = request.payload;
+    let { url, anchor, xpath, offsets, pageLocation } = request.payload;
+    console.log('did we make it this far', pageLocation);
     const hostname = new URL(url).hostname;
     const author = getAuthor();
     fb.createAnnotation({
@@ -94,7 +95,8 @@ export async function createAnnotationHighlight(request, sender, sendResponse) {
         groups: [], // later have this be a default group
         readCount: 0,
         deleted: false,
-        events: []
+        events: [],
+        pageLocation
     });
 }
 // 
@@ -385,7 +387,8 @@ const _createAnnotation = (request) => {
         groups: content.groups,
         readCount: 0,
         deleted: false,
-        events: []
+        events: [],
+        pageLocation: content.pageLocation
     };
 }
 
@@ -414,7 +417,6 @@ function getListFromSnapshots(snapshots) {
             id: snapshot.id, ...snapshot.data(),
         });
     });
-    console.log(out);
     return out;
 }
 
@@ -440,10 +442,8 @@ function getAllPublicPinnedAnnotationsListener() {
 
 
 function getAllAnnotationsByUrlListener(url, tabId) {
-    console.log("getAllAnnotationsByUrlListener", url);
     publicListener = fb.getAllAnnotationsByUrl(url, fb.getCurrentUser().uid).onSnapshot(annotationsSnapshot => {
         let tempPublicAnnotations = getListFromSnapshots(annotationsSnapshot);
-        console.log('temp pub', tempPublicAnnotations);
         let annotationsToBroadcast = tempPublicAnnotations.concat(privateAnnotations);
         annotationsToBroadcast = annotationsToBroadcast.filter(anno => !anno.deleted && anno.url.includes(url));
 
@@ -468,7 +468,6 @@ function getAllAnnotationsByUrlListener(url, tabId) {
 
 
 function getPrivateAnnotationsByUrlListener(url, tabId) {
-    console.log("getPrivateAnnotationsByUrlListener", url);
     privateListener = fb.getPrivateAnnotationsByUrl(url, fb.getCurrentUser().uid).onSnapshot(annotationsSnapshot => {
         let tempPrivateAnnotations = getListFromSnapshots(annotationsSnapshot);
         let annotationsToBroadcast = tempPrivateAnnotations.concat(publicAnnotations);
