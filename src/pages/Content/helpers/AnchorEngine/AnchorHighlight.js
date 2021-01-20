@@ -5,24 +5,23 @@ import { getNodeSubstringPairs } from './AnchorHelpers';
 
 
 
-function checkIfBrokenAnchor(spanId, errorPayload) {
-    console.log("Issue");
-    // TODO this doesn't work very well -- need to ficute out what the issue is
-    let findSpan = document.getElementsByName(spanId);
-    if (findSpan.length === 0) {
-        transmitMessage({ msg: "ANCHOR_BROKEN", data: { payload: errorPayload }, sentFrom: "AnchorHighlight" })
-        return true;
-    }
-    return false;
-}
+// function checkIfBrokenAnchor(spanId, errorPayload) {
+//     console.log("Issue");
+//     // TODO this doesn't work very well -- need to ficute out what the issue is
+//     let findSpan = document.getElementsByName(spanId);
+//     if (findSpan.length === 0) {
+//         transmitMessage({ msg: "ANCHOR_BROKEN", data: { payload: errorPayload }, sentFrom: "AnchorHighlight" })
+//         return true;
+//     }
+//     return false;
+// }
 
 
 export const highlightAnnotationDeep = (anno) => {
     //will show annotation type
-
     if (!highlightAnnotation(anno, anno.id.toString(), "root")) {
-        console.log("ERROR"); console.log(anno);
-        checkIfBrokenAnchor(anno.id.toString(), { "id": anno.id });
+        console.log("highlightAnnotation ERROR"); console.log(anno);
+        //checkIfBrokenAnchor(anno.id.toString(), { "id": anno.id });
     }
 
     if (anno.childAnchor !== undefined && anno.childAnchor.length) {
@@ -30,7 +29,8 @@ export const highlightAnnotationDeep = (anno) => {
             if (child.xpath !== undefined && child.xpath !== null) {
                 let domId = anno.id.toString() + "-" + child.id.toString();
                 if (!highlightAnnotation(child, domId, "child")) {
-                    checkIfBrokenAnchor(domId, { "id": anno.id, "childId": child.id });
+                    console.log("highlightAnnotation Child Error"); console.log(anno);
+                    //checkIfBrokenAnchor(domId, { "id": anno.id, "childId": child.id });
                 }
             }
         });
@@ -40,7 +40,8 @@ export const highlightAnnotationDeep = (anno) => {
             if (reply.xpath !== undefined && reply.xpath !== null) {
                 let domId = anno.id.toString() + "-" + reply.replyId.toString();
                 if (!highlightAnnotation(reply, domId, "reply")) {
-                    checkIfBrokenAnchor(domId, { "id": anno.id, "replyId": reply.replyId });
+                    console.log("highlightAnnotation Reply ERROR"); console.log(anno);
+                    //checkIfBrokenAnchor(domId, { "id": anno.id, "replyId": reply.replyId });
                 }
             }
         })

@@ -12,6 +12,7 @@ export function addHighlightToSubstring({ node, substring, spanId, isPreview = f
     });
 }
 function _addHighlightSpan({ match, node, spanId, className }) {
+
     var span = document.createElement("span");
     span.setAttribute("name", spanId);
     span.textContent = match;
@@ -31,6 +32,18 @@ export const removeHighlightSpans = ({ isPreview = false }) => {
         parent.normalize();
     });
 }
+
+export const getHighlightSpanIds = ({ isPreview = false }) => {
+    let className = isPreview ? ".highlight-adamite-annotation-preview" : ".highlight-adamite-annotation";
+    const highlights = document.querySelectorAll(className);
+    let outIds = [];
+    highlights.forEach(h => {
+        let spanId = h.attributes.getNamedItem("name").value;
+        if (!outIds.includes(spanId)) { outIds.push(spanId) }
+    });
+    return outIds;
+}
+
 
 //1. Better matching of strings when faced with formatting issues
 //Splits text in node and calls callback action to preform on middle node

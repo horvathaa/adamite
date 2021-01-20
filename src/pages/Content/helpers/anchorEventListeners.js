@@ -4,13 +4,14 @@ import { transmitMessage } from './anchorEventTransmitter';
 // Creating Annotations and anchors
 import { addNewAnchor, createAnnotationCallback, } from './AnchorEngine/AnchorCreate';
 // Changes to DOM
-import { removeHighlightSpans } from './AnchorEngine/AnchorDomChanges';
+import { removeHighlightSpans, getHighlightSpanIds } from './AnchorEngine/AnchorDomChanges';
 
 import {
     tempHighlight,
     highlightReplyRange,
     highlightAnnotation,
-    highlightAnnotationDeep
+    highlightAnnotationDeep,
+
 } from './AnchorEngine/AnchorHighlight';
 
 import { updateXpaths, } from './AnchorEngine/AnchorDestroy';
@@ -54,6 +55,16 @@ let messagesIn = {
             annotationsOnPage.reverse().forEach(anno => {
                 highlightAnnotationDeep(anno);
             });
+            let ids = getHighlightSpanIds({ isPreview: false });
+            console.log(ids);
+            annotationsOnPage.reverse().forEach(anno => {
+                console.log(anno.id);
+                if (!(ids.includes(anno.id.toString()))) {
+                    transmitMessage({ msg: "ANCHOR_BROKEN", data: { payload: { "id": anno.id } }, sentFrom: "AnchorHighlight" })
+                }
+            });
+
+
         }
     },
     'ANNOTATION_FOCUS_ONCLICK': (request, sender, sendResponse) => {
