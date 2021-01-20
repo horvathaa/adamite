@@ -200,17 +200,20 @@ export function addNewAnchor({ request, type }) {
             url: getPathFromUrl(window.location.href),
             anchor: selection.toString(),
             offsets: offsets,
-            hostname: window.location.hostname
+            hostname: window.location.hostname,
+            pageLocation: { top: rect.getBoundingClientRect().top, left: rect.getBoundingClientRect().left }
         };
 
         if (type == "reply") {
             transmitMessage({ msg: 'TRANSMIT_REPLY_ANCHOR', data: { "payload": payload } });
+
         } else {
             payload['newAnno'] = request.payload;
             // console.log(payload);
             transmitMessage({ msg: 'SAVE_NEW_ANCHOR', data: { "payload": payload } });
         }
-        selection.removeRange(rect);
+        selection.removeAllRanges();
+        removePopover();
     }
     else {
         openSelectAnchorToast();

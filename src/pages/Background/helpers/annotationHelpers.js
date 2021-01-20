@@ -124,10 +124,10 @@ export async function createAnnotationReply(request, sender, sendResponse) {
 }
 
 export async function createAnnotationChildAnchor(request, sender, sendResponse) {
-    let { newAnno, xpath, url, anchor, offsets, hostname } = request.payload;
+    let { newAnno, xpath, url, anchor, offsets, hostname, pageLocation } = request.payload;
     const id = new Date().getTime();
     const newAnchor = Object.assign({}, {
-        parentId: newAnno.sharedId, id, anchor, url, offsets, hostname, xpath
+        parentId: newAnno.sharedId, id, anchor, url, offsets, hostname, xpath, pageLocation
     });
 
     fb.updateAnnotationById(newAnno.sharedId, {
@@ -342,7 +342,7 @@ const editEvent = (msg, data = {}, author = null, eventTime = null,) => {
 const _createReply = (request) => {
     const eventTime = new Date().getTime();
     const author = getAuthor();
-    const { reply, replyTags, answer, question, replyId, xpath, anchor, hostname, url, offsets, adopted } = request.payload;
+    const { reply, replyTags, answer, question, replyId, xpath, anchor, hostname, url, offsets, adopted, pageLocation } = request.payload;
     return Object.assign({}, {
         replyId: replyId,
         replyContent: reply,
@@ -357,7 +357,8 @@ const _createReply = (request) => {
         hostname: safeSet(hostname, null),
         url: safeSet(url, null),
         offsets: safeSet(offsets, null),
-        adopted: safeSet(adopted, null)
+        adopted: safeSet(adopted, null),
+        pageLocation: safeSet(pageLocation, null)
     });
 }
 

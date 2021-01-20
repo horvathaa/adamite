@@ -868,11 +868,35 @@ class Sidebar extends React.Component {
 
     if (sortBy === 'page') {
       renderedAnnotations = renderedAnnotations.sort((a, b) => {
-        if (a.pageLocation !== undefined && b.pageLocation !== undefined) {
-          return (a.pageLocation.top > b.pageLocation.top && a.pageLocation.left > b.pageLocation.left) || (a.pageLocation.top > b.pageLocation.top && a.pageLocation.left === b.pageLocation.left) ? 1 : -1
+        if (a.url[0] === this.state.url) { // we are on the page of the parent anchor 
+          if (a.pageLocation !== undefined && b.pageLocation !== undefined) {
+            return (a.pageLocation.top > b.pageLocation.top && a.pageLocation.left > b.pageLocation.left) || (a.pageLocation.top > b.pageLocation.top && a.pageLocation.left === b.pageLocation.left) ? 1 : -1
+          }
+          else {
+            return -1
+          }
         }
-        else {
-          return -1
+        else if (a.url.includes(this.state.url)) { // we are on a page that has child anchor anchored to this page 
+          const childrenToSortBy = a.childAnchor.filter(c => c.url === this.state.url);
+          if (childrenToSortBy.length === 1 && childrenToSortBy[0].pageLocation !== undefined && b.pageLocation !== undefined) {
+            return (childrenToSortBy[0].pageLocation.top > b.pageLocation.top && childrenToSortBy[0].pageLocation.left > b.pageLocation.left) || (childrenToSortBy[0].pageLocation.top > b.pageLocation.top && childrenToSortBy[0].pageLocation.left === b.pageLocation.left) ? 1 : -1
+          }
+          else {
+            childrenToSortBy.sort((c, d) => {
+              if (c.pageLocation !== undefined && d.pageLocation !== undefined) {
+                return (c.pageLocation.top > d.pageLocation.top && c.pageLocation.left > d.pageLocation.left) || (c.pageLocation.top > d.pageLocation.top && c.pageLocation.left === d.pageLocation.left) ? 1 : -1
+              }
+            })
+            if (childrenToSortBy[0].pageLocation !== undefined) {
+              return (childrenToSortBy[0].pageLocation.top > b.pageLocation.top && childrenToSortBy[0].pageLocation.left > b.pageLocation.left) || (childrenToSortBy[0].pageLocation.top > b.pageLocation.top && childrenToSortBy[0].pageLocation.left === b.pageLocation.left) ? 1 : -1
+            }
+
+          }
+        }
+        else { // we are looking at annotations that are not on this page so pageLocation does not matter
+          renderedAnnotations = renderedAnnotations.sort((a, b) =>
+            (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
+          );
         }
       }
 

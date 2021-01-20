@@ -132,6 +132,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.msg in commands) {
         commands[request.msg](request, sender, sendResponse);
     } else console.log("Unknown Command", request.message);
+    return true;
 });
 
 
