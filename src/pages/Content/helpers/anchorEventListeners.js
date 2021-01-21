@@ -86,18 +86,6 @@ let messagesIn = {
     'REMOVE_HIGHLIGHTS': (request, sender, sendResponse) => {
         removeHighlightSpans();
     }
-    // ,
-    // 'REQUEST_SPAN_LIST': (request, sender, sendResponse) => {
-    //     console.log('got message req-span');
-    //     let spans = document.querySelectorAll('.highlight-adamite-annotation');
-    //     console.log('spans', spans);
-    //     let spanNames = Array.from(spans).map(s => {
-    //         console.log(s.getAttribute('name'));
-    //         return s.getAttribute('name');
-    //     });
-    //     console.log('span names', spanNames, spans);
-    //     sendResponse({ response: spanNames })
-    // }
 }
 
 
