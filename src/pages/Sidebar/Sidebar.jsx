@@ -51,6 +51,7 @@ class Sidebar extends React.Component {
     searchCount: 0,
     pageName: '',
     sortBy: 'page',
+    pageLocationSort: [],
     filterSelection: {
       siteScope: ['onPage'],
       userScope: ['public'],
@@ -206,14 +207,13 @@ class Sidebar extends React.Component {
         request.from === 'background' &&
         request.msg === 'CONTENT_SELECTED'
       ) {
-        const { selection, offsets, xpath, type, annoContent, pageLocation } = request.payload;
+        const { selection, offsets, xpath, type, annoContent } = request.payload;
         this.setState({
           newSelection: selection,
           offsets: offsets,
           xpath: xpath,
           newAnnotationType: type,
-          newAnnotationContent: annoContent,
-          pageLocation
+          newAnnotationContent: annoContent
         });
       }
       //  else if (
@@ -343,17 +343,25 @@ class Sidebar extends React.Component {
         request.from === 'background' &&
         request.msg === 'CONTENT_UPDATED'
       ) {
-        this.setState({ annotations: request.payload, url: request.url });
+        let annotations = request.payload;
+        this.setState({ url: request.url });
         chrome.storage.local.get(['sidebarOpen'], response => {
           if (response !== undefined && response.sidebarOpen) {
             chrome.tabs.sendMessage(request.tabId, {
               msg: 'HIGHLIGHT_ANNOTATIONS',
               payload: request.payload,
               url: request.url
+            }, response => {
+              let unique = new Array(...new Set(response.spanNames));
+              annotations.sort((a, b) => {
+                const index1 = unique.indexOf(a.id);
+                const index2 = unique.indexOf(b.id);
+                return ((index1 > -1 ? index1 : Infinity) - (index2 > -1 ? index2 : Infinity))
+              });
+              this.setState({ annotations, pageLocationSort: annotations })
+              this.requestFilterUpdate();
             });
           }
-          this.requestFilterUpdate();
-
         });
         chrome.browserAction.setBadgeText({ tabId: request.tabId, text: request.payload.length ? String(request.payload.length) : "0" });
 
@@ -838,7 +846,7 @@ class Sidebar extends React.Component {
   };
 
   render() {
-    const { currentUser, filteredAnnotations, searchBarInputText, searchedAnnotations, groupAnnotations, filteredGroupAnnotations, pinnedAnnos, groups, activeGroups, sortBy } = this.state;
+    const { currentUser, filteredAnnotations, searchBarInputText, searchedAnnotations, groupAnnotations, filteredGroupAnnotations, pinnedAnnos, groups, activeGroups, sortBy, pageLocationSort } = this.state;
     if (currentUser === undefined) {
       return null;
     }
@@ -866,46 +874,14 @@ class Sidebar extends React.Component {
       renderedAnnotations = filteredAnnotations;
     }
 
-    if (sortBy === 'page') {
-      renderedAnnotations = renderedAnnotations.sort((a, b) => {
-        if (a.url[0] === this.state.url) { // we are on the page of the parent anchor 
-          if (a.pageLocation !== undefined && b.pageLocation !== undefined) {
-            return (a.pageLocation.top > b.pageLocation.top && a.pageLocation.left > b.pageLocation.left) || (a.pageLocation.top > b.pageLocation.top && a.pageLocation.left === b.pageLocation.left) ? 1 : -1
-          }
-          else {
-            return -1
-          }
-        }
-        else if (a.url.includes(this.state.url)) { // we are on a page that has child anchor anchored to this page 
-          const childrenToSortBy = a.childAnchor.filter(c => c.url === this.state.url);
-          if (childrenToSortBy.length === 1 && childrenToSortBy[0].pageLocation !== undefined && b.pageLocation !== undefined) {
-            return (childrenToSortBy[0].pageLocation.top > b.pageLocation.top && childrenToSortBy[0].pageLocation.left > b.pageLocation.left) || (childrenToSortBy[0].pageLocation.top > b.pageLocation.top && childrenToSortBy[0].pageLocation.left === b.pageLocation.left) ? 1 : -1
-          }
-          else {
-            childrenToSortBy.sort((c, d) => {
-              if (c.pageLocation !== undefined && d.pageLocation !== undefined) {
-                return (c.pageLocation.top > d.pageLocation.top && c.pageLocation.left > d.pageLocation.left) || (c.pageLocation.top > d.pageLocation.top && c.pageLocation.left === d.pageLocation.left) ? 1 : -1
-              }
-            })
-            if (childrenToSortBy[0].pageLocation !== undefined) {
-              return (childrenToSortBy[0].pageLocation.top > b.pageLocation.top && childrenToSortBy[0].pageLocation.left > b.pageLocation.left) || (childrenToSortBy[0].pageLocation.top > b.pageLocation.top && childrenToSortBy[0].pageLocation.left === b.pageLocation.left) ? 1 : -1
-            }
-
-          }
-        }
-        else { // we are looking at annotations that are not on this page so pageLocation does not matter
-          renderedAnnotations = renderedAnnotations.sort((a, b) =>
-            (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
-          );
-        }
-      }
-
-      );
-    }
-    else {
+    if (sortBy !== 'page') {
       renderedAnnotations = renderedAnnotations.sort((a, b) =>
         (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
       );
+    }
+    else {
+      if (searchedAnnotations.length === 0 && groupAnnotations.length === 0) // this is bad if we have an in-place filter that doesn't match with pageLocationSort - fix later
+        renderedAnnotations = pageLocationSort;
     }
 
 
@@ -976,7 +952,6 @@ class Sidebar extends React.Component {
                     type={this.state.newAnnotationType}
                     annoContent={this.state.newAnnotationContent}
                     userGroups={groups}
-                    pageLocation={this.state.pageLocation}
                   />
                 )}
               {this.state.annotatingPage &&
@@ -988,7 +963,6 @@ class Sidebar extends React.Component {
                   offsets={null}
                   xpath={null}
                   userGroups={groups}
-                  pageLocation={0}
                 />
               }
             </div>

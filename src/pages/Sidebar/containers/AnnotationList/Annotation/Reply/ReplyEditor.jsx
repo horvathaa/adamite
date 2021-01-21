@@ -31,14 +31,13 @@ class ReplyEditor extends Component {
     componentDidMount() {
         chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             if (request.msg === 'TRANSMIT_REPLY_ANCHOR' && request.from === 'content') {
-                const { xpath, url, anchor, offsets, hostname, pageLocation } = request.payload;
+                const { xpath, url, anchor, offsets, hostname } = request.payload;
                 this.setState({
                     xpath,
                     url,
                     anchor,
                     offsets,
-                    hostname,
-                    pageLocation
+                    hostname
                 });
             }
         });
@@ -108,8 +107,7 @@ class ReplyEditor extends Component {
                 hostname: this.state.hostname,
                 url: this.state.url,
                 offsets: this.state.offsets,
-                adopted: this.state.adopted,
-                pageLocation: this.state.pageLocation
+                adopted: this.state.adopted
             };
             let replies = this.props.replies.filter(reply => reply.replyId !== this.props.replyId);
             const repliesToTransmit = replies.concat(newReply);
@@ -136,8 +134,7 @@ class ReplyEditor extends Component {
                     hostname: this.state.hostname,
                     url: this.state.url,
                     offsets: this.state.offsets !== undefined ? this.state.offsets : null,
-                    adopted: adopted !== undefined ? adopted : false,
-                    pageLocation: this.state.pageLocation !== undefined ? this.state.pageLocation : null
+                    adopted: adopted !== undefined ? adopted : false
                 }
             }, (response) => {
                 if (response.msg === 'DONE') {

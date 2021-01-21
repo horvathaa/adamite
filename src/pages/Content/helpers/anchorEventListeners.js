@@ -55,6 +55,8 @@ let messagesIn = {
                 highlightAnnotationDeep(anno);
             });
         }
+        let spanNames = Array.from(document.querySelectorAll('.highlight-adamite-annotation')).map(s => s.getAttribute('name'));
+        sendResponse({ spanNames })
     },
     'ANNOTATION_FOCUS_ONCLICK': (request, sender, sendResponse) => {
         let findSpan = getSpanFromRequest(request);
@@ -83,7 +85,19 @@ let messagesIn = {
     },
     'REMOVE_HIGHLIGHTS': (request, sender, sendResponse) => {
         removeHighlightSpans();
-    },
+    }
+    // ,
+    // 'REQUEST_SPAN_LIST': (request, sender, sendResponse) => {
+    //     console.log('got message req-span');
+    //     let spans = document.querySelectorAll('.highlight-adamite-annotation');
+    //     console.log('spans', spans);
+    //     let spanNames = Array.from(spans).map(s => {
+    //         console.log(s.getAttribute('name'));
+    //         return s.getAttribute('name');
+    //     });
+    //     console.log('span names', spanNames, spans);
+    //     sendResponse({ response: spanNames })
+    // }
 }
 
 
@@ -99,6 +113,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.msg in messagesIn) {
         messagesIn[request.msg](request, sender, sendResponse);
     }
+    return true;
 });
 
 

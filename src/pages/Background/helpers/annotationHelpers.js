@@ -72,8 +72,7 @@ export async function createAnnotation(request, sender, sendResponse) {
     sendResponse({ "msg": 'DONE' });
 }
 export async function createAnnotationHighlight(request, sender, sendResponse) {
-    let { url, anchor, xpath, offsets, pageLocation } = request.payload;
-    console.log('did we make it this far', pageLocation);
+    let { url, anchor, xpath, offsets } = request.payload;
     const hostname = new URL(url).hostname;
     const author = getAuthor();
     fb.createAnnotation({
@@ -95,8 +94,7 @@ export async function createAnnotationHighlight(request, sender, sendResponse) {
         groups: [], // later have this be a default group
         readCount: 0,
         deleted: false,
-        events: [],
-        pageLocation
+        events: []
     });
 }
 // 
@@ -124,10 +122,10 @@ export async function createAnnotationReply(request, sender, sendResponse) {
 }
 
 export async function createAnnotationChildAnchor(request, sender, sendResponse) {
-    let { newAnno, xpath, url, anchor, offsets, hostname, pageLocation } = request.payload;
+    let { newAnno, xpath, url, anchor, offsets, hostname } = request.payload;
     const id = new Date().getTime();
     const newAnchor = Object.assign({}, {
-        parentId: newAnno.sharedId, id, anchor, url, offsets, hostname, xpath, pageLocation
+        parentId: newAnno.sharedId, id, anchor, url, offsets, hostname, xpath
     });
 
     fb.updateAnnotationById(newAnno.sharedId, {
@@ -342,7 +340,7 @@ const editEvent = (msg, data = {}, author = null, eventTime = null,) => {
 const _createReply = (request) => {
     const eventTime = new Date().getTime();
     const author = getAuthor();
-    const { reply, replyTags, answer, question, replyId, xpath, anchor, hostname, url, offsets, adopted, pageLocation } = request.payload;
+    const { reply, replyTags, answer, question, replyId, xpath, anchor, hostname, url, offsets, adopted } = request.payload;
     return Object.assign({}, {
         replyId: replyId,
         replyContent: reply,
@@ -357,8 +355,7 @@ const _createReply = (request) => {
         hostname: safeSet(hostname, null),
         url: safeSet(url, null),
         offsets: safeSet(offsets, null),
-        adopted: safeSet(adopted, null),
-        pageLocation: safeSet(pageLocation, null)
+        adopted: safeSet(adopted, null)
     });
 }
 
@@ -388,8 +385,7 @@ const _createAnnotation = (request) => {
         groups: content.groups,
         readCount: 0,
         deleted: false,
-        events: [],
-        pageLocation: content.pageLocation
+        events: []
     };
 }
 

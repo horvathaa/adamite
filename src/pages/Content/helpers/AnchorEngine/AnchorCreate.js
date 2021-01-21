@@ -141,7 +141,6 @@ const alertBackgroundOfNewSelection = (selection, offsets, xpath, type, content,
                     anchor: selection,
                     xpath: xpath,
                     offsets: offsets,
-                    pageLocation: { top: rectPopover.top, left: rectPopover.left },
                     url: getPathFromUrl(window.location.href),
 
                 }
@@ -157,7 +156,6 @@ const alertBackgroundOfNewSelection = (selection, offsets, xpath, type, content,
                     offsets,
                     xpath,
                     type,
-                    pageLocation: { top: rectPopover.top, left: rectPopover.left },
                     annoContent
                 },
             }
@@ -200,8 +198,7 @@ export function addNewAnchor({ request, type }) {
             url: getPathFromUrl(window.location.href),
             anchor: selection.toString(),
             offsets: offsets,
-            hostname: window.location.hostname,
-            pageLocation: { top: rect.getBoundingClientRect().top, left: rect.getBoundingClientRect().left }
+            hostname: window.location.hostname
         };
 
         if (type == "reply") {

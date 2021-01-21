@@ -163,8 +163,7 @@ export const createAnnotation = async ({
   author,
   groups,
   readCount,
-  events,
-  pageLocation
+  events
 }) => {
   authorId = authorId ? authorId : getCurrentUserId();
   if (!authorId) {
@@ -196,8 +195,7 @@ export const createAnnotation = async ({
     groups,
     readCount,
     deleted: false,
-    events,
-    pageLocation
+    events
   };
   return db.collection(DB_COLLECTIONS.ANNOTATIONS).add(newAnnotation);
 };
