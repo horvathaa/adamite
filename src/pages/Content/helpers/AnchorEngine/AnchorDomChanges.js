@@ -3,16 +3,16 @@ import { transmitMessage } from "../anchorEventTransmitter";
 
 
 
-export function addHighlightToSubstring({ node, substring, spanId, isPreview = false }) {
+export function addHighlightToSubstring({ node, substring, spanId, startOffset, endOffset, isPreview = false }) {
+    //console.log("IN")
     let _spanId = isPreview ? "annoPreview" : spanId;
     let _className = isPreview ? "highlight-adamite-annotation-preview" : "highlight-adamite-annotation";
-    splitReinsertText(node, substring, function (node, match, offset) {
+    splitReinsertText(node, substring, startOffset, endOffset, function (node, match, offset) {
         _addHighlightSpan({ match: match, node: node, spanId: _spanId, className: _className });
 
     });
 }
 function _addHighlightSpan({ match, node, spanId, className }) {
-
     var span = document.createElement("span");
     span.setAttribute("name", spanId);
     span.textContent = match;
@@ -20,7 +20,7 @@ function _addHighlightSpan({ match, node, spanId, className }) {
     span.className = className;
     node.parentNode.insertBefore(span, node.nextSibling);
     node.parentNode.normalize();
-    console.log("Done")
+    //console.log("Done");
 }
 
 export const removeHighlightSpans = ({ isPreview = false }) => {
@@ -47,39 +47,60 @@ export const getHighlightSpanIds = ({ isPreview = false }) => {
 
 //1. Better matching of strings when faced with formatting issues
 //Splits text in node and calls callback action to preform on middle node
-var splitReinsertText = function (node, substring, callback) {
-    console.log("splitReinsertText");
-
+var splitReinsertText = function (node, substring, startOffset, endOffset, callback) {
+    //console.log("splitReinsertText");
+    //console.log(node.data);
     function formatText(string) {
         return string.replace(/\n/g, " ").replace(/[ ][ ]+/g, " ");
     }
-    // Needed to format test strings to make sure matches are actually found
-    let substringText1 = formatText(substring.toString());
-    let formatted = formatText(node.data.toString());
+    if (node.data.includes(substring)) {
+        return node.data.replace(substring, (match, offset, string) => {
+            // Does offset change? check and set
+            let newTextNode = node.splitText(startOffset);
+            // should check to make sure match is same as substring
+            newTextNode.data = newTextNode.data.substr(substring.length);
+            callback(node, match, startOffset);
+            return newTextNode;
+        });
+    } else {
+        console.error("FORMAT ERROR");
+        let substringText1 = formatText(substring.toString());
+        let formatted = formatText(node.data.toString());
+        if (formatted.includes(substringText1)) {
+            let formattedIndex = formatted.indexOf(substringText1);
+            let i = 1;
+            while (i < formattedIndex) {
+                if (formatted.substr(0, i) != node.data.substr(0, i)) {
+                    formatted = node.data.substr(0, i) + formatted.substr(i - 1);
+                    formattedIndex += 1;
+                }
+                i++;
+            }
+            let substrLength = substringText1.length;
+            let j = 1;
+            while (j < substrLength) {
+                if (substringText1.substr(0, j) !== node.data.substr(i, j)) {
+                    substringText1 = node.data.substr(i, j) + substringText1.substr(j - 1);
+                    substrLength += 1;
+                }
+                j++;
+            }
+            if (node.data.includes(substringText1)) {
+                return node.data.replace(substringText1, (match, offset, string) => {
+                    // Does offset change? check and set
+                    let newTextNode = node.splitText(offset);
+                    // should check to make sure match is same as substring
+                    newTextNode.data = newTextNode.data.substr(substringText1.length);
+                    callback(node, match, offset);
+                    return newTextNode;
+                });
 
-    function findTrueOffset(offset) {
-        if (offset === 0 || (formatted.length === node.data.length && formatted === node.data)) {
-            return offset;
+            } else {
+                console.log("String not found");
+            }
+            return false;
         }
-        let original = offset;
-        while (node.data.length > offset
-            && formatText(node.data.substring(0, offset)) != formatText(formatted.substring(0, original))) {
-            offset += 1;
-        }
-        return offset;
     }
-
-    function handleReplace(match, offset, string) {
-        // Does offset change? check and set
-        let trueOffset = findTrueOffset(offset);
-        let newTextNode = node.splitText(trueOffset);
-        // should check to make sure match is same as substring
-        newTextNode.data = newTextNode.data.substr(substring.length);
-        callback(node, match, offset);
-        return newTextNode;
-    }
-    formatted.replace(substringText1, handleReplace);
-
 }
 
 export function anchorClick(e) {
