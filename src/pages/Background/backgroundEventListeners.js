@@ -95,6 +95,12 @@ let commands = {
                         msg: 'HIGHLIGHT_ANNOTATIONS',
                         payload: tabInfo[0].annotations,
                         url: tabs[0].url
+                    }, response => {
+                        chrome.runtime.sendMessage({
+                            msg: 'SORT_LIST',
+                            from: 'background',
+                            payload: response
+                        })
                     })
                 }
             })

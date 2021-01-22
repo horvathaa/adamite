@@ -352,19 +352,38 @@ class Sidebar extends React.Component {
               payload: request.payload,
               url: request.url
             }, response => {
-              let unique = new Array(...new Set(response.spanNames));
+              let spanNames = new Array(...new Set(response.spanNames));
+              spanNames = spanNames.map((id) => {
+                return id.includes('-') ? id.substring(0, id.indexOf('-')) : id;
+              });
               annotations.sort((a, b) => {
-                const index1 = unique.indexOf(a.id);
-                const index2 = unique.indexOf(b.id);
+                const index1 = spanNames.indexOf(a.id);
+                const index2 = spanNames.indexOf(b.id);
                 return ((index1 > -1 ? index1 : Infinity) - (index2 > -1 ? index2 : Infinity))
               });
               this.setState({ annotations, pageLocationSort: annotations })
               this.requestFilterUpdate();
             });
           }
+          else {
+            this.setState({ annotations });
+          }
         });
         chrome.browserAction.setBadgeText({ tabId: request.tabId, text: request.payload.length ? String(request.payload.length) : "0" });
-
+      }
+      else if (request.msg === 'SORT_LIST' && request.from === 'background') {
+        let spanNames = new Array(...new Set(request.payload.spanNames));
+        spanNames = spanNames.map((id) => {
+          return id.includes('-') ? id.substring(0, id.indexOf('-')) : id;
+        })
+        let annotations = this.state.annotations;
+        annotations.sort((a, b) => {
+          const index1 = spanNames.indexOf(a.id);
+          const index2 = spanNames.indexOf(b.id);
+          return ((index1 > -1 ? index1 : Infinity) - (index2 > -1 ? index2 : Infinity))
+        });
+        this.setState({ annotations, pageLocationSort: annotations })
+        this.requestFilterUpdate();
       }
       else if (request.from === 'background' && request.msg === 'ELASTIC_CONTENT_UPDATED') {
         if (this.state.searchedAnnotations.length !== 0) {
