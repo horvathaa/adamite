@@ -5,7 +5,7 @@ import { transmitMessage } from './anchorEventTransmitter';
 import { addNewAnchor, createAnnotationCallback, } from './AnchorEngine/AnchorCreate';
 // Changes to DOM
 import { removeHighlightSpans, getHighlightSpanIds } from './AnchorEngine/AnchorDomChanges';
-
+//import { Octokit } from "@octokit/core";
 import {
     tempHighlight,
     highlightReplyRange,
@@ -43,29 +43,40 @@ let messagesIn = {
     'ADD_REPLY_ANCHOR': (request, sender, sendResponse) => {
         addNewAnchor({ request: request, type: "reply" });
     },
-    'ADD_REPLY_HIGHLIGHT': (request, sender, sendResponse) => {
+    'ADD_REPLY_HIGHLIGHT': async (request, sender, sendResponse) => {
         console.log(request);
+        // const octokit = new Octokit({ auth: });
+        // let l = await octokit.request('GET /orgs/{org}/repos', {
+        //     org: 'collective-sanity'
+        // });
+        // console.log(l);
         const { xpath, id } = request.payload;
         highlightReplyRange(xpath, id);
+
+        // await octokit.request('POST /repos/{owner}/{repo}/issues/{issue_number}/comments', {
+        //     owner: 'octocat',
+        //     repo: 'hello-world',
+        //     issue_number: 42,
+        //     body: 'body'
+        // })
     },
     'HIGHLIGHT_ANNOTATIONS': (request, sender, sendResponse) => {
-        removeHighlightSpans({ isPreview: false });
+        // removeHighlightSpans({ isPreview: false });
         const annotationsOnPage = request.payload;
         if (annotationsOnPage.length) {
             annotationsOnPage.reverse().forEach(anno => {
                 highlightAnnotationDeep(anno);
             });
             let ids = getHighlightSpanIds({ isPreview: false });
-            console.log(ids);
+            //console.log(ids);
             annotationsOnPage.reverse().forEach(anno => {
-                console.log(anno.id);
+                //console.log(anno.id);
                 if (!(ids.includes(anno.id.toString()))) {
                     transmitMessage({ msg: "ANCHOR_BROKEN", data: { payload: { "id": anno.id } }, sentFrom: "AnchorHighlight" })
                 }
             });
-
-
         }
+
     },
     'ANNOTATION_FOCUS_ONCLICK': (request, sender, sendResponse) => {
         let findSpan = getSpanFromRequest(request);
