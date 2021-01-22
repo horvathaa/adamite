@@ -29,14 +29,41 @@ export const highlightAnnotationDeep = (anno) => {
             if (reply.xpath !== undefined && reply.xpath !== null) {
                 let domId = anno.id.toString() + "-" + reply.replyId.toString();
                 if (!highlightAnnotation(reply, domId, "reply")) {
-                    console.log("highlightAnnotation Reply ERROR"); console.log(anno);
+                    // console.log("highlightAnnotation Reply ERROR"); console.log(anno);
                     //checkIfBrokenAnchor(domId, { "id": anno.id, "replyId": reply.replyId });
                 }
             }
         })
     }
 }
+export const checkForBrokenAnnotationDeep = (anno, ids) => {
+    //will show annotation type
+    if (!(ids.includes(anno.id.toString()))) {
+        transmitMessage({ msg: "ANCHOR_BROKEN", data: { payload: { "id": anno.id } }, sentFrom: "AnchorHighlight" })
+    }
 
+    if (anno.childAnchor !== undefined && anno.childAnchor.length) {
+        anno.childAnchor.forEach(child => {
+            if (child.xpath !== undefined && child.xpath !== null) {
+                let domId = anno.id.toString() + "-" + child.id.toString();
+                if (!(ids.includes(domId.toString()))) {
+
+                }
+            }
+        });
+    }
+    if (anno.replies !== undefined && anno.replies !== null && anno.replies.length) {
+        anno.replies.forEach(reply => {
+            if (reply.xpath !== undefined && reply.xpath !== null) {
+                let domId = anno.id.toString() + "-" + reply.replyId.toString();
+                if (!highlightAnnotation(reply, domId, "reply")) {
+                    // console.log("highlightAnnotation Reply ERROR"); console.log(anno);
+                    //checkIfBrokenAnchor(domId, { "id": anno.id, "replyId": reply.replyId });
+                }
+            }
+        })
+    }
+}
 
 
 
