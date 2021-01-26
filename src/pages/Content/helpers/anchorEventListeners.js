@@ -76,7 +76,8 @@ let messagesIn = {
                 }
             });
         }
-
+        let spanNames = Array.from(document.querySelectorAll('.highlight-adamite-annotation')).map(s => s.getAttribute('name'));
+        sendResponse({ spanNames })
     },
     'ANNOTATION_FOCUS_ONCLICK': (request, sender, sendResponse) => {
         let findSpan = getSpanFromRequest(request);
@@ -121,6 +122,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.msg in messagesIn) {
         messagesIn[request.msg](request, sender, sendResponse);
     }
+    return true;
 });
 
 

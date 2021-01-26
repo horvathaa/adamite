@@ -141,7 +141,6 @@ const alertBackgroundOfNewSelection = (selection, offsets, xpath, type, content,
                     anchor: selection,
                     xpath: xpath,
                     offsets: offsets,
-                    pageLocation: { top: rectPopover.top, left: rectPopover.left },
                     url: getPathFromUrl(window.location.href),
 
                 }
@@ -157,7 +156,6 @@ const alertBackgroundOfNewSelection = (selection, offsets, xpath, type, content,
                     offsets,
                     xpath,
                     type,
-                    pageLocation: { top: rectPopover.top, left: rectPopover.left },
                     annoContent
                 },
             }
@@ -205,12 +203,14 @@ export function addNewAnchor({ request, type }) {
 
         if (type == "reply") {
             transmitMessage({ msg: 'TRANSMIT_REPLY_ANCHOR', data: { "payload": payload } });
+
         } else {
             payload['newAnno'] = request.payload;
             // console.log(payload);
             transmitMessage({ msg: 'SAVE_NEW_ANCHOR', data: { "payload": payload } });
         }
-        selection.removeRange(rect);
+        selection.removeAllRanges();
+        removePopover();
     }
     else {
         openSelectAnchorToast();

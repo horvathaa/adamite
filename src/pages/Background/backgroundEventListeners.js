@@ -95,6 +95,12 @@ let commands = {
                         msg: 'HIGHLIGHT_ANNOTATIONS',
                         payload: tabInfo[0].annotations,
                         url: tabs[0].url
+                    }, response => {
+                        chrome.runtime.sendMessage({
+                            msg: 'SORT_LIST',
+                            from: 'background',
+                            payload: response
+                        })
                     })
                 }
             })
@@ -128,10 +134,11 @@ let commands = {
 };
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    console.log(request);
+    // console.log(request);
     if (request.msg in commands) {
         commands[request.msg](request, sender, sendResponse);
     } else console.log("Unknown Command", request.message);
+    return true;
 });
 
 

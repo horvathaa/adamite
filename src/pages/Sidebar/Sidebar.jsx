@@ -51,6 +51,7 @@ class Sidebar extends React.Component {
     searchCount: 0,
     pageName: '',
     sortBy: 'page',
+    pageLocationSort: [],
     filterSelection: {
       siteScope: ['onPage'],
       userScope: ['public'],
@@ -206,14 +207,13 @@ class Sidebar extends React.Component {
         request.from === 'background' &&
         request.msg === 'CONTENT_SELECTED'
       ) {
-        const { selection, offsets, xpath, type, annoContent, pageLocation } = request.payload;
+        const { selection, offsets, xpath, type, annoContent } = request.payload;
         this.setState({
           newSelection: selection,
           offsets: offsets,
           xpath: xpath,
           newAnnotationType: type,
-          newAnnotationContent: annoContent,
-          pageLocation
+          newAnnotationContent: annoContent
         });
       }
       //  else if (
@@ -343,20 +343,47 @@ class Sidebar extends React.Component {
         request.from === 'background' &&
         request.msg === 'CONTENT_UPDATED'
       ) {
-        this.setState({ annotations: request.payload, url: request.url });
+        let annotations = request.payload;
+        this.setState({ url: request.url });
         chrome.storage.local.get(['sidebarOpen'], response => {
           if (response !== undefined && response.sidebarOpen) {
             chrome.tabs.sendMessage(request.tabId, {
               msg: 'HIGHLIGHT_ANNOTATIONS',
               payload: request.payload,
               url: request.url
+            }, response => {
+              let spanNames = new Array(...new Set(response.spanNames));
+              spanNames = spanNames.map((id) => {
+                return id.includes('-') ? id.substring(0, id.indexOf('-')) : id;
+              });
+              annotations.sort((a, b) => {
+                const index1 = spanNames.indexOf(a.id);
+                const index2 = spanNames.indexOf(b.id);
+                return ((index1 > -1 ? index1 : Infinity) - (index2 > -1 ? index2 : Infinity))
+              });
+              this.setState({ annotations, pageLocationSort: annotations })
+              this.requestFilterUpdate();
             });
           }
-          this.requestFilterUpdate();
-
+          else {
+            this.setState({ annotations });
+          }
         });
         chrome.browserAction.setBadgeText({ tabId: request.tabId, text: request.payload.length ? String(request.payload.length) : "0" });
-
+      }
+      else if (request.msg === 'SORT_LIST' && request.from === 'background') {
+        let spanNames = new Array(...new Set(request.payload.spanNames));
+        spanNames = spanNames.map((id) => {
+          return id.includes('-') ? id.substring(0, id.indexOf('-')) : id;
+        })
+        let annotations = this.state.annotations;
+        annotations.sort((a, b) => {
+          const index1 = spanNames.indexOf(a.id);
+          const index2 = spanNames.indexOf(b.id);
+          return ((index1 > -1 ? index1 : Infinity) - (index2 > -1 ? index2 : Infinity))
+        });
+        this.setState({ annotations, pageLocationSort: annotations })
+        this.requestFilterUpdate();
       }
       else if (request.from === 'background' && request.msg === 'ELASTIC_CONTENT_UPDATED') {
         if (this.state.searchedAnnotations.length !== 0) {
@@ -838,7 +865,7 @@ class Sidebar extends React.Component {
   };
 
   render() {
-    const { currentUser, filteredAnnotations, searchBarInputText, searchedAnnotations, groupAnnotations, filteredGroupAnnotations, pinnedAnnos, groups, activeGroups, sortBy } = this.state;
+    const { currentUser, filteredAnnotations, searchBarInputText, searchedAnnotations, groupAnnotations, filteredGroupAnnotations, pinnedAnnos, groups, activeGroups, sortBy, pageLocationSort } = this.state;
     if (currentUser === undefined) {
       return null;
     }
@@ -866,22 +893,14 @@ class Sidebar extends React.Component {
       renderedAnnotations = filteredAnnotations;
     }
 
-    if (sortBy === 'page') {
-      renderedAnnotations = renderedAnnotations.sort((a, b) => {
-        if (a.pageLocation !== undefined && b.pageLocation !== undefined) {
-          return (a.pageLocation.top > b.pageLocation.top && a.pageLocation.left > b.pageLocation.left) || (a.pageLocation.top > b.pageLocation.top && a.pageLocation.left === b.pageLocation.left) ? 1 : -1
-        }
-        else {
-          return -1
-        }
-      }
-
-      );
-    }
-    else {
+    if (sortBy !== 'page') {
       renderedAnnotations = renderedAnnotations.sort((a, b) =>
         (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
       );
+    }
+    else {
+      if (searchedAnnotations.length === 0 && groupAnnotations.length === 0) // this is bad if we have an in-place filter that doesn't match with pageLocationSort - fix later
+        renderedAnnotations = pageLocationSort;
     }
 
 
@@ -952,7 +971,6 @@ class Sidebar extends React.Component {
                     type={this.state.newAnnotationType}
                     annoContent={this.state.newAnnotationContent}
                     userGroups={groups}
-                    pageLocation={this.state.pageLocation}
                   />
                 )}
               {this.state.annotatingPage &&
@@ -964,7 +982,6 @@ class Sidebar extends React.Component {
                   offsets={null}
                   xpath={null}
                   userGroups={groups}
-                  pageLocation={0}
                 />
               }
             </div>

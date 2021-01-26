@@ -173,6 +173,7 @@ class SearchBar extends React.Component {
                     url: url
                 },
                     response => {
+                        console.log('response is probs messed up', response)
                         resolve(response.response);
                     });
             });
@@ -193,6 +194,7 @@ class SearchBar extends React.Component {
                     userSearch: inputText
                 },
                     response => {
+                        console.log('response is probs messed up', response)
                         resolve(response.response);
                     });
             });

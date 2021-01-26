@@ -72,8 +72,7 @@ export async function createAnnotation(request, sender, sendResponse) {
     sendResponse({ "msg": 'DONE' });
 }
 export async function createAnnotationHighlight(request, sender, sendResponse) {
-    let { url, anchor, xpath, offsets, pageLocation } = request.payload;
-    console.log('did we make it this far', pageLocation);
+    let { url, anchor, xpath, offsets } = request.payload;
     const hostname = new URL(url).hostname;
     const author = getAuthor();
     fb.createAnnotation({
@@ -95,8 +94,7 @@ export async function createAnnotationHighlight(request, sender, sendResponse) {
         groups: [], // later have this be a default group
         readCount: 0,
         deleted: false,
-        events: [],
-        pageLocation
+        events: []
     });
 }
 // 
@@ -387,8 +385,7 @@ const _createAnnotation = (request) => {
         groups: content.groups,
         readCount: 0,
         deleted: false,
-        events: [],
-        pageLocation: content.pageLocation
+        events: []
     };
 }
 

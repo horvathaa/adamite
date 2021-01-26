@@ -124,7 +124,7 @@ export async function removePaginationSearchCache(request, sender, sendResponse)
 //     }
 // });
 
-function regenKey() {
+export function regenKey() {
     return new Promise((resolve, reject) => {
         getElasticApiKey().then(function (e) {
             chrome.storage.sync.set({
@@ -136,7 +136,7 @@ function regenKey() {
     });
 }
 
-function keyWrapper(passedFunction, args, count = 0) {
+export function keyWrapper(passedFunction, args, count = 0) {
     return new Promise((resolve, reject) => {
         chrome.storage.sync.get(['ElasticAPIKey'], storedKey => {
             console.log("this is the key", storedKey);
@@ -154,7 +154,7 @@ function keyWrapper(passedFunction, args, count = 0) {
     });
 }
 
-function findWhereMatched(res, value) {
+export function findWhereMatched(res, value) {
     if (res["anchorContent"].toLowerCase().indexOf(value) >= 0) return "Anchor Content";
     if (res["content"].toLowerCase().indexOf(value) >= 0) return "User Description";
     if (res["hostname"] !== undefined && res["hostname"].toLowerCase().indexOf(value) >= 0) return "Hostname";
@@ -213,7 +213,7 @@ function inputQueryBuilder(userSearch) {
     }
 }
 
-function searchBarQuery(query) {
+export function searchBarQuery(query) {
 
     var searchObj = {
         "from": 0,
@@ -263,14 +263,14 @@ String.prototype.indexOfEnd = function (string) {
     return io == -1 ? -1 : io + string.length;
 }
 
-function findOffset(highlightString, sourceString) {
+export function findOffset(highlightString, sourceString) {
     var cleanString = highlightString.replace(/(<em>)|(<\/em>)/g, '');
     highlightString = sourceString.indexOf(cleanString) === 0 ? highlightString : "..." + highlightString;
     highlightString = sourceString.indexOfEnd(cleanString) === sourceString.length ? highlightString : highlightString + "...";
     return highlightString;
 }
 
-function highlightOffsetMatch(hlElement, source) {
+export function highlightOffsetMatch(hlElement, source) {
     for (var element in hlElement) {
         if (typeof hlElement[element] !== "undefined") {
             hlElement[element] = findOffset(hlElement[element][0], source[element])
@@ -283,7 +283,7 @@ function highlightOffsetMatch(hlElement, source) {
     return hlElement;
 }
 
-function storeQueryForScroll(query, total, url) {
+export function storeQueryForScroll(query, total, url) {
     console.log("test query", query.from, url)
     if (typeof query.highlight !== "undefined") {
         delete query.highlight;
@@ -294,7 +294,7 @@ function storeQueryForScroll(query, total, url) {
     chrome.storage.local.set({ [url]: query });
 }
 
-function retrieveUrlQuery(url) {
+export function retrieveUrlQuery(url) {
     return new Promise((resolve, reject) => {
         chrome.storage.local.get([url], function (result) {
             if (typeof result === "undefined" || (Object.keys(result).length === 0 && result.constructor === Object)) {
@@ -309,7 +309,7 @@ function retrieveUrlQuery(url) {
     });
 }
 
-function removeQueryForScroll(url) {
+export function removeQueryForScroll(url) {
     console.log("DELETEING ");
     chrome.storage.local.get([url], function (result) {
         if (typeof result === "undefined" || (Object.keys(result).length === 0 && result.constructor === Object)) {
@@ -321,7 +321,7 @@ function removeQueryForScroll(url) {
     });
 }
 
-function axiosWrapper(path, query, AuthStr, args, successFunc) {
+export function axiosWrapper(path, query, AuthStr, args, successFunc) {
     console.log('path', path);
     console.log('query', query);
     console.log('auth', AuthStr);
@@ -349,7 +349,7 @@ function axiosWrapper(path, query, AuthStr, args, successFunc) {
     });
 }
 
-function refreshSuccess(res, args) {
+export function refreshSuccess(res, args) {
     var finalArray = [];
 
     console.log("this is the res", res.data)
@@ -367,7 +367,7 @@ function refreshSuccess(res, args) {
     return res;
 
 }
-function paginationSuccess(res, args) {
+export function paginationSuccess(res, args) {
     var finalArray = [];
 
     console.log("this is the res", res.data)
@@ -388,7 +388,7 @@ function paginationSuccess(res, args) {
     return res;
 }
 
-function groupSearchSuccess(res, args) {
+export function groupSearchSuccess(res, args) {
     var finalArray = [];
 
     console.log("this is the group res", res.data)
@@ -409,7 +409,7 @@ function groupSearchSuccess(res, args) {
     return res;
 }
 
-function searchBarSuccess(res, args) {
+export function searchBarSuccess(res, args) {
     var finalArray = [];
     var userSearch = args.userSearch
     console.log("this is the res", res.data)
@@ -435,7 +435,7 @@ function searchBarSuccess(res, args) {
 
 
 
-function search(key, args) {
+export function search(key, args) {
     return new Promise((resolve, reject) => {
         var query = args.query;
         console.log("this is teh query", query);
