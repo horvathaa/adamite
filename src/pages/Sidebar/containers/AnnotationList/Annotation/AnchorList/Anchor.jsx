@@ -90,22 +90,21 @@ class Anchor extends Component {
 
         let anchorIcon;
 
-        if (brokenAnchor && currentUrl === url) {
-            anchorIcon = <img src={anchorBroken} className="AnchorIcon" alt='anchor broken' />;
-        }
-        else {
-            if (pageAnchor) {
-                anchorIcon = <BsFileEarmarkText className="AnchorIcon" />;
-            }
-            else if (url === currentUrl) {
-                anchorIcon = <img src={anchorOnPage} className="AnchorIcon" alt='anchor on page' />;
-            }
-            else {
-                anchorIcon = <img src={anchorOnOtherPage} className="AnchorIcon" alt='anchor on other page' />;
-            }
+        if (pageAnchor) {
+            anchorIcon = <BsFileEarmarkText className="AnchorIcon" />;
         }
 
-        if (brokenAnchor && currentUrl === url) {
+        else if (brokenAnchor && url === currentUrl) {
+            anchorIcon = <img src={anchorBroken} className="AnchorIcon" alt='anchor broken' />;
+        }
+        else if (url === currentUrl) {
+            anchorIcon = <img src={anchorOnPage} className="AnchorIcon" alt='anchor on page' />;
+        }
+        else {
+            anchorIcon = <img src={anchorOnOtherPage} className="AnchorIcon" alt='anchor on other page' />;
+        }
+
+        if (brokenAnchor && url === currentUrl && !pageAnchor) {
             return (
                 <div
                     className={classNames({
@@ -135,12 +134,12 @@ class Anchor extends Component {
                     })}
                     onMouseEnter={this.handleOnLocalOnMouseEnter}
                     onMouseLeave={this.handleOnLocalOnMouseLeave}
-                    onClick={(pageAnchor || currentUrl !== url) ? this.handleExternalAnchor : this.handleOnLocalOnClick}
+                    onClick={(pageAnchor || url !== currentUrl) ? this.handleExternalAnchor : this.handleOnLocalOnClick}
                 >
                     <div className="AnchorIconContainer">
                         {anchorIcon}
                     </div>
-                    {currentUrl === url && !pageAnchor ? (
+                    {url.includes(currentUrl) && !pageAnchor ? (
                         <div className="AnchorTextContainer">
                             {anchorContent}
                         </div>

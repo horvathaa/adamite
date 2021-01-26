@@ -218,6 +218,27 @@
   display: none;
 }
 
+.Clicked {
+  fill: yellowgreen;
+  stroke: yellowgreen;
+  color: yellowgreen !important;
+  border-color: yellowgreen;
+}
+
+.Clicked object {
+  fill: yellowgreen;
+  stroke: yellowgreen;
+  color: yellowgreen;
+  border-color: yellowgreen;
+}
+
+.AnchorContainer .Clicked {
+  fill: yellowgreen;
+  stroke: yellowgreen;
+  color: yellowgreen;
+  border-color: yellowgreen;
+}
+
 .AnchorContainer:hover {
   color: yellowgreen;
   border-color: yellowgreen;

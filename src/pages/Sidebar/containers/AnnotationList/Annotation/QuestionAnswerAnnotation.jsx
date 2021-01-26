@@ -20,6 +20,7 @@ import Anchor from './AnchorList/Anchor';
 import Reply from './Reply/Reply';
 import ReplyEditor from './Reply/ReplyEditor';
 import { SplitButton, Dropdown as BootstrapDropdown } from 'react-bootstrap';
+import Tooltip from '@material-ui/core/Tooltip';
 
 
 class QuestionAnswerAnnotation extends Component {
@@ -130,6 +131,18 @@ class QuestionAnswerAnnotation extends Component {
 
         const closeoutOptions = closedStrings.filter(str => str !== closeOutText);
 
+        let collapsedDiv = collapsed ? (
+            <div className="ExpandCollapse">
+                <img src={expand} alt="Expand" onClick={_ => this.props.handleExpandCollapse('expand')} className="Icon" />
+            </div>
+        ) : (
+                <div className="ExpandCollapse">
+                    <img src={expand} id="collapse" alt="Collapse" onClick={_ => this.props.handleExpandCollapse('collapse')} className="Icon" />
+                </div>
+            )
+
+        const collapsedArg = collapsed ? 'expand' : 'collapse';
+
         return (
             <li key={idx} id={id} className={classNames({ AnnotationItem: true })}>
                 <div
@@ -149,7 +162,7 @@ class QuestionAnswerAnnotation extends Component {
                         SelectedAnnotationContainer: this.state.selected,
                     })}
                 >
-                    <div className="annotationTypeBadgeContainer">
+                    <div className="annotationTypeBadgeContainer" onClick={_ => this.props.handleExpandCollapse(collapsedArg)}>
                         <div className="annotationTypeBadge row2">
                             <div className="annotationTypeBadge col2">
                                 <div className="badgeContainer">
@@ -189,27 +202,37 @@ class QuestionAnswerAnnotation extends Component {
                                 </div>
                                 <div className="row">
                                     <div className="AnnotationIconContainer">
-                                        <div className="TopIconContainer" onClick={this.handleReply}>
-                                            <img src={reply} alt="reply" className="profile" />
-                                        </div>
-                                        <div className="TopIconContainer" onClick={this.props.transmitPinToParent}>
-                                            {pin ? (
-                                                <img src={fillpin} id="pin" alt="pin" className="profile" />
-                                            ) : (
-                                                    <img src={outlinepin} id="pin" alt="pin" className="profile" />
-                                                )}
-                                        </div>
-                                        <div className="TopIconContainer" >
-                                            <img src={newAnchor} alt="add new anchor" id="newAnchor" className="profile" onClick={this.handleNewAnchorRequest} />
-                                        </div>
+                                        <Tooltip title={"Reply to annotation"} aria-label="reply icon tooltip">
+                                            <div className="TopIconContainer" onClick={this.handleReply}>
+                                                <img src={reply} alt="reply" className="profile" />
+                                            </div>
+                                        </Tooltip>
+                                        <Tooltip title={"Pin or unpin annotation"} aria-label="pin icon tooltip">
+                                            <div className="TopIconContainer" onClick={this.props.transmitPinToParent}>
+                                                {pin ? (
+                                                    <img src={fillpin} id="pin" alt="pin" className="profile" />
+                                                ) : (
+                                                        <img src={outlinepin} id="pin" alt="pin" className="profile" />
+                                                    )}
+                                            </div>
+                                        </Tooltip>
+                                        <Tooltip title={"Add new anchor to annotation"} aria-label="add new anchor tooltip">
+                                            <div className="TopIconContainer" >
+                                                <img src={newAnchor} alt="add new anchor" id="newAnchor" className="profile" onClick={this.handleNewAnchorRequest} />
+                                            </div>
+                                        </Tooltip>
                                         {currentUser.uid === authorId ? (
                                             <React.Fragment>
-                                                <div className="TopIconContainer" >
-                                                    <img src={edit} alt="edit annotation" className="profile" id="edit" onClick={this.handleEditRequest} />
-                                                </div>
-                                                <div className="TopIconContainer" >
-                                                    <img src={trash} alt="delete annotation" className="profile" id="trash" onClick={this.handleDeleteRequest} />
-                                                </div>
+                                                <Tooltip title={"Edit annotation"} aria-label="edit tooltip">
+                                                    <div className="TopIconContainer" >
+                                                        <img src={edit} alt="edit annotation" className="profile" id="edit" onClick={this.handleEditRequest} />
+                                                    </div>
+                                                </Tooltip>
+                                                <Tooltip title={"Delete annotation"} aria-label="delete annotation tooltip">
+                                                    <div className="TopIconContainer" >
+                                                        <img src={trash} alt="delete annotation" className="profile" id="trash" onClick={this.handleDeleteRequest} />
+                                                    </div>
+                                                </Tooltip>
                                             </React.Fragment>
                                         ) : (null)}
                                     </div>
@@ -220,7 +243,7 @@ class QuestionAnswerAnnotation extends Component {
                         <Anchor
                             id={id}
                             currentUrl={currentUrl}
-                            url={url}
+                            url={url[0]}
                             collapsed={collapsed}
                             anchorContent={anchor}
                             pageAnchor={xpath === null}
@@ -230,7 +253,7 @@ class QuestionAnswerAnnotation extends Component {
                                 <Anchor
                                     id={id}
                                     currentUrl={currentUrl}
-                                    url={url}
+                                    url={url[0]}
                                     collapsed={collapsed}
                                     anchorContent={anchor}
                                     pageAnchor={xpath === null}
@@ -368,18 +391,7 @@ class QuestionAnswerAnnotation extends Component {
                             {replies.length} {replyCountString}
                         </div>
                     ) : (null)}
-                    {collapsed && !replying ? (
-                        <div className="ExpandCollapse">
-                            <img src={expand} alt="Expand" onClick={_ => this.props.handleExpandCollapse('expand')} className="Icon" />
-                        </div>
-                    ) : (
-                            <React.Fragment>
-                                <div className="ExpandCollapse">
-                                    <img src={expand} id="collapse" alt="Collapse" onClick={_ => this.props.handleExpandCollapse('collapse')} className="Icon" />
-                                </div>
-                            </React.Fragment>
-                        )
-                    }
+                    {!editing && !replying ? (collapsedDiv) : (null)}
                 </div>
 
 

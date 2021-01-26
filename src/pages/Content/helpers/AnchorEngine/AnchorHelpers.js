@@ -1,12 +1,14 @@
 import $ from 'jquery';
+//import * as xpathRange from "./packages/xpath-range";
+//var xpathRange = require('xpath-range');
 
+// Equivalent -> xpath.fromNode;
 //Creates an Xpath from a node
 export const xpathConversion = (element) => {
     if (element.tagName == 'HTML')
         return '/HTML[1]';
     if (element === document.body)
         return '/HTML[1]/BODY[1]';
-
     var ix = 0;
     var txt = 0;
     var siblings = element.parentNode.childNodes;
@@ -22,9 +24,12 @@ export const xpathConversion = (element) => {
     }
 }
 
+// Equivalent -> xpath.toNode;
 export const xpathToNode = (path) => {
     return document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
 }
+
+
 
 function getNextNode(node) {
     if (node.firstChild) {
@@ -61,6 +66,10 @@ export const getNodesInRange = (range) => {
     }
     return nodes;
 }
+
+
+
+
 
 //flattens an array of array's
 export const flatten = (arr) => {
@@ -101,5 +110,3 @@ export const filterArrayFromArray = (arr, matchArr) => {
     );
     return filtered;
 }
-
-

@@ -1,49 +1,13 @@
 import { xpathConversion, flatten, getDescendants, getNodesInRange, filterArrayFromArray } from './AnchorHelpers';
-import { highlightRange } from './AnchorHighlight';
-import $ from 'jquery';
+import { highlightAnnotation, } from './AnchorHighlight';
+import { removeSpans } from './AnchorDomChanges';
+
+
 
 /**
  * Sends information to firebase for spans that need new xpath ranges
  * @param {Array} toUpdate 
  */
-function sendUpdateXpaths(toUpdate) {
-    chrome.runtime.sendMessage(
-        {
-            msg: 'UPDATE_XPATH_BY_IDS',
-            payload: {
-                toUpdate,
-            },
-        },
-    );
-}
-
-export const removeHighlights = () => {
-    const highlights = document.querySelectorAll(".highlight-adamite-annotation");
-    highlights.forEach(h => {
-        let parent = h.parentNode;
-        $(h).contents().unwrap();
-        parent.normalize();
-    });
-}
-
-export const removeTempHighlight = () => {
-    const temp = document.querySelector(".highlight-adamite-annotation-preview");
-    const parent = temp.parentNode;
-    $(temp).contents().unwrap();
-    parent.normalize();
-}
-
-/**
- * Removes span from HTML DOM
- * @param {Array} collection 
- */
-export const removeSpans = (collection) => {
-    while (collection[0] !== undefined) {
-        var parent = collection[0].parentNode;
-        $(collection[0]).contents().unwrap();
-        parent.normalize();
-    }
-}
 
 /**
  * Finds all adamite spans under an adamite span range
@@ -319,14 +283,13 @@ function updateXpathResponse(spanCollection, id, annotation) {
 
     // call update
     // console.log(newPaths)
-    if (newPaths.length !== 0)
-        sendUpdateXpaths(newPaths);
+    if (newPaths.length !== 0) messagesOut['UPDATE_XPATH_BY_IDS'](newPaths);
 }
 
 //span in span in span 
 function highlight(nodeRange, annotation) {
     if (nodeRange.start !== null && nodeRange.end !== null) {
-        highlightRange(nodeRange);
+        highlightAnnotation(annotation);
     }
     else {
         oldXpathsToHighlight(nodeRange, annotation)
@@ -350,5 +313,5 @@ function oldXpathsToHighlight(nodeRange, annotation) {
         updatedAnnotationById.xpath.end = nodeRange.end
         updatedAnnotationById.xpath.endOffset = nodeRange.endOffset
     }
-    highlightRange(updatedAnnotationById);
+    highlightAnnotation(updatedAnnotationById, updatedAnnotationById.id);
 }

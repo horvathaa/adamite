@@ -11,6 +11,7 @@ import FilterSummary from './containers/Filter/FilterSummary';
 import SearchBar from './containers/SearchBar/SearchBar';
 import { Button } from 'react-bootstrap';
 import { left } from 'glamor';
+import { AiOutlineConsoleSql } from 'react-icons/ai';
 
 
 
@@ -49,6 +50,8 @@ class Sidebar extends React.Component {
     relatedQuestions: [],
     searchCount: 0,
     pageName: '',
+    sortBy: 'page',
+    pageLocationSort: [],
     filterSelection: {
       siteScope: ['onPage'],
       userScope: ['public'],
@@ -158,11 +161,11 @@ class Sidebar extends React.Component {
         //   tabInfo => {
         chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
           let tab = tabs[0];
-          this.setState({ url: tab.url, tabId: tabs[0].id });
+          this.setState({ url: this.getPathFromUrl(tab.url), tabId: tab.id });
           if (currentUserData.payload.currentUser) {
             this.setUpAnnotationsListener(
               currentUserData.payload.currentUser.uid,
-              tab.url,
+              this.getPathFromUrl(tab.url),
               tab.id
             );
           } else {
@@ -233,14 +236,40 @@ class Sidebar extends React.Component {
         request.from === 'content' &&
         request.msg === 'ANCHOR_CLICKED'
       ) {
-        const { target } = request.payload;
-        this.setState({
-          filteredAnnotations: this.state.annotations.filter(element => {
+        const { target } = request.payload
+        let childAnchorId = [];
+        let replyAnchorId = [];
+        if (request.payload.url === this.state.url) {
+          // this.setState({
+          let clickedAnnos = this.state.annotations.filter(element => {
+            let repliesWithAnchors = element.replies !== undefined && element.replies !== null && element.replies.length ? this.containsReplyWithAnchor(element.replies) : [];
             if (element.childAnchor !== undefined && element.childAnchor !== null && element.childAnchor.length) {
               let doesContain = false;
-              element.childAnchor.forEach(anno => {
-                if (target.includes(anno.id)) {
-                  doesContain = true;
+              element.childAnchor.forEach(c => {
+                if (c.url === this.state.url) {
+                  target.forEach(id => {
+                    if ((String(c.parentId) + '-' + String(c.id)) === id) {
+                      childAnchorId.push(String(c.parentId) + '-' + String(c.id));
+                      doesContain = true;
+                    }
+                  })
+                }
+              })
+              if (!doesContain) {
+                doesContain = target.includes(element.id);
+              }
+              return doesContain;
+            }
+            else if (repliesWithAnchors.length) {
+              let doesContain = false;
+              repliesWithAnchors.forEach(r => {
+                if (r.url === this.state.url) {
+                  target.forEach(id => {
+                    if ((String(element.id) + '-' + String(r.replyId)) === id) {
+                      doesContain = true;
+                      replyAnchorId.push(String(element.id) + '-' + String(r.replyId))
+                    }
+                  })
                 }
               })
               if (!doesContain) {
@@ -250,8 +279,52 @@ class Sidebar extends React.Component {
             }
             return target.includes(element.id);
           })
-        });
-        this.setState({ showClearClickedAnnotation: true });
+          // });
+          // this.setState({ showClearClickedAnnotation: true });
+          // clickedAnnos = clickedAnnos.forEach(anno => {
+          //   console.log('id', id);
+          //   return anno.id.includes('-') ? id.substring(0, id.indexOf('-')) : id
+          // })
+          clickedAnnos.forEach(anno => {
+            // setTimeout(() => {
+            let annoDiv = document.getElementById(anno.id);
+            annoDiv.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
+            // annoDiv.style.backgroundColor = "purple";
+            let anchors = annoDiv.querySelectorAll(".AnchorContainer");
+            // console.log('anchors', anchors);
+            anchors.forEach(anch => {
+              anch.classList.add("Clicked")
+            })
+            chrome.tabs.sendMessage(
+              this.state.tabId,
+              {
+                msg: 'ANNOTATION_FOCUS',
+                id: anno.id,
+                // replyId: this.props.replyId
+              }
+            );
+            // }, 500);
+
+          })
+          setTimeout(() => {
+            clickedAnnos.forEach(anno => {
+              let annoDiv = document.getElementById(anno.id);
+              let anchors = annoDiv.querySelectorAll(".AnchorContainer");
+              anchors.forEach(anch => {
+                anch.classList.remove("Clicked")
+              })
+              chrome.tabs.sendMessage(
+                this.state.tabId,
+                {
+                  msg: 'ANNOTATION_DEFOCUS',
+                  id: anno.id,
+                  // replyId: this.props.replyId
+                }
+              );
+            })
+          }, 2500)
+
+        }
       } else if (
         request.from === 'background' &&
         request.msg === 'TOGGLE_SIDEBAR'
@@ -264,29 +337,53 @@ class Sidebar extends React.Component {
         }
       }
       else if (request.from === 'background' && request.msg === 'GROUPS_UPDATED') {
-        // console.log('in set state groups updated', request.payload);
-        this.setState({ groups: request.payload });
+        this.setState({ groups: request.groups });
       }
       else if (
-        request.from === 'content' &&
+        request.from === 'background' &&
         request.msg === 'CONTENT_UPDATED'
       ) {
-        chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-          if (tabs[0].id === request.payload.tabId) {
-            this.setState({ annotations: request.payload.annotations, tabId: request.payload.tabId });
-            chrome.browserAction.setBadgeText({ tabId: request.payload.tabId, text: String(request.payload.annotations.length) });
-            chrome.storage.local.get(['sidebarOpen'], response => {
-              if (response.sidebarOpen !== undefined && response.sidebarOpen) {
-                chrome.tabs.sendMessage(tabs[0].id, {
-                  msg: 'HIGHLIGHT_ANNOTATIONS',
-                  payload: request.payload.annotations,
-                });
-                this.requestFilterUpdate();
-              }
+        let annotations = request.payload;
+        this.setState({ url: request.url });
+        chrome.storage.local.get(['sidebarOpen'], response => {
+          if (response !== undefined && response.sidebarOpen) {
+            chrome.tabs.sendMessage(request.tabId, {
+              msg: 'HIGHLIGHT_ANNOTATIONS',
+              payload: request.payload,
+              url: request.url
+            }, response => {
+              let spanNames = new Array(...new Set(response.spanNames));
+              spanNames = spanNames.map((id) => {
+                return id.includes('-') ? id.substring(0, id.indexOf('-')) : id;
+              });
+              annotations.sort((a, b) => {
+                const index1 = spanNames.indexOf(a.id);
+                const index2 = spanNames.indexOf(b.id);
+                return ((index1 > -1 ? index1 : Infinity) - (index2 > -1 ? index2 : Infinity))
+              });
+              this.setState({ annotations, pageLocationSort: annotations })
+              this.requestFilterUpdate();
             });
           }
+          else {
+            this.setState({ annotations });
+          }
+        });
+        chrome.browserAction.setBadgeText({ tabId: request.tabId, text: request.payload.length ? String(request.payload.length) : "0" });
+      }
+      else if (request.msg === 'SORT_LIST' && request.from === 'background') {
+        let spanNames = new Array(...new Set(request.payload.spanNames));
+        spanNames = spanNames.map((id) => {
+          return id.includes('-') ? id.substring(0, id.indexOf('-')) : id;
         })
-
+        let annotations = this.state.annotations;
+        annotations.sort((a, b) => {
+          const index1 = spanNames.indexOf(a.id);
+          const index2 = spanNames.indexOf(b.id);
+          return ((index1 > -1 ? index1 : Infinity) - (index2 > -1 ? index2 : Infinity))
+        });
+        this.setState({ annotations, pageLocationSort: annotations })
+        this.requestFilterUpdate();
       }
       else if (request.from === 'background' && request.msg === 'ELASTIC_CONTENT_UPDATED') {
         if (this.state.searchedAnnotations.length !== 0) {
@@ -338,11 +435,29 @@ class Sidebar extends React.Component {
     });
   }
 
+  // helper method from
+  // https://stackoverflow.com/questions/2540969/remove-querystring-from-url
+  getPathFromUrl = (url) => {
+    return url.split(/[?#]/)[0];
+  }
+
+  containsObjectWithUrl = (url, list) => {
+    const test = list.filter(obj => obj.url.includes(url));
+    return test.length !== 0;
+  }
+
   // if length is 0 does not contain object, else does contain object
   // stupid helper method made out of necessity
   containsObjectWithId(id, list) {
     const test = list.filter(obj => obj.id === id);
     return test.length !== 0;
+  }
+
+  // if length is 0 does not contain object, else does contain object
+  // stupid helper method made out of necessity
+  containsReplyWithAnchor(list) {
+    const test = list.filter(obj => obj.xpath !== null);
+    return test;
   }
 
   // helper method from 
@@ -433,6 +548,10 @@ class Sidebar extends React.Component {
 
 
     // this.setState({ activeGroup: option[0].label })
+  }
+
+  notifySidebarSort = (option) => {
+    this.setState({ sortBy: option });
   }
 
   handleRelatedQuestions = () => {
@@ -558,7 +677,7 @@ class Sidebar extends React.Component {
     if (siteScope.includes('onPage') && !siteScope.includes('acrossWholeSite')) {
       // to-do make this check smarter by ignoring parts of the url (#, ?, etc.)
       // - just get substring and compare
-      return annotation.url === this.state.url;
+      return annotation.url.includes(this.state.url);
     }
     else if (siteScope.includes('acrossWholeSite')) {
       return new Promise((resolve, reject) => {
@@ -746,7 +865,7 @@ class Sidebar extends React.Component {
   };
 
   render() {
-    const { currentUser, filteredAnnotations, searchBarInputText, searchedAnnotations, groupAnnotations, filteredGroupAnnotations, pinnedAnnos, groups, activeGroups } = this.state;
+    const { currentUser, filteredAnnotations, searchBarInputText, searchedAnnotations, groupAnnotations, filteredGroupAnnotations, pinnedAnnos, groups, activeGroups, sortBy, pageLocationSort } = this.state;
     if (currentUser === undefined) {
       return null;
     }
@@ -774,9 +893,16 @@ class Sidebar extends React.Component {
       renderedAnnotations = filteredAnnotations;
     }
 
-    renderedAnnotations = renderedAnnotations.sort((a, b) =>
-      (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
-    );
+    if (sortBy !== 'page') {
+      renderedAnnotations = renderedAnnotations.sort((a, b) =>
+        (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
+      );
+    }
+    else {
+      if (searchedAnnotations.length === 0 && groupAnnotations.length === 0) // this is bad if we have an in-place filter that doesn't match with pageLocationSort - fix later
+        renderedAnnotations = pageLocationSort;
+    }
+
 
     renderedAnnotations = renderedAnnotations.filter(anno => !anno.deleted && anno.SharedId === null);
 
@@ -827,6 +953,8 @@ class Sidebar extends React.Component {
                   tempSearchCount={tempSearchCount}
                   showingSelectedAnno={this.state.showClearClickedAnnotation}
                   clearSelectedAnno={this.clearSelectedAnno}
+                  notifySidebarSort={this.notifySidebarSort}
+                  currentSort={this.state.sortBy}
                 // activeGroup={activeGroups.length ? activeGroup : "Public"}
                 />
               }
@@ -905,7 +1033,13 @@ class Sidebar extends React.Component {
                     requestFilterUpdate={this.requestChildAnchorFilterUpdate}
                     notifyParentOfPinning={this.handlePinnedAnnotation} />
                 )}
+              {(this.state.url.includes("facebook.com") || this.state.url.includes("google.com") || this.state.url.includes("twitter.com")) && !this.state.url.includes("developer") ? (
+                <div className="whoops">
+                  NOTE: Adamite does not work well on dynamic webpages such as Facebook or Twitter where content is likely to change. Proceed with caution.
+                </div>
+              ) : (null)}
             </div>
+
             {this.state.showClearClickedAnnotation && (
               <div className="userQuestionButtonContainer">
                 <div className="ModifyFilter userQuestions" onClick={_ => { this.setState({ showClearClickedAnnotation: false }); this.setState({ filteredAnnotations: this.state.annotations }) }}>

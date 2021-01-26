@@ -1,153 +1,130 @@
 
-//import './AnchorEngine/AnchorCreate';
-import { updateXpaths, removeSpans, removeHighlights, removeTempHighlight } from './AnchorEngine/AnchorDestroy';
-import { tempHighlight, highlightRange, highlightReplyRange } from './AnchorEngine/AnchorHighlight';
-import { createAnnotation, removeAnnotationWidget } from './AnchorEngine/AnchorCreate';
+// Transmitting messages to background and other parts of extension
+import { transmitMessage } from './anchorEventTransmitter';
+// Creating Annotations and anchors
+import { addNewAnchor, createAnnotationCallback, } from './AnchorEngine/AnchorCreate';
+// Changes to DOM
+import { removeHighlightSpans, getHighlightSpanIds } from './AnchorEngine/AnchorDomChanges';
+//import { Octokit } from "@octokit/core";
+import {
+    tempHighlight,
+    highlightReplyRange,
+    highlightAnnotation,
+    highlightAnnotationDeep,
 
+} from './AnchorEngine/AnchorHighlight';
 
-// chrome.runtime.sendMessage(
-//     {
-//         msg: 'REQUEST_ANNOTATED_TEXT_ON_THIS_PAGE',
-//         payload: {
-//             url: window.location.href,
-//         },
-//     },
-//     data => {
-//         const { annotationsOnPage } = data;
-//         if (annotationsOnPage.length) {
-//             annotationsOnPage.reverse().forEach(anno => highlightRange(anno));
-//         }
-//     }
-// );
+import { updateXpaths, } from './AnchorEngine/AnchorDestroy';
+
 
 document.addEventListener('mouseup', event => {
-    createAnnotation(event);
+    transmitMessage({
+        msg: 'REQUEST_SIDEBAR_STATUS',
+        responseCallback: (response) => createAnnotationCallback(response, event),
+        sentFrom: "anchorEventListener"
+    });
+    //createAnnotation(event);
 });
 
 document.addEventListener('mousedown', event => {
-    removeAnnotationWidget(event);
-})
-
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-
-    if (request.msg === 'ANNOTATION_DELETED_ON_PAGE') {
-        let collection = document.getElementsByName(request.id);
-        updateXpaths(collection, request.id)
-    }
-    else if (request.msg === 'ADD_REPLY_HIGHLIGHT') {
-        // console.log('doin it');
+    transmitMessage({
+        msg: 'CONTENT_NOT_SELECTED',
+        sentFrom: "anchorEventListener"
+    });//removeAnnotationWidget(event);
+});
+let messagesIn = {
+    'ANNOTATION_DELETED_ON_PAGE': (request, sender, sendResponse) => {
+        let findSpan = getSpanFromRequest(request);
+        updateXpaths(findSpan, request.id)
+    },
+    'ADD_NEW_ANCHOR': (request, sender, sendResponse) => {
+        addNewAnchor({ request: request, type: "child" });
+    },
+    'ADD_REPLY_ANCHOR': (request, sender, sendResponse) => {
+        addNewAnchor({ request: request, type: "reply" });
+    },
+    'ADD_REPLY_HIGHLIGHT': async (request, sender, sendResponse) => {
+        console.log(request);
+        // const octokit = new Octokit({ auth: });
+        // let l = await octokit.request('GET /orgs/{org}/repos', {
+        //     org: 'collective-sanity'
+        // });
+        // console.log(l);
         const { xpath, id } = request.payload;
         highlightReplyRange(xpath, id);
-    }
-    else if (request.msg === 'HIGHLIGHT_ANNOTATIONS') {
+
+        // await octokit.request('POST /repos/{owner}/{repo}/issues/{issue_number}/comments', {
+        //     owner: 'octocat',
+        //     repo: 'hello-world',
+        //     issue_number: 42,
+        //     body: 'body'
+        // })
+    },
+    'HIGHLIGHT_ANNOTATIONS': (request, sender, sendResponse) => {
+        // removeHighlightSpans({ isPreview: false });
         const annotationsOnPage = request.payload;
         if (annotationsOnPage.length) {
             annotationsOnPage.reverse().forEach(anno => {
-                if (anno.xpath !== undefined && anno.xpath !== null) {
-                    highlightRange(anno, anno.id)
-                    let findSpan = document.getElementsByName(anno.id);
-                    if (findSpan.length === 0) {
-                        chrome.runtime.sendMessage({
-                            msg: "ANCHOR_BROKEN",
-                            from: 'content',
-                            payload: {
-                                'id': anno.id
-                            }
-                        });
-                    }
-                }
-                if (anno.replies !== undefined && anno.replies !== null && anno.replies.length) {
-                    anno.replies.forEach(reply => {
-                        if (reply.xpath !== undefined && reply.xpath !== null) {
-                            highlightRange(reply, anno.id, reply.replyId);
-                            let findSpan = document.getElementsByName(anno.id + '-' + reply.replyId);
-                            if (findSpan.length === 0) {
-                                chrome.runtime.sendMessage({
-                                    msg: "ANCHOR_BROKEN",
-                                    from: 'content',
-                                    payload: {
-                                        'id': anno.id,
-                                        'replyId': reply.replyId
-                                    }
-                                });
-                            }
-                        }
-                    })
-                }
-                if (anno.childAnchor !== undefined && anno.childAnchor !== null && anno.childAnchor.length) {
-                    anno.childAnchor.forEach(child => {
-                        if (child.xpath !== undefined && child.xpath !== null) {
-                            highlightRange(child, anno.id, child.id);
-                            let findSpan = document.getElementsByName(anno.id + '-' + child.id);
-                            if (findSpan.length === 0) {
-                                chrome.runtime.sendMessage({
-                                    msg: "ANCHOR_BROKEN",
-                                    from: 'content',
-                                    payload: {
-                                        'id': anno.id,
-                                        'childId': child.id
-                                    }
-                                });
-                            }
-                        }
-                    })
+                highlightAnnotationDeep(anno);
+            });
+            let ids = getHighlightSpanIds({ isPreview: false });
+            //console.log(ids);
+            annotationsOnPage.reverse().forEach(anno => {
+                //console.log(anno.id);
+                if (!(ids.includes(anno.id.toString()))) {
+                    transmitMessage({ msg: "ANCHOR_BROKEN", data: { payload: { "id": anno.id } }, sentFrom: "AnchorHighlight" })
                 }
             });
         }
-    }
-    else if (request.msg === 'ANNOTATION_FOCUS_ONCLICK') {
-        let findSpan;
-        if (request.replyId !== undefined) {
-            findSpan = document.getElementsByName(request.id + "-" + request.replyId);
-        }
-        else {
-            findSpan = document.getElementsByName(request.id);
-        }
-        if (findSpan.length === 0) {
-            console.log('len is 0?')
-            return;
-        }
+        let spanNames = Array.from(document.querySelectorAll('.highlight-adamite-annotation')).map(s => s.getAttribute('name'));
+        sendResponse({ spanNames })
+    },
+    'ANNOTATION_FOCUS_ONCLICK': (request, sender, sendResponse) => {
+        let findSpan = getSpanFromRequest(request);
+        if (findSpan.length === 0) { console.log('len is 0?'); return; }
         findSpan[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-    else if (request.msg === 'ANNOTATION_FOCUS') {
-        let findSpan;
-        if (request.replyId !== undefined) {
-            findSpan = document.getElementsByName(request.id + "-" + request.replyId);
-        }
-        else {
-            findSpan = document.getElementsByName(request.id);
-        }
-        if (findSpan.length === 0) {
-            return;
-        }
+    },
+    'ANNOTATION_FOCUS': (request, sender, sendResponse) => {
+        let findSpan = getSpanFromRequest(request);
         findSpan.forEach(e => e.style.backgroundColor = '#7cce7299');
-    }
-    else if (request.msg === 'ANNOTATION_DEFOCUS') {
-        let findSpan;
-        if (request.replyId !== undefined) {
-            findSpan = document.getElementsByName(request.id + "-" + request.replyId);
-        }
-        else {
-            findSpan = document.getElementsByName(request.id);
-        }
-        if (findSpan.length === 0) {
-            return;
-        }
+    },
+    'ANNOTATION_DEFOCUS': (request, sender, sendResponse) => {
+        let findSpan = getSpanFromRequest(request);
         findSpan.forEach(e => e.style.backgroundColor = null)
-    }
-    else if (request.msg === 'ANNOTATION_ADDED') {
+    },
+    'ANNOTATION_ADDED': (request, sender, sendResponse) => {
         request.newAnno.content = request.newAnno.annotation;
-        highlightRange(request.newAnno);
-    }
-    else if (request.msg === 'TEMP_ANNOTATION_ADDED') {
-        // request.newAnno.content = request.newAnno.annotation;
+        highlightAnnotation(request.newAnno, request.newAnno.id)
+    },
+    'TEMP_ANNOTATION_ADDED': (request, sender, sendResponse) => {
+        console.log(request);
         tempHighlight(request.newAnno);
-    }
-    else if (request.msg === 'REMOVE_TEMP_ANNOTATION') {
-        removeTempHighlight();
+    },
+    'REMOVE_TEMP_ANNOTATION': (request, sender, sendResponse) => {
+        removeHighlightSpans({ isPreview: true });
         sendResponse({ msg: 'REMOVED' });
+    },
+    'REMOVE_HIGHLIGHTS': (request, sender, sendResponse) => {
+        removeHighlightSpans({ isPreview: false });
+    },
+}
+
+
+function getSpanFromRequest(request) {
+    return (request.replyId !== undefined) ?
+        document.getElementsByName(request.id + "-" + request.replyId.toString()) :
+        document.getElementsByName(request.id.toString());
+
+}
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    // console.log(request);
+    if (request.msg in messagesIn) {
+        messagesIn[request.msg](request, sender, sendResponse);
     }
-    else if (request.msg === 'REMOVE_HIGHLIGHTS') {
-        removeHighlights();
-    }
+    return true;
 });
+
+
+
+

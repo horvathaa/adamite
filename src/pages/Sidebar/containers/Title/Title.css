@@ -132,9 +132,10 @@
   border-bottom-width: 0; 
 }
 
-.dropdown-toggle::after {
-  display:none !important;
-} 
+.TitleContainer .dropdown-toggle::after {
+   display: none !important; 
+}  
+
 
 .TitleContainer .container .row .btn {
   padding: 0px;
@@ -171,7 +172,7 @@
   background-color: transparent;
   border-color: transparent;
   outline-color: none;
-}
+} 
 
 
 .NewAnnotationButtonContainer {

@@ -123,17 +123,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     const { toStatus } = request;
     shouldShrinkBody = toStatus;
     Frame.shrinkBody();
-  } else if (
-    request.from === 'background' &&
-    request.msg === 'CONTENT_UPDATED') {
-    chrome.runtime.sendMessage(
-      {
-        from: 'content',
-        msg: 'CONTENT_UPDATED',
-        payload: { annotations: request.payload, tabId: request.tabId }
-      }
-    )
   }
+
+  // else if (
+  //   request.from === 'background' &&
+  //   request.msg === 'CONTENT_UPDATED') {
+  //   chrome.runtime.sendMessage(
+  //     {
+  //       from: 'content',
+  //       msg: 'CONTENT_UPDATED',
+  //       payload: { annotations: request.payload, tabId: request.tabId, url: request.url }
+  //     }
+  //   )
+  // }
 
 });
 
@@ -144,7 +146,7 @@ const checkSidebarStatus = () => {
       msg: 'REQUEST_SIDEBAR_STATUS',
     },
     (response) => {
-      let sidebarOpen = response.sidebarOpen;
+      let sidebarOpen = response;
       if (Frame.isReady()) {
         Frame.toggle(sidebarOpen);
       }
