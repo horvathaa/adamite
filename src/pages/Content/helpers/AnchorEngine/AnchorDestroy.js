@@ -9,7 +9,6 @@ import { removeSpans } from './AnchorDomChanges';
  * @param {Array} toUpdate 
  */
 
-
 /**
  * Finds all adamite spans under an adamite span range
  * @param {Array} rangeNodes 

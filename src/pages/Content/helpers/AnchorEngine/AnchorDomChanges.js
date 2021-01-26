@@ -62,8 +62,19 @@ var splitReinsertText = function (node, substring, startOffset, endOffset, callb
             callback(node, match, startOffset);
             return newTextNode;
         });
-    } else {
-        console.error("FORMAT ERROR");
+    } else if (node.data.includes(substring.trim())) {
+        console.log("TRIM", substring)
+        return node.data.replace(substring.trim(), (match, offset, string) => {
+            // Does offset change? check and set
+            let newTextNode = node.splitText(startOffset);
+            // should check to make sure match is same as substring
+            newTextNode.data = newTextNode.data.substr(substring.trim().length);
+            callback(node, match, startOffset);
+            return newTextNode;
+        });
+    }
+    else {
+        console.error("FORMAT ERROR", substring);
         let substringText1 = formatText(substring.toString());
         let formatted = formatText(node.data.toString());
         if (formatted.includes(substringText1)) {

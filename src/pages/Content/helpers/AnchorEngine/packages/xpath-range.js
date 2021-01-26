@@ -133,7 +133,11 @@ export function toRangeNew(startPath, startOffset, endPath, endOffset, root, mat
   startNode = xpath.toNode(startPath, root);
   endNode = xpath.toNode(endPath, root);
   if (startNode !== null && endNode !== null) {
-    console.log("Good");
+    console.log(startOffset, endOffset, matchContent);
+    if (startPath === endPath && startOffset > endOffset) {
+      endOffset = startOffset + matchContent.trim().length;
+      console.log(startOffset, endOffset, matchContent);
+    }
     let out;
     try {
       out = toRange(startPath, startOffset, endPath, endOffset, root);
