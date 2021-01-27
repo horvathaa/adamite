@@ -91,17 +91,31 @@ class Anchor extends Component {
         let anchorIcon;
 
         if (pageAnchor) {
-            anchorIcon = <BsFileEarmarkText className="AnchorIcon" />;
+            anchorIcon =
+                (
+                    <Tooltip title={"Page level annotation"} aria-label="page level annotation">
+                        <BsFileEarmarkText className="AnchorIcon" />
+                    </Tooltip >
+                )
+
         }
 
         else if (brokenAnchor && url === currentUrl) {
-            anchorIcon = <img src={anchorBroken} className="AnchorIcon" alt='anchor broken' />;
+            anchorIcon = (
+                <Tooltip title={"broken anchor"} aria-label="broken anchor">
+                    <img src={anchorBroken} className="AnchorIcon" alt='anchor broken' />
+                </Tooltip>)
         }
         else if (url === currentUrl) {
-            anchorIcon = <img src={anchorOnPage} className="AnchorIcon" alt='anchor on page' />;
+            anchorIcon = (<Tooltip title={'Scroll to annotation on page'} aria-label="annotation anchor on page">
+                <img src={anchorOnPage} className="AnchorIcon" alt='anchor on page' />
+            </Tooltip>)
         }
         else {
-            anchorIcon = <img src={anchorOnOtherPage} className="AnchorIcon" alt='anchor on other page' />;
+            anchorIcon = (
+                <Tooltip title={"Open annotation in new tab"} aria-label="external page annotation anchor">
+                    <img src={anchorOnOtherPage} className="AnchorIcon" alt='anchor on other page' />
+                </Tooltip>)
         }
 
         if (brokenAnchor && url === currentUrl && !pageAnchor) {
@@ -113,11 +127,9 @@ class Anchor extends Component {
                     })}
 
                 >
-                    <Tooltip title={"broken anchor"} aria-label="annotation count">
-                        <div className="AnchorIconContainer">
-                            {anchorIcon}
-                        </div>
-                    </Tooltip>
+                    <div className="AnchorIconContainer">
+                        {anchorIcon}
+                    </div>
 
                     <div className="AnchorTextContainer">
                         {anchorContent}
@@ -144,14 +156,16 @@ class Anchor extends Component {
                             {anchorContent}
                         </div>
                     ) : (
+
                             <div className="AnchorTextContainer">
                                 {anchorContent}
                                 <div className="AnchorUrlContainer" onClick={this.handleExternalAnchor}>
                                     {url}
                                 </div>
                             </div>
-                        )}
-                </div>
+                        )
+                    }
+                </div >
             );
         }
 

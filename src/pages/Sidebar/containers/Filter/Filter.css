@@ -147,6 +147,7 @@
     padding: 8px;
     font-size: 0.9rem;
     color: #6B778C;
+    cursor: pointer;
 }
 
 .SearchByTag {

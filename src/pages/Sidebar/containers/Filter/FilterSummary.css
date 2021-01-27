@@ -33,6 +33,11 @@
     flex-wrap: wrap;
 }
 
+.FilterSection:hover {
+    cursor: pointer;
+    color: #6b778ca1 !important;
+}
+
 .FilterIconContainer {
     width: 20px;
     height: 20px;

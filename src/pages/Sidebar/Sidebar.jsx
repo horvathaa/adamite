@@ -869,25 +869,15 @@ class Sidebar extends React.Component {
     if (currentUser === undefined) {
       return null;
     }
-    // console.log("this is a render");
-    // console.log('bad bad', this.state.relatedQuestions);
     const inputText = searchBarInputText.toLowerCase();
-    // console.log("ll code", groupAnnotations, activeGroups, activeGroups.length);
-    // console.log("these are searched annotations", searchedAnnotations, searchedAnnotations.length === 0)
     let renderedAnnotations = [];
     if (searchedAnnotations.length) {
       renderedAnnotations = searchedAnnotations;
     }
     else if (activeGroups.length) {
-      // if (filteredGroupAnnotations.length) {
-      //   renderedAnnotations = renderedAnnotations.concat(filteredGroupAnnotations);
-      // }
-      // else {
       groupAnnotations.forEach((group) => {
-        // console.log('groupppp', group);
         renderedAnnotations = renderedAnnotations.concat(group.annotations);
       });
-      // }
     }
     else {
       renderedAnnotations = filteredAnnotations;
@@ -899,7 +889,7 @@ class Sidebar extends React.Component {
       );
     }
     else {
-      if (searchedAnnotations.length === 0 && groupAnnotations.length === 0) // this is bad if we have an in-place filter that doesn't match with pageLocationSort - fix later
+      if (searchedAnnotations.length === 0 && groupAnnotations.length === 0 && filteredAnnotations.length === pageLocationSort.length) // this is bad if we have an in-place filter that doesn't match with pageLocationSort - fix later
         renderedAnnotations = pageLocationSort;
     }
 
@@ -914,7 +904,6 @@ class Sidebar extends React.Component {
     const pinnedNumChildAnchs = pinnedAnnosCopy.filter(anno => anno.SharedId !== null);
 
     const numChildAnchs = renderedAnnotations.filter(anno => anno.SharedId !== null);
-    // chrome.browserAction.setBadgeText({ tabId: this.state.tabId, text: String(renderedAnnotations.length) });
 
     let tempSearchCount;
     if (this.state.showPinned) {
@@ -955,6 +944,7 @@ class Sidebar extends React.Component {
                   clearSelectedAnno={this.clearSelectedAnno}
                   notifySidebarSort={this.notifySidebarSort}
                   currentSort={this.state.sortBy}
+                  getFilteredAnnotations={this.getFilteredAnnotations}
                 // activeGroup={activeGroups.length ? activeGroup : "Public"}
                 />
               }

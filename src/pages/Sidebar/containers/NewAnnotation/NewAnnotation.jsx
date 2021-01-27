@@ -140,9 +140,9 @@ class NewAnnotation extends React.Component {
                 },
               },
               response => {
-                console.log('response', response);
+                // console.log('response', response);
                 if (response.msg === 'DONE') {
-                  console.log('response', response);
+                  // console.log('response', response);
                   // annotationInfo.id = response.value;
                   // if (annotationInfo.xpath !== null) {
                   //   chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {

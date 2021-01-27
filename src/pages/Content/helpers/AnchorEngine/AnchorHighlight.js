@@ -7,7 +7,7 @@ import * as xpathRange from "./packages/xpath-range";
 
 
 export const highlightAnnotationDeep = (anno) => {
-    console.log("highlight deep");
+    // console.log("highlight deep");
     if (document.getElementsByName(anno.id.toString()).length > 0 || !highlightAnnotation(anno, anno.id.toString(), "root")) {
         //console.log("highlightAnnotation ERROR"); console.log(anno);
         //checkIfBrokenAnchor(anno.id.toString(), { "id": anno.id });
@@ -73,7 +73,7 @@ export const highlightAnnotation = (annotation, domId, type) => {
     //will show annotation type
     let nodePairs = getNodeSubstringPairs({ annotation: annotation, type: type });
     if (!nodePairs || nodePairs.length == 0) {
-        console.log("no matches");
+        // console.log("no matches");
         return false;
     }
     //console.log("NODE PAIRS");
@@ -94,7 +94,7 @@ export const highlightAnnotation = (annotation, domId, type) => {
 * Finds Range and highlights each element
 */
 export const tempHighlight = (annotation) => {
-    console.log(annotation);
+    // console.log(annotation);
     let nodePairs = getNodeSubstringPairs({ annotation: annotation, type: "temp" });
     if (!nodePairs || nodePairs.length == 0) {
         console.log("no matches");
@@ -173,7 +173,7 @@ function getNodeSubstringPairs({ annotation, type, }) {
     let startOffset = range.startOffset;
 
     nodes = getNodesInRange(range).filter(function (element) { return element.nodeType === 3 && element.data.trim() !== ""; });
-    console.log(nodes);
+    // console.log(nodes);
     if ((startPath === endPath) && nodes.length === 1) {
         // If content string exists use that otherwise use indexes
         let substring = nodes[0].data.substring(startOffset, endOffset ? endOffset : nodes[0].data.length);
