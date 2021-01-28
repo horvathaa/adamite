@@ -10,7 +10,7 @@ class GroupMultiSelect extends React.Component {
     state = {
         uid: this.props.uid,
         groups: this.props.groups,
-        selected: "",
+        selected: [],
     }
 
     editModal = (gid) => {
