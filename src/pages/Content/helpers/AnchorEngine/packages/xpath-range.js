@@ -144,7 +144,7 @@ export function toRangeNew(startPath, startOffset, endPath, endOffset, root, mat
       console.log(out);
     } catch (e) {
       out = toRangeMissing(startPath, startOffset, endPath, endOffset, root, matchContent);
-      sel = window.getSelection();
+      let sel = window.getSelection();
       sel.removeAllRanges();
     }
     return out;
