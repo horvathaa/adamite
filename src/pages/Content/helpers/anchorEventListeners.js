@@ -76,6 +76,9 @@ let messagesIn = {
                 }
             });
         }
+        // Ensure that nothing is unintentionally selected 
+        let sel = window.getSelection();
+        sel.removeAllRanges();
         let spanNames = Array.from(document.querySelectorAll('.highlight-adamite-annotation')).map(s => s.getAttribute('name'));
         sendResponse({ spanNames })
     },
