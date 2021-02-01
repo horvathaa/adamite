@@ -9,6 +9,7 @@ import '../../../../assets/img/SVGs/Todo.svg';
 import '../../../../assets/img/SVGs/Question.svg';
 import '../../../../assets/img/SVGs/Issue.svg';
 import { ToastContainer, toast } from 'react-toastify';
+import { FaHighlighter } from 'react-icons/fa';
 import 'react-toastify/dist/ReactToastify.css';
 import { transmitMessage } from '../anchorEventTransmitter';
 /*
@@ -49,7 +50,7 @@ const Popover = ({ selection, xpathToNode, offsets, rectPopover, removePopover }
             </div>
             <div className="onHoverCreateAnnotation" onClick={(e) => buttonClickedHandler(e, "highlight")} >
                 <div className="buttonIconContainer">
-                    <img src={chrome.extension.getURL('Highlight.svg')} alt="highlight" />
+                    <FaHighlighter className="svg-button" />
                 </div>
                 Highlight
             </div>

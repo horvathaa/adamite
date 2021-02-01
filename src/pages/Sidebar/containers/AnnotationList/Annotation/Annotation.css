@@ -162,6 +162,12 @@
   height: 24px;
 }
 
+.badgeIconSvg {
+  color: #6B778C;
+  width: 24px;
+  height: 24px;
+}
+
 .btn-openCloseQuestion {
   font-size: small;
   color: #6B778C;

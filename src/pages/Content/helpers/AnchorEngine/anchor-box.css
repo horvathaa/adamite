@@ -176,6 +176,11 @@
     border-bottom: 1px solid #6B778C;
 }
 
+.svg-button {
+    width: 2.5em;
+    height: 2.5em;
+}
+
 .buttonIconContainer {
     padding: 5px;
     margin: auto;
