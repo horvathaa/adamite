@@ -66,8 +66,8 @@ export function getAnnotationById(request, sender, sendResponse) {
 
 export async function createAnnotation(request, sender, sendResponse) {
     fb.createAnnotation(_createAnnotation(request)).then(value => {
-        console.log("background", value);
-        console.log('sendResponse', sendResponse);
+        // console.log("background", value);
+        // console.log('sendResponse', sendResponse);
     });
     sendResponse({ "msg": 'DONE' });
 }
@@ -162,7 +162,6 @@ export async function updateAnnotation(request, sender, sendResponse) {
         events: fbUnion(editEvent(request.msg, doc.data())),
     })
     broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
-    console.log("TODO", request.message);
 }
 
 
@@ -422,7 +421,6 @@ function getAllPrivatePinnedAnnotationsListener() {
         let tempPrivatePinnedAnnotations = getListFromSnapshots(annotationsSnapshot);
         pinnedAnnotations = tempPrivatePinnedAnnotations.concat(publicPinnedAnnotations);
         privatePinnedAnnotations = tempPrivatePinnedAnnotations;
-
         broadcastAnnotationsUpdated("PINNED_CHANGED", pinnedAnnotations);
     });
 }
