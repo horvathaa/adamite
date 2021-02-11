@@ -16,6 +16,19 @@ import {
 
 import { updateXpaths, } from './AnchorEngine/AnchorDestroy';
 
+// from: https://stackoverflow.com/questions/11805955/how-to-get-the-distance-from-the-top-for-an-element
+function getPosition(element) {
+    var xPosition = 0;
+    var yPosition = 0;
+
+    while (element) {
+        xPosition += (element.offsetLeft - element.scrollLeft + element.clientLeft);
+        yPosition += (element.offsetTop - element.scrollTop + element.clientTop);
+        element = element.offsetParent;
+    }
+
+    return { x: xPosition, y: yPosition };
+}
 
 document.addEventListener('mouseup', event => {
     transmitMessage({
@@ -85,7 +98,7 @@ let messagesIn = {
     'ANNOTATION_FOCUS_ONCLICK': (request, sender, sendResponse) => {
         let findSpan = getSpanFromRequest(request);
         if (findSpan.length === 0) { console.log('len is 0?'); return; }
-        findSpan[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        window.scroll({ top: getPosition(findSpan[0]).y - window.innerHeight / 2, left: getPosition(findSpan[0]).x, behavior: 'smooth' })
     },
     'ANNOTATION_FOCUS': (request, sender, sendResponse) => {
         let findSpan = getSpanFromRequest(request);

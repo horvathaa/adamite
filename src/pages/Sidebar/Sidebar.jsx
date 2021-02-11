@@ -1025,7 +1025,7 @@ class Sidebar extends React.Component {
                 )}
               {(this.state.url.includes("facebook.com") || this.state.url.includes("google.com") || this.state.url.includes("twitter.com")) && !this.state.url.includes("developer") ? (
                 <div className="whoops">
-                  NOTE: Adamite does not work well on dynamic webpages such as Facebook or Twitter where content is likely to change. Proceed with caution.
+                  NOTE: Adamite does not work well on dynamic webpages such as Facebook, Google Docs, or Twitter where content is likely to change. Proceed with caution.
                 </div>
               ) : (null)}
             </div>
