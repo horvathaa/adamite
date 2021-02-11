@@ -44,8 +44,22 @@ export function setPinnedAnnotationListeners(request, sender, sendResponse) {
 export async function getAnnotationsPageLoad(request, sender, sendResponse) {
     console.log("GET_ANNOTATIONS_PAGE_LOAD");
 
-    // let email = fb.getCurrentUser().email;
-    // let userName = email.substring(0, fb.getCurrentUser().email.indexOf('@'));
+    let email = fb.getCurrentUser().email;
+    let userName = email.substring(0, fb.getCurrentUser().email.indexOf('@'));
+    if (request.tabId !== undefined) {
+        chrome.tabs.sendMessage(
+            request.tabId,
+            {
+                msg: 'CREATE_GROUP',
+                from: 'background',
+                owner: {
+                    uid: request.uid,
+                    email: email,
+                    userName: userName
+                }
+            }
+        );
+    }
     getAllAnnotationsByUrlListener(request.url, request.tabId,)
     getPrivateAnnotationsByUrlListener(request.url, request.tabId,);
     // chrome.browserAction.setBadgeText({ text: String(annotations.length) });
@@ -297,7 +311,6 @@ export function updateAnnotationsOnTabActivated(activeInfo) {
 }
 
 export function handleTabUpdate(url, tabId) {
-    console.log("Handle tab update");
     getAllAnnotationsByUrlListener(url, tabId);
     getPrivateAnnotationsByUrlListener(url, tabId);
 }

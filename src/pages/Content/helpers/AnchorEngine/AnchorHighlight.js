@@ -17,8 +17,9 @@ export const highlightAnnotationDeep = (anno) => {
         anno.childAnchor.forEach(child => {
             if (child.xpath !== undefined && child.xpath !== null) {
                 let domId = anno.id.toString() + "-" + child.id.toString();
+                console.log('made child anchor highlight', domId);
                 if (document.getElementsByName(domId).length > 0 && !highlightAnnotation(child, domId, "child")) {
-                    // console.log("highlightAnnotation Child Error"); console.log(anno);
+                    console.log("highlightAnnotation Child Error"); console.log(anno);
                     //checkIfBrokenAnchor(domId, { "id": anno.id, "childId": child.id });
                 }
             }
@@ -71,9 +72,10 @@ export const checkForBrokenAnnotationDeep = (anno, ids) => {
 
 export const highlightAnnotation = (annotation, domId, type) => {
     //will show annotation type
+    console.log('highlighting anno');
     let nodePairs = getNodeSubstringPairs({ annotation: annotation, type: type });
     if (!nodePairs || nodePairs.length == 0) {
-        // console.log("no matches");
+        console.log("no matches", type);
         return false;
     }
     //console.log("NODE PAIRS");
@@ -177,7 +179,8 @@ function getNodeSubstringPairs({ annotation, type, }) {
     if ((startPath === endPath) && nodes.length === 1) {
         // If content string exists use that otherwise use indexes
         let substring = nodes[0].data.substring(startOffset, endOffset ? endOffset : nodes[0].data.length);
-        if (hasContent && substring !== fullContentString) substring = fullContentString;
+        // if (hasContent && substring !== fullContentString) 
+        // substring = fullContentString;
         // Highlight
         return [{ node: nodes[0], substring: substring, startOffset: startOffset, endOffset: endOffset ? endOffset : nodes[0].data.length }];
     }
