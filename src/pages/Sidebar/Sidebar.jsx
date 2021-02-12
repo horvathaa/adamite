@@ -1021,7 +1021,8 @@ class Sidebar extends React.Component {
                     currentUser={currentUser}
                     url={this.state.url}
                     requestFilterUpdate={this.requestChildAnchorFilterUpdate}
-                    notifyParentOfPinning={this.handlePinnedAnnotation} />
+                    notifyParentOfPinning={this.handlePinnedAnnotation}
+                    showPinned={this.state.showPinned} />
                 )}
               {(this.state.url.includes("facebook.com") || this.state.url.includes("google.com") || this.state.url.includes("twitter.com")) && !this.state.url.includes("developer") ? (
                 <div className="whoops">
