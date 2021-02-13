@@ -136,10 +136,10 @@ class QuestionAnswerAnnotation extends Component {
                 <img src={expand} alt="Expand" onClick={_ => this.props.handleExpandCollapse('expand')} className="Icon" />
             </div>
         ) : (
-                <div className="ExpandCollapse">
-                    <img src={expand} id="collapse" alt="Collapse" onClick={_ => this.props.handleExpandCollapse('collapse')} className="Icon" />
-                </div>
-            )
+            <div className="ExpandCollapse">
+                <img src={expand} id="collapse" alt="Collapse" onClick={_ => this.props.handleExpandCollapse('collapse')} className="Icon" />
+            </div>
+        )
 
         const collapsedArg = collapsed ? 'expand' : 'collapse';
 
@@ -169,8 +169,8 @@ class QuestionAnswerAnnotation extends Component {
                                     {isClosed ? (
                                         <img src={Question} alt='closed question badge' />
                                     ) : (
-                                            <img src={openQuestion} alt='open question type badge' />
-                                        )
+                                        <img src={openQuestion} alt='open question type badge' />
+                                    )
                                     }
 
                                 </div>
@@ -212,8 +212,8 @@ class QuestionAnswerAnnotation extends Component {
                                                 {pin ? (
                                                     <img src={fillpin} id="pin" alt="pin" className="profile" />
                                                 ) : (
-                                                        <img src={outlinepin} id="pin" alt="pin" className="profile" />
-                                                    )}
+                                                    <img src={outlinepin} id="pin" alt="pin" className="profile" />
+                                                )}
                                             </div>
                                         </Tooltip>
                                         <Tooltip title={"Add new anchor to annotation"} aria-label="add new anchor tooltip">
@@ -246,21 +246,23 @@ class QuestionAnswerAnnotation extends Component {
                             url={url[0]}
                             collapsed={collapsed}
                             anchorContent={anchor}
+                            tags={tags}
                             pageAnchor={xpath === null}
                             brokenAnchor={brokenAnchor} />
                     ) : (
-                            <React.Fragment>
-                                <Anchor
-                                    id={id}
-                                    currentUrl={currentUrl}
-                                    url={url[0]}
-                                    collapsed={collapsed}
-                                    anchorContent={anchor}
-                                    pageAnchor={xpath === null}
-                                    brokenAnchor={brokenAnchor} />
-                                <AnchorList childAnchor={childAnchor} currentUrl={currentUrl} collapsed={collapsed} brokenChild={brokenChild} />
-                            </React.Fragment>
-                        )}
+                        <React.Fragment>
+                            <Anchor
+                                id={id}
+                                currentUrl={currentUrl}
+                                url={url[0]}
+                                collapsed={collapsed}
+                                anchorContent={anchor}
+                                tags={tags}
+                                pageAnchor={xpath === null}
+                                brokenAnchor={brokenAnchor} />
+                            <AnchorList childAnchor={childAnchor} currentUrl={currentUrl} collapsed={collapsed} brokenChild={brokenChild} />
+                        </React.Fragment>
+                    )}
 
                     <React.Fragment>
                         <CardWrapper

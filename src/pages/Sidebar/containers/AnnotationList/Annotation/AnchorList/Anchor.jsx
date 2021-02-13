@@ -86,7 +86,7 @@ class Anchor extends Component {
     }
 
     render() {
-        const { currentUrl, collapsed, url, anchorContent, pageAnchor, brokenAnchor } = this.props;
+        const { currentUrl, collapsed, url, anchorContent, tags, pageAnchor, brokenAnchor } = this.props;
 
         let anchorIcon;
 
@@ -144,13 +144,13 @@ class Anchor extends Component {
                             {anchorContent}
                         </div>
                     ) : (
-                            <div className="AnchorTextContainer">
-                                {anchorContent}
-                                <div className="AnchorUrlContainer" onClick={this.handleExternalAnchor}>
-                                    {url}
-                                </div>
+                        <div className="AnchorTextContainer">
+                            {anchorContent}
+                            <div className="AnchorUrlContainer" onClick={this.handleExternalAnchor}>
+                                {url}
                             </div>
-                        )}
+                        </div>
+                    )}
                 </div>
             );
         }
