@@ -267,8 +267,8 @@
   font-style: italic;
   color:  #6B778C;
   max-height: 200px;
-  overflow: auto;
-
+  overflow: hidden;
+  width: 100%;
   display: flex;
 
 }
@@ -380,10 +380,10 @@
   padding: 2px;
 }
 
-.AnchorTextContainer {
+/* .AnchorTextContainer {
   display: inline-block;
   padding: 0px 0px 0px 8px;
-}
+} */
 
 .AnchorIcon {
   width: 18px;
