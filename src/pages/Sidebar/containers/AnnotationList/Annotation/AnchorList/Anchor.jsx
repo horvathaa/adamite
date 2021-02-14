@@ -12,7 +12,8 @@ import './Anchor.css';
 import TagsInput from 'react-tagsinput';
 import Autosuggest from 'react-autosuggest'
 
-
+// Using autocomplete example from react tags... still not working for some reason
+//https://github.com/olahol/react-tagsinput/blob/master/example/components/autocomplete.js
 function states() {
     return [
         { abbr: 'AL', name: 'Alabama' },
@@ -207,7 +208,6 @@ class Anchor extends Component {
                     props.onChange(e)
                 }
             }
-
             const inputValue = (props.value && props.value.trim().toLowerCase()) || ''
             const inputLength = inputValue.length
             let suggestions = states().filter((state) => {
@@ -325,50 +325,3 @@ class Anchor extends Component {
 }
 
 export default Anchor;
-
-/*
-onlyUnique={true}
- {tags ?
-:
-
-                                <div className="AnchorTagMenu">
-                                    <div className="AnchorTag">
-                                        add tag
-                                </div>
-                                </div>
-                            }
- updateData = () => {
-        let { tags, annotationContent, annotationType } = this.props;
-
-        this.setState({
-            tags, elseContent: annotationContent, annotationType: annotationType === undefined ? "Default" : annotationType
-        })
-    }
-    componentDidMount() {
-        document.addEventListener('keydown', this.keydown, false);
-        this.updateData();
-    }
-
-   componentDidUpdate(prevProps) {
-        if (prevProps.tags !== this.props.tags || prevProps.annotationContent !== this.props.annotationContent || prevProps.type !== this.props.type) {
-            this.updateData();
-        }
-    }
-   componentWillUnmount() {
-        document.removeEventListener('keydown', this.keydown, false);
-    }
-
-   annotationTagHandler = event => {
-
-    }
-    tagsHandleChange = (newTag) => {
-        this.setState({ tags: newTag })
-    }
-<div className="Tag-Container">
-                        <div className="row">
-                            <div className="TextareaContainer">
-                                <TagsInput value={tags} onChange={this.tagsHandleChange} onlyUnique={true} />
-                            </div>
-                        </div>
-                    </div>
-*/
