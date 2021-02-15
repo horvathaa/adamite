@@ -54,7 +54,7 @@ class IssueAnnotation extends Component {
 
     render() {
         const { idx, id, collapsed, author, pin, currentUser, authorId,
-            childAnchor, currentUrl, url, anchor, xpath, tags, annotationType,
+            childAnchor, currentUrl, url, anchor, updateAnchorTags, xpath, tags, annotationType,
             annotationContent, editing, replies, isPrivate, brokenAnchor, brokenChild, brokenReply } = this.props;
         const { replying, showReplies } = this.state;
         let replyCountString = "";
@@ -175,6 +175,7 @@ class IssueAnnotation extends Component {
                             collapsed={collapsed}
                             tags={tags}
                             anchorContent={anchor}
+                            updateAnchorTags={updateAnchorTags}
                             pageAnchor={xpath === null}
                             brokenAnchor={brokenAnchor} />
                     ) : (
@@ -185,6 +186,7 @@ class IssueAnnotation extends Component {
                                 url={url[0]}
                                 collapsed={collapsed}
                                 anchorContent={anchor}
+                                updateAnchorTags={updateAnchorTags}
                                 tags={tags}
                                 pageAnchor={xpath === null}
                                 brokenAnchor={brokenAnchor} />

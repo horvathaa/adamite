@@ -54,7 +54,7 @@ class HighlightAnnotation extends Component {
 
     render() {
         const { idx, id, collapsed, author, pin, currentUser, authorId,
-            childAnchor, currentUrl, url, anchor, xpath, tags, annotationType,
+            childAnchor, currentUrl, url, anchor, updateAnchorTags, xpath, tags, annotationType,
             annotationContent, editing, replies, isPrivate, brokenAnchor, brokenChild, brokenReply } = this.props;
         const { replying, showReplies } = this.state;
         let replyCountString = "";
@@ -185,6 +185,7 @@ class HighlightAnnotation extends Component {
                                 url={url[0]}
                                 collapsed={collapsed}
                                 anchorContent={anchor}
+                                updateAnchorTags={updateAnchorTags}
                                 tags={tags}
                                 pageAnchor={xpath === null}
                                 brokenAnchor={brokenAnchor} />
@@ -197,6 +198,7 @@ class HighlightAnnotation extends Component {
                             tags={tags}
                             annotationType={annotationType}
                             annotationContent={annotationContent}
+                            updateAnchorTags={updateAnchorTags}
                             edit={editing}
                             pageAnnotation={anchor}
                             id={id}

@@ -238,7 +238,22 @@ class Annotation extends Component {
         }
       });
     });
-
+  }
+  updateAnchorTags = (newTags) => {
+    let { content, type, isPrivate } = this.props;
+    console.log("newTags", newTags);
+    chrome.runtime.sendMessage({
+      msg: 'ANNOTATION_UPDATED',
+      from: 'content',
+      payload: {
+        id: this.props.id,
+        type: type.toLowerCase(),
+        content: content,
+        tags: newTags,
+        isPrivate: isPrivate,
+        groups: this.state.annoGroups
+      }
+    });
   }
 
   transmitPinToParent = () => {
@@ -311,6 +326,7 @@ class Annotation extends Component {
         currentUrl={currentUrl}
         url={url}
         anchor={anchor}
+        updateAnchorTags={this.updateAnchorTags}
         xpath={xpath}
         tags={tags}
         annotationType={annotationType}
@@ -347,6 +363,7 @@ class Annotation extends Component {
         currentUrl={currentUrl}
         url={url}
         anchor={anchor}
+        updateAnchorTags={this.updateAnchorTags}
         xpath={xpath}
         tags={tags}
         annotationType={annotationType}
@@ -385,6 +402,7 @@ class Annotation extends Component {
           currentUrl={currentUrl}
           url={url}
           anchor={anchor}
+          updateAnchorTags={this.updateAnchorTags}
           xpath={xpath}
           tags={tags}
           annotationType={annotationType}
@@ -423,6 +441,7 @@ class Annotation extends Component {
           currentUrl={currentUrl}
           url={url}
           anchor={anchor}
+          updateAnchorTags={this.updateAnchorTags}
           xpath={xpath}
           tags={tags}
           annotationType={annotationType}
@@ -464,6 +483,7 @@ class Annotation extends Component {
           currentUrl={currentUrl}
           url={url}
           anchor={anchor}
+          updateAnchorTags={this.updateAnchorTags}
           xpath={xpath}
           tags={tags}
           annotationType={annotationType}

@@ -94,7 +94,7 @@ class QuestionAnswerAnnotation extends Component {
 
     render() {
         const { idx, id, collapsed, author, pin, currentUser, authorId,
-            childAnchor, currentUrl, url, anchor, xpath, tags, annotationType,
+            childAnchor, currentUrl, url, anchor, updateAnchorTags, xpath, tags, annotationType,
             annotationContent, editing, replies, isPrivate, isClosed, howClosed, adopted, brokenAnchor, brokenChild, brokenReply } = this.props;
         const { replying, showReplies } = this.state;
         const closedStrings = ['Unanswered Question', 'No Longer Relevant', 'Answered'];
@@ -246,6 +246,7 @@ class QuestionAnswerAnnotation extends Component {
                             url={url[0]}
                             collapsed={collapsed}
                             anchorContent={anchor}
+                            updateAnchorTags={updateAnchorTags}
                             tags={tags}
                             pageAnchor={xpath === null}
                             brokenAnchor={brokenAnchor} />
@@ -257,6 +258,7 @@ class QuestionAnswerAnnotation extends Component {
                                 url={url[0]}
                                 collapsed={collapsed}
                                 anchorContent={anchor}
+                                updateAnchorTags={updateAnchorTags}
                                 tags={tags}
                                 pageAnchor={xpath === null}
                                 brokenAnchor={brokenAnchor} />

@@ -53,7 +53,7 @@ class ToDoAnnotation extends Component {
 
     render() {
         const { idx, id, collapsed, author, pin, currentUser, authorId,
-            childAnchor, currentUrl, url, anchor, xpath, tags, annotationType,
+            childAnchor, currentUrl, url, anchor, updateAnchorTags, xpath, tags, annotationType,
             annotationContent, editing, replies, isPrivate, brokenAnchor, brokenReply, brokenChild } = this.props;
         const { replying, showReplies } = this.state;
         let replyCountString = "";
@@ -174,6 +174,7 @@ class ToDoAnnotation extends Component {
                             collapsed={collapsed}
                             tags={tags}
                             anchorContent={anchor}
+                            updateAnchorTags={updateAnchorTags}
                             pageAnchor={xpath === null}
                             brokenAnchor={brokenAnchor} />
                     ) : (
@@ -185,6 +186,7 @@ class ToDoAnnotation extends Component {
                                 collapsed={collapsed}
                                 tags={tags}
                                 anchorContent={anchor}
+                                updateAnchorTags={updateAnchorTags}
                                 pageAnchor={xpath === null}
                                 brokenAnchor={brokenAnchor} />
                             <AnchorList childAnchor={childAnchor} currentUrl={currentUrl} collapsed={collapsed} brokenChild={brokenChild} />
@@ -196,6 +198,7 @@ class ToDoAnnotation extends Component {
                             tags={tags}
                             annotationType={annotationType}
                             annotationContent={annotationContent}
+
                             edit={editing}
                             pageAnnotation={anchor}
                             id={id}

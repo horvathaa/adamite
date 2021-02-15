@@ -55,7 +55,7 @@ class DefaultAnnotation extends Component {
 
     render() {
         const { idx, id, collapsed, author, pin, currentUser, authorId,
-            childAnchor, currentUrl, url, anchor, xpath, tags, annotationType,
+            childAnchor, currentUrl, url, anchor, updateAnchorTags, xpath, tags, annotationType,
             annotationContent, editing, replies, isPrivate, brokenAnchor, brokenChild, brokenReply } = this.props;
         const { replying, showReplies } = this.state;
         let replyCountString = "";
@@ -174,6 +174,7 @@ class DefaultAnnotation extends Component {
                             currentUrl={currentUrl}
                             url={url[0]}
                             collapsed={collapsed}
+                            updateAnchorTags={updateAnchorTags}
                             tags={tags}
                             anchorContent={anchor}
                             pageAnchor={xpath === null}
@@ -186,6 +187,7 @@ class DefaultAnnotation extends Component {
                                 url={url[0]}
                                 collapsed={collapsed}
                                 anchorContent={anchor}
+                                updateAnchorTags={updateAnchorTags}
                                 tags={tags}
                                 pageAnchor={xpath === null}
                                 brokenAnchor={brokenAnchor} />

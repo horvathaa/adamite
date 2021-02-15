@@ -20,8 +20,13 @@
 
 .AnchorTagMenu{
     display: flex;
-    justify-content: space-between;
+    /*justify-content: space-between;*/
     margin: 8px 5px 0px 8px;
+}
+.AnchorTagsList{
+  display: flex;
+  flex-grow: 5;
+  overflow: hidden;
 }
 .AnchorTag{
     border: 1px solid gray;
@@ -29,8 +34,13 @@
     padding:2px 5px;
     font-style: normal;
     font-size: smaller;
+    margin-right:2px ;
 }
-
+.AnchorEdit{
+  padding:2px 5px;
+  font-style: normal;
+  font-size: smaller;
+}
 .react-tagsinput {
     background-color: #dad9d926;
     border: 1px solid #ccc;

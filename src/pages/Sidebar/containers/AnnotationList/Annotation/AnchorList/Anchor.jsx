@@ -14,101 +14,24 @@ import Autosuggest from 'react-autosuggest'
 
 // Using autocomplete example from react tags... still not working for some reason
 //https://github.com/olahol/react-tagsinput/blob/master/example/components/autocomplete.js
-function states() {
-    return [
-        { abbr: 'AL', name: 'Alabama' },
-        { abbr: 'AK', name: 'Alaska' },
-        { abbr: 'AZ', name: 'Arizona' },
-        { abbr: 'AR', name: 'Arkansas' },
-        { abbr: 'CA', name: 'California' },
-        { abbr: 'CO', name: 'Colorado' },
-        { abbr: 'CT', name: 'Connecticut' },
-        { abbr: 'DE', name: 'Delaware' },
-        { abbr: 'FL', name: 'Florida' },
-        { abbr: 'GA', name: 'Georgia' },
-        { abbr: 'HI', name: 'Hawaii' },
-        { abbr: 'ID', name: 'Idaho' },
-        { abbr: 'IL', name: 'Illinois' },
-        { abbr: 'IN', name: 'Indiana' },
-        { abbr: 'IA', name: 'Iowa' },
-        { abbr: 'KS', name: 'Kansas' },
-        { abbr: 'KY', name: 'Kentucky' },
-        { abbr: 'LA', name: 'Louisiana' },
-        { abbr: 'ME', name: 'Maine' },
-        { abbr: 'MD', name: 'Maryland' },
-        { abbr: 'MA', name: 'Massachusetts' },
-        { abbr: 'MI', name: 'Michigan' },
-        { abbr: 'MN', name: 'Minnesota' },
-        { abbr: 'MS', name: 'Mississippi' },
-        { abbr: 'MO', name: 'Missouri' },
-        { abbr: 'MT', name: 'Montana' },
-        { abbr: 'NE', name: 'Nebraska' },
-        { abbr: 'NV', name: 'Nevada' },
-        { abbr: 'NH', name: 'New Hampshire' },
-        { abbr: 'NJ', name: 'New Jersey' },
-        { abbr: 'NM', name: 'New Mexico' },
-        { abbr: 'NY', name: 'New York' },
-        { abbr: 'NC', name: 'North Carolina' },
-        { abbr: 'ND', name: 'North Dakota' },
-        { abbr: 'OH', name: 'Ohio' },
-        { abbr: 'OK', name: 'Oklahoma' },
-        { abbr: 'OR', name: 'Oregon' },
-        { abbr: 'PA', name: 'Pennsylvania' },
-        { abbr: 'RI', name: 'Rhode Island' },
-        { abbr: 'SC', name: 'South Carolina' },
-        { abbr: 'SD', name: 'South Dakota' },
-        { abbr: 'TN', name: 'Tennessee' },
-        { abbr: 'TX', name: 'Texas' },
-        { abbr: 'UT', name: 'Utah' },
-        { abbr: 'VT', name: 'Vermont' },
-        { abbr: 'VA', name: 'Virginia' },
-        { abbr: 'WA', name: 'Washington' },
-        { abbr: 'WV', name: 'West Virginia' },
-        { abbr: 'WI', name: 'Wisconsin' },
-        { abbr: 'WY', name: 'Wyoming' }
-    ]
-}
+
 // helper method from
 // https://stackoverflow.com/questions/2540969/remove-querystring-from-url
 function getPathFromUrl(url) {
     return url.split(/[?#]/)[0];
 }
-function getSuggestionValue(suggestion) {
-    return suggestion.name;
-}
 
-function renderSuggestion(suggestion) {
-    console.log(suggestion);
-    return (
-        <span>{suggestion.name}</span>
-    );
-}
-function escapeRegexCharacters(str) {
-    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-function getSuggestions(value) {
-
-    const escapedValue = escapeRegexCharacters(value.trim());
-
-    if (escapedValue === '') {
-        return [];
-    }
-    const inputLength = escapedValue.length
-    const regex = new RegExp('^' + escapedValue, 'i');
-    let suggestions = states().filter((state) => {
-        return state.name.toLowerCase().slice(0, inputLength) === escapedValue
-    })
-    return suggestions;
-}
 
 class Anchor extends Component {
 
     state = {
         broken: false,
         hovering: false,
+        editMode: false,
         tags: this.props.tags !== undefined && this.props.tags.length === 0 ? [] : this.props.tags,
-        suggestions: [],
+
     }
+
     updateData = () => {
         let { tags } = this.props;
         this.setState({ tags })
@@ -124,12 +47,9 @@ class Anchor extends Component {
     componentWillUnmount() {
         document.removeEventListener('keydown', this.keydown, false);
     }
-    tagsHandleChange = (newTag) => {
-        this.setState({ tags: newTag })
-    }
-    handleChange(tags) {
-        this.setState({ tags })
-    }
+    tagsHandleChange = (newTag) => { this.setState({ tags: newTag }) }
+    handleChange(tags) { this.setState({ tags }) }
+
     handleOnLocalOnClick = () => {
         if (this.props.id === null) {
             return;
@@ -166,7 +86,8 @@ class Anchor extends Component {
                 );
             }
         });
-        this.setState({ hovering: true });
+        this.setState({ hovering: true, });
+
     }
 
     handleOnLocalOnMouseLeave = () => {
@@ -186,19 +107,162 @@ class Anchor extends Component {
                 );
             }
         });
-        this.setState({ hovering: false });
+        this.setState({ hovering: false, editMode: false });
     }
-
-    // handleOnClick = ()
+    handleOnEditDone = () => {
+        if (this.props.tags !== this.state.tags) {
+            this.props.updateAnchorTags(this.state.tags);
+        }
+        this.setState({ editMode: false });
+    }
 
     handleExternalAnchor = () => {
         chrome.runtime.sendMessage({ msg: "LOAD_EXTERNAL_ANCHOR", from: 'content', payload: this.props.url });
     }
 
+
+
+    getAnchorIcon() {
+
+        const { currentUrl, url, pageAnchor, brokenAnchor, } = this.props;
+
+        if (pageAnchor) {
+            return <BsFileEarmarkText className="AnchorIcon" />;
+        }
+
+        if (brokenAnchor && url === currentUrl) {
+            return <img src={anchorBroken} className="AnchorIcon" alt='anchor broken' />;
+        }
+        else if (url === currentUrl) {
+            return <img src={anchorOnPage} className="AnchorIcon" alt='anchor on page' />;
+        }
+        else {
+            return <img src={anchorOnOtherPage} className="AnchorIcon" alt='anchor on other page' />;
+        }
+    }
+    getBrokenAnchorComponent(anchorContent, anchorIcon, collapsed) {
+        return (
+            <div
+                className={classNames({
+                    AnchorContainer: true,
+                    Truncated: collapsed
+                })}
+
+            >
+                <Tooltip title={"broken anchor"} aria-label="annotation count">
+                    <div className="AnchorIconContainer">
+                        {anchorIcon}
+                    </div>
+                </Tooltip>
+
+                <div className="AnchorTextContainer">
+                    {anchorContent}
+                </div>
+            </div>
+        )
+    }
+
+
+
+
     render() {
         const { currentUrl, collapsed, url, anchorContent, pageAnchor, brokenAnchor } = this.props;
         const { tags } = this.state;
-        function autocompleteRenderInput({ addTag, ...props }) {
+        let anchorIcon = this.getAnchorIcon();
+        if (brokenAnchor && url === currentUrl && !pageAnchor) {
+            return this.getBrokenAnchorComponent(anchorContent, anchorIcon, collapsed);
+        }
+        else {
+            let textClass = collapsed ? "AnchorTextContainer" : "AnchorTextContainerExpanded";
+            return (
+                <div
+                    className={classNames({ AnchorContainer: true, Truncated: collapsed })}
+                    onMouseEnter={this.handleOnLocalOnMouseEnter}
+                    onMouseLeave={this.handleOnLocalOnMouseLeave}
+                    onClick={(pageAnchor || url !== currentUrl) ? this.handleExternalAnchor : this.handleOnLocalOnClick}
+                >
+                    <div className="AnchorIconContainer">
+                        {anchorIcon}
+                    </div>
+
+                    {
+                        url.includes(currentUrl) && !pageAnchor ? this.state.hovering ?
+                            this.state.editMode ?
+                                (
+                                    <div className={textClass}>
+                                        <div className={textClass}>
+                                            {anchorContent}
+                                        </div>
+                                        <div className="AnchorTagMenu">
+                                            <div className="AnchorTagsList">
+                                                <TagsInput value={tags ?? []} onChange={this.handleChange.bind(this)} />
+                                            </div>
+                                            <div className="AnchorTagEdit"
+                                                onClick={this.handleOnEditDone}
+                                            >
+                                                done
+                                    </div>
+
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className={textClass}>
+                                        <div className={textClass}>
+                                            {anchorContent}
+                                        </div>
+                                        {tags &&
+                                            <div className="AnchorTagMenu">
+                                                <div className="AnchorTagsList">
+                                                    {tags.map((t) =>
+                                                        <div className="AnchorTag">
+                                                            {t}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="AnchorTagEdit" onClick={() => { this.setState({ editMode: true }) }}>
+                                                    edit
+                                                </div>
+
+                                            </div>
+                                        }
+                                    </div>
+                                ) : (
+                                <div className={textClass}>
+                                    <div className={textClass}>
+                                        {anchorContent}
+                                    </div>
+                                    {tags &&
+                                        <div className="AnchorTagMenu">
+                                            <div className="AnchorTagsList">
+                                                {tags.map((t) =>
+                                                    <div className="AnchorTag">
+                                                        {t}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            ) : (
+                            <div className={textClass}>
+                                {anchorContent}
+                                <div className="AnchorUrlContainer" onClick={this.handleExternalAnchor}>
+                                    {url}
+                                </div>
+                            </div>
+                        )}
+                </div>
+            );
+        }
+    }
+}
+
+export default Anchor;
+
+
+/*
+
+ function autocompleteRenderInput({ addTag, ...props }) {
             console.log("ppp")
             //console.log(props)
             const handleOnChange = (e, { newValue, method }) => {
@@ -236,92 +300,31 @@ class Anchor extends Component {
                 />
             )
         }
-        let anchorIcon;
-
-        if (pageAnchor) {
-            anchorIcon = <BsFileEarmarkText className="AnchorIcon" />;
-        }
-
-        else if (brokenAnchor && url === currentUrl) {
-            anchorIcon = <img src={anchorBroken} className="AnchorIcon" alt='anchor broken' />;
-        }
-        else if (url === currentUrl) {
-            anchorIcon = <img src={anchorOnPage} className="AnchorIcon" alt='anchor on page' />;
-        }
-        else {
-            anchorIcon = <img src={anchorOnOtherPage} className="AnchorIcon" alt='anchor on other page' />;
-        }
-
-        if (brokenAnchor && url === currentUrl && !pageAnchor) {
-            return (
-                <div
-                    className={classNames({
-                        AnchorContainer: true,
-                        Truncated: collapsed
-                    })}
-
-                >
-                    <Tooltip title={"broken anchor"} aria-label="annotation count">
-                        <div className="AnchorIconContainer">
-                            {anchorIcon}
-                        </div>
-                    </Tooltip>
-
-                    <div className="AnchorTextContainer">
-                        {anchorContent}
-                    </div>
-                </div>
-            )
-        }
-        else {
-            let textClass = collapsed ? "AnchorTextContainer" : "AnchorTextContainerExpanded";
-            return (
-                <div
-                    className={classNames({
-                        AnchorContainer: true,
-                        Truncated: collapsed
-                    })}
-                    onMouseEnter={this.handleOnLocalOnMouseEnter}
-                    onMouseLeave={this.handleOnLocalOnMouseLeave}
-                    onClick={(pageAnchor || url !== currentUrl) ? this.handleExternalAnchor : this.handleOnLocalOnClick}
-                >
-                    <div className="AnchorIconContainer">
-                        {anchorIcon}
-                    </div>
-                    {url.includes(currentUrl) && !pageAnchor ? this.state.hovering ? (
-                        <div className={textClass}>
-                            <div className={textClass}>
-                                {anchorContent}
-                            </div>
-                            <TagsInput renderInput={autocompleteRenderInput} value={tags ?? []} onChange={this.handleChange.bind(this)} />
-                        </div>
-                    ) : (
-
-                        <div className={textClass}>
-                            {anchorContent}
-                            {tags && tags[0] &&
-                                <div className="AnchorTagMenu">
-                                    <div className="AnchorTag">
-                                        {tags[0]}
-                                    </div>
-
-                                </div>
-                            }
-                        </div>
-                    ) : (
-                        <div className={textClass}>
-                            {anchorContent}
-                            <div className="AnchorUrlContainer" onClick={this.handleExternalAnchor}>
-                                {url}
-                            </div>
-                        </div>
-                    )}
-                </div>
-            );
-        }
-
-
-    }
+function getSuggestionValue(suggestion) {
+    return suggestion.name;
 }
 
-export default Anchor;
+function renderSuggestion(suggestion) {
+    console.log(suggestion);
+    return (
+        <span>{suggestion.name}</span>
+    );
+}
+function escapeRegexCharacters(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+function getSuggestions(value) {
+
+    const escapedValue = escapeRegexCharacters(value.trim());
+
+    if (escapedValue === '') {
+        return [];
+    }
+    const inputLength = escapedValue.length
+    const regex = new RegExp('^' + escapedValue, 'i');
+    let suggestions = states().filter((state) => {
+        return state.name.toLowerCase().slice(0, inputLength) === escapedValue
+    })
+    return suggestions;
+}
+*/
