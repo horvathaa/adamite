@@ -30,6 +30,18 @@ function getPosition(element) {
     return { x: xPosition, y: yPosition };
 }
 
+function removeDuplicates(idArray) {
+    const flags = new Set();
+    const annotations = idArray.filter(highlight => {
+        if (flags.has(highlight.id)) {
+            return false;
+        }
+        flags.add(highlight.id);
+        return true;
+    });
+    return annotations;
+}
+
 document.addEventListener('mouseup', event => {
     transmitMessage({
         msg: 'REQUEST_SIDEBAR_STATUS',
@@ -92,8 +104,13 @@ let messagesIn = {
         // Ensure that nothing is unintentionally selected 
         let sel = window.getSelection();
         sel.removeAllRanges();
-        let spanNames = Array.from(document.querySelectorAll('.highlight-adamite-annotation')).map(s => s.getAttribute('name'));
-        sendResponse({ spanNames })
+        let kv = [];
+        document.querySelectorAll('.highlight-adamite-annotation').forEach(s => {
+            kv.push({ id: s.getAttribute('name'), y: getPosition(s).y, x: getPosition(s).x })
+        })
+        kv = removeDuplicates(kv);
+        // let spanNames = Array.from(document.querySelectorAll('.highlight-adamite-annotation')).map(s => s.getAttribute('name'));
+        sendResponse({ spanNames: kv })
     },
     'ANNOTATION_FOCUS_ONCLICK': (request, sender, sendResponse) => {
         let findSpan = getSpanFromRequest(request);
