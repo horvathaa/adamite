@@ -344,7 +344,43 @@ class Sidebar extends React.Component {
         request.msg === 'CONTENT_UPDATED'
       ) {
         let annotations = request.payload;
-        this.setState({ url: request.url, annotations });
+        this.setState({ url: request.url });
+        chrome.runtime.sendMessage({
+          msg: 'REQUEST_SIDEBAR_STATUS',
+          from: 'content'
+        }, response => {
+          console.log('res', response)
+          // chrome.storage.local.get(['sidebarOpen'], (result) => {
+          // to-do ; change sidebarOpen such that it's a kv of tabId and whether or not the sidebar is open
+          if (response.sidebarOpen !== undefined && response.sidebarOpen) {
+            chrome.tabs.sendMessage(request.tabId, {
+              msg: 'HIGHLIGHT_ANNOTATIONS',
+              payload: request.payload,
+              url: request.url
+            }, response => {
+              let spanNames = response.spanNames;
+              spanNames = spanNames.map((obj) => {
+                return obj.id.includes('-') ? obj.id.substring(0, obj.id.indexOf('-')) : obj.id;
+              });
+              spanNames.sort((a, b) => {
+                return a.y !== b.y ? a.y - b.y : a.x - b.x
+              })
+              annotations.sort((a, b) => {
+                const index1 = spanNames.findIndex(obj => obj === a.id);
+                const index2 = spanNames.findIndex(obj => obj === b.id)
+                return ((index1 > -1 ? index1 : Infinity) - (index2 > -1 ? index2 : Infinity))
+              });
+              this.setState({ annotations, pageLocationSort: annotations })
+              this.requestFilterUpdate();
+            });
+          }
+          else {
+            this.setState({ annotations });
+          }
+          // })
+        })
+
+
         chrome.browserAction.setBadgeText({ tabId: request.tabId, text: request.payload.length ? String(request.payload.length) : "0" });
       }
       else if (request.msg === 'SORT_LIST' && request.from === 'background') {

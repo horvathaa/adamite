@@ -1,6 +1,6 @@
 import '../../../assets/img/iframe-background.gif';
 
-let sidebarOpen = true; // open -> true  |  close -> false
+let sidebarOpen = false; // open -> true  |  close -> false
 
 /**
  * Sidebar open
@@ -62,7 +62,7 @@ export const toggleSidebar = (toStatus = null) => {
   } else {
     sidebarOpen = toStatus;
   }
-  persistSidebarOpenStatus(sidebarOpen);
+  // persistSidebarOpenStatus(sidebarOpen);
   let sidebarOpenCopy = sidebarOpen;
   chrome.tabs.query(
     {
