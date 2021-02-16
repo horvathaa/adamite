@@ -107,7 +107,7 @@ class Anchor extends Component {
                 );
             }
         });
-        this.setState({ hovering: false, editMode: false });
+        this.setState({ hovering: false, });
     }
     handleOnEditDone = () => {
         if (this.props.tags !== this.state.tags) {
@@ -186,7 +186,7 @@ class Anchor extends Component {
                     </div>
 
                     {
-                        url.includes(currentUrl) && !pageAnchor ? this.state.hovering ?
+                        url.includes(currentUrl) && !pageAnchor ?
                             this.state.editMode ?
                                 (
                                     <div className={textClass}>
@@ -205,7 +205,7 @@ class Anchor extends Component {
 
                                         </div>
                                     </div>
-                                ) : (
+                                ) : this.state.hovering ? (
                                     <div className={textClass}>
                                         <div className={textClass}>
                                             {anchorContent}
@@ -227,30 +227,30 @@ class Anchor extends Component {
                                         }
                                     </div>
                                 ) : (
-                                <div className={textClass}>
                                     <div className={textClass}>
-                                        {anchorContent}
-                                    </div>
-                                    {tags &&
-                                        <div className="AnchorTagMenu">
-                                            <div className="AnchorTagsList">
-                                                {tags.map((t) =>
-                                                    <div className="AnchorTag">
-                                                        {t}
-                                                    </div>
-                                                )}
-                                            </div>
+                                        <div className={textClass}>
+                                            {anchorContent}
                                         </div>
-                                    }
+                                        {tags &&
+                                            <div className="AnchorTagMenu">
+                                                <div className="AnchorTagsList">
+                                                    {tags.map((t) =>
+                                                        <div className="AnchorTag">
+                                                            {t}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                ) : (
+                                <div className={textClass}>
+                                    {anchorContent}
+                                    <div className="AnchorUrlContainer" onClick={this.handleExternalAnchor}>
+                                        {url}
+                                    </div>
                                 </div>
-                            ) : (
-                            <div className={textClass}>
-                                {anchorContent}
-                                <div className="AnchorUrlContainer" onClick={this.handleExternalAnchor}>
-                                    {url}
-                                </div>
-                            </div>
-                        )}
+                            )}
                 </div>
             );
         }
