@@ -54,7 +54,7 @@ class HighlightAnnotation extends Component {
 
     render() {
         const { idx, id, collapsed, author, pin, currentUser, authorId,
-            childAnchor, currentUrl, url, anchor, updateAnchorTags, xpath, tags, annotationType,
+            childAnchor, currentUrl, url, anchor, updateAnchorTags, deleteAnchor, xpath, tags, annotationType,
             annotationContent, editing, replies, isPrivate, brokenAnchor, brokenChild, brokenReply } = this.props;
         const { replying, showReplies } = this.state;
         let replyCountString = "";
@@ -175,6 +175,8 @@ class HighlightAnnotation extends Component {
                             collapsed={collapsed}
                             tags={tags}
                             anchorContent={anchor}
+                            updateAnchorTags={updateAnchorTags}
+                            isCurrentUser={currentUser.uid === authorId}
                             pageAnchor={xpath === null}
                             brokenAnchor={brokenAnchor} />
                     ) : (
@@ -186,10 +188,19 @@ class HighlightAnnotation extends Component {
                                 collapsed={collapsed}
                                 anchorContent={anchor}
                                 updateAnchorTags={updateAnchorTags}
+                                isCurrentUser={currentUser.uid === authorId}
                                 tags={tags}
                                 pageAnchor={xpath === null}
                                 brokenAnchor={brokenAnchor} />
-                            <AnchorList childAnchor={childAnchor} currentUrl={currentUrl} collapsed={collapsed} brokenChild={brokenChild} />
+                            <AnchorList
+                                childAnchor={childAnchor}
+                                currentUrl={currentUrl}
+                                collapsed={collapsed}
+                                brokenChild={brokenChild}
+                                updateAnchorTags={updateAnchorTags}
+                                isCurrentUser={currentUser.uid === authorId}
+                                deleteAnchor={deleteAnchor}
+                            />
                         </React.Fragment>
                     )}
 

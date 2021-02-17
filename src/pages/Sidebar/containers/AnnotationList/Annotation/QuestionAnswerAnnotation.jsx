@@ -94,7 +94,7 @@ class QuestionAnswerAnnotation extends Component {
 
     render() {
         const { idx, id, collapsed, author, pin, currentUser, authorId,
-            childAnchor, currentUrl, url, anchor, updateAnchorTags, xpath, tags, annotationType,
+            childAnchor, currentUrl, url, anchor, updateAnchorTags, deleteAnchor, xpath, tags, annotationType,
             annotationContent, editing, replies, isPrivate, isClosed, howClosed, adopted, brokenAnchor, brokenChild, brokenReply } = this.props;
         const { replying, showReplies } = this.state;
         const closedStrings = ['Unanswered Question', 'No Longer Relevant', 'Answered'];
@@ -247,6 +247,7 @@ class QuestionAnswerAnnotation extends Component {
                             collapsed={collapsed}
                             anchorContent={anchor}
                             updateAnchorTags={updateAnchorTags}
+                            isCurrentUser={currentUser.uid === authorId}
                             tags={tags}
                             pageAnchor={xpath === null}
                             brokenAnchor={brokenAnchor} />
@@ -259,10 +260,19 @@ class QuestionAnswerAnnotation extends Component {
                                 collapsed={collapsed}
                                 anchorContent={anchor}
                                 updateAnchorTags={updateAnchorTags}
+                                isCurrentUser={currentUser.uid === authorId}
                                 tags={tags}
                                 pageAnchor={xpath === null}
                                 brokenAnchor={brokenAnchor} />
-                            <AnchorList childAnchor={childAnchor} currentUrl={currentUrl} collapsed={collapsed} brokenChild={brokenChild} />
+                            <AnchorList
+                                childAnchor={childAnchor}
+                                currentUrl={currentUrl}
+                                collapsed={collapsed}
+                                brokenChild={brokenChild}
+                                updateAnchorTags={updateAnchorTags}
+                                isCurrentUser={currentUser.uid === authorId}
+                                deleteAnchor={deleteAnchor}
+                            />
                         </React.Fragment>
                     )}
 

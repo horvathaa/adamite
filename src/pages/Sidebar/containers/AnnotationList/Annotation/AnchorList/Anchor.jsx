@@ -6,6 +6,8 @@ import { BsFileEarmarkText } from 'react-icons/bs';
 import anchorOnPage from '../../../../../../assets/img/SVGs/Anchor_onpage.svg';
 import anchorOnOtherPage from '../../../../../../assets/img/SVGs/Anchor_otherpage_1.svg';
 import anchorBroken from '../../../../../../assets/img/SVGs/Anchor_broken.svg';
+import edit from '../../../../../../assets/img/SVGs/edit.svg';
+import trash from '../../../../../../assets/img/SVGs/delet.svg';
 import Tooltip from '@material-ui/core/Tooltip';
 import '../Annotation.css';
 import './Anchor.css';
@@ -29,7 +31,8 @@ class Anchor extends Component {
         hovering: false,
         editMode: false,
         tags: this.props.tags !== undefined && this.props.tags.length === 0 ? [] : this.props.tags,
-
+        isCurrentUser: this.props.isCurrentUser,
+        childId: this.props.replyId !== undefined ? this.props.replyId : null
     }
 
     updateData = () => {
@@ -70,6 +73,7 @@ class Anchor extends Component {
     }
 
     handleOnLocalOnMouseEnter = () => {
+
         if (this.props.id === null) {
             return;
         }
@@ -87,6 +91,7 @@ class Anchor extends Component {
             }
         });
         this.setState({ hovering: true, });
+        console.log(this.state.isCurrentUser, !this.props.collapsed, this.state.hovering);
 
     }
 
@@ -111,10 +116,18 @@ class Anchor extends Component {
     }
     handleOnEditDone = () => {
         if (this.props.tags !== this.state.tags) {
-            this.props.updateAnchorTags(this.state.tags);
+            this.props.updateAnchorTags({ newTags: this.state.tags, childId: this.state.childId });
         }
         this.setState({ editMode: false });
     }
+    handleDelete = () => {
+        // Only allow for child anchors to be deleted
+        if (this.state.childId !== null) {
+            this.props.deleteAnchor({ childId: this.state.childId });
+        }
+        //this.setState({ editMode: false });
+    }
+
 
     handleExternalAnchor = () => {
         chrome.runtime.sendMessage({ msg: "LOAD_EXTERNAL_ANCHOR", from: 'content', payload: this.props.url });
@@ -202,10 +215,9 @@ class Anchor extends Component {
                                             >
                                                 done
                                     </div>
-
                                         </div>
                                     </div>
-                                ) : this.state.hovering ? (
+                                ) : (this.state.hovering && this.state.isCurrentUser && !collapsed) ? (
                                     <div className={textClass}>
                                         <div className={textClass}>
                                             {anchorContent}
@@ -219,10 +231,17 @@ class Anchor extends Component {
                                                         </div>
                                                     )}
                                                 </div>
-                                                <div className="AnchorTagEdit" onClick={() => { this.setState({ editMode: true }) }}>
-                                                    edit
-                                                </div>
-
+                                                <Tooltip title={"Edit Anchor Tags"} aria-label="edit tooltip">
+                                                    <div className="TopIconContainer" >
+                                                        <img src={edit} alt="edit annotation" className="profile" id="edit" onClick={() => { this.setState({ editMode: true }) }} />
+                                                    </div>
+                                                </Tooltip>
+                                                {this.state.childId &&
+                                                    <Tooltip title={"Delete Anchor"} aria-label="delete annotation tooltip">
+                                                        <div className="TopIconContainer" >
+                                                            <img src={trash} alt="delete annotation" className="profile" id="trash" onClick={this.handleDelete} />
+                                                        </div>
+                                                    </Tooltip>}
                                             </div>
                                         }
                                     </div>

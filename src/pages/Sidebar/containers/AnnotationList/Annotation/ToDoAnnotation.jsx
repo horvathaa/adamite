@@ -53,7 +53,7 @@ class ToDoAnnotation extends Component {
 
     render() {
         const { idx, id, collapsed, author, pin, currentUser, authorId,
-            childAnchor, currentUrl, url, anchor, updateAnchorTags, xpath, tags, annotationType,
+            childAnchor, currentUrl, url, anchor, updateAnchorTags, deleteAnchor, xpath, tags, annotationType,
             annotationContent, editing, replies, isPrivate, brokenAnchor, brokenReply, brokenChild } = this.props;
         const { replying, showReplies } = this.state;
         let replyCountString = "";
@@ -175,6 +175,7 @@ class ToDoAnnotation extends Component {
                             tags={tags}
                             anchorContent={anchor}
                             updateAnchorTags={updateAnchorTags}
+                            isCurrentUser={currentUser.uid === authorId}
                             pageAnchor={xpath === null}
                             brokenAnchor={brokenAnchor} />
                     ) : (
@@ -187,9 +188,18 @@ class ToDoAnnotation extends Component {
                                 tags={tags}
                                 anchorContent={anchor}
                                 updateAnchorTags={updateAnchorTags}
+                                isCurrentUser={currentUser.uid === authorId}
                                 pageAnchor={xpath === null}
                                 brokenAnchor={brokenAnchor} />
-                            <AnchorList childAnchor={childAnchor} currentUrl={currentUrl} collapsed={collapsed} brokenChild={brokenChild} />
+                            <AnchorList
+                                childAnchor={childAnchor}
+                                currentUrl={currentUrl}
+                                collapsed={collapsed}
+                                brokenChild={brokenChild}
+                                updateAnchorTags={updateAnchorTags}
+                                isCurrentUser={currentUser.uid === authorId}
+                                deleteAnchor={deleteAnchor}
+                            />
                         </React.Fragment>
                     )}
 

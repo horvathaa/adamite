@@ -239,7 +239,7 @@ class Annotation extends Component {
       });
     });
   }
-  updateAnchorTags = (newTags) => {
+  updateAnchorTags = ({ newTags, childId = null }) => {
     let { content, type, isPrivate } = this.props;
     console.log("newTags", newTags);
     chrome.runtime.sendMessage({
@@ -254,6 +254,9 @@ class Annotation extends Component {
         groups: this.state.annoGroups
       }
     });
+  }
+  deleteAnchor = ({ childId = null }) => {
+    console.log("delete child anchor", childId);
   }
 
   transmitPinToParent = () => {
@@ -327,6 +330,7 @@ class Annotation extends Component {
         url={url}
         anchor={anchor}
         updateAnchorTags={this.updateAnchorTags}
+        deleteAnchor={this.deleteAnchor}
         xpath={xpath}
         tags={tags}
         annotationType={annotationType}
@@ -364,6 +368,7 @@ class Annotation extends Component {
         url={url}
         anchor={anchor}
         updateAnchorTags={this.updateAnchorTags}
+        deleteAnchor={this.deleteAnchor}
         xpath={xpath}
         tags={tags}
         annotationType={annotationType}
@@ -403,6 +408,7 @@ class Annotation extends Component {
           url={url}
           anchor={anchor}
           updateAnchorTags={this.updateAnchorTags}
+          deleteAnchor={this.deleteAnchor}
           xpath={xpath}
           tags={tags}
           annotationType={annotationType}
@@ -442,6 +448,7 @@ class Annotation extends Component {
           url={url}
           anchor={anchor}
           updateAnchorTags={this.updateAnchorTags}
+          deleteAnchor={this.deleteAnchor}
           xpath={xpath}
           tags={tags}
           annotationType={annotationType}
@@ -484,6 +491,7 @@ class Annotation extends Component {
           url={url}
           anchor={anchor}
           updateAnchorTags={this.updateAnchorTags}
+          deleteAnchor={this.deleteAnchor}
           xpath={xpath}
           tags={tags}
           annotationType={annotationType}

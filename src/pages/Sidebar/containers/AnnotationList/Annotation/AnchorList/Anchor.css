@@ -17,7 +17,12 @@
   width: 100%;
   padding: 0px 0px 0px 8px;
 }
-
+.profile {
+  width: 20px;
+  height: 20px;
+  color: #6B778C;
+  cursor: pointer;
+}
 .AnchorTagMenu{
     display: flex;
     /*justify-content: space-between;*/

@@ -28,9 +28,13 @@ class AnchorList extends Component {
                             currentUrl={currentUrl}
                             collapsed={collapsed}
                             url={childAnch.url}
+                            tags={childAnch.tags ?? []}
                             anchorContent={childAnch.anchor}
                             pageAnchor={childAnch.xpath === null}
                             brokenAnchor={this.props.brokenChild.includes(childAnch.id)}
+                            updateAnchorTags={this.props.updateAnchorTags}
+                            isCurrentUser={this.props.isCurrentUser}
+                            deleteAnchor={this.props.deleteAnchor}
                         />
                     </li>
                     );
