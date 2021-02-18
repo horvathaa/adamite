@@ -14,6 +14,7 @@ export function getPathFromUrl(url) {
 
 const isContent = (res) => res.from === 'content';
 let clicked = false;
+export let sidebarStatus = [];
 
 let commands = {
     //authHelper
@@ -85,10 +86,12 @@ let commands = {
     // LOCAL COMMANDS
     'UPDATE_ANNOTATIONS_ON_TAB_ACTIVATED': anno.updateAnnotationsOnTabActivated,
     'HANDLE_BROWSER_ACTION_CLICK': () => {
-        clicked = !clicked;
-        toggleSidebar(clicked);
-        if (clicked) {
-            chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+        chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+            const index = sidebarStatus.findIndex(side => side.id === tabs[0].id);
+            const opening = !sidebarStatus[index].open;
+            sidebarStatus[index].open = opening;
+            toggleSidebar(opening);
+            if (opening) {
                 if (anno.containsObjectWithUrl(tabs[0].url, anno.tabAnnotationCollect)) {
                     const tabInfo = anno.tabAnnotationCollect.filter(obj => obj.tabUrl === tabs[0].url);
                     chrome.tabs.sendMessage(tabs[0].id, {
@@ -103,18 +106,24 @@ let commands = {
                         })
                     })
                 }
-            })
-        }
-        else {
-            chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+            }
+            else {
                 chrome.tabs.sendMessage(tabs[0].id, {
                     msg: 'REMOVE_HIGHLIGHTS'
                 })
-            })
-        }
+            }
+
+
+        })
     },
     'HANDLE_TAB_URL_UPDATE': (tabId, changeInfo, tab) => {
-        if (changeInfo.url) { anno.handleTabUpdate(changeInfo.url, tabId); }
+        if (changeInfo.url) {
+            anno.handleTabUpdate(changeInfo.url, tabId);
+            // add close sidebar here
+        }
+    },
+    'HANDLE_TAB_CREATED': (tab) => {
+        sidebarStatus.push({ id: tab.id, open: false });
     },
 
     //sidebarHelper
@@ -153,3 +162,7 @@ chrome.browserAction.onClicked.addListener(function () {
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
     commands['HANDLE_TAB_URL_UPDATE'](tabId, changeInfo, tab);
 });
+
+chrome.tabs.onCreated.addListener(function (tab) {
+    commands['HANDLE_TAB_CREATED'](tab);
+})

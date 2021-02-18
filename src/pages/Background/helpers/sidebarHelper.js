@@ -1,22 +1,21 @@
 import '../../../assets/img/iframe-background.gif';
-
-let sidebarOpen = false; // open -> true  |  close -> false
+import { sidebarStatus } from '../backgroundEventListeners';
 
 /**
  * Sidebar open
  */
-chrome.storage.local.get(['sidebarOpen'], (result) => {
-  if (result.sidebarOpen !== undefined) {
-    sidebarOpen = result.sidebarOpen === true;
-  }
-});
+// chrome.storage.local.get(['sidebarOpen'], (result) => {
+//   if (result.sidebarOpen !== undefined) {
+//     sidebarOpen = result.sidebarOpen === true;
+//   }
+// });
 
-const persistSidebarOpenStatus = (status) => {
-  console.log('persist call', status);
-  chrome.storage.local.set({
-    sidebarOpen: status,
-  });
-};
+// const persistSidebarOpenStatus = (status) => {
+//   console.log('persist call', status);
+//   chrome.storage.local.set({
+//     sidebarOpen: status,
+//   });
+// };
 
 /**
  * Sidebar on Left
@@ -57,8 +56,9 @@ const persistShouldShrinkBodyStatus = (status) => {
 };
 
 export const toggleSidebar = (toStatus = null) => {
+  let sidebarOpen;
   if (toStatus === null || toStatus === undefined) {
-    sidebarOpen = !sidebarOpen;
+    sidebarOpen = false;
   } else {
     sidebarOpen = toStatus;
   }
@@ -134,8 +134,15 @@ const updateShouldShrinkBodyStatus = (toStatus) => {
 };
 
 export async function requestSidebarStatus(request, sender, sendResponse) {
-  console.log('getting sidebar status', sidebarOpen);
-  sendResponse(sidebarOpen);
+  console.log('req', request);
+  console.log('getting sidebar status', sidebarStatus);
+  let status;
+  chrome.tabs.query(({ active: true, currentWindow: true }), tab => {
+    let i = sidebarStatus.findIndex(t => t.id === tab[0].id);
+    status = i > -1 ? sidebarStatus[i].open : false;
+    sendResponse(status);
+  })
+
 }
 
 export async function requestToggleSidebar(request, sender, sendResponse) {
