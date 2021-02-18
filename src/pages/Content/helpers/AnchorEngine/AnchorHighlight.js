@@ -7,21 +7,15 @@ import * as xpathRange from "./packages/xpath-range";
 
 
 export const highlightAnnotationDeep = (anno) => {
-    // console.log("highlight deep");
-    if (document.getElementsByName(anno.id.toString()).length > 0 || !highlightAnnotation(anno, anno.id.toString(), "root")) {
-        //console.log("highlightAnnotation ERROR"); console.log(anno);
-        //checkIfBrokenAnchor(anno.id.toString(), { "id": anno.id });
-    }
+    console.log("highlight deep");
+    if (!document.getElementsByName(anno.id.toString()).length > 0)
+        highlightAnnotation(anno, anno.id.toString(), "root")
 
     if (anno.childAnchor !== undefined && anno.childAnchor.length) {
         anno.childAnchor.forEach(child => {
             if (child.xpath !== undefined && child.xpath !== null) {
                 let domId = anno.id.toString() + "-" + child.id.toString();
-                console.log('made child anchor highlight', domId);
-                if (document.getElementsByName(domId).length > 0 && !highlightAnnotation(child, domId, "child")) {
-                    console.log("highlightAnnotation Child Error"); console.log(anno);
-                    //checkIfBrokenAnchor(domId, { "id": anno.id, "childId": child.id });
-                }
+                if (!document.getElementsByName(domId).length > 0) highlightAnnotation(child, domId, "child")
             }
         });
     }
@@ -29,10 +23,7 @@ export const highlightAnnotationDeep = (anno) => {
         anno.replies.forEach(reply => {
             if (reply.xpath !== undefined && reply.xpath !== null) {
                 let domId = anno.id.toString() + "-" + reply.replyId.toString();
-                if (!highlightAnnotation(reply, domId, "reply")) {
-                    // console.log("highlightAnnotation Reply ERROR"); console.log(anno);
-                    //checkIfBrokenAnchor(domId, { "id": anno.id, "replyId": reply.replyId });
-                }
+                highlightAnnotation(reply, domId, "reply")
             }
         })
     }
