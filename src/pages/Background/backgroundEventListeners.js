@@ -13,7 +13,6 @@ export function getPathFromUrl(url) {
 }
 
 const isContent = (res) => res.from === 'content';
-let clicked = false;
 export let sidebarStatus = [];
 
 let commands = {
@@ -88,8 +87,15 @@ let commands = {
     'HANDLE_BROWSER_ACTION_CLICK': () => {
         chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
             const index = sidebarStatus.findIndex(side => side.id === tabs[0].id);
-            const opening = !sidebarStatus[index].open;
-            sidebarStatus[index].open = opening;
+            let opening;
+            if (index > -1) {
+                opening = !sidebarStatus[index].open;
+                sidebarStatus[index].open = opening;
+            }
+            else {
+                sidebarStatus.push({ id: tabs[0].id, open: true })
+                opening = true;
+            }
             toggleSidebar(opening);
             if (opening) {
                 if (anno.containsObjectWithUrl(tabs[0].url, anno.tabAnnotationCollect)) {
@@ -117,9 +123,16 @@ let commands = {
         })
     },
     'HANDLE_TAB_URL_UPDATE': (tabId, changeInfo, tab) => {
+        console.log('tab update', tabId, changeInfo)
         if (changeInfo.url) {
             anno.handleTabUpdate(changeInfo.url, tabId);
-            // add close sidebar here
+            const index = sidebarStatus.findIndex(side => side.id === tabId);
+            if (index > -1) {
+                sidebarStatus[index].open = false;
+            }
+            else {
+                sidebarStatus.push({ id: tabId, open: false })
+            }
         }
     },
     'HANDLE_TAB_CREATED': (tab) => {

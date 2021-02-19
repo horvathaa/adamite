@@ -348,10 +348,11 @@ class Sidebar extends React.Component {
         chrome.runtime.sendMessage({
           msg: 'REQUEST_SIDEBAR_STATUS',
           from: 'content'
-        }, response => {
+        }, (sidebarOpen) => {
           // chrome.storage.local.get(['sidebarOpen'], (result) => {
           // to-do ; change sidebarOpen such that it's a kv of tabId and whether or not the sidebar is open
-          if (response.sidebarOpen !== undefined && response.sidebarOpen) {
+          console.log('res', sidebarOpen)
+          if (sidebarOpen !== undefined && sidebarOpen) {
             chrome.tabs.sendMessage(request.tabId, {
               msg: 'HIGHLIGHT_ANNOTATIONS',
               payload: request.payload,
@@ -371,12 +372,12 @@ class Sidebar extends React.Component {
               });
               this.setState({ annotations, pageLocationSort: annotations })
               this.requestFilterUpdate();
+
             });
           }
           else {
             this.setState({ annotations });
           }
-          // })
         })
 
 

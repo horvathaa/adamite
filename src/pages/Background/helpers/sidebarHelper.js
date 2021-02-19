@@ -134,12 +134,15 @@ const updateShouldShrinkBodyStatus = (toStatus) => {
 };
 
 export async function requestSidebarStatus(request, sender, sendResponse) {
-  console.log('req', request);
-  console.log('getting sidebar status', sidebarStatus);
-  let status;
   chrome.tabs.query(({ active: true, currentWindow: true }), tab => {
-    let i = sidebarStatus.findIndex(t => t.id === tab[0].id);
-    status = i > -1 ? sidebarStatus[i].open : false;
+    let status;
+    if (sidebarStatus.length) {
+      const i = sidebarStatus.findIndex(t => t.id === tab[0].id);
+      status = i > -1 ? sidebarStatus[i].open : false;
+    }
+    else {
+      status = false;
+    }
     sendResponse(status);
   })
 
