@@ -75,11 +75,12 @@ export async function createAnnotationHighlight(request, sender, sendResponse) {
     let { url, anchor, xpath, offsets } = request.payload;
     const hostname = new URL(url).hostname;
     const author = getAuthor();
+    const id = new Date().getTime();
     fb.createAnnotation({
         taskId: null,
         SharedId: null,
         AnnotationContent: "",
-        AnnotationAnchorContent: anchor,
+        AnnotationAnchorContent: anchor ?? "",
         AnnotationAnchorPath: null,
         offsets: offsets,
         xpath: xpath,
@@ -88,7 +89,18 @@ export async function createAnnotationHighlight(request, sender, sendResponse) {
         hostname,
         pinned: false,
         AnnotationTags: [],
-        childAnchor: [],
+        childAnchor: [
+            {
+                parentId: null,
+                id: id,
+                anchor: anchor ?? "",
+                url: url,
+                offsets: offsets,
+                hostname: hostname,
+                xpath: xpath,
+                tags: []
+            }
+        ],
         isPrivate: true,
         author,
         groups: [], // later have this be a default group
@@ -153,10 +165,10 @@ export async function createAnnotationChildAnchor(request, sender, sendResponse)
 
 
 export async function updateAnnotation(request, sender, sendResponse) {
-    const { id, content, type, tags, isPrivate, groups } = request.payload;
+    const { id, content, type, tags, isPrivate, groups, childAnchor } = request.payload;
     let doc = await fb.getAnnotationById(id).get();
     await fb.updateAnnotationById(id, {
-        content, type, tags, private: isPrivate, groups,
+        content, type, tags, private: isPrivate, groups, childAnchor,
         createdTimestamp: new Date().getTime(),
         deletedTimestamp: 0,
         events: fbUnion(editEvent(request.msg, doc.data())),
@@ -365,11 +377,12 @@ const _createAnnotation = (request) => {
     const hostname = new URL(url).hostname;
     // username is just front of email
     const author = getAuthor();
+    const id = new Date().getTime();
     return {
         taskId: null,
         SharedId: null,
         AnnotationContent: content.annotation,
-        AnnotationAnchorContent: content.anchor,
+        AnnotationAnchorContent: content.anchor ?? "",
         AnnotationAnchorPath: null,
         offsets: content.offsets,
         xpath: content.xpath,
@@ -379,7 +392,18 @@ const _createAnnotation = (request) => {
         isClosed: false,
         pinned: false,
         AnnotationTags: content.tags,
-        childAnchor: [],
+        childAnchor: [
+            {
+                parentId: null,
+                id: id,
+                anchor: content.anchor ?? "",
+                url: url,
+                offsets: content.offsets,
+                hostname: hostname,
+                xpath: content.xpath,
+                tags: []
+            }
+        ],
         isPrivate: content.private,
         author,
         groups: content.groups,

@@ -196,6 +196,7 @@ class NewAnnotation extends React.Component {
       <React.Fragment>
         <CardWrapper
           tags={tags} annotationContent={annoBody}
+          childAnchor={[]}
           edit={!submitted}
           pageAnnotation={newSelection}
           annotationType={type}

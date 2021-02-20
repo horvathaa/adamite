@@ -239,41 +239,17 @@ class QuestionAnswerAnnotation extends Component {
                                 </div>
                             </div>
                         </React.Fragment>) : (null)}
-                    {childAnchor === undefined || !childAnchor.length ? (
-                        <Anchor
-                            id={id}
+                    {childAnchor === undefined || !childAnchor.length ? null : (
+                        <AnchorList
+                            parentId={id}
+                            childAnchor={childAnchor}
                             currentUrl={currentUrl}
-                            url={url[0]}
                             collapsed={collapsed}
-                            anchorContent={anchor}
-                            updateAnchorTags={updateAnchorTags}
+                            brokenChild={brokenChild}
                             isCurrentUser={currentUser.uid === authorId}
-                            tags={tags}
-                            pageAnchor={xpath === null}
-                            brokenAnchor={brokenAnchor} />
-                    ) : (
-                        <React.Fragment>
-                            <Anchor
-                                id={id}
-                                currentUrl={currentUrl}
-                                url={url[0]}
-                                collapsed={collapsed}
-                                anchorContent={anchor}
-                                updateAnchorTags={updateAnchorTags}
-                                isCurrentUser={currentUser.uid === authorId}
-                                tags={tags}
-                                pageAnchor={xpath === null}
-                                brokenAnchor={brokenAnchor} />
-                            <AnchorList
-                                childAnchor={childAnchor}
-                                currentUrl={currentUrl}
-                                collapsed={collapsed}
-                                brokenChild={brokenChild}
-                                updateAnchorTags={updateAnchorTags}
-                                isCurrentUser={currentUser.uid === authorId}
-                                deleteAnchor={deleteAnchor}
-                            />
-                        </React.Fragment>
+                            updateAnchorTags={updateAnchorTags}
+                            deleteAnchor={deleteAnchor}
+                        />
                     )}
 
                     <React.Fragment>

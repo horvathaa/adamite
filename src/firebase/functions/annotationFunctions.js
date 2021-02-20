@@ -178,7 +178,7 @@ export const createAnnotation = async ({
     trashed: false,
     createdTimestamp: new Date().getTime(),
     content: AnnotationContent,
-    anchorContent: AnnotationAnchorContent,
+    //anchorContent: "",
     anchorPath: null,
     type: AnnotationType,
     url,

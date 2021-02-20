@@ -46,6 +46,7 @@ let commands = {
     'SAVE_HIGHLIGHT': anno.createAnnotationHighlight,
     'ADD_NEW_REPLY': anno.createAnnotationReply,
     'SAVE_NEW_ANCHOR': anno.createAnnotationChildAnchor,
+    // 'SAVE_NEW_ANCHOR': anno.createAnnotationChildAnchor,
 
     'ANNOTATION_UPDATED': anno.updateAnnotation,
     'REQUEST_ADOPTED_UPDATE': anno.updateAnnotationAdopted,

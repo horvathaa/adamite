@@ -206,7 +206,8 @@ class Annotation extends Component {
         content: CardWrapperState.annotationContent,
         tags: CardWrapperState.tags,
         isPrivate: CardWrapperState.private,
-        groups: CardWrapperState.groups
+        groups: CardWrapperState.groups,
+        childAnchor: CardWrapperState.childAnchor
       }
     });
     this.setState({ editing: false });
@@ -242,6 +243,14 @@ class Annotation extends Component {
   updateAnchorTags = ({ newTags, childId = null }) => {
     let { content, type, isPrivate } = this.props;
     console.log("newTags", newTags);
+    console.log(childId);
+    const childAnch = this.props.childAnchor.map((c) => {
+      if (c.id !== childId) return c;
+      let y = c;
+      y.tags = newTags;
+      return y;
+    });
+
     chrome.runtime.sendMessage({
       msg: 'ANNOTATION_UPDATED',
       from: 'content',
@@ -251,8 +260,10 @@ class Annotation extends Component {
         content: content,
         tags: newTags,
         isPrivate: isPrivate,
-        groups: this.state.annoGroups
+        groups: this.state.annoGroups,
+        childAnchor: childAnch
       }
+
     });
   }
   deleteAnchor = ({ childId = null }) => {

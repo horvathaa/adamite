@@ -8,14 +8,14 @@ import * as xpathRange from "./packages/xpath-range";
 
 export const highlightAnnotationDeep = (anno) => {
     console.log("highlight deep");
-    if (!document.getElementsByName(anno.id.toString()).length > 0)
-        highlightAnnotation(anno, anno.id.toString(), "root") 
+    // if (!document.getElementsByName(anno.id.toString()).length > 0)
+    //     highlightAnnotation(anno, anno.id.toString(), "root") 
 
     if (anno.childAnchor !== undefined && anno.childAnchor.length) {
         anno.childAnchor.forEach(child => {
             if (child.xpath !== undefined && child.xpath !== null) {
                 let domId = anno.id.toString() + "-" + child.id.toString();
-                if (!document.getElementsByName(domId).length > 0) highlightAnnotation(child, domId, "child") 
+                if (!document.getElementsByName(domId).length > 0) highlightAnnotation(child, domId, "child")
             }
         });
     }
@@ -30,9 +30,9 @@ export const highlightAnnotationDeep = (anno) => {
 }
 export const checkForBrokenAnnotationDeep = (anno, ids) => {
     //will show annotation type
-    if (!(ids.includes(anno.id.toString()))) {
-        transmitMessage({ msg: "ANCHOR_BROKEN", data: { payload: { "id": anno.id } }, sentFrom: "AnchorHighlight" })
-    }
+    // if (!(ids.includes(anno.id.toString()))) {
+    //     transmitMessage({ msg: "ANCHOR_BROKEN", data: { payload: { "id": anno.id } }, sentFrom: "AnchorHighlight" })
+    // }
 
     if (anno.childAnchor !== undefined && anno.childAnchor.length) {
         anno.childAnchor.forEach(child => {

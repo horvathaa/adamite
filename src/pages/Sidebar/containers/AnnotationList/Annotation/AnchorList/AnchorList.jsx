@@ -17,13 +17,13 @@ import expand from '../../../../../../assets/img/SVGs/expand.svg'
 class AnchorList extends Component {
 
     render() {
-        const { childAnchor, currentUrl, collapsed } = this.props;
+        const { parentId, childAnchor, currentUrl, collapsed } = this.props;
         return (
             <ul className='AnchorList' style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
                 {childAnchor.map((childAnch, idx) => {
                     return (<li key={idx} className='Anchor'>
                         <Anchor
-                            id={childAnch.parentId}
+                            id={parentId}
                             replyId={childAnch.id}
                             currentUrl={currentUrl}
                             collapsed={collapsed}
