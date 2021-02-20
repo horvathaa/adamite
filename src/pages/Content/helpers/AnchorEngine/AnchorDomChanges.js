@@ -7,6 +7,7 @@ export function addHighlightToSubstring({ node, substring, spanId, startOffset, 
     //console.log("IN")
     let _spanId = isPreview ? "annoPreview" : spanId;
     let _className = isPreview ? "highlight-adamite-annotation-preview" : "highlight-adamite-annotation";
+    console.log('node', node.parentNode);
     splitReinsertText(node, substring, startOffset, endOffset, function (node, match, offset) {
         _addHighlightSpan({ match: match, node: node, spanId: _spanId, className: _className });
 

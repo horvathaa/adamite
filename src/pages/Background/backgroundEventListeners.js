@@ -134,6 +134,15 @@ let commands = {
                 sidebarStatus.push({ id: tabId, open: false })
             }
         }
+        else if (changeInfo.status === 'loading') {
+            const index = sidebarStatus.findIndex(side => side.id === tabId);
+            if (index > -1) {
+                sidebarStatus[index].open = false;
+            }
+            else {
+                sidebarStatus.push({ id: tabId, open: false })
+            }
+        }
     },
     'HANDLE_TAB_CREATED': (tab) => {
         sidebarStatus.push({ id: tab.id, open: false });

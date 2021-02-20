@@ -8,7 +8,7 @@
     /* background-color: #dede0a; 
 } */
 .highlight-adamite-annotation {
-    background-color: #ffff0099;
+    background-color: rgb(38, 207, 0, 0.35);
     cursor: pointer;
     display: inline;
 }

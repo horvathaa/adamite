@@ -136,7 +136,7 @@ export default class CardWrapper extends React.Component {
                     <div className="Tag-Container">
                         <div className="row">
                             <div className="TextareaContainer">
-                                <TagsInput value={tags} onChange={this.tagsHandleChange} onlyUnique={true} />
+                                <TagsInput value={tags} onChange={this.tagsHandleChange} onlyUnique={true} addOnBlur />
                             </div>
                         </div>
                     </div>
