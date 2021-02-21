@@ -32,7 +32,7 @@ class Anchor extends Component {
         editMode: false,
         tags: this.props.tags !== undefined && this.props.tags.length === 0 ? [] : this.props.tags,
         isCurrentUser: this.props.isCurrentUser,
-        childId: this.props.replyId !== undefined ? this.props.replyId : null
+        childId: this.props.replyId !== undefined ? this.props.replyId : null,
     }
 
     updateData = () => {
@@ -91,7 +91,7 @@ class Anchor extends Component {
             }
         });
         this.setState({ hovering: true, });
-        console.log(this.state.isCurrentUser, !this.props.collapsed, this.state.hovering);
+        // console.log(this.state.isCurrentUser, !this.props.collapsed, this.state.hovering);
 
     }
 
@@ -236,7 +236,7 @@ class Anchor extends Component {
                                                         <img src={edit} alt="edit annotation" className="profile" id="edit" onClick={() => { this.setState({ editMode: true }) }} />
                                                     </div>
                                                 </Tooltip>
-                                                {this.state.childId &&
+                                                {this.state.childId && !this.props.isOnlyAnchor &&
                                                     <Tooltip title={"Delete Anchor"} aria-label="delete annotation tooltip">
                                                         <div className="TopIconContainer" >
                                                             <img src={trash} alt="delete annotation" className="profile" id="trash" onClick={this.handleDelete} />

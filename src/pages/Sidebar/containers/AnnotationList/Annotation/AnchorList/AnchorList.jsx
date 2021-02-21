@@ -35,6 +35,7 @@ class AnchorList extends Component {
                             updateAnchorTags={this.props.updateAnchorTags}
                             isCurrentUser={this.props.isCurrentUser}
                             deleteAnchor={this.props.deleteAnchor}
+                            isOnlyAnchor={childAnchor.length === 1}
                         />
                     </li>
                     );

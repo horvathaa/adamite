@@ -242,8 +242,8 @@ class Annotation extends Component {
   }
   updateAnchorTags = ({ newTags, childId = null }) => {
     let { content, type, isPrivate } = this.props;
-    console.log("newTags", newTags);
-    console.log(childId);
+    // console.log("newTags", newTags);
+    //console.log(childId);
     const childAnch = this.props.childAnchor.map((c) => {
       if (c.id !== childId) return c;
       let y = c;
@@ -258,16 +258,33 @@ class Annotation extends Component {
         id: this.props.id,
         type: type.toLowerCase(),
         content: content,
-        tags: newTags,
+        tags: this.state.tags,
+        isPrivate: isPrivate,
+        groups: this.state.annoGroups,
+        childAnchor: childAnch
+      }
+    });
+  }
+  deleteAnchor = ({ childId = null }) => {
+    let { content, type, isPrivate } = this.props;
+    const childAnch = this.props.childAnchor.filter((c) => c.id !== childId)
+
+    chrome.runtime.sendMessage({
+      msg: 'ANNOTATION_UPDATED',
+      from: 'content',
+      payload: {
+        id: this.props.id,
+        type: type.toLowerCase(),
+        content: content,
+        tags: this.state.tags,
         isPrivate: isPrivate,
         groups: this.state.annoGroups,
         childAnchor: childAnch
       }
 
     });
-  }
-  deleteAnchor = ({ childId = null }) => {
-    console.log("delete child anchor", childId);
+    // console.log("delete child anchor", childId);
+
   }
 
   transmitPinToParent = () => {
