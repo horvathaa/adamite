@@ -140,7 +140,7 @@ class Annotation extends Component {
     // sort of like how Google had code reviewers with "readability" in certain languages and could provide
     // expert opinion - this would require us to know a bit more about the current API we're looking at (may be able to ascertain
     // from URL + anchor content)
-    console.log('handled');
+    // console.log('handled');
   }
 
   handleUnArchive(e) {
@@ -278,14 +278,14 @@ class Annotation extends Component {
     else {
       this.setState({ collapsed: false });
       // this.setState({ readCount: this.state.readCount + 1 })
-      chrome.runtime.sendMessage({
-        msg: 'UPDATE_READ_COUNT',
-        from: 'content',
-        payload: {
-          id: this.props.id,
-          readCount: this.state.readCount
-        }
-      })
+      // chrome.runtime.sendMessage({
+      //   msg: 'UPDATE_READ_COUNT',
+      //   from: 'content',
+      //   payload: {
+      //     id: this.props.id,
+      //     readCount: this.state.readCount
+      //   }
+      // })
     }
   }
 

@@ -78,14 +78,16 @@
   border-radius: 50%;
   background-color: #EBECF0;
   text-align: center;
+  cursor: default;
 }
 
 .profile {
   width: 20px;
   height: 20px;
   color: #6B778C;
-  cursor: pointer;
+
 }
+
 
 .userProfileContainer {
   height: 100%;
@@ -118,7 +120,7 @@
   /* background-color: rgba(255, 255, 255, 0.5); */
   transition: all 0.1s ease-in;
   position: relative;
-  cursor: pointer;
+  /* cursor: pointer; */
   /* box-shadow: gray; */
 }
 
@@ -543,6 +545,7 @@
 
 .TopIconContainer {
   padding-right: 4px;
+  cursor: pointer;
 }
 
 

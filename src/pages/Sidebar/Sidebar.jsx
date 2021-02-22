@@ -288,21 +288,23 @@ class Sidebar extends React.Component {
           clickedAnnos.forEach(anno => {
             // setTimeout(() => {
             let annoDiv = document.getElementById(anno.id);
-            annoDiv.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
-            // annoDiv.style.backgroundColor = "purple";
-            let anchors = annoDiv.querySelectorAll(".AnchorContainer");
-            // console.log('anchors', anchors);
-            anchors.forEach(anch => {
-              anch.classList.add("Clicked")
-            })
-            chrome.tabs.sendMessage(
-              this.state.tabId,
-              {
-                msg: 'ANNOTATION_FOCUS',
-                id: anno.id,
-                // replyId: this.props.replyId
-              }
-            );
+            if (annoDiv !== null) {
+              annoDiv.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
+              // annoDiv.style.backgroundColor = "purple";
+              let anchors = annoDiv.querySelectorAll(".AnchorContainer");
+              // console.log('anchors', anchors);
+              anchors.forEach(anch => {
+                anch.classList.add("Clicked")
+              })
+              chrome.tabs.sendMessage(
+                this.state.tabId,
+                {
+                  msg: 'ANNOTATION_FOCUS',
+                  id: anno.id,
+                  // replyId: this.props.replyId
+                }
+              );
+            }
             // }, 500);
 
           })

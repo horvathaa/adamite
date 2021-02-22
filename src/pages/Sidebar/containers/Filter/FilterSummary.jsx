@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import './FilterSummary.css';
-import { GoEye } from 'react-icons/go';
 import { AiFillClockCircle, AiOutlineCheck, AiOutlineCloseCircle, AiOutlineUsergroupAdd } from 'react-icons/ai';
 import { BsChatSquareDots, BsXCircle } from 'react-icons/bs';
 import { BiSort } from 'react-icons/bi';
+import { GiCancel } from 'react-icons/gi';
+import classNames from 'classnames';
 import tag from '../../../../assets/img/SVGs/tag.svg';
 import { Dropdown } from 'react-bootstrap';
 import GroupMultiSelect from './MultiSelect/MultiSelect'
-import classNames from 'classnames';
 import Tooltip from '@material-ui/core/Tooltip';
 import expand from '../../../../assets/img/SVGs/expand.svg';
 
@@ -73,7 +73,6 @@ class FilterSummary extends React.Component {
             });
         })
         this.tagSet = tagSet;
-        console.log('got tags', this.tagSet, tagSet, 'annos;,', this.props.getFilteredAnnotations)
     }
 
     async handleTagSelect() {
@@ -128,9 +127,10 @@ class FilterSummary extends React.Component {
         if (choice === 'all') {
             this.selection.annoType = ['default', 'to-do', 'question', 'highlight', 'issue'];
         }
-        else if (this.selection.annoType.includes(choice)) {
-            this.selection.annoType = this.selection.annoType.filter(e => e !== choice);
-        } else {
+        else if (choice !== 'all' && areArraysEqualSets(this.selection.annoType, ['default', 'to-do', 'question', 'highlight', 'issue'])) {
+            this.selection.annoType = [choice];
+        }
+        else {
             this.selection.annoType.push(choice);
         }
         this.props.applyFilter(this.selection);
@@ -313,74 +313,38 @@ class FilterSummary extends React.Component {
                                 { visible: "Time", value: 'time' }]
                             })}
                         </div>
-                        {/* {filter.tags.length ? ( */}
-                        <div className="FilterSection" onClick={() => this.setState({ showTagFilter: !this.state.showTagFilter })}>
-                            <div className="FilterIconContainer">
-                                <img src={tag} alt="tag icon" />
-                            </div>
-                        &nbsp; &nbsp;
-                                <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
-                                {filter.tags.length ? (filter.tags.map((tag, idx) => {
-                                    if (idx !== (filter.tags.length - 1)) {
-                                        return (<li key={idx} style={{ display: "inline" }}>
-                                            {tag},&nbsp;
-                                        </li>);
-                                    }
-                                    else {
-                                        return (<li key={idx} style={{ display: "inline" }}>
-                                            {tag}
-                                        </li>);
-                                    }
-                                })) : (
-                                        "Select Tag"
-                                    )}
-
-                            </ul>
-                        </div>
-                        {this.state.showTagFilter ? (
-                            <div className="FilterByTag">
-                                Filter By Tag
-                                <div className="TagListContainer">
-                                    {this.selection.tags.length ? (
-                                        this.selection.tags.map(tag => {
-                                            return (<div className="TagButtonPad">
-                                                <button value={tag}
-                                                    className={
-                                                        classNames({ TagButton: true, selected: this.selection.tags.includes(tag) })}
-                                                    onClick={e => this.handleTagClick(e)}>
-                                                    {tag} &nbsp; {this.tagSet[tag]}
-                                                </button>
-                                            </div>);
-                                        })
-                                    ) : (null)}
-                                    <div className="TagButtonPad">
-                                        <button value="chooseTag" className="TagButton" onClick={e => this.handleTagSelect(e)}>
-                                            Choose tag(s)
-                                    </button>
-                                    </div>
-                                    <React.Fragment>
-                                        {Object.entries(this.tagSet).map(tagCountPair => {
-                                            if (!this.selection.tags.includes(tagCountPair[0]))
-                                                return (<div className="TagButtonPad">
-                                                    <button value={tagCountPair[0]} className={
-                                                        classNames({ TagButton: true, selected: this.selection.tags.includes(tagCountPair[0]) })}
-                                                        onClick={e => this.handleTagClick(e)}>
-                                                        {tagCountPair[0]} &nbsp; {tagCountPair[1]}
-                                                    </button>
-                                                </div>);
-                                        })
-                                        }
-                                        <div className="TagButtonPad">
-                                            <button className="TagButton" >
-                                                <img src={expand} alt="collapse tag list" id="collapseTagList" onClick={e => this.handleTagSelect(e)} />
-                                            </button>
-                                        </div>
-                                    </React.Fragment>
-
+                        {filter.tags.length ? (
+                            <div className={classNames({
+                                FilterSection: true,
+                                tagFilterNotEnabled: !filter.tags.length
+                            })} >
+                                <div className="FilterIconContainer">
+                                    <img src={tag} alt="tag icon" />
                                 </div>
+                        &nbsp; &nbsp;
+                                <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }} >
+                                    {filter.tags.length ? (filter.tags.map((tag, idx) => {
+                                        if (idx !== (filter.tags.length - 1)) {
+                                            return (<li key={idx} style={{ display: "inline" }}>
+                                                {tag},&nbsp;
+                                            </li>);
+                                        }
+                                        else {
+                                            return (<li key={idx} style={{ display: "inline" }}>
+                                                {tag}
+                                                <div style={{ display: "inline" }} className="FilterIconContainer" onClick={(e) => { e.stopPropagation(); this.selection.tags = []; this.props.applyFilter(this.selection) }}>
+                                                    <GiCancel />
+                                                </div>
+                                            </li>);
+                                        }
+                                    })) : (
+                                            "Select Tag"
+                                        )}
+
+                                </ul>
                             </div>
+
                         ) : (null)}
-                        {/* ) : (null)} */}
                         <Tooltip title={this.props.tempSearchCount + " annotations"} aria-label="annotation count">
                             <div className="outerSearchBar">
                                 <div className="SearchResultsCountContainer">

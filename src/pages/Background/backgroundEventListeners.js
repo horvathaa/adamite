@@ -93,17 +93,17 @@ let commands = {
                 sidebarStatus[index].open = opening;
             }
             else {
-                sidebarStatus.push({ id: tabs[0].id, open: true })
+                sidebarStatus.push({ id: tabs[0].id, open: true, url: getPathFromUrl(tabs[0].url) })
                 opening = true;
             }
             toggleSidebar(opening);
             if (opening) {
-                if (anno.containsObjectWithUrl(tabs[0].url, anno.tabAnnotationCollect)) {
-                    const tabInfo = anno.tabAnnotationCollect.filter(obj => obj.tabUrl === tabs[0].url);
+                if (anno.containsObjectWithUrl(getPathFromUrl(tabs[0].url), anno.tabAnnotationCollect)) {
+                    const tabInfo = anno.tabAnnotationCollect.filter(obj => obj.tabUrl === getPathFromUrl(tabs[0].url));
                     chrome.tabs.sendMessage(tabs[0].id, {
                         msg: 'HIGHLIGHT_ANNOTATIONS',
                         payload: tabInfo[0].annotations,
-                        url: tabs[0].url
+                        url: getPathFromUrl(tabs[0].url)
                     }, response => {
                         chrome.runtime.sendMessage({
                             msg: 'SORT_LIST',
@@ -123,29 +123,28 @@ let commands = {
         })
     },
     'HANDLE_TAB_URL_UPDATE': (tabId, changeInfo, tab) => {
-        console.log('tab update', tabId, changeInfo)
         if (changeInfo.url) {
-            anno.handleTabUpdate(changeInfo.url, tabId);
+            anno.handleTabUpdate(getPathFromUrl(changeInfo.url), tabId);
             const index = sidebarStatus.findIndex(side => side.id === tabId);
-            if (index > -1) {
+            if (index > -1 && sidebarStatus[index].url !== getPathFromUrl(changeInfo.url)) {
                 sidebarStatus[index].open = false;
+                toggleSidebar(false);
             }
-            else {
-                sidebarStatus.push({ id: tabId, open: false })
+            else if (index === -1) {
+                sidebarStatus.push({ id: tabId, open: false, url: getPathFromUrl(changeInfo.url) })
             }
         }
         else if (changeInfo.status === 'loading') {
             const index = sidebarStatus.findIndex(side => side.id === tabId);
             if (index > -1) {
                 sidebarStatus[index].open = false;
-            }
-            else {
-                sidebarStatus.push({ id: tabId, open: false })
+                toggleSidebar(false);
+                // sidebarStatus[index].url !== getPathFromUrl(changeInfo.url) ? sidebarStatus[index].open = false : sidebarStatus[index].open = true;
             }
         }
     },
     'HANDLE_TAB_CREATED': (tab) => {
-        sidebarStatus.push({ id: tab.id, open: false });
+        sidebarStatus.push({ id: tab.id, open: false, url: getPathFromUrl(tab.url) });
     },
 
     //sidebarHelper

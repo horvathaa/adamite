@@ -83,3 +83,7 @@
     height: 20px;
     cursor: pointer;
 }
+
+.FilterSection .tagFilterNotEnabled {
+    cursor: default
+}

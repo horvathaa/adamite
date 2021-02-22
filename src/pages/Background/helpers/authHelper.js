@@ -40,7 +40,6 @@ const broadcastAuthStatus = user => {
   });
 };
 export function getCurrentUser(request, sender, sendResponse) {
-  console.log('in get current user', currentUser);
   sendResponse({ payload: { currentUser } });
 }
 export function userSignIn(request, sender, sendResponse) {

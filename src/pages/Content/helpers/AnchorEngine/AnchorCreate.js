@@ -260,7 +260,6 @@ function openSelectAnchorToast() {
 export const createAnnotationCallback = (response, event) => {
     // response is whether or not the sidebar is open
     // we only want to show the pop up if the sidebar is open
-    console.log('res', response);
     if (response) {
         var selection = window.getSelection();
         if (selection.type === 'Range') {

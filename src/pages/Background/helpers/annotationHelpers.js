@@ -42,8 +42,6 @@ export function setPinnedAnnotationListeners(request, sender, sendResponse) {
 }
 
 export async function getAnnotationsPageLoad(request, sender, sendResponse) {
-    console.log("GET_ANNOTATIONS_PAGE_LOAD");
-
     let email = fb.getCurrentUser().email;
     let userName = email.substring(0, fb.getCurrentUser().email.indexOf('@'));
     if (request.tabId !== undefined) {
@@ -298,16 +296,19 @@ export async function searchAnnotationsByTag(request, sender, sendResponse) {
 
 
 export function updateAnnotationsOnTabActivated(activeInfo) {
-    if (containsObjectWithUrl(activeInfo.url, tabAnnotationCollect)) {
-        const tabInfo = tabAnnotationCollect.filter(obj => obj.tabUrl === activeInfo.url);
-        broadcastAnnotationsUpdatedTab('CONTENT_UPDATED', tabInfo[0].annotations);
+    if (activeInfo.url) {
+        if (containsObjectWithUrl(getPathFromUrl(activeInfo.url), tabAnnotationCollect)) {
+            const tabInfo = tabAnnotationCollect.filter(obj => obj.tabUrl === getPathFromUrl(activeInfo.url));
+            broadcastAnnotationsUpdatedTab('CONTENT_UPDATED', tabInfo[0].annotations);
+        }
+        else {
+            chrome.tabs.get(activeInfo.tabId, (tab) => {
+                getAllAnnotationsByUrlListener(getPathFromUrl(tab.url), tab.id);
+                getPrivateAnnotationsByUrlListener(getPathFromUrl(tab.url), tab.id);
+            });
+        }
     }
-    else {
-        chrome.tabs.get(activeInfo.tabId, (tab) => {
-            getAllAnnotationsByUrlListener(tab.url, tab.id);
-            getPrivateAnnotationsByUrlListener(tab.url, tab.id);
-        });
-    }
+
 }
 
 export function handleTabUpdate(url, tabId) {

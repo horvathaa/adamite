@@ -147,7 +147,6 @@ const checkSidebarStatus = () => {
     },
     (response) => {
       let sidebarOpen = response;
-      console.log('content sidebaropen', sidebarOpen);
       if (Frame.isReady()) {
         Frame.toggle(sidebarOpen);
       }

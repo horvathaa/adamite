@@ -163,7 +163,6 @@ const renderModal = (owner) => {
     modal.classList.add("new-group-modal-hidden");
     document.body.appendChild(modal);
     modal.setAttribute('id', 'blurg');
-    console.log("rendering", modal)
     const App = (
         <React.Fragment>
 

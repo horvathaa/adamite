@@ -7,7 +7,6 @@ import * as xpathRange from "./packages/xpath-range";
 
 
 export const highlightAnnotationDeep = (anno) => {
-    console.log("highlight deep");
     if (!document.getElementsByName(anno.id.toString()).length > 0)
         highlightAnnotation(anno, anno.id.toString(), "root")
 
@@ -90,7 +89,7 @@ export const tempHighlight = (annotation) => {
     // console.log(annotation);
     let nodePairs = getNodeSubstringPairs({ annotation: annotation, type: "temp" });
     if (!nodePairs || nodePairs.length == 0) {
-        console.log("no matches");
+        // console.log("no matches");
         return false;
     }
     nodePairs.forEach((pair) => {
