@@ -8,14 +8,15 @@ import * as xpathRange from "./packages/xpath-range";
 
 export const highlightAnnotationDeep = (anno) => {
     console.log("highlight deep");
+    console.log(anno)
     if (!document.getElementsByName(anno.id.toString()).length > 0)
-        highlightAnnotation(anno, anno.id.toString(), "root") 
+        highlightAnnotation(anno, anno.id.toString(), "root")
 
     if (anno.childAnchor !== undefined && anno.childAnchor.length) {
         anno.childAnchor.forEach(child => {
             if (child.xpath !== undefined && child.xpath !== null) {
                 let domId = anno.id.toString() + "-" + child.id.toString();
-                if (!document.getElementsByName(domId).length > 0) highlightAnnotation(child, domId, "child") 
+                if (!document.getElementsByName(domId).length > 0) highlightAnnotation(child, domId, "child")
             }
         });
     }
@@ -68,17 +69,33 @@ export const highlightAnnotation = (annotation, domId, type) => {
         console.log("no matches");
         return false;
     }
-    //console.log("NODE PAIRS");
+    console.log("NODE PAIRS");
+    console.log(nodePairs);
+    let str = "";
+    let content = "";
+    if ("anchorContent" in annotation && annotation.anchorContent != "") {
+        content = annotation.anchorContent.trim();
+    } else if ("anchor" in annotation && annotation.anchor != "") {
+        content = annotation.anchor.trim();
+    }
+    console.log(content);
+
     nodePairs.forEach((pair) => {
-        addHighlightToSubstring({
-            node: pair.node,
-            substring: pair.substring,
-            startOffset: pair.startOffset,
-            endOffset: pair.endOffset,
-            spanId: domId,
-            isPreview: false
-        });
+        if (!str.includes(content)) {
+
+            addHighlightToSubstring({
+                node: pair.node,
+                substring: pair.substring,
+                startOffset: pair.startOffset,
+                endOffset: pair.endOffset,
+                spanId: domId,
+                isPreview: false
+            });
+            str += pair.substring;
+        }
+
     });
+
     return true;
 }
 
@@ -92,7 +109,9 @@ export const tempHighlight = (annotation) => {
         console.log("no matches");
         return false;
     }
+    annotation.conte
     nodePairs.forEach((pair) => {
+
         addHighlightToSubstring({
             node: pair.node,
             substring: pair.substring,
@@ -174,6 +193,7 @@ function getNodeSubstringPairs({ annotation, type, }) {
         return [{ node: nodes[0], substring: substring, startOffset: startOffset, endOffset: endOffset ? endOffset : nodes[0].data.length }];
     }
     else if (nodes.length > 1) {
+
         let nodePairs = [];
         let start = true;
         let substring = "";
