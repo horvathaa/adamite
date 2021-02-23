@@ -131,7 +131,7 @@ export default class CardWrapper extends React.Component {
             {this.props.edit ? (
                 <React.Fragment>
                     <div className="TextareaContainer">
-                        <RichEditor annotationContent={typeof (elseContent) === "string" ? elseContent : ""} annotationChangeHandler={this.annotationChangeHandler} />
+                        <RichEditor annotationContent={typeof (elseContent) === "string" ? elseContent : annotationContent} annotationChangeHandler={this.annotationChangeHandler} />
                     </div>
 
                     <div className="Tag-Container">

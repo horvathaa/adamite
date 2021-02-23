@@ -78,10 +78,9 @@ export function getAnnotationById(request, sender, sendResponse) {
 
 export async function createAnnotation(request, sender, sendResponse) {
     fb.createAnnotation(_createAnnotation(request)).then(value => {
-        // console.log("background", value);
-        // console.log('sendResponse', sendResponse);
+        sendResponse({ "msg": 'DONE', "value": value.id });
     });
-    sendResponse({ "msg": 'DONE' });
+
 }
 export async function createAnnotationHighlight(request, sender, sendResponse) {
     let { url, anchor, xpath, offsets } = request.payload;
@@ -107,7 +106,15 @@ export async function createAnnotationHighlight(request, sender, sendResponse) {
         readCount: 0,
         deleted: false,
         events: []
-    });
+    }).then((value => {
+        chrome.runtime.sendMessage({
+            msg: 'SCROLL_INTO_VIEW',
+            payload: {
+                id: value.id
+            },
+            from: 'background'
+        })
+    }));
 }
 // 
 export async function createAnnotationReply(request, sender, sendResponse) {

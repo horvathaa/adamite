@@ -232,6 +232,9 @@ class Sidebar extends React.Component {
       // else if (request.from === 'content' && request.msg === 'ANCHOR_BROKEN') {
       //   console.log('this worked', request.payload);
       // }
+      else if (request.from === 'background' && request.msg === 'SCROLL_INTO_VIEW') {
+        this.scrollToNewAnnotation(request.payload.id);
+      }
       else if (
         request.from === 'content' &&
         request.msg === 'ANCHOR_CLICKED'
@@ -881,6 +884,14 @@ class Sidebar extends React.Component {
     // }
   };
 
+  scrollToNewAnnotation = (id) => {
+    let annoDiv = document.getElementById(id);
+    if (annoDiv !== null) {
+      annoDiv.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
+    }
+
+  }
+
   render() {
     const { currentUser, filteredAnnotations, searchBarInputText, searchedAnnotations, groupAnnotations, filteredGroupAnnotations, pinnedAnnos, groups, activeGroups, sortBy, pageLocationSort } = this.state;
     if (currentUser === undefined) {
@@ -978,6 +989,7 @@ class Sidebar extends React.Component {
                     type={this.state.newAnnotationType}
                     annoContent={this.state.newAnnotationContent}
                     userGroups={groups}
+                    scrollToNewAnnotation={this.scrollToNewAnnotation}
                   />
                 )}
               {this.state.annotatingPage &&

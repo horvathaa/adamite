@@ -227,36 +227,36 @@
 }
 
 .Clicked {
-  fill: yellowgreen;
-  stroke: yellowgreen;
-  color: yellowgreen !important;
-  border-color: yellowgreen;
+  fill: rgb(20, 197, 135);
+  stroke: rgb(20, 197, 135);
+  color: rgb(20, 197, 135) !important;
+  border-color: rgb(20, 197, 135);
 }
 
 .Clicked object {
-  fill: yellowgreen;
-  stroke: yellowgreen;
-  color: yellowgreen;
-  border-color: yellowgreen;
+  fill: rgb(20, 197, 135);
+  stroke: rgb(20, 197, 135);
+  color: rgb(20, 197, 135);
+  border-color: rgb(20, 197, 135);
 }
 
 .AnchorContainer .Clicked {
-  fill: yellowgreen;
-  stroke: yellowgreen;
-  color: yellowgreen;
-  border-color: yellowgreen;
+  fill: rgb(20, 197, 135);
+  stroke: rgb(20, 197, 135);
+  color: rgb(20, 197, 135);
+  border-color: rgb(20, 197, 135);
 }
 
 .AnchorContainer:hover {
-  color: yellowgreen;
-  border-color: yellowgreen;
+  color: rgb(20, 197, 135);
+  border-color: rgb(20, 197, 135);
   cursor: pointer;
 
 }
 
 .AnchorContainer:hover object {
-  fill: yellowgreen;
-  stroke: yellowgreen;
+  fill: rgb(20, 197, 135);
+  stroke: rgb(20, 197, 135);
 }
 
 .AnchorContainer {

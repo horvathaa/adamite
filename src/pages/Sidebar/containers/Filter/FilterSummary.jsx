@@ -313,7 +313,58 @@ class FilterSummary extends React.Component {
                                 { visible: "Time", value: 'time' }]
                             })}
                         </div>
-                        {filter.tags.length ? (
+                        {this.state.showTagFilter ? (
+                            <div className="FilterByTag" >
+                                <div onClick={() => this.setState({ showTagFilter: false })}>
+                                    Filter By Tag
+                                </div>
+                                <div className="TagListContainer">
+                                    {this.selection.tags.length ? (
+                                        this.selection.tags.map(tag => {
+                                            return (<div className="TagButtonPad">
+                                                <button value={tag}
+                                                    className={
+                                                        classNames({ TagButton: true, selected: this.selection.tags.includes(tag) })}
+                                                    onClick={e => { e.stopPropagation(); this.handleTagClick(e); }}>
+                                                    {tag} &nbsp; {this.tagSet[tag]}
+                                                </button>
+                                            </div>);
+                                        })
+                                    ) : (null)}
+                                    <div className="TagButtonPad">
+                                        <button value="chooseTag" className="TagButton" onClick={e => this.handleTagSelect(e)}>
+                                            Choose tag(s)
+                                </button>
+                                    </div>
+                                    <React.Fragment>
+                                        {Object.entries(this.tagSet).map(tagCountPair => {
+                                            if (!this.selection.tags.includes(tagCountPair[0]))
+                                                return (<div className="TagButtonPad">
+                                                    <button value={tagCountPair[0]} className={
+                                                        classNames({ TagButton: true, selected: this.selection.tags.includes(tagCountPair[0]) })}
+                                                        onClick={e => { e.stopPropagation(); this.handleTagClick(e) }}>
+                                                        {tagCountPair[0]} &nbsp; {tagCountPair[1]}
+                                                    </button>
+                                                </div>);
+                                        })}
+                                        <div className="TagButtonPad">
+                                            <button className="TagButton" >
+                                                <img src={expand} alt="collapse tag list" id="collapseTagList" onClick={() => { this.setState({ showTagFilter: false }) }} />
+                                            </button>
+
+                                        </div>
+                                        <div className="TagButtonPad">
+                                            <button className="btn Cancel-Button TagButton" style={{ padding: '0px 10px' }} onClick={(e) => { e.stopPropagation(); this.selection.tags = []; this.props.applyFilter(this.selection) }}>
+                                                <GiCancel />
+                                            </button>
+                                        </div>
+                                    </React.Fragment>
+
+                                </div>
+                            </div>
+                        ) : (null)}
+
+                        {filter.tags.length && !this.state.showTagFilter ? (
                             <div className={classNames({
                                 FilterSection: true,
                                 tagFilterNotEnabled: !filter.tags.length
@@ -344,7 +395,18 @@ class FilterSummary extends React.Component {
                                 </ul>
                             </div>
 
-                        ) : (null)}
+                        ) : (null)} {
+                            !filter.tags.length && !this.state.showTagFilter ? (
+                                <div className={classNames({
+                                    FilterSection: true,
+                                    tagFilterNotEnabled: !filter.tags.length
+                                })} onClick={() => { this.setState({ showTagFilter: !this.state.showTagFilter }) }} >
+                                    <div className="FilterIconContainer">
+                                        <img src={tag} alt="tag icon" />
+                                    </div> &nbsp; &nbsp; Select Tag
+                                </div>
+                            ) : (null)
+                        }
                         <Tooltip title={this.props.tempSearchCount + " annotations"} aria-label="annotation count">
                             <div className="outerSearchBar">
                                 <div className="SearchResultsCountContainer">

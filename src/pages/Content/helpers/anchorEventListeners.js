@@ -119,7 +119,7 @@ let messagesIn = {
     },
     'ANNOTATION_FOCUS': (request, sender, sendResponse) => {
         let findSpan = getSpanFromRequest(request);
-        findSpan.forEach(e => e.style.backgroundColor = '#7cce7299');
+        findSpan.forEach(e => e.style.backgroundColor = 'rgb(45, 350, 180, 0.4)');
     },
     'ANNOTATION_DEFOCUS': (request, sender, sendResponse) => {
         let findSpan = getSpanFromRequest(request);
