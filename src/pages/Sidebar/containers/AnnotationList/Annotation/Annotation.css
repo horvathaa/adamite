@@ -162,6 +162,11 @@
 .badgeContainer {
   width: 24px;
   height: 24px;
+  cursor: pointer;
+}
+
+.badgeContainer:hover, .badgeContainer.hover {
+  filter: brightness(1.2);
 }
 
 .badgeIconSvg {
