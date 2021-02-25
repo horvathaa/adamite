@@ -28,6 +28,7 @@ class Annotation extends Component {
     annotationType: this.props.type,
     editing: false,
     id: this.props.id,
+    idx: this.props.idx,
     authorId: this.props.authorId,
     pinned: this.props.pinned,
     brokenAnchor: false,
@@ -37,7 +38,15 @@ class Annotation extends Component {
     howClosed: this.props.howClosed,
     userGroups: this.props.userGroups === undefined ? [] : this.props.userGroups,
     annoGroups: this.props.annoGroups === undefined ? [] : this.props.annoGroups,
-    readCount: this.props.readCount === undefined ? 0 : this.props.readCount
+    readCount: this.props.readCount === undefined ? 0 : this.props.readCount,
+    anchor: this.props.anchor,
+    active: this.props.active,
+    trashed: this.props.trashed,
+    childAnchor: this.props.childAnchor,
+    xpath: this.props.xpath,
+    replies: this.props.replies,
+    isPrivate: this.props.isPrivate,
+    adopted: this.props.adopted
   };
 
   updateData = () => {
@@ -209,7 +218,13 @@ class Annotation extends Component {
         groups: CardWrapperState.groups
       }
     });
-    this.setState({ editing: false });
+    this.setState({
+      editing: false,
+      annotationType: CardWrapperState.annotationType.toLowerCase(),
+      content: CardWrapperState.annotationContent,
+      tags: CardWrapperState.tags,
+      isPrivate: CardWrapperState.private,
+    });
   }
 
   updateAnnotationType(eventKey) {
@@ -225,6 +240,7 @@ class Annotation extends Component {
   }
 
   handleNewAnchor = (id) => {
+
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
       chrome.tabs.sendMessage(tabs[0].id, {
         msg: 'ADD_NEW_ANCHOR',
@@ -290,8 +306,8 @@ class Annotation extends Component {
   }
 
   render() {
-    const { anchor, idx, id, active, authorId, currentUser, trashed, timeStamp, url, currentUrl, childAnchor, xpath, replies, isPrivate, adopted } = this.props;
-    const { editing, collapsed, tags, content, annotationType, pinned, isClosed, howClosed, userGroups, annoGroups, readCount, brokenAnchor, brokenReply, brokenChild } = this.state;
+    const { active, authorId, currentUser, timeStamp, url, currentUrl } = this.props;
+    const { anchor, idx, id, editing, collapsed, tags, trashed, content, annotationType, pinned, isClosed, howClosed, userGroups, annoGroups, readCount, brokenAnchor, brokenReply, brokenChild, childAnchor, xpath, replies, isPrivate, adopted } = this.state;
     const author = this.props.author === undefined ? "anonymous" : this.props.author;
     if (annotationType === 'default' && !trashed) {
       return (<DefaultAnnotation
