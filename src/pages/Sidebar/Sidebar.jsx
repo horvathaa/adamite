@@ -894,6 +894,13 @@ class Sidebar extends React.Component {
 
   }
 
+  scrollToNewAnnotationEditor = () => {
+    let editorDiv = document.getElementById("NewAnnoEditor");
+    if (editorDiv !== null) {
+      editorDiv.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
+    }
+  }
+
   render() {
     const { currentUser, filteredAnnotations, searchBarInputText, searchedAnnotations, groupAnnotations, filteredGroupAnnotations, pinnedAnnos, groups, activeGroups, sortBy, pageLocationSort } = this.state;
     if (currentUser === undefined) {
@@ -992,6 +999,7 @@ class Sidebar extends React.Component {
                     annoContent={this.state.newAnnotationContent}
                     userGroups={groups}
                     scrollToNewAnnotation={this.scrollToNewAnnotation}
+                    scrollToNewAnnotationEditor={this.scrollToNewAnnotationEditor}
                   />
                 )}
               {this.state.annotatingPage &&
@@ -1004,6 +1012,7 @@ class Sidebar extends React.Component {
                   xpath={null}
                   userGroups={groups}
                   scrollToNewAnnotation={this.scrollToNewAnnotation}
+                  scrollToNewAnnotationEditor={this.scrollToNewAnnotationEditor}
                 />
               }
             </div>

@@ -56,6 +56,7 @@ class NewAnnotation extends React.Component {
         }
       );
     });
+    this.props.scrollToNewAnnotationEditor();
   }
 
   componentWillUnmount() {
@@ -177,7 +178,6 @@ class NewAnnotation extends React.Component {
     const { annotationContent, submitted, tags } = this.state;
 
     const annoBody = annoContent === "" ? annotationContent : annoContent;
-    console.log('what past amber', annoBody, annoContent, annotationContent)
 
     return (
       <React.Fragment>
