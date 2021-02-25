@@ -182,7 +182,7 @@ export default class CardWrapper extends React.Component {
         return (
             <React.Fragment>
                 {!id ? (
-                    <div className="NewAnnotationContainer">
+                    <div className="NewAnnotationContainer" id="NewAnnoEditor">
                         <div className="InnerNewAnnotation">
                             <div className="SelectedTextContainer">{this.props.pageAnnotation}</div>
                             {CardEditor}
