@@ -154,7 +154,7 @@ const checkSidebarStatus = () => {
   );
 };
 
-checkSidebarStatus();
+// checkSidebarStatus();
 
 window.addEventListener('keydown', (event) => {
   // use 'Ctrl/Command + Esc' or 'Ctrl + `' to toggle sidebar

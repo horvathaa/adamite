@@ -11,10 +11,11 @@ class AnnotationList extends Component {
 
   render() {
     const { annotations, currentUser } = this.props;
+    let renderedAnnotations = this.props.showPinned !== undefined && this.props.showPinned ? annotations.filter(a => a.pinned === false) : annotations;
 
     return (
       <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
-        {annotations.map((annotation, idx) => {
+        {renderedAnnotations.map((annotation, idx) => {
           return (
             <Annotation
               key={idx}

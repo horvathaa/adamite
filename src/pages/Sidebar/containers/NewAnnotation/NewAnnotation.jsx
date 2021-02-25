@@ -140,24 +140,10 @@ class NewAnnotation extends React.Component {
                 },
               },
               response => {
-                console.log('response', response);
                 if (response.msg === 'DONE') {
-                  console.log('response', response);
-                  // annotationInfo.id = response.value;
-                  // if (annotationInfo.xpath !== null) {
-                  //   chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-                  //     chrome.tabs.sendMessage(
-                  //       tabs[0].id,
-                  //       {
-                  //         msg: 'ANNOTATION_ADDED',
-                  //         newAnno: annotationInfo,
-                  //       }
-                  //     );
-                  //   });
-                  // }
-
                   this.setState({ submitted: false });
                   this.props.resetNewSelection();
+                  this.props.scrollToNewAnnotation(response.value);
                 }
               }
             );
@@ -191,6 +177,7 @@ class NewAnnotation extends React.Component {
     const { annotationContent, submitted, tags } = this.state;
 
     const annoBody = annoContent === "" ? annotationContent : annoContent;
+    console.log('what past amber', annoBody, annoContent, annotationContent)
 
     return (
       <React.Fragment>

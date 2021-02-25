@@ -106,6 +106,7 @@ export default class CardWrapper extends React.Component {
 
 
         const { annotationContent, tags, elseContent, id, annotationType, groups } = this.state;
+
         const { userGroups } = this.props;
         let splitButtonText;
         if (groups.length) {
@@ -130,13 +131,13 @@ export default class CardWrapper extends React.Component {
             {this.props.edit ? (
                 <React.Fragment>
                     <div className="TextareaContainer">
-                        <RichEditor annotationContent={annotationContent} annotationChangeHandler={this.annotationChangeHandler} />
+                        <RichEditor annotationContent={typeof (elseContent) === "string" ? elseContent : annotationContent} annotationChangeHandler={this.annotationChangeHandler} />
                     </div>
 
                     <div className="Tag-Container">
                         <div className="row">
                             <div className="TextareaContainer">
-                                <TagsInput value={tags} onChange={this.tagsHandleChange} onlyUnique={true} />
+                                <TagsInput value={tags} onChange={this.tagsHandleChange} onlyUnique={true} addOnBlur />
                             </div>
                         </div>
                     </div>

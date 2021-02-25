@@ -7,15 +7,14 @@ import * as xpathRange from "./packages/xpath-range";
 
 
 export const highlightAnnotationDeep = (anno) => {
-    console.log("highlight deep");
     if (!document.getElementsByName(anno.id.toString()).length > 0)
-        highlightAnnotation(anno, anno.id.toString(), "root") 
+        highlightAnnotation(anno, anno.id.toString(), "root")
 
     if (anno.childAnchor !== undefined && anno.childAnchor.length) {
         anno.childAnchor.forEach(child => {
             if (child.xpath !== undefined && child.xpath !== null) {
                 let domId = anno.id.toString() + "-" + child.id.toString();
-                if (!document.getElementsByName(domId).length > 0) highlightAnnotation(child, domId, "child") 
+                if (!document.getElementsByName(domId).length > 0) highlightAnnotation(child, domId, "child")
             }
         });
     }
@@ -63,9 +62,10 @@ export const checkForBrokenAnnotationDeep = (anno, ids) => {
 
 export const highlightAnnotation = (annotation, domId, type) => {
     //will show annotation type
+    console.log('highlighting anno');
     let nodePairs = getNodeSubstringPairs({ annotation: annotation, type: type });
     if (!nodePairs || nodePairs.length == 0) {
-        console.log("no matches");
+        console.log("no matches", type);
         return false;
     }
     //console.log("NODE PAIRS");
@@ -86,10 +86,10 @@ export const highlightAnnotation = (annotation, domId, type) => {
 * Finds Range and highlights each element
 */
 export const tempHighlight = (annotation) => {
-    console.log(annotation);
+    // console.log(annotation);
     let nodePairs = getNodeSubstringPairs({ annotation: annotation, type: "temp" });
     if (!nodePairs || nodePairs.length == 0) {
-        console.log("no matches");
+        // console.log("no matches");
         return false;
     }
     nodePairs.forEach((pair) => {
@@ -165,11 +165,12 @@ function getNodeSubstringPairs({ annotation, type, }) {
     let startOffset = range.startOffset;
 
     nodes = getNodesInRange(range).filter(function (element) { return element.nodeType === 3 && element.data.trim() !== ""; });
-    console.log(nodes);
+    // console.log(nodes);
     if ((startPath === endPath) && nodes.length === 1) {
         // If content string exists use that otherwise use indexes
         let substring = nodes[0].data.substring(startOffset, endOffset ? endOffset : nodes[0].data.length);
-        if (hasContent && substring !== fullContentString) substring = fullContentString;
+        // if (hasContent && substring !== fullContentString) 
+        // substring = fullContentString;
         // Highlight
         return [{ node: nodes[0], substring: substring, startOffset: startOffset, endOffset: endOffset ? endOffset : nodes[0].data.length }];
     }

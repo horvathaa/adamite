@@ -9,6 +9,7 @@
     margin-bottom: 5px;
     margin-right: 5px;
     padding: 5px;
+    cursor: pointer;
 }
 
 .Tag.hover, .Tag:hover {

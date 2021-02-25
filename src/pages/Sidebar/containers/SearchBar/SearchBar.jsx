@@ -119,12 +119,12 @@ class SearchBar extends React.Component {
             event.preventDefault();
             event.stopPropagation();
 
-            console.log("this was an enter", input.value);
+            // console.log("this was an enter", input.value);
             this.inputRef.current.blur();
             this.ElasticSearch2(input.value)
                 .then(res => {
                     const results = res.data.hits.hits.map(h => h._source)
-                    console.log("this is a hit", this.state.hits)
+                    // console.log("this is a hit", this.state.hits)
                     this.setState({ hits: res.data.hits.total.value })
                     this.props.searchedSearchCount(res.data.hits.total.value);
                     this.props.handleSearchBarInputText({ suggestion: results, searchState: true })
@@ -133,22 +133,22 @@ class SearchBar extends React.Component {
         }
         /* Backspace clear search */
         else if (event.keyCode === 8 && input.value.length <= 1) {
-            console.log("clearing search result")
+            // console.log("clearing search result")
             this.closeButton();
         }
     };
 
     onClick = () => {
-        console.log("this on click")
+        // console.log("this on click")
     }
 
     onSuggestionSelected = (event, { suggestion, suggestionValue, suggestionIndex, sectionIndex, method }) => {
-        console.log("suggestions selected", suggestion, event.target.value, method);
+        // console.log("suggestions selected", suggestion, event.target.value, method);
         this.props.searchedSearchCount(1);
         if (suggestion.SharedId !== null) {
             this.doanothersearch(suggestion.SharedId).then(res => {
                 const results = res.data.hits.hits.map(h => h._source)
-                console.log("THESE RESULTS IN CLICK", results)
+                // console.log("THESE RESULTS IN CLICK", results)
                 this.setState({ suggestions: results, hits: 1 })
                 this.removeSearchCache();
                 this.props.handleSearchBarInputText({ suggestion: results, searchState: false });
@@ -173,7 +173,7 @@ class SearchBar extends React.Component {
                     url: url
                 },
                     response => {
-                        console.log('response is probs messed up', response)
+                        // console.log('response is probs messed up', response)
                         resolve(response.response);
                     });
             });
@@ -194,7 +194,7 @@ class SearchBar extends React.Component {
                     userSearch: inputText
                 },
                     response => {
-                        console.log('response is probs messed up', response)
+                        // console.log('response is probs messed up', response)
                         resolve(response.response);
                     });
             });
@@ -204,9 +204,9 @@ class SearchBar extends React.Component {
     onSuggestionsFetchRequested = ({ value }) => {
         this.ElasticSearch2(value)
             .then(res => {
-                console.log("THESE RAW REZ", res.data.hits.total.value)
+                // console.log("THESE RAW REZ", res.data.hits.total.value)
                 const results = res.data.hits.hits.map(h => h._source)
-                console.log("THESE RESULTS", results)
+                // console.log("THESE RESULTS", results)
                 this.setState({ suggestions: results, hits: res.data.hits.total.value })
             })
     }
@@ -233,7 +233,7 @@ class SearchBar extends React.Component {
     }
 
     changeValue = (text) => {
-        console.log("new value", text)
+        // console.log("new value", text)
         this.setState({ dropDownValue: text })
     }
 

@@ -13,7 +13,7 @@ export function getPathFromUrl(url) {
 }
 
 const isContent = (res) => res.from === 'content';
-let clicked = false;
+export let sidebarStatus = [];
 
 let commands = {
     //authHelper
@@ -85,16 +85,25 @@ let commands = {
     // LOCAL COMMANDS
     'UPDATE_ANNOTATIONS_ON_TAB_ACTIVATED': anno.updateAnnotationsOnTabActivated,
     'HANDLE_BROWSER_ACTION_CLICK': () => {
-        clicked = !clicked;
-        toggleSidebar(clicked);
-        if (clicked) {
-            chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-                if (anno.containsObjectWithUrl(tabs[0].url, anno.tabAnnotationCollect)) {
-                    const tabInfo = anno.tabAnnotationCollect.filter(obj => obj.tabUrl === tabs[0].url);
+        chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+            const index = sidebarStatus.findIndex(side => side.id === tabs[0].id);
+            let opening;
+            if (index > -1) {
+                opening = !sidebarStatus[index].open;
+                sidebarStatus[index].open = opening;
+            }
+            else {
+                sidebarStatus.push({ id: tabs[0].id, open: true, url: getPathFromUrl(tabs[0].url) })
+                opening = true;
+            }
+            toggleSidebar(opening);
+            if (opening) {
+                if (anno.containsObjectWithUrl(getPathFromUrl(tabs[0].url), anno.tabAnnotationCollect)) {
+                    const tabInfo = anno.tabAnnotationCollect.filter(obj => obj.tabUrl === getPathFromUrl(tabs[0].url));
                     chrome.tabs.sendMessage(tabs[0].id, {
                         msg: 'HIGHLIGHT_ANNOTATIONS',
                         payload: tabInfo[0].annotations,
-                        url: tabs[0].url
+                        url: getPathFromUrl(tabs[0].url)
                     }, response => {
                         chrome.runtime.sendMessage({
                             msg: 'SORT_LIST',
@@ -103,18 +112,39 @@ let commands = {
                         })
                     })
                 }
-            })
-        }
-        else {
-            chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+            }
+            else {
                 chrome.tabs.sendMessage(tabs[0].id, {
                     msg: 'REMOVE_HIGHLIGHTS'
                 })
-            })
-        }
+            }
+
+
+        })
     },
     'HANDLE_TAB_URL_UPDATE': (tabId, changeInfo, tab) => {
-        if (changeInfo.url) { anno.handleTabUpdate(changeInfo.url, tabId); }
+        if (changeInfo.url) {
+            anno.handleTabUpdate(getPathFromUrl(changeInfo.url), tabId);
+            const index = sidebarStatus.findIndex(side => side.id === tabId);
+            if (index > -1 && sidebarStatus[index].url !== getPathFromUrl(changeInfo.url)) {
+                sidebarStatus[index].open = false;
+                toggleSidebar(false);
+            }
+            else if (index === -1) {
+                sidebarStatus.push({ id: tabId, open: false, url: getPathFromUrl(changeInfo.url) })
+            }
+        }
+        else if (changeInfo.status === 'loading') {
+            const index = sidebarStatus.findIndex(side => side.id === tabId);
+            if (index > -1) {
+                sidebarStatus[index].open = false;
+                toggleSidebar(false);
+                // sidebarStatus[index].url !== getPathFromUrl(changeInfo.url) ? sidebarStatus[index].open = false : sidebarStatus[index].open = true;
+            }
+        }
+    },
+    'HANDLE_TAB_CREATED': (tab) => {
+        sidebarStatus.push({ id: tab.id, open: false, url: getPathFromUrl(tab.url) });
     },
 
     //sidebarHelper
@@ -137,7 +167,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // console.log(request);
     if (request.msg in commands) {
         commands[request.msg](request, sender, sendResponse);
-    } else console.log("Unknown Command", request.message);
+    } else console.log("Unknown Command", request.msg);
     return true;
 });
 
@@ -153,3 +183,7 @@ chrome.browserAction.onClicked.addListener(function () {
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
     commands['HANDLE_TAB_URL_UPDATE'](tabId, changeInfo, tab);
 });
+
+chrome.tabs.onCreated.addListener(function (tab) {
+    commands['HANDLE_TAB_CREATED'](tab);
+})
