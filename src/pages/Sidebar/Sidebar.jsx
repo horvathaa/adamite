@@ -374,17 +374,19 @@ class Sidebar extends React.Component {
               });
               this.setState({ annotations, pageLocationSort: annotations })
               this.requestFilterUpdate();
-
             });
           }
           else {
             this.setState({ annotations });
             this.requestFilterUpdate();
+
           }
         })
 
-
         chrome.browserAction.setBadgeText({ tabId: request.tabId, text: request.payload.length ? String(request.payload.length) : "0" });
+
+
+
       }
       else if (request.msg === 'SORT_LIST' && request.from === 'background') {
         let spanNames = request.payload.spanNames;
@@ -1001,6 +1003,7 @@ class Sidebar extends React.Component {
                   offsets={null}
                   xpath={null}
                   userGroups={groups}
+                  scrollToNewAnnotation={this.scrollToNewAnnotation}
                 />
               }
             </div>

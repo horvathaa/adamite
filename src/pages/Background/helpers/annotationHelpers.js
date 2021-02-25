@@ -416,10 +416,18 @@ export function containsObjectWithUrl(url, list) {
     return test.length !== 0;
 }
 
-function updateList(list, url, annotations) {
+function updateList(list, url, annotations, isPrivate) {
     let obj = list.filter(obj => url === obj.tabUrl);
     let objToUpdate = obj[0];
-    objToUpdate.annotations = annotations;
+    if (isPrivate) {
+        let newList = objToUpdate.annotations.filter(anno => anno.private !== true && !anno.deleted && anno.url.includes(url))
+        objToUpdate.annotations = newList.concat(annotations);
+    }
+    else {
+        let newList = objToUpdate.annotations.filter(anno => anno.private === true && !anno.deleted && anno.url.includes(url))
+        objToUpdate.annotations = newList.concat(annotations);
+    }
+    // objToUpdate.annotations = annotations;
     let temp2 = list.filter(obj => obj.tabUrl !== url);
     temp2.push(objToUpdate);
     // temp2 = removeDuplicates(temp2);
@@ -460,6 +468,7 @@ function getAllPublicPinnedAnnotationsListener() {
 function getAllAnnotationsByUrlListener(url, tabId) {
     publicListener = fb.getAllAnnotationsByUrl(url, fb.getCurrentUser().uid).onSnapshot(annotationsSnapshot => {
         let tempPublicAnnotations = getListFromSnapshots(annotationsSnapshot);
+        tempPublicAnnotations = tempPublicAnnotations.filter(anno => !anno.deleted && anno.url.includes(url))
         let annotationsToBroadcast = tempPublicAnnotations.concat(privateAnnotations);
         annotationsToBroadcast = annotationsToBroadcast.filter(anno => !anno.deleted && anno.url.includes(url));
 
@@ -467,13 +476,14 @@ function getAllAnnotationsByUrlListener(url, tabId) {
             const tabsWithUrl = tabs.filter(t => getPathFromUrl(t.url) === url);
 
             if (containsObjectWithUrl(url, tabAnnotationCollect)) {
-                tabAnnotationCollect = updateList(tabAnnotationCollect, url, annotationsToBroadcast);
+                tabAnnotationCollect = updateList(tabAnnotationCollect, url, tempPublicAnnotations, false);
             }
             else {
                 tabAnnotationCollect.push({ tabUrl: url, annotations: annotationsToBroadcast });
             }
+            let newList = tabAnnotationCollect.filter(obj => obj.tabUrl === url);
             tabsWithUrl.forEach(t => {
-                broadcastAnnotationsToTab("CONTENT_UPDATED", annotationsToBroadcast, url, t.id);
+                broadcastAnnotationsToTab("CONTENT_UPDATED", newList[0].annotations, url, t.id);
             })
         });
         publicAnnotations = tempPublicAnnotations;
@@ -486,6 +496,7 @@ function getAllAnnotationsByUrlListener(url, tabId) {
 function getPrivateAnnotationsByUrlListener(url, tabId) {
     privateListener = fb.getPrivateAnnotationsByUrl(url, fb.getCurrentUser().uid).onSnapshot(annotationsSnapshot => {
         let tempPrivateAnnotations = getListFromSnapshots(annotationsSnapshot);
+        tempPrivateAnnotations = tempPrivateAnnotations.filter(anno => !anno.deleted && anno.url.includes(url))
         let annotationsToBroadcast = tempPrivateAnnotations.concat(publicAnnotations);
         annotationsToBroadcast = annotationsToBroadcast.filter(anno => !anno.deleted && anno.url.includes(url));
 
@@ -493,13 +504,14 @@ function getPrivateAnnotationsByUrlListener(url, tabId) {
             const tabsWithUrl = tabs.filter(t => getPathFromUrl(t.url) === url);
 
             if (containsObjectWithUrl(url, tabAnnotationCollect)) {
-                tabAnnotationCollect = updateList(tabAnnotationCollect, url, annotationsToBroadcast);
+                tabAnnotationCollect = updateList(tabAnnotationCollect, url, tempPrivateAnnotations, true);
             }
             else {
                 tabAnnotationCollect.push({ tabUrl: url, annotations: annotationsToBroadcast });
             }
+            let newList = tabAnnotationCollect.filter(obj => obj.tabUrl === url);
             tabsWithUrl.forEach(t => {
-                broadcastAnnotationsToTab("CONTENT_UPDATED", annotationsToBroadcast, url, t.id);
+                broadcastAnnotationsToTab("CONTENT_UPDATED", newList[0].annotations, url, t.id);
             })
 
         });
