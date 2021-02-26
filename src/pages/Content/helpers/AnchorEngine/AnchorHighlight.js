@@ -69,31 +69,15 @@ export const highlightAnnotation = (annotation, domId, type) => {
         console.log("no matches");
         return false;
     }
-    console.log("NODE PAIRS");
-    console.log(nodePairs);
-    let str = "";
-    let content = "";
-    if ("anchorContent" in annotation && annotation.anchorContent != "") {
-        content = annotation.anchorContent.trim();
-    } else if ("anchor" in annotation && annotation.anchor != "") {
-        content = annotation.anchor.trim();
-    }
-    console.log(content);
-
     nodePairs.forEach((pair) => {
-        if (!str.includes(content)) {
-
-            addHighlightToSubstring({
-                node: pair.node,
-                substring: pair.substring,
-                startOffset: pair.startOffset,
-                endOffset: pair.endOffset,
-                spanId: domId,
-                isPreview: false
-            });
-            str += pair.substring;
-        }
-
+        addHighlightToSubstring({
+            node: pair.node,
+            substring: pair.substring,
+            startOffset: pair.startOffset,
+            endOffset: pair.endOffset,
+            spanId: domId,
+            isPreview: false
+        });
     });
 
     return true;
@@ -109,7 +93,6 @@ export const tempHighlight = (annotation) => {
         console.log("no matches");
         return false;
     }
-    annotation.conte
     nodePairs.forEach((pair) => {
 
         addHighlightToSubstring({
@@ -184,7 +167,7 @@ function getNodeSubstringPairs({ annotation, type, }) {
     let startOffset = range.startOffset;
 
     nodes = getNodesInRange(range).filter(function (element) { return element.nodeType === 3 && element.data.trim() !== ""; });
-    console.log(nodes);
+    //console.log(nodes);
     if ((startPath === endPath) && nodes.length === 1) {
         // If content string exists use that otherwise use indexes
         let substring = nodes[0].data.substring(startOffset, endOffset ? endOffset : nodes[0].data.length);
@@ -192,8 +175,11 @@ function getNodeSubstringPairs({ annotation, type, }) {
         // Highlight
         return [{ node: nodes[0], substring: substring, startOffset: startOffset, endOffset: endOffset ? endOffset : nodes[0].data.length }];
     }
+    else if (annotation.hostname.includes("atomiks.github.io")) {
+        console.log("exeption");
+        return tippyException(annotation, startOffset, endOffset, nodes, fullContentString,)
+    }
     else if (nodes.length > 1) {
-
         let nodePairs = [];
         let start = true;
         let substring = "";
@@ -221,6 +207,39 @@ function getNodeSubstringPairs({ annotation, type, }) {
 }
 
 
+function tippyException(annotation, startOffset, endOffset, nodes, content) {
+    //console.log("Exeption", content);
+    let nodePairs = [];
+    let start = true;
+    let substring = "";
+    let str = "";
+    for (let i = 0; i < nodes.length; i++) {
+        let so, eo;
+        if (content.length > str.length) {
+
+            if (nodes[i].nodeType === 3) {
+                if (startOffset !== 0 && start) {
+                    substring = nodes[i].data.substring(startOffset, nodes[i].data.length);
+                    start = false;
+                    so = startOffset; eo = nodes[i].data.length;
+                }
+                else if (endOffset !== 0 && i == nodes.length - 1) {
+                    substring = nodes[i].data.substring(0, endOffset);
+                    so = 0; eo = endOffset;
+                }
+                else {
+                    substring = nodes[i].data;// if (!remainingContent.includes(substring)) {   console.log("Middle substring error") }
+                    so = 0; eo = nodes[i].data.length;
+                }
+                str += substring;
+                if (content.length > str.length) {
+                    nodePairs.push({ node: nodes[i], substring: substring, startOffset: so, endOffset: eo });
+                }
+            }
+        }
+    }
+    return nodePairs;
+}
 
 
 
