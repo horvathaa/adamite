@@ -307,7 +307,13 @@ class Annotation extends Component {
 
   render() {
     const { active, authorId, currentUser, timeStamp, url, currentUrl } = this.props;
-    const { anchor, idx, id, editing, collapsed, tags, trashed, content, annotationType, pinned, isClosed, howClosed, userGroups, annoGroups, readCount, brokenAnchor, brokenReply, brokenChild, childAnchor, xpath, replies, isPrivate, adopted } = this.state;
+    const { anchor, idx, id, editing,
+      collapsed, tags, trashed, content,
+      annotationType, pinned, isClosed,
+      howClosed, userGroups, annoGroups,
+      readCount, brokenAnchor, brokenReply,
+      brokenChild, childAnchor, xpath, replies,
+      isPrivate, adopted } = this.state;
     const author = this.props.author === undefined ? "anonymous" : this.props.author;
     if (annotationType === 'default' && !trashed) {
       return (<DefaultAnnotation
