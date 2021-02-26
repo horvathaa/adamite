@@ -88,7 +88,7 @@ let messagesIn = {
         highlightAnnotation(request.newAnno, request.newAnno.id)
     },
     'TEMP_ANNOTATION_ADDED': (request, sender, sendResponse) => {
-        console.log(request);
+        console.log("temp", request);
         tempHighlight(request.newAnno);
     },
     'REMOVE_TEMP_ANNOTATION': (request, sender, sendResponse) => {
