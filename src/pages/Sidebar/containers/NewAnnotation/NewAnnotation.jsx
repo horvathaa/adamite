@@ -42,10 +42,13 @@ class NewAnnotation extends React.Component {
 
   componentDidMount() {
     document.addEventListener('keydown', this.keydown, false);
-    const { xpath, offsets } = this.props;
+    const { url, newSelection, xpath, offsets } = this.props;
+    const hostname = new URL(url).hostname;
     const annotationInfo = {
       xpath: xpath,
       offsets: offsets,
+      hostname: hostname,
+      anchor: newSelection,
     };
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
       chrome.tabs.sendMessage(
