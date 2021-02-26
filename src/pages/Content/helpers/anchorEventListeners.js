@@ -16,6 +16,31 @@ import {
 
 import { updateXpaths, } from './AnchorEngine/AnchorDestroy';
 
+// from: https://stackoverflow.com/questions/11805955/how-to-get-the-distance-from-the-top-for-an-element
+function getPosition(element) {
+    var xPosition = 0;
+    var yPosition = 0;
+
+    while (element) {
+        xPosition += (element.offsetLeft - element.scrollLeft + element.clientLeft);
+        yPosition += (element.offsetTop - element.scrollTop + element.clientTop);
+        element = element.offsetParent;
+    }
+
+    return { x: xPosition, y: yPosition };
+}
+
+function removeDuplicates(idArray) {
+    const flags = new Set();
+    const annotations = idArray.filter(highlight => {
+        if (flags.has(highlight.id)) {
+            return false;
+        }
+        flags.add(highlight.id);
+        return true;
+    });
+    return annotations;
+}
 
 document.addEventListener('mouseup', event => {
     transmitMessage({
@@ -67,17 +92,22 @@ let messagesIn = {
         // Ensure that nothing is unintentionally selected 
         let sel = window.getSelection();
         sel.removeAllRanges();
-        let spanNames = Array.from(document.querySelectorAll('.highlight-adamite-annotation')).map(s => s.getAttribute('name'));
-        sendResponse({ spanNames })
+        let kv = [];
+        document.querySelectorAll('.highlight-adamite-annotation').forEach(s => {
+            kv.push({ id: s.getAttribute('name'), y: getPosition(s).y, x: getPosition(s).x })
+        })
+        kv = removeDuplicates(kv);
+        // let spanNames = Array.from(document.querySelectorAll('.highlight-adamite-annotation')).map(s => s.getAttribute('name'));
+        sendResponse({ spanNames: kv })
     },
     'ANNOTATION_FOCUS_ONCLICK': (request, sender, sendResponse) => {
         let findSpan = getSpanFromRequest(request);
         if (findSpan.length === 0) { console.log('len is 0?'); return; }
-        findSpan[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        window.scroll({ top: getPosition(findSpan[0]).y - window.innerHeight / 2, left: getPosition(findSpan[0]).x, behavior: 'smooth' })
     },
     'ANNOTATION_FOCUS': (request, sender, sendResponse) => {
         let findSpan = getSpanFromRequest(request);
-        findSpan.forEach(e => e.style.backgroundColor = '#7cce7299');
+        findSpan.forEach(e => e.style.backgroundColor = 'rgb(45, 350, 180, 0.4)');
     },
     'ANNOTATION_DEFOCUS': (request, sender, sendResponse) => {
         let findSpan = getSpanFromRequest(request);
@@ -88,7 +118,6 @@ let messagesIn = {
         highlightAnnotation(request.newAnno, request.newAnno.id)
     },
     'TEMP_ANNOTATION_ADDED': (request, sender, sendResponse) => {
-        console.log("temp", request);
         tempHighlight(request.newAnno);
     },
     'REMOVE_TEMP_ANNOTATION': (request, sender, sendResponse) => {

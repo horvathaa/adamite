@@ -19,7 +19,7 @@ import ReplyEditor from './Reply/ReplyEditor';
 import view from '../../../../../assets/img/SVGs/view.svg';
 import viewPublic from '../../../../../assets/img/SVGs/view_public.svg';
 import Tooltip from '@material-ui/core/Tooltip';
-
+import { FaHighlighter } from 'react-icons/fa';
 
 class HighlightAnnotation extends Component {
 
@@ -101,7 +101,7 @@ class HighlightAnnotation extends Component {
                         <div className="annotationTypeBadge row2">
                             <div className="annotationTypeBadge col2">
                                 <div className="badgeContainer">
-                                    <img src={Highlight} alt='highlight type badge' />
+                                    <FaHighlighter className="badgeIconSvg" />
                                 </div>
                             </div>
                         </div>

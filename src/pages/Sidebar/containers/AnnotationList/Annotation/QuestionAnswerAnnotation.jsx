@@ -286,6 +286,11 @@ class QuestionAnswerAnnotation extends Component {
                                 size="sm"
                                 title={closeOutText}
                                 onSelect={eventKey => this.closeOut(eventKey)}
+                                onClick={() => {
+                                    if (closeOutText === 'Unanswered Question') {
+                                        this.setState({ replying: true })
+                                    }
+                                }}
                             >
                                 <BootstrapDropdown.Item className="dropdown-link" onSelect={eventKey => this.closeOut(eventKey)} eventKey={closeoutOptions[0]}>{closeoutOptions[0]}</BootstrapDropdown.Item>
                                 <BootstrapDropdown.Item className="dropdown-link" onSelect={eventKey => this.closeOut(eventKey)} eventKey={closeoutOptions[1]}>{closeoutOptions[1]}</BootstrapDropdown.Item>

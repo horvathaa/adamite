@@ -139,7 +139,6 @@ export function regenKey() {
 export function keyWrapper(passedFunction, args, count = 0) {
     return new Promise((resolve, reject) => {
         chrome.storage.sync.get(['ElasticAPIKey'], storedKey => {
-            console.log("this is the key", storedKey);
             passedFunction(storedKey.ElasticAPIKey.data, args)
                 .then(e => resolve(e))
                 .catch(function (err) {
@@ -233,7 +232,6 @@ export function searchBarQuery(query) {
                 [{ "match": { "url": query.url } }] :
                 [{ "regexp": { "url": ".*" + query.hostname + ".*" } }];
 
-        console.log("NEW TEST QUERY", searchObj)
         searchObj.query.bool.filter.push(inputQueryBuilder(query.userSearch));
     }
     else {
@@ -254,7 +252,6 @@ export function searchBarQuery(query) {
             "partialSearch": {}
         }
     }
-    console.log("NEW TEST QUERY", searchObj)
     return searchObj
 }
 
@@ -284,7 +281,6 @@ export function highlightOffsetMatch(hlElement, source) {
 }
 
 export function storeQueryForScroll(query, total, url) {
-    console.log("test query", query.from, url)
     if (typeof query.highlight !== "undefined") {
         delete query.highlight;
     }
@@ -298,11 +294,9 @@ export function retrieveUrlQuery(url) {
     return new Promise((resolve, reject) => {
         chrome.storage.local.get([url], function (result) {
             if (typeof result === "undefined" || (Object.keys(result).length === 0 && result.constructor === Object)) {
-                console.log("reject here baby");
                 reject(null);
             }
             else {
-                console.log("this is the query for url", result[url])
                 resolve(result[url]);
             }
         });
@@ -310,10 +304,8 @@ export function retrieveUrlQuery(url) {
 }
 
 export function removeQueryForScroll(url) {
-    console.log("DELETEING ");
     chrome.storage.local.get([url], function (result) {
         if (typeof result === "undefined" || (Object.keys(result).length === 0 && result.constructor === Object)) {
-            console.log("reject here baby");
         }
         else {
             chrome.storage.local.remove(url)
@@ -322,10 +314,6 @@ export function removeQueryForScroll(url) {
 }
 
 export function axiosWrapper(path, query, AuthStr, args, successFunc) {
-    console.log('path', path);
-    console.log('query', query);
-    console.log('auth', AuthStr);
-
     return new Promise((resolve, reject) => {
         axios.get(path,
             {
@@ -343,7 +331,6 @@ export function axiosWrapper(path, query, AuthStr, args, successFunc) {
                 resolve(successFunc(res, args));
             })
             .catch((err) => {
-                console.log('this is the err', err);
                 reject(err);
             });
     });
@@ -352,10 +339,8 @@ export function axiosWrapper(path, query, AuthStr, args, successFunc) {
 export function refreshSuccess(res, args) {
     var finalArray = [];
 
-    console.log("this is the res", res.data)
     if (res.data.hits.hits.length !== 0) {
         res.data.hits.hits.forEach(function (element) {
-            console.log(element._source)
             var obj = element._source
             obj["id"] = element._id
             element._source["id"] = element._id
@@ -363,20 +348,17 @@ export function refreshSuccess(res, args) {
             finalArray.push(obj)
         });
     }
-    console.log("Final Array", finalArray)
     return res;
 
 }
 export function paginationSuccess(res, args) {
     var finalArray = [];
 
-    console.log("this is the res", res.data)
     if (res.data.hits.hits.length !== 0) {
         if (res.data.hits.total.value > 10) {
             storeQueryForScroll(args.query, res.data.hits.total.value, args.url)
         }
         res.data.hits.hits.forEach(function (element) {
-            console.log(element._source)
             var obj = element._source
             obj["id"] = element._id
             element._source["id"] = element._id
@@ -384,20 +366,16 @@ export function paginationSuccess(res, args) {
             finalArray.push(obj)
         });
     }
-    console.log("Final Array", finalArray)
     return res;
 }
 
 export function groupSearchSuccess(res, args) {
     var finalArray = [];
-
-    console.log("this is the group res", res.data)
     if (res.data.hits.hits.length !== 0) {
         if (res.data.hits.total.value > 10) {
             storeQueryForScroll(args.query, res.data.hits.total.value, args.url)
         }
         res.data.hits.hits.forEach(function (element) {
-            console.log(element._source)
             var obj = element._source
             obj["id"] = element._id
             element._source["id"] = element._id
@@ -405,20 +383,17 @@ export function groupSearchSuccess(res, args) {
             finalArray.push(obj)
         });
     }
-    console.log("Final Array", finalArray)
     return res;
 }
 
 export function searchBarSuccess(res, args) {
     var finalArray = [];
     var userSearch = args.userSearch
-    console.log("this is the res", res.data)
     if (res.data.hits.hits.length !== 0) {
         if (res.data.hits.total.value > 10) {
             storeQueryForScroll(args.query, res.data.hits.total.value, args.url)
         }
         res.data.hits.hits.forEach(function (element) {
-            console.log(element._source)
             userSearch = userSearch.toLowerCase();
             element._source["matchedAt"] = findWhereMatched(element._source, userSearch)
             var obj = element._source
@@ -429,7 +404,6 @@ export function searchBarSuccess(res, args) {
             finalArray.push(obj)
         });
     }
-    console.log("Final Array", finalArray)
     return res;
 }
 
@@ -438,7 +412,6 @@ export function searchBarSuccess(res, args) {
 export function search(key, args) {
     return new Promise((resolve, reject) => {
         var query = args.query;
-        console.log("this is teh query", query);
         const AuthStr = 'ApiKey ' + key;
         axiosWrapper(path, query, AuthStr, args, args.successFunction)
             .then(e => resolve(e))

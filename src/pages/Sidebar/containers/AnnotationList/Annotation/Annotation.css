@@ -78,14 +78,16 @@
   border-radius: 50%;
   background-color: #EBECF0;
   text-align: center;
+  cursor: default;
 }
 
 .profile {
   width: 20px;
   height: 20px;
   color: #6B778C;
-  cursor: pointer;
+
 }
+
 
 .userProfileContainer {
   height: 100%;
@@ -118,7 +120,7 @@
   /* background-color: rgba(255, 255, 255, 0.5); */
   transition: all 0.1s ease-in;
   position: relative;
-  cursor: pointer;
+  /* cursor: pointer; */
   /* box-shadow: gray; */
 }
 
@@ -158,6 +160,17 @@
 }
 
 .badgeContainer {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.badgeContainer:hover, .badgeContainer.hover {
+  filter: brightness(1.2);
+}
+
+.badgeIconSvg {
+  color: #6B778C;
   width: 24px;
   height: 24px;
 }
@@ -219,36 +232,36 @@
 }
 
 .Clicked {
-  fill: yellowgreen;
-  stroke: yellowgreen;
-  color: yellowgreen !important;
-  border-color: yellowgreen;
+  fill: rgb(20, 197, 135);
+  stroke: rgb(20, 197, 135);
+  color: rgb(20, 197, 135) !important;
+  border-color: rgb(20, 197, 135);
 }
 
 .Clicked object {
-  fill: yellowgreen;
-  stroke: yellowgreen;
-  color: yellowgreen;
-  border-color: yellowgreen;
+  fill: rgb(20, 197, 135);
+  stroke: rgb(20, 197, 135);
+  color: rgb(20, 197, 135);
+  border-color: rgb(20, 197, 135);
 }
 
 .AnchorContainer .Clicked {
-  fill: yellowgreen;
-  stroke: yellowgreen;
-  color: yellowgreen;
-  border-color: yellowgreen;
+  fill: rgb(20, 197, 135);
+  stroke: rgb(20, 197, 135);
+  color: rgb(20, 197, 135);
+  border-color: rgb(20, 197, 135);
 }
 
 .AnchorContainer:hover {
-  color: yellowgreen;
-  border-color: yellowgreen;
+  color: rgb(20, 197, 135);
+  border-color: rgb(20, 197, 135);
   cursor: pointer;
 
 }
 
 .AnchorContainer:hover object {
-  fill: yellowgreen;
-  stroke: yellowgreen;
+  fill: rgb(20, 197, 135);
+  stroke: rgb(20, 197, 135);
 }
 
 .AnchorContainer {
@@ -537,6 +550,7 @@
 
 .TopIconContainer {
   padding-right: 4px;
+  cursor: pointer;
 }
 
 

@@ -42,10 +42,22 @@ export function setPinnedAnnotationListeners(request, sender, sendResponse) {
 }
 
 export async function getAnnotationsPageLoad(request, sender, sendResponse) {
-    console.log("GET_ANNOTATIONS_PAGE_LOAD");
-
-    // let email = fb.getCurrentUser().email;
-    // let userName = email.substring(0, fb.getCurrentUser().email.indexOf('@'));
+    let email = fb.getCurrentUser().email;
+    let userName = email.substring(0, fb.getCurrentUser().email.indexOf('@'));
+    if (request.tabId !== undefined) {
+        chrome.tabs.sendMessage(
+            request.tabId,
+            {
+                msg: 'CREATE_GROUP',
+                from: 'background',
+                owner: {
+                    uid: request.uid,
+                    email: email,
+                    userName: userName
+                }
+            }
+        );
+    }
     getAllAnnotationsByUrlListener(request.url, request.tabId,)
     getPrivateAnnotationsByUrlListener(request.url, request.tabId,);
     // chrome.browserAction.setBadgeText({ text: String(annotations.length) });
@@ -66,10 +78,9 @@ export function getAnnotationById(request, sender, sendResponse) {
 
 export async function createAnnotation(request, sender, sendResponse) {
     fb.createAnnotation(_createAnnotation(request)).then(value => {
-        console.log("background", value);
-        console.log('sendResponse', sendResponse);
+        sendResponse({ "msg": 'DONE', "value": value.id });
     });
-    sendResponse({ "msg": 'DONE' });
+
 }
 export async function createAnnotationHighlight(request, sender, sendResponse) {
     let { url, anchor, xpath, offsets } = request.payload;
@@ -95,7 +106,15 @@ export async function createAnnotationHighlight(request, sender, sendResponse) {
         readCount: 0,
         deleted: false,
         events: []
-    });
+    }).then((value => {
+        chrome.runtime.sendMessage({
+            msg: 'SCROLL_INTO_VIEW',
+            payload: {
+                id: value.id
+            },
+            from: 'background'
+        })
+    }));
 }
 // 
 export async function createAnnotationReply(request, sender, sendResponse) {
@@ -162,7 +181,6 @@ export async function updateAnnotation(request, sender, sendResponse) {
         events: fbUnion(editEvent(request.msg, doc.data())),
     })
     broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
-    console.log("TODO", request.message);
 }
 
 
@@ -285,20 +303,22 @@ export async function searchAnnotationsByTag(request, sender, sendResponse) {
 
 
 export function updateAnnotationsOnTabActivated(activeInfo) {
-    if (containsObjectWithUrl(activeInfo.url, tabAnnotationCollect)) {
-        const tabInfo = tabAnnotationCollect.filter(obj => obj.tabUrl === activeInfo.url);
-        broadcastAnnotationsUpdatedTab('CONTENT_UPDATED', tabInfo[0].annotations);
+    if (activeInfo.url) {
+        if (containsObjectWithUrl(getPathFromUrl(activeInfo.url), tabAnnotationCollect)) {
+            const tabInfo = tabAnnotationCollect.filter(obj => obj.tabUrl === getPathFromUrl(activeInfo.url));
+            broadcastAnnotationsUpdatedTab('CONTENT_UPDATED', tabInfo[0].annotations);
+        }
+        else {
+            chrome.tabs.get(activeInfo.tabId, (tab) => {
+                getAllAnnotationsByUrlListener(getPathFromUrl(tab.url), tab.id);
+                getPrivateAnnotationsByUrlListener(getPathFromUrl(tab.url), tab.id);
+            });
+        }
     }
-    else {
-        chrome.tabs.get(activeInfo.tabId, (tab) => {
-            getAllAnnotationsByUrlListener(tab.url, tab.id);
-            getPrivateAnnotationsByUrlListener(tab.url, tab.id);
-        });
-    }
+
 }
 
 export function handleTabUpdate(url, tabId) {
-    console.log("Handle tab update");
     getAllAnnotationsByUrlListener(url, tabId);
     getPrivateAnnotationsByUrlListener(url, tabId);
 }
@@ -396,10 +416,18 @@ export function containsObjectWithUrl(url, list) {
     return test.length !== 0;
 }
 
-function updateList(list, url, annotations) {
+function updateList(list, url, annotations, isPrivate) {
     let obj = list.filter(obj => url === obj.tabUrl);
     let objToUpdate = obj[0];
-    objToUpdate.annotations = annotations;
+    if (isPrivate) {
+        let newList = objToUpdate.annotations.filter(anno => anno.private !== true && !anno.deleted && anno.url.includes(url))
+        objToUpdate.annotations = newList.concat(annotations);
+    }
+    else {
+        let newList = objToUpdate.annotations.filter(anno => anno.private === true && !anno.deleted && anno.url.includes(url))
+        objToUpdate.annotations = newList.concat(annotations);
+    }
+    // objToUpdate.annotations = annotations;
     let temp2 = list.filter(obj => obj.tabUrl !== url);
     temp2.push(objToUpdate);
     // temp2 = removeDuplicates(temp2);
@@ -422,7 +450,6 @@ function getAllPrivatePinnedAnnotationsListener() {
         let tempPrivatePinnedAnnotations = getListFromSnapshots(annotationsSnapshot);
         pinnedAnnotations = tempPrivatePinnedAnnotations.concat(publicPinnedAnnotations);
         privatePinnedAnnotations = tempPrivatePinnedAnnotations;
-
         broadcastAnnotationsUpdated("PINNED_CHANGED", pinnedAnnotations);
     });
 }
@@ -441,6 +468,7 @@ function getAllPublicPinnedAnnotationsListener() {
 function getAllAnnotationsByUrlListener(url, tabId) {
     publicListener = fb.getAllAnnotationsByUrl(url, fb.getCurrentUser().uid).onSnapshot(annotationsSnapshot => {
         let tempPublicAnnotations = getListFromSnapshots(annotationsSnapshot);
+        tempPublicAnnotations = tempPublicAnnotations.filter(anno => !anno.deleted && anno.url.includes(url))
         let annotationsToBroadcast = tempPublicAnnotations.concat(privateAnnotations);
         annotationsToBroadcast = annotationsToBroadcast.filter(anno => !anno.deleted && anno.url.includes(url));
 
@@ -448,13 +476,14 @@ function getAllAnnotationsByUrlListener(url, tabId) {
             const tabsWithUrl = tabs.filter(t => getPathFromUrl(t.url) === url);
 
             if (containsObjectWithUrl(url, tabAnnotationCollect)) {
-                tabAnnotationCollect = updateList(tabAnnotationCollect, url, annotationsToBroadcast);
+                tabAnnotationCollect = updateList(tabAnnotationCollect, url, tempPublicAnnotations, false);
             }
             else {
                 tabAnnotationCollect.push({ tabUrl: url, annotations: annotationsToBroadcast });
             }
+            let newList = tabAnnotationCollect.filter(obj => obj.tabUrl === url);
             tabsWithUrl.forEach(t => {
-                broadcastAnnotationsToTab("CONTENT_UPDATED", annotationsToBroadcast, url, t.id);
+                broadcastAnnotationsToTab("CONTENT_UPDATED", newList[0].annotations, url, t.id);
             })
         });
         publicAnnotations = tempPublicAnnotations;
@@ -467,6 +496,7 @@ function getAllAnnotationsByUrlListener(url, tabId) {
 function getPrivateAnnotationsByUrlListener(url, tabId) {
     privateListener = fb.getPrivateAnnotationsByUrl(url, fb.getCurrentUser().uid).onSnapshot(annotationsSnapshot => {
         let tempPrivateAnnotations = getListFromSnapshots(annotationsSnapshot);
+        tempPrivateAnnotations = tempPrivateAnnotations.filter(anno => !anno.deleted && anno.url.includes(url))
         let annotationsToBroadcast = tempPrivateAnnotations.concat(publicAnnotations);
         annotationsToBroadcast = annotationsToBroadcast.filter(anno => !anno.deleted && anno.url.includes(url));
 
@@ -474,13 +504,14 @@ function getPrivateAnnotationsByUrlListener(url, tabId) {
             const tabsWithUrl = tabs.filter(t => getPathFromUrl(t.url) === url);
 
             if (containsObjectWithUrl(url, tabAnnotationCollect)) {
-                tabAnnotationCollect = updateList(tabAnnotationCollect, url, annotationsToBroadcast);
+                tabAnnotationCollect = updateList(tabAnnotationCollect, url, tempPrivateAnnotations, true);
             }
             else {
                 tabAnnotationCollect.push({ tabUrl: url, annotations: annotationsToBroadcast });
             }
+            let newList = tabAnnotationCollect.filter(obj => obj.tabUrl === url);
             tabsWithUrl.forEach(t => {
-                broadcastAnnotationsToTab("CONTENT_UPDATED", annotationsToBroadcast, url, t.id);
+                broadcastAnnotationsToTab("CONTENT_UPDATED", newList[0].annotations, url, t.id);
             })
 
         });

@@ -232,6 +232,9 @@ class Sidebar extends React.Component {
       // else if (request.from === 'content' && request.msg === 'ANCHOR_BROKEN') {
       //   console.log('this worked', request.payload);
       // }
+      else if (request.from === 'background' && request.msg === 'SCROLL_INTO_VIEW') {
+        this.scrollToNewAnnotation(request.payload.id);
+      }
       else if (
         request.from === 'content' &&
         request.msg === 'ANCHOR_CLICKED'
@@ -288,21 +291,23 @@ class Sidebar extends React.Component {
           clickedAnnos.forEach(anno => {
             // setTimeout(() => {
             let annoDiv = document.getElementById(anno.id);
-            annoDiv.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
-            // annoDiv.style.backgroundColor = "purple";
-            let anchors = annoDiv.querySelectorAll(".AnchorContainer");
-            // console.log('anchors', anchors);
-            anchors.forEach(anch => {
-              anch.classList.add("Clicked")
-            })
-            chrome.tabs.sendMessage(
-              this.state.tabId,
-              {
-                msg: 'ANNOTATION_FOCUS',
-                id: anno.id,
-                // replyId: this.props.replyId
-              }
-            );
+            if (annoDiv !== null) {
+              annoDiv.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
+              // annoDiv.style.backgroundColor = "purple";
+              let anchors = annoDiv.querySelectorAll(".AnchorContainer");
+              // console.log('anchors', anchors);
+              anchors.forEach(anch => {
+                anch.classList.add("Clicked")
+              })
+              chrome.tabs.sendMessage(
+                this.state.tabId,
+                {
+                  msg: 'ANNOTATION_FOCUS',
+                  id: anno.id,
+                  // replyId: this.props.replyId
+                }
+              );
+            }
             // }, 500);
 
           })
@@ -345,20 +350,26 @@ class Sidebar extends React.Component {
       ) {
         let annotations = request.payload;
         this.setState({ url: request.url });
-        chrome.storage.local.get(['sidebarOpen'], response => {
-          if (response !== undefined && response.sidebarOpen) {
+        chrome.runtime.sendMessage({
+          msg: 'REQUEST_SIDEBAR_STATUS',
+          from: 'content'
+        }, (sidebarOpen) => {
+          if (sidebarOpen !== undefined && sidebarOpen) {
             chrome.tabs.sendMessage(request.tabId, {
               msg: 'HIGHLIGHT_ANNOTATIONS',
               payload: request.payload,
               url: request.url
             }, response => {
-              let spanNames = new Array(...new Set(response.spanNames));
-              spanNames = spanNames.map((id) => {
-                return id.includes('-') ? id.substring(0, id.indexOf('-')) : id;
+              let spanNames = response.spanNames;
+              spanNames = spanNames.map((obj) => {
+                return obj.id.includes('-') ? obj.id.substring(0, obj.id.indexOf('-')) : obj.id;
               });
+              spanNames.sort((a, b) => {
+                return a.y !== b.y ? a.y - b.y : a.x - b.x
+              })
               annotations.sort((a, b) => {
-                const index1 = spanNames.indexOf(a.id);
-                const index2 = spanNames.indexOf(b.id);
+                const index1 = spanNames.findIndex(obj => obj === a.id);
+                const index2 = spanNames.findIndex(obj => obj === b.id)
                 return ((index1 > -1 ? index1 : Infinity) - (index2 > -1 ? index2 : Infinity))
               });
               this.setState({ annotations, pageLocationSort: annotations })
@@ -367,21 +378,32 @@ class Sidebar extends React.Component {
           }
           else {
             this.setState({ annotations });
+            this.requestFilterUpdate();
+
           }
-        });
+        })
+
         chrome.browserAction.setBadgeText({ tabId: request.tabId, text: request.payload.length ? String(request.payload.length) : "0" });
+
+
+
       }
       else if (request.msg === 'SORT_LIST' && request.from === 'background') {
-        let spanNames = new Array(...new Set(request.payload.spanNames));
-        spanNames = spanNames.map((id) => {
-          return id.includes('-') ? id.substring(0, id.indexOf('-')) : id;
-        })
+        let spanNames = request.payload.spanNames;
         let annotations = this.state.annotations;
+
+        spanNames = spanNames.map((obj) => {
+          return obj.id.includes('-') ? obj.id.substring(0, obj.id.indexOf('-')) : obj.id;
+        });
+        spanNames.sort((a, b) => {
+          return a.y !== b.y ? a.y - b.y : a.x - b.x
+        })
         annotations.sort((a, b) => {
-          const index1 = spanNames.indexOf(a.id);
-          const index2 = spanNames.indexOf(b.id);
+          const index1 = spanNames.findIndex(obj => obj === a.id);
+          const index2 = spanNames.findIndex(obj => obj === b.id)
           return ((index1 > -1 ? index1 : Infinity) - (index2 > -1 ? index2 : Infinity))
         });
+
         this.setState({ annotations, pageLocationSort: annotations })
         this.requestFilterUpdate();
       }
@@ -864,30 +886,35 @@ class Sidebar extends React.Component {
     // }
   };
 
+  scrollToNewAnnotation = (id) => {
+    let annoDiv = document.getElementById(id);
+    if (annoDiv !== null) {
+      annoDiv.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
+    }
+
+  }
+
+  scrollToNewAnnotationEditor = () => {
+    let editorDiv = document.getElementById("NewAnnoEditor");
+    if (editorDiv !== null) {
+      editorDiv.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
+    }
+  }
+
   render() {
     const { currentUser, filteredAnnotations, searchBarInputText, searchedAnnotations, groupAnnotations, filteredGroupAnnotations, pinnedAnnos, groups, activeGroups, sortBy, pageLocationSort } = this.state;
     if (currentUser === undefined) {
       return null;
     }
-    // console.log("this is a render");
-    // console.log('bad bad', this.state.relatedQuestions);
     const inputText = searchBarInputText.toLowerCase();
-    // console.log("ll code", groupAnnotations, activeGroups, activeGroups.length);
-    // console.log("these are searched annotations", searchedAnnotations, searchedAnnotations.length === 0)
     let renderedAnnotations = [];
     if (searchedAnnotations.length) {
       renderedAnnotations = searchedAnnotations;
     }
     else if (activeGroups.length) {
-      // if (filteredGroupAnnotations.length) {
-      //   renderedAnnotations = renderedAnnotations.concat(filteredGroupAnnotations);
-      // }
-      // else {
       groupAnnotations.forEach((group) => {
-        // console.log('groupppp', group);
         renderedAnnotations = renderedAnnotations.concat(group.annotations);
       });
-      // }
     }
     else {
       renderedAnnotations = filteredAnnotations;
@@ -899,7 +926,7 @@ class Sidebar extends React.Component {
       );
     }
     else {
-      if (searchedAnnotations.length === 0 && groupAnnotations.length === 0) // this is bad if we have an in-place filter that doesn't match with pageLocationSort - fix later
+      if (searchedAnnotations.length === 0 && groupAnnotations.length === 0 && filteredAnnotations.length === pageLocationSort.length) // this is bad if we have an in-place filter that doesn't match with pageLocationSort - fix later
         renderedAnnotations = pageLocationSort;
     }
 
@@ -914,7 +941,6 @@ class Sidebar extends React.Component {
     const pinnedNumChildAnchs = pinnedAnnosCopy.filter(anno => anno.SharedId !== null);
 
     const numChildAnchs = renderedAnnotations.filter(anno => anno.SharedId !== null);
-    // chrome.browserAction.setBadgeText({ tabId: this.state.tabId, text: String(renderedAnnotations.length) });
 
     let tempSearchCount;
     if (this.state.showPinned) {
@@ -955,6 +981,7 @@ class Sidebar extends React.Component {
                   clearSelectedAnno={this.clearSelectedAnno}
                   notifySidebarSort={this.notifySidebarSort}
                   currentSort={this.state.sortBy}
+                  getFilteredAnnotations={this.getFilteredAnnotations}
                 // activeGroup={activeGroups.length ? activeGroup : "Public"}
                 />
               }
@@ -971,6 +998,8 @@ class Sidebar extends React.Component {
                     type={this.state.newAnnotationType}
                     annoContent={this.state.newAnnotationContent}
                     userGroups={groups}
+                    scrollToNewAnnotation={this.scrollToNewAnnotation}
+                    scrollToNewAnnotationEditor={this.scrollToNewAnnotationEditor}
                   />
                 )}
               {this.state.annotatingPage &&
@@ -982,6 +1011,8 @@ class Sidebar extends React.Component {
                   offsets={null}
                   xpath={null}
                   userGroups={groups}
+                  scrollToNewAnnotation={this.scrollToNewAnnotation}
+                  scrollToNewAnnotationEditor={this.scrollToNewAnnotationEditor}
                 />
               }
             </div>
@@ -1031,11 +1062,12 @@ class Sidebar extends React.Component {
                     currentUser={currentUser}
                     url={this.state.url}
                     requestFilterUpdate={this.requestChildAnchorFilterUpdate}
-                    notifyParentOfPinning={this.handlePinnedAnnotation} />
+                    notifyParentOfPinning={this.handlePinnedAnnotation}
+                    showPinned={this.state.showPinned} />
                 )}
               {(this.state.url.includes("facebook.com") || this.state.url.includes("google.com") || this.state.url.includes("twitter.com")) && !this.state.url.includes("developer") ? (
                 <div className="whoops">
-                  NOTE: Adamite does not work well on dynamic webpages such as Facebook or Twitter where content is likely to change. Proceed with caution.
+                  NOTE: Adamite does not work well on dynamic webpages such as Facebook, Google Docs, or Twitter where content is likely to change. Proceed with caution.
                 </div>
               ) : (null)}
             </div>

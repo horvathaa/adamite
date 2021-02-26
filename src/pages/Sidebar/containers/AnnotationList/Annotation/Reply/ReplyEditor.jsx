@@ -39,6 +39,16 @@ class ReplyEditor extends Component {
                     offsets,
                     hostname
                 });
+                const annotationInfo = {
+                    xpath, offsets
+                };
+                chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+                    chrome.tabs.sendMessage(tabs[0].id, {
+                        msg: 'TEMP_ANNOTATION_ADDED',
+                        newAnno: annotationInfo,
+                    }
+                    );
+                });
             }
         });
     }
@@ -49,6 +59,16 @@ class ReplyEditor extends Component {
 
     cancelReply = () => {
         this.setState({ reply: "" });
+        if (this.state.xpath !== undefined) {
+            chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+                chrome.tabs.sendMessage(
+                    tabs[0].id,
+                    {
+                        msg: 'REMOVE_TEMP_ANNOTATION',
+                    }
+                );
+            });
+        }
         this.props.finishReply();
     }
 
@@ -160,6 +180,12 @@ class ReplyEditor extends Component {
                     }
                     if (this.state.xpath !== undefined) {
                         chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+                            chrome.tabs.sendMessage(
+                                tabs[0].id,
+                                {
+                                    msg: 'REMOVE_TEMP_ANNOTATION',
+                                }
+                            );
                             chrome.tabs.sendMessage(tabs[0].id, {
                                 msg: 'ADD_REPLY_HIGHLIGHT',
                                 payload: {

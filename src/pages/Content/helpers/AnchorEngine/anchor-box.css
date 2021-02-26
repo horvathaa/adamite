@@ -8,7 +8,7 @@
     /* background-color: #dede0a; 
 } */
 .highlight-adamite-annotation {
-    background-color: #ffff0099;
+    background-color: rgb(38, 207, 0, 0.35);
     cursor: pointer;
     display: inline;
 }
@@ -176,11 +176,16 @@
     border-bottom: 1px solid #6B778C;
 }
 
+.svg-button {
+    width: 22px;
+    height: 22px;
+}
+
 .buttonIconContainer {
     padding: 5px;
     margin: auto;
-    width: 2.5em;
-    height: 2.5em;
+    width: 20px;
+    height: 20px;
 }
 
 .buttonRow {
@@ -211,5 +216,5 @@
 }
 
 .buttonIconContainer:hover {
-    filter: brightness(1.5);
+    filter: brightness(1.8);
   }
