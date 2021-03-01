@@ -85,14 +85,15 @@ class Annotation extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.tags !== this.props.tags ||
-      prevProps.content !== this.props.content ||
-      prevProps.type !== this.props.type ||
+    if (this.state.tags !== this.props.tags ||
+      this.state.content !== this.props.content ||
+      this.state.annotationType !== this.props.type ||
       prevProps.authorId !== this.props.authorId ||
       prevProps.pinned !== this.props.pinned ||
       prevProps.isClosed !== this.props.isClosed ||
       prevProps.howClosed !== this.props.howClosed ||
-      prevProps.author !== this.props.author) {
+      prevProps.author !== this.props.author
+    ) {
       this.updateData();
     }
   }
