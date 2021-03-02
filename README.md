@@ -2,9 +2,9 @@
 
 ## Features
 
-For developing Adamite, we use a Chrome Extensions boilerplate that helps you write modular and modern Javascript code, load CSS easily and [automatic reload the browser on code changes](https://webpack.github.io/docs/webpack-dev-server.html#automatic-refresh).
+For developing Adamite, we use a Chrome Extensions boilerplate that helps you write modular and modern Javascript code, load CSS easily and [automatically reload the browser on code changes](https://webpack.github.io/docs/webpack-dev-server.html#automatic-refresh).
 
-This boilerplate is updated with:
+This project is built with:
 
 - [React 16.13](https://reactjs.org)
 - [Webpack 4](https://webpack.js.org/)
@@ -12,7 +12,7 @@ This boilerplate is updated with:
 - [eslint-config-react-app](https://www.npmjs.com/package/eslint-config-react-app)
 - [Prettier](https://prettier.io/)
 
-This boilerplate is heavily inspired by and adapted from [https://github.com/samuelsimoes/chrome-extension-webpack-boilerplate](https://github.com/samuelsimoes/chrome-extension-webpack-boilerplate), with additional support for React 16.13 features and Webpack 4.
+The project structure is heavily inspired by and adapted from [https://github.com/samuelsimoes/chrome-extension-webpack-boilerplate](https://github.com/samuelsimoes/chrome-extension-webpack-boilerplate), with additional support for React 16.13 features and Webpack 4.
 
 
 ## Installing and Running
