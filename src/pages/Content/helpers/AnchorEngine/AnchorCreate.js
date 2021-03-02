@@ -44,7 +44,7 @@ const Popover = ({ selection, xpathToNode, offsets, rectPopover, removePopover }
         <div className="buttonRow">
             <div className="onHoverCreateAnnotation" onClick={(e) => buttonClickedHandler(e, "default")} >
                 <div className="buttonIconContainer">
-                    <img src={chrome.extension.getURL('Default.svg')} alt="default annotation" />
+                    <img src={chrome.extension.getURL('Default.svg')} alt="default annotation" className="svg-button" />
                 </div>
                  Normal
             </div>
@@ -56,7 +56,7 @@ const Popover = ({ selection, xpathToNode, offsets, rectPopover, removePopover }
             </div>
             <div className="onHoverCreateAnnotation" onClick={(e) => buttonClickedHandler(e, "to-do")} >
                 <div className="buttonIconContainer">
-                    <img src={chrome.extension.getURL('Todo.svg')} alt="to-do annnotation" />
+                    <img src={chrome.extension.getURL('Todo.svg')} alt="to-do annnotation" className="svg-button" />
                 </div>
                 <div onClick={(e) => buttonClickedHandler(e, "to-do")}>
                     To-do
@@ -66,7 +66,7 @@ const Popover = ({ selection, xpathToNode, offsets, rectPopover, removePopover }
                 onMouseEnter={() => setShowQuestionMenu(true)}
                 onMouseLeave={() => setShowQuestionMenu(false)}>
                 <div className="buttonIconContainer">
-                    <img src={chrome.extension.getURL('Question.svg')} alt="question annnotation" />
+                    <img src={chrome.extension.getURL('Question.svg')} alt="question annnotation" className="svg-button" />
                 </div>
                 Question
                 {showQuestionMenu && (
@@ -82,7 +82,7 @@ const Popover = ({ selection, xpathToNode, offsets, rectPopover, removePopover }
             </div>
             <div className="onHoverCreateAnnotation" onClick={(e) => buttonClickedHandler(e, "issue")} >
                 <div className="buttonIconContainer">
-                    <img src={chrome.extension.getURL('Issue.svg')} alt="issue annnotation" />
+                    <img src={chrome.extension.getURL('Issue.svg')} alt="issue annnotation" className="svg-button" />
                 </div>
                 Issue
             </div>
