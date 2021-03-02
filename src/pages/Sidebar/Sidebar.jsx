@@ -355,6 +355,12 @@ class Sidebar extends React.Component {
           from: 'content'
         }, (sidebarOpen) => {
           if (sidebarOpen !== undefined && sidebarOpen) {
+            // REAALLLY hate this so-called "solution" lmao
+            chrome.runtime.sendMessage({
+              msg: 'REQUEST_TOGGLE_SIDEBAR',
+              from: 'content',
+              toStatus: true
+            });
             chrome.tabs.sendMessage(request.tabId, {
               msg: 'HIGHLIGHT_ANNOTATIONS',
               payload: request.payload,

@@ -133,15 +133,18 @@ let commands = {
             else if (index === -1) {
                 sidebarStatus.push({ id: tabId, open: false, url: getPathFromUrl(changeInfo.url) })
             }
-        }
-        else if (changeInfo.status === 'loading') {
-            const index = sidebarStatus.findIndex(side => side.id === tabId);
-            if (index > -1) {
-                sidebarStatus[index].open = false;
-                toggleSidebar(false);
-                // sidebarStatus[index].url !== getPathFromUrl(changeInfo.url) ? sidebarStatus[index].open = false : sidebarStatus[index].open = true;
+            else {
+                toggleSidebar(sidebarStatus[index].open);
             }
         }
+        // else if (changeInfo.status === 'loading') {
+        //     // const index = sidebarStatus.findIndex(side => side.id === tabId);
+        //     // if (index > -1) {
+        //     //     sidebarStatus[index].open = false;
+        //     //     toggleSidebar(false);
+        //     //     // sidebarStatus[index].url !== getPathFromUrl(changeInfo.url) ? sidebarStatus[index].open = false : sidebarStatus[index].open = true;
+        //     // }
+        // }
     },
     'HANDLE_TAB_CREATED': (tab) => {
         sidebarStatus.push({ id: tab.id, open: false, url: getPathFromUrl(tab.url) });
