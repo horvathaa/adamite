@@ -11,7 +11,7 @@ chrome.runtime.onMessage.addListener((request) => {
     else if (request.msg === 'GROUP_CREATE_SUCCESS' && request.from === 'background') {
         let positionString = "";
         chrome.storage.sync.get(['sidebarOnLeft'], result => {
-            if (result.sidebarOnLeft === undefined || result.sidebarOnLeft) {
+            if (result.sidebarOnLeft) {
                 positionString = "top-right";
             }
             else {
@@ -56,7 +56,7 @@ chrome.runtime.onMessage.addListener((request) => {
     else if (request.msg === 'GROUP_DELETE_SUCCESS' && request.from === 'background') {
         let positionString = "";
         chrome.storage.sync.get(['sidebarOnLeft'], result => {
-            if (result.sidebarOnLeft === undefined || result.sidebarOnLeft) {
+            if (result.sidebarOnLeft) {
                 positionString = "top-right";
             }
             else {

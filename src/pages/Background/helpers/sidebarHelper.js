@@ -26,7 +26,7 @@ chrome.storage.sync.get(['sidebarOnLeft'], (result) => {
   if (result.sidebarOnLeft !== undefined) {
     sidebarOnLeft = result.sidebarOnLeft === true;
   } else {
-    persistSidebarOnLeftStatus(true); // default on left
+    persistSidebarOnLeftStatus(false); // default on right
   }
 });
 

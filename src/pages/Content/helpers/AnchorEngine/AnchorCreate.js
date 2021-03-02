@@ -221,7 +221,7 @@ export function addNewAnchor({ request, type }) {
 function openSelectAnchorToast() {
     let positionString = "";
     chrome.storage.sync.get(['sidebarOnLeft'], result => {
-        if (result.sidebarOnLeft === undefined || result.sidebarOnLeft) {
+        if (result.sidebarOnLeft) {
             positionString = "top-right";
         }
         else { positionString = "top-left"; }

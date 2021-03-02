@@ -176,7 +176,7 @@ function getNodeSubstringPairs({ annotation, type, }) {
         // Highlight
         return [{ node: nodes[0], substring: substring, startOffset: startOffset, endOffset: endOffset ? endOffset : nodes[0].data.length }];
     }
-    else if (annotation.hostname.includes("atomiks.github.io")) {
+    else if (annotation.hostname.includes("atomiks.github.io") || annotation.hostname.includes("reactjs.org")) {
         console.log("exeption");
         return tippyException(annotation, startOffset, endOffset, nodes, fullContentString,)
     }
