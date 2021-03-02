@@ -63,7 +63,7 @@ var splitReinsertText = function (node, substring, startOffset, endOffset, callb
             return newTextNode;
         });
     } else if (node.data.includes(substring.trim())) {
-        console.log("TRIM", substring)
+        // console.log("TRIM", substring)
         return node.data.replace(substring.trim(), (match, offset, string) => {
             // Does offset change? check and set
             let newTextNode = node.splitText(startOffset);
@@ -74,7 +74,7 @@ var splitReinsertText = function (node, substring, startOffset, endOffset, callb
         });
     }
     else {
-        console.error("FORMAT ERROR", substring);
+        // console.error("FORMAT ERROR", substring);
         let substringText1 = formatText(substring.toString());
         let formatted = formatText(node.data.toString());
         if (formatted.includes(substringText1)) {
@@ -107,7 +107,7 @@ var splitReinsertText = function (node, substring, startOffset, endOffset, callb
                 });
 
             } else {
-                console.log("String not found");
+                // console.log("String not found");
             }
             return false;
         }
