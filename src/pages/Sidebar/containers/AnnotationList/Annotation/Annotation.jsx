@@ -50,9 +50,9 @@ class Annotation extends Component {
   };
 
   updateData = () => {
-    let { tags, content, type, authorId, pinned, isClosed, howClosed } = this.props;
+    let { tags, content, type, authorId, pinned, isClosed, howClosed, childAnchor, anchor, replies } = this.props;
     this.setState({
-      tags, content, annotationType: type, authorId, pinned, isClosed, howClosed
+      tags, content, annotationType: type, authorId, pinned, isClosed, howClosed, childAnchor, anchor, replies, content
     });
   }
 
@@ -88,6 +88,9 @@ class Annotation extends Component {
     if (this.state.tags !== this.props.tags ||
       this.state.content !== this.props.content ||
       this.state.annotationType !== this.props.type ||
+      this.state.anchor !== this.props.anchor ||
+      this.state.childAnchor !== this.props.childAnchor ||
+      this.state.replies !== this.props.replies ||
       prevProps.authorId !== this.props.authorId ||
       prevProps.pinned !== this.props.pinned ||
       prevProps.isClosed !== this.props.isClosed ||
