@@ -28,7 +28,7 @@ const Authentication = props => {
       },
       response => {
         console.log(response);
-        if (response.error) {
+        if (response !== undefined && response.error) {
           alert(response.message);
         }
       }
@@ -57,7 +57,7 @@ const Authentication = props => {
       },
       response => {
         console.log(response);
-        if (response.error) {
+        if (response !== undefined && response.error) {
           alert(response.message);
         }
       }
@@ -80,7 +80,7 @@ const Authentication = props => {
       },
       response => {
         console.log(response);
-        if (response.error) {
+        if (response !== undefined && response.error) {
           alert(response.message);
         } else {
           alert('Password reset email sent!');

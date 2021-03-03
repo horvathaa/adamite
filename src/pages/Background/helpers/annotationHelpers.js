@@ -446,22 +446,31 @@ function getListFromSnapshots(snapshots) {
 }
 
 function getAllPrivatePinnedAnnotationsListener() {
-    pinnedPrivateListener = fb.getAllPrivatePinnedAnnotationsByUserId(fb.getCurrentUserId()).onSnapshot(annotationsSnapshot => {
-        let tempPrivatePinnedAnnotations = getListFromSnapshots(annotationsSnapshot);
-        pinnedAnnotations = tempPrivatePinnedAnnotations.concat(publicPinnedAnnotations);
-        privatePinnedAnnotations = tempPrivatePinnedAnnotations;
-        broadcastAnnotationsUpdated("PINNED_CHANGED", pinnedAnnotations);
-    });
+    const user = fb.getCurrentUser();
+    if (user !== null) {
+        pinnedPrivateListener = fb.getAllPrivatePinnedAnnotationsByUserId(fb.getCurrentUserId()).onSnapshot(annotationsSnapshot => {
+            let tempPrivatePinnedAnnotations = getListFromSnapshots(annotationsSnapshot);
+            pinnedAnnotations = tempPrivatePinnedAnnotations.concat(publicPinnedAnnotations);
+            privatePinnedAnnotations = tempPrivatePinnedAnnotations;
+            broadcastAnnotationsUpdated("PINNED_CHANGED", pinnedAnnotations);
+        });
+    }
+
+
 }
 
 
 function getAllPublicPinnedAnnotationsListener() {
-    pinnedPublicListener = fb.getAllPinnedAnnotationsByUserId(fb.getCurrentUserId()).onSnapshot(annotationsSnapshot => {
-        let tempPublicPinnedAnnotations = getListFromSnapshots(annotationsSnapshot);
-        pinnedAnnotations = tempPublicPinnedAnnotations.concat(privatePinnedAnnotations);
-        publicPinnedAnnotations = tempPublicPinnedAnnotations;
-        broadcastAnnotationsUpdated("PINNED_CHANGED", pinnedAnnotations);
-    });
+    const user = fb.getCurrentUser();
+    if (user !== null) {
+        pinnedPublicListener = fb.getAllPinnedAnnotationsByUserId(user.uid).onSnapshot(annotationsSnapshot => {
+            let tempPublicPinnedAnnotations = getListFromSnapshots(annotationsSnapshot);
+            pinnedAnnotations = tempPublicPinnedAnnotations.concat(privatePinnedAnnotations);
+            publicPinnedAnnotations = tempPublicPinnedAnnotations;
+            broadcastAnnotationsUpdated("PINNED_CHANGED", pinnedAnnotations);
+        });
+    }
+
 }
 
 

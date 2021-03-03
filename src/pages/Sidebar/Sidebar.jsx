@@ -348,6 +348,9 @@ class Sidebar extends React.Component {
         request.from === 'background' &&
         request.msg === 'CONTENT_UPDATED'
       ) {
+        if (request === undefined) {
+          return;
+        }
         let annotations = request.payload;
         this.setState({ url: request.url });
         chrome.runtime.sendMessage({
