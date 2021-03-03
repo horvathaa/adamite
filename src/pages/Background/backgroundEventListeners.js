@@ -92,7 +92,7 @@ let commands = {
                 opening = !sidebarStatus[index].open;
                 sidebarStatus[index].open = opening;
             }
-            else {
+            else if (getPathFromUrl(tabs[0].url) !== "" && getPathFromUrl(tabs[0].url) !== "chrome://newtab/") {
                 sidebarStatus.push({ id: tabs[0].id, open: true, url: getPathFromUrl(tabs[0].url) })
                 opening = true;
             }
@@ -126,15 +126,19 @@ let commands = {
         if (changeInfo.url) {
             anno.handleTabUpdate(getPathFromUrl(changeInfo.url), tabId);
             const index = sidebarStatus.findIndex(side => side.id === tabId);
-            if (index > -1 && sidebarStatus[index].url !== getPathFromUrl(changeInfo.url)) {
+            if (index === -1 && getPathFromUrl(changeInfo.url) !== "" && getPathFromUrl(tab.url) !== "chrome://newtab/") {
+                sidebarStatus.push({ id: tabId, open: false, url: getPathFromUrl(changeInfo.url) })
+            }
+            else if (index > -1 && sidebarStatus[index].url !== getPathFromUrl(changeInfo.url) && getPathFromUrl(tab.url) !== "chrome://newtab/") {
                 sidebarStatus[index].open = false;
                 toggleSidebar(false);
             }
-            else if (index === -1) {
-                sidebarStatus.push({ id: tabId, open: false, url: getPathFromUrl(changeInfo.url) })
+            else if (sidebarStatus[index].url === "") {
+                sidebarStatus[index].url = getPathFromUrl(changeInfo.url);
+                toggleSidebar(sidebarStatus[index].open)
             }
             else {
-                toggleSidebar(sidebarStatus[index].open);
+                toggleSidebar(sidebarStatus[index].open)
             }
         }
         // else if (changeInfo.status === 'loading') {
@@ -147,7 +151,9 @@ let commands = {
         // }
     },
     'HANDLE_TAB_CREATED': (tab) => {
-        sidebarStatus.push({ id: tab.id, open: false, url: getPathFromUrl(tab.url) });
+        if (getPathFromUrl(tab.url) !== "" && getPathFromUrl(tab.url) !== "chrome://newtab/") {
+            sidebarStatus.push({ id: tab.id, open: false, url: getPathFromUrl(tab.url) });
+        }
     },
 
     //sidebarHelper

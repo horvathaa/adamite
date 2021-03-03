@@ -140,13 +140,28 @@ class Annotation extends Component {
     }
   }
 
-  handleDoneToDo(id) {
-    chrome.runtime.sendMessage({
-      msg: 'FINISH_TODO',
-      from: 'content',
-      payload: { id }
+  handleDoneToDo = () => {
+    const { id } = this.state;
+    console.log('in here');
+    chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+      let url = tabs[0].url;
+      if (this.props.url[0] === url) {
+        chrome.tabs.sendMessage(
+          tabs[0].id,
+          {
+            msg: 'ANNOTATION_DELETED_ON_PAGE',
+            id: id,
+          }
+        );
+      }
+      chrome.runtime.sendMessage({
+        msg: "ANNOTATION_DELETED",
+        from: "content",
+        payload: {
+          id: id
+        }
+      })
     });
-    this.transmitPinToParent();
   }
 
   handleExpertReview = () => {
