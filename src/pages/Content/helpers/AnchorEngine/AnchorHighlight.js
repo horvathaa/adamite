@@ -87,7 +87,7 @@ export const highlightAnnotation = (annotation, domId, type) => {
 * Finds Range and highlights each element
 */
 export const tempHighlight = (annotation) => {
-    // console.log(annotation);
+    console.log('highlighting temp', annotation);
     let nodePairs = getNodeSubstringPairs({ annotation: annotation, type: "temp" });
     if (!nodePairs || nodePairs.length == 0) {
         // console.log("no matches");
@@ -176,7 +176,7 @@ function getNodeSubstringPairs({ annotation, type, }) {
         // Highlight
         return [{ node: nodes[0], substring: substring, startOffset: startOffset, endOffset: endOffset ? endOffset : nodes[0].data.length }];
     }
-    else if (annotation.hostname.includes("atomiks.github.io") || annotation.hostname.includes("reactjs.org")) {
+    else if (("hostname" in annotation) && (annotation.hostname.includes("atomiks.github.io") || annotation.hostname.includes("reactjs.org"))) {
         console.log("exeption");
         return tippyException(annotation, startOffset, endOffset, nodes, fullContentString,)
     }
