@@ -123,7 +123,7 @@ let commands = {
         })
     },
     'HANDLE_TAB_URL_UPDATE': (tabId, changeInfo, tab) => {
-        if (changeInfo.url) {
+        if ("url" in changeInfo) {
             anno.handleTabUpdate(getPathFromUrl(changeInfo.url), tabId);
             const index = sidebarStatus.findIndex(side => side.id === tabId);
             if (index === -1 && getPathFromUrl(changeInfo.url) !== "" && getPathFromUrl(tab.url) !== "chrome://newtab/") {

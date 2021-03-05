@@ -52,12 +52,13 @@ class Annotation extends Component {
   updateData = () => {
     let { id, tags, content, type, authorId, pinned, isClosed, howClosed, childAnchor, anchor, replies, adopted } = this.props;
     this.setState({
-      id, tags, content, annotationType: type, authorId, pinned, isClosed, howClosed, childAnchor, anchor, replies, content, adopted
+      id, tags, content, annotationType: type, authorId, pinned, isClosed, howClosed, childAnchor, anchor, replies, adopted
     });
   }
 
   async componentDidMount() {
     document.addEventListener('keydown', this.keydown, false);
+    this.updateData();
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       if (request.from === 'content' && request.msg === 'ANCHOR_BROKEN' && request.payload.id === this.state.id) {
         if (this.props.url.includes(this.props.currentUrl) &&
@@ -81,7 +82,7 @@ class Annotation extends Component {
         }
       }
     })
-    this.updateData();
+
   }
 
   componentDidUpdate(prevProps) {

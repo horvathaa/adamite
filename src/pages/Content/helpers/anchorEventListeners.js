@@ -102,7 +102,7 @@ let messagesIn = {
     },
     'ANNOTATION_FOCUS_ONCLICK': (request, sender, sendResponse) => {
         let findSpan = getSpanFromRequest(request);
-        if (findSpan.length === 0) { console.log('len is 0?'); return; }
+        if (findSpan.length === 0) { console.log('len is 0?'); transmitMessage({ msg: "ANCHOR_BROKEN", data: { payload: { "id": request.id } }, sentFrom: "AnchorHighlight" }); return; }
         window.scroll({ top: getPosition(findSpan[0]).y - window.innerHeight / 2, left: getPosition(findSpan[0]).x, behavior: 'smooth' })
     },
     'ANNOTATION_FOCUS': (request, sender, sendResponse) => {
