@@ -87,7 +87,6 @@ export const highlightAnnotation = (annotation, domId, type) => {
 * Finds Range and highlights each element
 */
 export const tempHighlight = (annotation) => {
-    console.log('highlighting temp', annotation);
     let nodePairs = getNodeSubstringPairs({ annotation: annotation, type: "temp" });
     if (!nodePairs || nodePairs.length == 0) {
         // console.log("no matches");

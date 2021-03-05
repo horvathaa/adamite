@@ -50,9 +50,9 @@ class Annotation extends Component {
   };
 
   updateData = () => {
-    let { id, tags, content, type, authorId, pinned, isClosed, howClosed, childAnchor, anchor, replies } = this.props;
+    let { id, tags, content, type, authorId, pinned, isClosed, howClosed, childAnchor, anchor, replies, adopted } = this.props;
     this.setState({
-      id, tags, content, annotationType: type, authorId, pinned, isClosed, howClosed, childAnchor, anchor, replies, content
+      id, tags, content, annotationType: type, authorId, pinned, isClosed, howClosed, childAnchor, anchor, replies, content, adopted
     });
   }
 
@@ -142,7 +142,6 @@ class Annotation extends Component {
 
   handleDoneToDo = () => {
     const { id } = this.state;
-    console.log('in here');
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
       let url = tabs[0].url;
       if (this.props.url[0] === url) {

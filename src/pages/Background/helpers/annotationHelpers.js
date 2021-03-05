@@ -42,8 +42,8 @@ export function setPinnedAnnotationListeners(request, sender, sendResponse) {
 }
 
 export async function getAnnotationsPageLoad(request, sender, sendResponse) {
-    let email = fb.getCurrentUser().email;
-    let userName = email.substring(0, fb.getCurrentUser().email.indexOf('@'));
+    let { email, uid } = fb.getCurrentUser();
+    let userName = email.substring(0, email.indexOf('@'));
     if (request.tabId !== undefined) {
         chrome.tabs.sendMessage(
             request.tabId,
@@ -51,7 +51,7 @@ export async function getAnnotationsPageLoad(request, sender, sendResponse) {
                 msg: 'CREATE_GROUP',
                 from: 'background',
                 owner: {
-                    uid: request.uid,
+                    uid: uid,
                     email: email,
                     userName: userName
                 }

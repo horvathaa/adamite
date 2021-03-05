@@ -154,11 +154,6 @@ class Sidebar extends React.Component {
           );
           this.setUpPinnedListener();
         }
-        // chrome.runtime.sendMessage(
-        //   {
-        //     msg: 'REQUEST_TAB_INFO',
-        //   },
-        //   tabInfo => {
         chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
           let tab = tabs[0];
           this.setState({ url: this.getPathFromUrl(tab.url), tabId: tab.id });
@@ -173,9 +168,7 @@ class Sidebar extends React.Component {
               this.unsubscribeAnnotations();
             }
           }
-          // })
-        }
-        );
+        });
       }
     );
 
@@ -370,17 +363,20 @@ class Sidebar extends React.Component {
               url: request.url
             }, response => {
               let spanNames = response.spanNames;
-              spanNames = spanNames.map((obj) => {
-                return obj.id.includes('-') ? obj.id.substring(0, obj.id.indexOf('-')) : obj.id;
-              });
-              spanNames.sort((a, b) => {
-                return a.y !== b.y ? a.y - b.y : a.x - b.x
-              })
-              annotations.sort((a, b) => {
-                const index1 = spanNames.findIndex(obj => obj === a.id);
-                const index2 = spanNames.findIndex(obj => obj === b.id)
-                return ((index1 > -1 ? index1 : Infinity) - (index2 > -1 ? index2 : Infinity))
-              });
+              if (spanNames !== undefined) {
+                spanNames = spanNames.map((obj) => {
+                  return obj.id.includes('-') ? obj.id.substring(0, obj.id.indexOf('-')) : obj.id;
+                });
+                spanNames.sort((a, b) => {
+                  return a.y !== b.y ? a.y - b.y : a.x - b.x
+                })
+                annotations.sort((a, b) => {
+                  const index1 = spanNames.findIndex(obj => obj === a.id);
+                  const index2 = spanNames.findIndex(obj => obj === b.id)
+                  return ((index1 > -1 ? index1 : Infinity) - (index2 > -1 ? index2 : Infinity))
+                });
+              }
+
               this.setState({ annotations, pageLocationSort: annotations })
               this.requestFilterUpdate();
             });
@@ -400,19 +396,19 @@ class Sidebar extends React.Component {
       else if (request.msg === 'SORT_LIST' && request.from === 'background') {
         let spanNames = request.payload.spanNames;
         let annotations = this.state.annotations;
-
-        spanNames = spanNames.map((obj) => {
-          return obj.id.includes('-') ? obj.id.substring(0, obj.id.indexOf('-')) : obj.id;
-        });
-        spanNames.sort((a, b) => {
-          return a.y !== b.y ? a.y - b.y : a.x - b.x
-        })
-        annotations.sort((a, b) => {
-          const index1 = spanNames.findIndex(obj => obj === a.id);
-          const index2 = spanNames.findIndex(obj => obj === b.id)
-          return ((index1 > -1 ? index1 : Infinity) - (index2 > -1 ? index2 : Infinity))
-        });
-
+        if (spanNames !== undefined) {
+          spanNames = spanNames.map((obj) => {
+            return obj.id.includes('-') ? obj.id.substring(0, obj.id.indexOf('-')) : obj.id;
+          });
+          spanNames.sort((a, b) => {
+            return a.y !== b.y ? a.y - b.y : a.x - b.x
+          })
+          annotations.sort((a, b) => {
+            const index1 = spanNames.findIndex(obj => obj === a.id);
+            const index2 = spanNames.findIndex(obj => obj === b.id)
+            return ((index1 > -1 ? index1 : Infinity) - (index2 > -1 ? index2 : Infinity))
+          });
+        }
         this.setState({ annotations, pageLocationSort: annotations })
         this.requestFilterUpdate();
       }
