@@ -3,6 +3,7 @@
 
 function sendMsg(msg, data, responseCallback) {
     try {
+        console.log('sending this anchor event', msg, data)
         if (responseCallback !== undefined && responseCallback !== null) {
             chrome.runtime.sendMessage({
                 msg: msg,

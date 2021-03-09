@@ -3,7 +3,7 @@ import './Options.css';
 let pjson = require('../../../package.json');
 
 const Options = () => {
-  const [sidebarOnLeft, setSidebarOnLeft] = useState(true);
+  const [sidebarOnLeft, setSidebarOnLeft] = useState(false);
   const [sidebarShouldShrinkBody, setSidebarShouldShrinkBody] = useState(true);
 
   useEffect(() => {

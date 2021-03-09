@@ -206,7 +206,7 @@ class DefaultAnnotation extends Component {
                             userGroups={this.props.userGroups} />
                     </React.Fragment>
 
-                    {tags !== undefined && tags.length && !collapsed && !editing ? (
+                    {tags !== undefined && tags.length && !editing ? (
                         <div className={classNames({
                             TagRow: true
                         })}>

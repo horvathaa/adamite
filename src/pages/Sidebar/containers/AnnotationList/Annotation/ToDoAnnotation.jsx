@@ -36,6 +36,7 @@ class ToDoAnnotation extends Component {
     }
 
     handleDeleteRequest = () => {
+        console.log('in here')
         this.props.handleTrashClick(this.props.id);
     }
 
@@ -204,7 +205,7 @@ class ToDoAnnotation extends Component {
                             userGroups={this.props.userGroups} />
                     </React.Fragment>
 
-                    {tags !== undefined && tags.length && !collapsed && !editing ? (
+                    {tags !== undefined && tags.length && !editing ? (
                         <div className={classNames({
                             TagRow: true
                         })}>
@@ -222,7 +223,8 @@ class ToDoAnnotation extends Component {
                     {currentUser.uid === authorId && !editing && (
                         <div>
                             <button className="ToDo-Button"
-                                onClick={_ => this.props.handleDoneToDo(id)}>Done?</button>
+                                onClick={_ => this.props.handleDoneToDo()}>Done?
+                            </button>
                         </div>
                     )}
                     {replying &&

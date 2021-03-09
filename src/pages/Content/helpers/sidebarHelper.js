@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import Frame from '../modules/frame/frame';
 
 let shouldShrinkBody = true;
-let sidebarLocation = 'left';
+let sidebarLocation = 'right';
 let sidebarWidth = 280;
 
 const setSidebarWidth = (width) => {

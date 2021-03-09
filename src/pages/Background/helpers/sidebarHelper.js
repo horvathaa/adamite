@@ -26,7 +26,7 @@ chrome.storage.sync.get(['sidebarOnLeft'], (result) => {
   if (result.sidebarOnLeft !== undefined) {
     sidebarOnLeft = result.sidebarOnLeft === true;
   } else {
-    persistSidebarOnLeftStatus(true); // default on left
+    persistSidebarOnLeftStatus(false); // default on right
   }
 });
 
@@ -136,7 +136,7 @@ const updateShouldShrinkBodyStatus = (toStatus) => {
 export async function requestSidebarStatus(request, sender, sendResponse) {
   chrome.tabs.query(({ active: true, currentWindow: true }), tab => {
     let status;
-    if (sidebarStatus.length) {
+    if (sidebarStatus.length && tab !== undefined) {
       const i = sidebarStatus.findIndex(t => t.id === tab[0].id);
       status = i > -1 ? sidebarStatus[i].open : false;
     }

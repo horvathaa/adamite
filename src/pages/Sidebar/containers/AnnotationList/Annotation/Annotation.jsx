@@ -50,26 +50,27 @@ class Annotation extends Component {
   };
 
   updateData = () => {
-    let { tags, content, type, authorId, pinned, isClosed, howClosed, childAnchor, anchor, replies } = this.props;
+    let { id, tags, content, type, authorId, pinned, isClosed, howClosed, childAnchor, anchor, replies, adopted } = this.props;
     this.setState({
-      tags, content, annotationType: type, authorId, pinned, isClosed, howClosed, childAnchor, anchor, replies, content
+      id, tags, content, annotationType: type, authorId, pinned, isClosed, howClosed, childAnchor, anchor, replies, adopted
     });
   }
 
   async componentDidMount() {
     document.addEventListener('keydown', this.keydown, false);
+    this.updateData();
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-      if (request.from === 'content' && request.msg === 'ANCHOR_BROKEN' && request.payload.id === this.props.id) {
+      if (request.from === 'content' && request.msg === 'ANCHOR_BROKEN' && request.payload.id === this.state.id) {
         if (this.props.url.includes(this.props.currentUrl) &&
           request.payload.replyId !== undefined) {
-          const broken = this.props.replies.filter(r => r.replyId === request.payload.replyId);
+          const broken = this.state.replies.filter(r => r.replyId === request.payload.replyId);
           let temp = this.state.brokenReply;
           temp.push(String(broken[0].replyId));
           this.setState({ brokenReply: temp });
         }
         else if (this.props.url.includes(this.props.currentUrl) &&
           request.payload.childId !== undefined) {
-          const broken = this.props.childAnchor.filter(c => c.id === request.payload.childId);
+          const broken = this.state.childAnchor.filter(c => c.id === request.payload.childId);
           let temp = this.state.brokenChild;
           temp.push(broken[0].id);
           this.setState({ brokenChild: temp });
@@ -81,11 +82,12 @@ class Annotation extends Component {
         }
       }
     })
-    this.updateData();
+
   }
 
   componentDidUpdate(prevProps) {
-    if (this.state.tags !== this.props.tags ||
+    if (this.state.id !== this.props.id ||
+      this.state.tags !== this.props.tags ||
       this.state.content !== this.props.content ||
       this.state.annotationType !== this.props.type ||
       this.state.anchor !== this.props.anchor ||
@@ -139,13 +141,27 @@ class Annotation extends Component {
     }
   }
 
-  handleDoneToDo(id) {
-    chrome.runtime.sendMessage({
-      msg: 'FINISH_TODO',
-      from: 'content',
-      payload: { id }
+  handleDoneToDo = () => {
+    const { id } = this.state;
+    chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+      let url = tabs[0].url;
+      if (this.props.url[0] === url) {
+        chrome.tabs.sendMessage(
+          tabs[0].id,
+          {
+            msg: 'ANNOTATION_DELETED_ON_PAGE',
+            id: id,
+          }
+        );
+      }
+      chrome.runtime.sendMessage({
+        msg: "ANNOTATION_DELETED",
+        from: "content",
+        payload: {
+          id: id
+        }
+      })
     });
-    this.transmitPinToParent();
   }
 
   handleExpertReview = () => {

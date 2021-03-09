@@ -1,6 +1,6 @@
 {
   "description": "A documentation annotator to help software developers learn from one another",
-  "version": "0.75.3",
+  "version": "0.75.37",
   "name": "ADAMITE",
   "options_page": "options.html",
   "background": {
@@ -13,7 +13,6 @@
   "permissions": [
     "chrome://favicon/",
     "tabs",
-    "activeTab",
     "storage"
   ],
   "icons": {

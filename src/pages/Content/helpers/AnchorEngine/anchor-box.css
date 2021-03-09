@@ -182,10 +182,8 @@
 }
 
 .buttonIconContainer {
-    padding: 5px;
+    padding: 2px;
     margin: auto;
-    width: 20px;
-    height: 20px;
 }
 
 .buttonRow {
@@ -216,5 +214,6 @@
 }
 
 .buttonIconContainer:hover {
-    filter: brightness(1.8);
+    filter: brightness(1.4);
+    transition: opacity .55s ease-in-out;
   }
