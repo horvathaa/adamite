@@ -126,10 +126,10 @@ let commands = {
         if ("url" in changeInfo) {
             anno.handleTabUpdate(getPathFromUrl(changeInfo.url), tabId);
             const index = sidebarStatus.findIndex(side => side.id === tabId);
-            if (index === -1 && getPathFromUrl(changeInfo.url) !== "" && getPathFromUrl(tab.url) !== "chrome://newtab/") {
+            if (index === -1 && getPathFromUrl(changeInfo.url) !== "" && getPathFromUrl(changeInfo.url) !== "chrome://newtab/") {
                 sidebarStatus.push({ id: tabId, open: false, url: getPathFromUrl(changeInfo.url) })
             }
-            else if (index > -1 && sidebarStatus[index].url !== getPathFromUrl(changeInfo.url) && getPathFromUrl(tab.url) !== "chrome://newtab/") {
+            else if (index > -1 && sidebarStatus[index].url !== getPathFromUrl(changeInfo.url) && getPathFromUrl(changeInfo.url) !== "chrome://newtab/") {
                 sidebarStatus[index].open = false;
                 toggleSidebar(false);
             }
