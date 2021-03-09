@@ -133,22 +133,13 @@ let commands = {
                 sidebarStatus[index].open = false;
                 toggleSidebar(false);
             }
-            else if (sidebarStatus[index].url === "") {
-                sidebarStatus[index].url = getPathFromUrl(changeInfo.url);
+            else if (index > -1) {
                 toggleSidebar(sidebarStatus[index].open)
             }
             else {
-                toggleSidebar(sidebarStatus[index].open)
+                return;
             }
         }
-        // else if (changeInfo.status === 'loading') {
-        //     // const index = sidebarStatus.findIndex(side => side.id === tabId);
-        //     // if (index > -1) {
-        //     //     sidebarStatus[index].open = false;
-        //     //     toggleSidebar(false);
-        //     //     // sidebarStatus[index].url !== getPathFromUrl(changeInfo.url) ? sidebarStatus[index].open = false : sidebarStatus[index].open = true;
-        //     // }
-        // }
     },
     'HANDLE_TAB_CREATED': (tab) => {
         if (getPathFromUrl(tab.url) !== "" && getPathFromUrl(tab.url) !== "chrome://newtab/") {
