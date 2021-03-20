@@ -20,8 +20,10 @@ import view from '../../../../../assets/img/SVGs/view.svg';
 import viewPublic from '../../../../../assets/img/SVGs/view_public.svg';
 import Tooltip from '@material-ui/core/Tooltip';
 
-class IssueAnnotation extends Component {
 
+
+
+class IssueAnnotation extends Component {
 
     state = {
         replying: false,
@@ -85,8 +87,7 @@ class IssueAnnotation extends Component {
                     className={classNames({
                         AnnotationContainerPad: true,
                         AnnotationPadActive: true,
-                    })}
-                >
+                    })} >
                     <div
                         className={classNames({ AnnotationContainerLeftPad: true })}
                     ></div>
@@ -108,7 +109,6 @@ class IssueAnnotation extends Component {
                     </div>
                     {!collapsed ? (
                         <React.Fragment>
-
                             <div className={" container " + classNames({
                                 Header: true,
                                 Truncated: collapsed,

@@ -3,7 +3,7 @@ import RichTextEditor from '../../../RichTextEditor/RichTextEditor';
 import TagsInput from 'react-tagsinput';
 import classNames from 'classnames';
 import '../Annotation.css';
-import './ReplyEditor.css';
+import './ReplyEditor.module.css';
 import '../../../CardWrapper/CardWrapper.css';
 import addAnchor from '../../../../../../assets/img/SVGs/NewAnchor2.svg';
 import { SplitButton, Button, Dropdown as BootstrapDropdown } from 'react-bootstrap';
@@ -195,14 +195,14 @@ class ReplyEditor extends Component {
             >
                 {this.props.showQuestionAnswerInterface && <BootstrapDropdown.Item onClick={_ => { this.setState({ adopted: false, answer: false }); this.submitReply(false, false) }} eventKey="2">Reply</BootstrapDropdown.Item>}
             </SplitButton>) : (
-                <Button
-                    key="replySubmit"
-                    id="dropdown-split-variants-secondary"
-                    variant="secondary"
-                    title={"Post Reply"}
-                    onClick={this.submitReply}
-                >Post Reply </Button>
-            )
+            <Button
+                key="replySubmit"
+                id="dropdown-split-variants-secondary"
+                variant="secondary"
+                title={"Post Reply"}
+                onClick={this.submitReply}
+            >Post Reply </Button>
+        )
         return (
             <React.Fragment>
                 <div className="ReplyHeader">

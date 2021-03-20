@@ -23,6 +23,17 @@ import { SplitButton, Dropdown as BootstrapDropdown } from 'react-bootstrap';
 import Tooltip from '@material-ui/core/Tooltip';
 
 
+
+// const QuestionAnswerAnnotation = () => {
+//     const [replying, setReplying] = useState(false);
+//     const [showReplies, setShowReplies] = useState(false);
+//     return ( );
+//   }
+//   export default QuestionAnswerAnnotation;
+
+
+
+
 class QuestionAnswerAnnotation extends Component {
 
     state = {
@@ -383,15 +394,12 @@ class QuestionAnswerAnnotation extends Component {
                     ) : (null)}
                     {!editing && !replying ? (collapsedDiv) : (null)}
                 </div>
-
-
                 <div
                     className={classNames({
                         AnnotationContainerPad: true,
                         AnnotationPadActive: true,
                     })}
                 >
-
                     <div
                         className={classNames({ AnnotationContainerRightPad: true })}
                     ></div>
