@@ -135,10 +135,10 @@ let commands = {
 };
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    // console.log(request);
+    console.log(request.msg);
     if (request.msg in commands) {
         commands[request.msg](request, sender, sendResponse);
-    } else console.log("Unknown Command", request.message);
+    } else console.log("Unknown Command", request.msg);
     return true;
 });
 

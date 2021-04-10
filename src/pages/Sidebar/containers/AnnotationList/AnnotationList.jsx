@@ -1,6 +1,11 @@
 import React, { Component } from 'react';
 import Annotation from './Annotation/Annotation';
 
+/*
+Initiated in Sidebar
+*/
+
+
 class AnnotationList extends Component {
 
   notifyParentOfPinning = (id, pinned) => {
@@ -18,7 +23,7 @@ class AnnotationList extends Component {
               annotation={anno}
               notifyParentOfPinning={this.notifyParentOfPinning}
               groups={this.props.groups}
-              url={this.props.url}
+              currentUrl={this.props.url}
               currentUser={currentUser}
             />
           );

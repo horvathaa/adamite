@@ -12,7 +12,7 @@ const AnnotationContext = createContext({
     userGroups: [],
     currentUser: null,
     brokenAnchor: false,
-    brokenReply: [],
+
     brokenChild: [],
     formatTimestamp: null,
     isCurrentUser: null,
@@ -34,13 +34,16 @@ const AnnotationContext = createContext({
     notifyParentOfAdopted: () => { },
     getGroupName: () => { },
 
-
     //Replies
+    showReplies: false,
+    handleShowReplies: () => { },
     replying: false,
-    setReplying: () => { },
+    brokenReply: [],
     showReply: false,
+    setReplying: () => { },
+    deleteReply: (id) => { },
     replyCountString: "",
-    handleShowReply: (id) => { },
+
 
     //Anchors
     handleNewAnchor: () => { },

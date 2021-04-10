@@ -44,7 +44,7 @@ let messagesIn = {
         addNewAnchor({ request: request, type: "reply" });
     },
     'ADD_REPLY_HIGHLIGHT': async (request, sender, sendResponse) => {
-        console.log(request);
+        // console.log(request);
         // const octokit = new Octokit({ auth: });
         // let l = await octokit.request('GET /orgs/{org}/repos', {
         //     org: 'collective-sanity'
@@ -100,7 +100,7 @@ let messagesIn = {
         highlightAnnotation(request.newAnno, request.newAnno.id)
     },
     'TEMP_ANNOTATION_ADDED': (request, sender, sendResponse) => {
-        console.log(request);
+        //  console.log(request);
         tempHighlight(request.newAnno);
     },
     'REMOVE_TEMP_ANNOTATION': (request, sender, sendResponse) => {

@@ -1,4 +1,4 @@
-import React, { Component, useState } from 'react';
+import React, { Component, useEffect, useState } from 'react';
 import { AiFillPushpin, AiOutlinePushpin } from 'react-icons/ai';
 import outlinepin from '../../../../../assets/img/SVGs/pin.svg';
 import fillpin from '../../../../../assets/img/SVGs/pin_2.svg';
@@ -12,15 +12,24 @@ import QuestionAnswerAnnotation from './QuestionAnswerAnnotation';
 import { RiTruckLine } from 'react-icons/ri';
 import AnnotationContext from "./AnnotationContext";
 
-
+/*
+Initiated in Annotation List
+*/
 
 
 const Annotation = ({ idx, annotation, notifyParent, currentUrl, userGroups, currentUser }) => {
 
   const [editing, setEditing] = useState(false);
   const [replying, setReplying] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const [anno, setAnno] = useState(annotation);
 
+  useEffect(() => {
+    // document.addEventListener('keydown', this.keydown, false);
+    if (annotation !== anno) {
+      setAnno(annotation);
+    }
+  });
   return (<div>
     <AnnotationContext.Provider
       value={{
@@ -28,19 +37,21 @@ const Annotation = ({ idx, annotation, notifyParent, currentUrl, userGroups, cur
         id: anno.id,
         anno: anno,
         userGroups: userGroups,
-        collapsed: true,
-        brokenAnchor: false,
+        collapsed: collapsed,
+        setCollapsed: (val) => { setCollapsed(val); },
         brokenReply: [],
         brokenChild: [],
         currentUrl: currentUrl,
         currentUser: currentUser,
+        isCurrentUser: currentUser.uid === anno.authorId,
         editing: editing,
         setEditing: (val) => { setEditing(val); },
-        replying: replying,
-        setReplying: (val) => { setReplying(val); },
+
         formatTimestamp: null,
         transmitPinToParent: (id, pinned) => { notifyParent(id, pinned) },
 
+        // Anchors
+        brokenAnchor: false,
         handleNewAnchor: () => {
           chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
             chrome.tabs.sendMessage(tabs[0].id, {
@@ -56,6 +67,66 @@ const Annotation = ({ idx, annotation, notifyParent, currentUrl, userGroups, cur
             });
           });
         },
+        updateAnchorTags: ({ newTags, childId = null }) => {
+          const childAnch = anno.childAnchor.map((c) => {
+            if (c.id !== childId) return c;
+            let y = c;
+            y.tags = newTags;
+            return y;
+          });
+          console.log("anchor");
+          chrome.runtime.sendMessage({
+            msg: 'ANNOTATION_UPDATED',
+            from: 'content',
+            payload: {
+              id: anno.id,
+              type: anno.type.toLowerCase(),
+              content: anno.content,
+              tags: anno.tags,
+              isPrivate: anno.isPrivate,
+              groups: anno.groups,
+              childAnchor: childAnch
+            }
+          })
+        },
+        deleteAnchor: ({ anchorId }) => {
+          const childAnch = anno.childAnchor.filter((c) => c.id !== anchorId)
+          console.log(anno);
+          chrome.runtime.sendMessage({
+            msg: 'ANNOTATION_UPDATED',
+            from: 'content',
+            payload: {
+              id: anno.id,
+              type: anno.type.toLowerCase(),
+              content: anno.content,
+              tags: anno.tags,
+              isPrivate: anno.private,
+              groups: anno.groups,
+              childAnchor: childAnch
+            }
+          });
+        },
+
+        // Reply
+        replying: replying,
+        setReplying: (val) => { setReplying(val); },
+        showReply: false,
+        replyCountString: "",
+        handleShowReply: (id) => { },
+        deleteReply: (id) => {
+          const repliesToTransmit = anno.replies.filter(reply => reply.replyId !== id);
+          chrome.runtime.sendMessage({
+            msg: 'UPDATE_REPLIES',
+            payload: {
+              id: anno.id,
+              replies: repliesToTransmit
+            }
+          });
+        },
+
+
+
+
         handleEditClick: () => { },
         handleTrashClick: (id) => {
           // eslint-disable-next-line no-restricted-globals
@@ -83,6 +154,9 @@ const Annotation = ({ idx, annotation, notifyParent, currentUrl, userGroups, cur
             return;
           }
         },
+
+
+
         handleDoneToDo: (id) => {
           chrome.runtime.sendMessage({
             msg: 'FINISH_TODO',
@@ -91,49 +165,6 @@ const Annotation = ({ idx, annotation, notifyParent, currentUrl, userGroups, cur
           });
           transmitPinToParent();
         },
-
-        updateAnchorTags: ({ newTags, childId = null }) => {
-          const childAnch = anno.childAnchor.map((c) => {
-            if (c.id !== childId) return c;
-            let y = c;
-            y.tags = newTags;
-            return y;
-          });
-
-          chrome.runtime.sendMessage({
-            msg: 'ANNOTATION_UPDATED',
-            from: 'content',
-            payload: {
-              id: anno.id,
-              type: anno.type.toLowerCase(),
-              content: anno.content,
-              tags: anno.tags,
-              isPrivate: anno.isPrivate,
-              groups: anno.groups,
-              childAnchor: childAnch
-            }
-          })
-        },
-
-
-        deleteAnchor: (id) => {
-          const childAnch = anno.childAnchor.filter((c) => c.id !== id)
-          chrome.runtime.sendMessage({
-            msg: 'ANNOTATION_UPDATED',
-            from: 'content',
-            payload: {
-              id: anno.id,
-              type: anno.type.toLowerCase(),
-              content: anno.content,
-              tags: anno.tags,
-              isPrivate: anno.isPrivate,
-              groups: anno.groups,
-              childAnchor: childAnch
-            }
-
-          });
-        },
-
         handleExpertReview: () => { console.log('handled'); },
         cancelButtonHandler: () => { },
         submitButtonHandler: () => { },

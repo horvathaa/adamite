@@ -13,6 +13,27 @@ import '../Annotation.css';
 import './Anchor.module.css';
 import TagsInput from 'react-tagsinput';
 import Autosuggest from 'react-autosuggest'
+import AnnotationContext from "../AnnotationContext";
+
+
+
+
+/*
+updateAnchorTags
+
+id = ctx.anno.id,
+url = ctx.anno.url,
+currentUrl = ctx.currentUrl,
+collapsed = ctx.collapsed,
+isCurrentUser = ctx.isCurrentUser,
+replyId = ctx.anno.replyId,
+anchorContent = anchor.content,
+anchorId = anchor.id,
+pageAnchor = anchor.xpath === null,
+isOnlyAnchor = ctx.anno.childAnchor.length === 1,
+brokenAnchor = ctx.brokenChild.includes(anchor.id);
+
+*/
 
 // Using autocomplete example from react tags... still not working for some reason
 //https://github.com/olahol/react-tagsinput/blob/master/example/components/autocomplete.js
@@ -45,14 +66,14 @@ const Anchor = ({ anchor }) => {
 
     //tagsIn, anchorContent, pageAnchor, brokenAnchor
     const id = ctx.anno.id,
-        url = ctx.anno.url,
+        url = anchor.url,
         currentUrl = ctx.currentUrl,
         collapsed = ctx.collapsed,
         isCurrentUser = ctx.isCurrentUser,
         replyId = ctx.anno.replyId,
-        anchorContent = anchor.content,
+        anchorContent = anchor.anchor,
         anchorId = anchor.id,
-        pageAnchor = anchor.xpath === null,
+        pageAnchor = anchor.xpath == null,
         isOnlyAnchor = ctx.anno.childAnchor.length === 1,
         brokenAnchor = ctx.brokenChild.includes(anchor.id);
 
@@ -61,16 +82,17 @@ const Anchor = ({ anchor }) => {
     const [tags, setTags] = useState(anchor.tags ?? []);
 
 
-    useEffect(() => {
-        document.addEventListener('keydown', this.keydown, false);
-        if (tags !== tagsIn) setTags(tagsIn);
+    // useEffect(() => {
+    // document.addEventListener('keydown', this.keydown, false);
+    // if (tags !== tagsIn) setTags(tagsIn);
 
-        return function cleanup() {
-            document.removeEventListener('keydown', this.keydown, false);
-        };
-    });
+    // return function cleanup() {
+    //     document.removeEventListener('keydown', this.keydown, false);
+    // };
+    // });
 
     const handleEvent = ({ isClick, isHover }) => {
+
         let message = isClick ? 'ANNOTATION_FOCUS_ONCLICK' : isHover ? 'ANNOTATION_FOCUS' : 'ANNOTATION_DEFOCUS';
         if (id === null) { return; }
         chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
@@ -81,7 +103,7 @@ const Anchor = ({ anchor }) => {
                     {
                         msg: message,
                         id: id,
-                        replyId: replyId,
+                        replyId: replyId ? replyId : anchorId,
                     }
                 );
             }
@@ -91,7 +113,7 @@ const Anchor = ({ anchor }) => {
     }
 
     const handleOnEditDone = () => {
-        if (tags !== tagsIn) { ctx.updateAnchorTags({ newTags: tags, anchorId: anchorId }); }
+        if (tags !== anchor.tags) { ctx.updateAnchorTags({ newTags: tags, anchorId: anchorId }); }
         setEditMode(false);
     }
 
@@ -137,7 +159,7 @@ const Anchor = ({ anchor }) => {
                                         <TagsInput value={tags ?? []} onChange={(newTags) => setTags(newTags)} />
                                     </div>
                                     <div className="AnchorTagEdit"
-                                        onClick={handleOnEditDone}
+                                        onClick={() => handleOnEditDone()}
                                     >
                                         save
                                     </div>
@@ -162,7 +184,7 @@ const Anchor = ({ anchor }) => {
                                                 <img src={edit} alt="edit annotation" className="profile" id="edit" onClick={() => { setEditMode(true) }} />
                                             </div>
                                         </Tooltip>
-                                        {this.state.childId && !ctx.isOnlyAnchor &&
+                                        {id && !ctx.anno.childAnchor.length > 1 &&
                                             <Tooltip title={"Delete Anchor"} aria-label="delete annotation tooltip">
                                                 <div className="TopIconContainer" >
                                                     <img src={trash} alt="delete annotation" className="profile" id="trash" onClick={() => ctx.deleteAnchor({ anchorId: anchorId })} />
@@ -191,7 +213,7 @@ const Anchor = ({ anchor }) => {
                         ) : (
                         <div className={textClass}>
                             {anchorContent}
-                            <div className="AnchorUrlContainer" onClick={this.handleExternalAnchor}>
+                            <div className="AnchorUrlContainer" onClick={handleExternalAnchor}>
                                 {url}
                             </div>
                         </div>

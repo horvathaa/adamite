@@ -13,11 +13,29 @@ import trash from '../../../../../../assets/img/SVGs/delet.svg';
 import Tooltip from '@material-ui/core/Tooltip';
 
 import AnnotationContext from "../AnnotationContext";
+import { formatTimestamp } from "../../../../utils"
+/*
+Context Used
 
+collapsed
+anno.author
 
+getGroupName()
+formatTimestamp()
+
+transmitPinToParent
+setReplying
+
+handleNewAnchorRequest
+handleEditRequest
+handleDeleteRequest
+
+*/
 
 const EditRowComponent = () => {
     const ctx = useContext(AnnotationContext);
+    if (ctx.collapsed) return (null);
+
     return (
         <React.Fragment>
 
@@ -37,7 +55,7 @@ const EditRowComponent = () => {
                         {ctx.getGroupName()}
                     </div>
                     <div className="timestamp">
-                        {ctx.formatTimestamp()}
+                        {formatTimestamp(ctx.anno.createdTimestamp)}
                     </div>
                 </div>
                 <div className="row">
@@ -49,7 +67,7 @@ const EditRowComponent = () => {
                         </Tooltip>
                         <Tooltip title={"Pin or unpin annotation"} aria-label="pin icon tooltip">
                             <div className="TopIconContainer" onClick={ctx.transmitPinToParent}>
-                                {pin ? (
+                                {ctx.anno.pinned ? (
                                     <img src={fillpin} id="pin" alt="pin" className="profile" />
                                 ) : (
                                     <img src={outlinepin} id="pin" alt="pin" className="profile" />
@@ -58,19 +76,19 @@ const EditRowComponent = () => {
                         </Tooltip>
                         <Tooltip title={"Add new anchor to annotation"} aria-label="add new anchor tooltip">
                             <div className="TopIconContainer" >
-                                <img src={newAnchor} alt="add new anchor" id="newAnchor" className="profile" onClick={ctx.handleNewAnchorRequest} />
+                                <img src={newAnchor} alt="add new anchor" id="newAnchor" className="profile" onClick={ctx.handleNewAnchor} />
                             </div>
                         </Tooltip>
                         {ctx.currentUser.uid === ctx.authorId ? (
                             <React.Fragment>
                                 <Tooltip title={"Edit annotation"} aria-label="edit tooltip">
                                     <div className="TopIconContainer" >
-                                        <img src={edit} alt="edit annotation" className="profile" id="edit" onClick={ctx.handleEditRequest} />
+                                        <img src={edit} alt="edit annotation" className="profile" id="edit" onClick={() => ctx.setEditing(!ctx.editing)} />
                                     </div>
                                 </Tooltip>
                                 <Tooltip title={"Delete annotation"} aria-label="delete annotation tooltip">
                                     <div className="TopIconContainer" >
-                                        <img src={trash} alt="delete annotation" className="profile" id="trash" onClick={ctx.handleDeleteRequest} />
+                                        <img src={trash} alt="delete annotation" className="profile" id="trash" onClick={ctx.deleteAnchor} />
                                     </div>
                                 </Tooltip>
                             </React.Fragment>

@@ -6,15 +6,26 @@ import AnnotationContext from "../AnnotationContext";
 import expand from '../../../../../../assets/img/SVGs/expand.svg'
 
 
+/*
+Context Used
+editing
+replying
+collapsed
+
+setCollapsed
+
+*/
+
 const CollapsedDiv = () => {
-    const annoContext = useContext(AnnotationContext);
-    return (annoContext.collapsed ? (
+    const ctx = useContext(AnnotationContext);
+    if (ctx.editing && ctx.replying) return (null);
+    return (ctx.collapsed ? (
         <div className="ExpandCollapse">
-            <img src={expand} alt="Expand" onClick={_ => annoContext.handleExpandCollapse('expand')} className="Icon" />
+            <img src={expand} alt="Expand" onClick={_ => ctx.setCollapsed(false)} className="Icon" />
         </div>
     ) : (
         <div className="ExpandCollapse">
-            <img src={expand} id="collapse" alt="Collapse" onClick={_ => annoContext.handleExpandCollapse('collapse')} className="Icon" />
+            <img src={expand} id="collapse" alt="Collapse" onClick={_ => ctx.setCollapsed(true)} className="Icon" />
         </div>
     ));
 }

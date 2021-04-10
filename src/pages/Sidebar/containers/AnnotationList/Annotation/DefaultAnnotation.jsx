@@ -14,146 +14,65 @@ import ReplyEditor from './Reply/ReplyEditor';
 import AnnotationContext from "./AnnotationContext";
 import EditRowComponent from "./Components/EditRowComponent";
 import CollapsedDiv from './Components/CollapsedDiv';
+import AnnotationTagsList from './Components/AnnotationTagsList';
+import RepliesList from './Components/RepliesList';
+
+/*
+Used context
+
+collapsed
+setCollapsed
 
 
+setReplying
+replying
+anno.replies
+replyCountString
+showReplies
+handleShowReplies
+
+*/
 
 const DefaultAnnotation = () => {
     const ctx = useContext(AnnotationContext);
+    // const collapsedArg = ctx.collapsed ? 'expand' : 'collapse';
 
-    let collapsedDiv = CollapsedDiv();
-    const collapsedArg = ctx.collapsed ? 'expand' : 'collapse';
+    const ShowRepliesComponent = () => {
+        if (ctx.anno.replies === undefined || ctx.showReplies || ctx.collapsed || ctx.anno.replies.length) return (null);
+        return (<div className="ShowHideReplies">
+            <div className="ExpandCollapse">
+                <img src={expand} className="Icon" id="ShowReplies" alt="Show replies" onClick={ctx.handleShowReplies} />
+            </div>
+            {ctx.anno.replies.length} {ctx.replyCountString}
+        </div>);
+    }
+    const AnnotationBadgeContainer = () => {
+        return (<div className="annotationTypeBadgeContainer" onClick={() => ctx.setCollapsed(!ctx.collapsed)}>
+            <div className="annotationTypeBadge row2">
+                <div className="annotationTypeBadge col2">
+                    <div className="badgeContainer">
+                        <img src={Default} alt='default type badge' />
+                    </div>
+                </div>
+            </div>
+        </div>);
+    }
 
     return (
         <li key={ctx.idx} id={ctx.id} className={classNames({ AnnotationItem: true })}>
-            <div
-                className={classNames({
-                    AnnotationContainerPad: true,
-                    AnnotationPadActive: true,
-                })}
-            >
-                <div
-                    className={classNames({ AnnotationContainerLeftPad: true })}
-                ></div>
+            <div className={classNames({ AnnotationContainerPad: true, AnnotationPadActive: true, })} >
+                <div className={classNames({ AnnotationContainerLeftPad: true })}></div>
             </div>
-            <div id={ctx.id}
-                className={classNames({
-                    AnnotationContainer: true,
-                    ActiveAnnotationContainer: true,
-                })}
-            >
-                <div className="annotationTypeBadgeContainer" onClick={_ => ctx.handleExpandCollapse(collapsedArg)}>
-                    <div className="annotationTypeBadge row2">
-                        <div className="annotationTypeBadge col2">
-                            <div className="badgeContainer">
-                                <img src={Default} alt='default type badge' />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {!ctx.collapsed ? (<EditRowComponent />) : (null)}
-                {ctx.anno.childAnchor === undefined || !ctx.anno.childAnchor.length ? null : (
-                    <AnchorList
-                        parentId={ctx.anno.id}
-                        childAnchor={ctx.anno.childAnchor}
-                        currentUrl={ctx.currentUrl}
-                        collapsed={ctx.collapsed}
-                        brokenChild={ctx.brokenChild}
-                        isCurrentUser={ctx.currentUser.uid === ctx.anno.authorId}
-                        updateAnchorTags={ctx.updateAnchorTags}
-                        deleteAnchor={ctx.deleteAnchor}
-                    />
-                )}
-
-                <React.Fragment>
-                    <CardWrapper
-                        tags={ctx.anno.tags}
-                        annotationType={ctx.anno.type}
-                        annotationContent={ctx.anno.content}
-                        edit={ctx.editing}
-                        pageAnnotation={ctx.anno.anchor}
-                        id={ctx.id}
-                        cancelButtonHandler={ctx.cancelButtonHandler}
-                        submitButtonHandler={ctx.submitButtonHandler}
-                        elseContent={ctx.anno.content}
-                        collapsed={ctx.collapsed}
-                        userGroups={ctx.userGroups} />
-                </React.Fragment>
-
-                {ctx.anno.tags !== undefined && ctx.anno.tags.length && !ctx.collapsed && !ctx.editing ? (
-                    <div className={classNames({
-                        TagRow: true
-                    })}>
-                        <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
-                            {ctx.anno.tags.map((tagContent, idx) => {
-                                return (
-                                    <CustomTag idx={idx} content={tagContent} deleteTag={ctx.deleteTag} editing={ctx.editing} />
-                                )
-                            }
-                            )}
-                        </ul>
-
-                    </div>
-                ) : (null)}
-
-                {ctx.replying &&
-                    <ReplyEditor id={id} finishReply={() => ctx.setReplying(false)} />
-                }
-
-                {ctx.replies !== undefined && showReplies && replies.length && !collapsed && !editing ? (
-                    <div className="Replies">
-                        <div className="SeparationRow">
-                            <div className="ShowHideReplies">
-                                <div className="ExpandCollapse">
-                                    <img src={expand} className="Icon" alt="Show replies" onClick={ctx.handleShowReplies} />
-                                </div>
-                                {ctx.anno.replies.length} {ctx.replyCountString}
-                            </div>
-                            <hr className="divider" />
-                        </div>
-                        <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
-                            {ctx.anno.replies.map((reply, idx) => {
-                                return (
-                                    <Reply
-                                        key={idx}
-                                        idx={idx}
-                                        replyId={reply.replyId}
-                                        annoId={ctx.anno.id}
-                                        replies={ctx.anno.replies}
-                                        content={reply.replyContent}
-                                        author={reply.author}
-                                        authorId={reply.authorId}
-                                        timeStamp={reply.timestamp}
-                                        tags={reply.tags}
-                                        answer={reply.answer}
-                                        question={reply.question}
-                                        finishReply={this.finishReply}
-                                        showQuestionAnswerInterface={false}
-                                        currentUser={ctx.currentUser}
-                                        xpath={reply.xpath}
-                                        anchor={reply.anchor}
-                                        hostname={reply.hostname}
-                                        url={reply.url}
-                                        offsets={reply.offsets}
-                                        currentUrl={ctx.currentUrl}
-                                        notifyParentOfAdopted={ctx.notifyParentOfAdopted}
-                                        brokenAnchor={ctx.brokenReply.includes(reply.replyId)}
-                                    />
-                                )
-                            }
-                            )}
-                        </ul>
-
-                    </div>
-                ) : (null)}
-                {ctx.replies !== undefined && !ctx.showReplies && !ctx.collapsed && ctx.replies.length ? (
-                    <div className="ShowHideReplies">
-                        <div className="ExpandCollapse">
-                            <img src={expand} className="Icon" id="ShowReplies" alt="Show replies" onClick={ctx.handleShowReplies} />
-                        </div>
-                        {ctx.replies.length} {ctx.replyCountString}
-                    </div>
-                ) : (null)}
-                {!ctx.editing && !ctx.replying ? (collapsedDiv) : (null)}
+            <div id={ctx.id} className={classNames({ AnnotationContainer: true, ActiveAnnotationContainer: true, })} >
+                <AnnotationBadgeContainer />  {/*donish*/}
+                <EditRowComponent /> {/*donish*/}
+                <AnchorList />
+                {/* <CardWrapper /> */}
+                <AnnotationTagsList /> {/*donish*/}
+                {ctx.replying && <ReplyEditor id={id} finishReply={() => ctx.setReplying(false)} />}
+                {/* <RepliesList /> 
+                <ShowRepliesComponent />  */}
+                <CollapsedDiv /> {/*donish*/}
             </div>
             <div className={classNames({ AnnotationContainerPad: true, AnnotationPadActive: true, })} >
                 <div className={classNames({ AnnotationContainerRightPad: true })} ></div>
@@ -163,6 +82,12 @@ const DefaultAnnotation = () => {
     );
 }
 export default DefaultAnnotation;
+
+
+
+
+
+
 
 
 
