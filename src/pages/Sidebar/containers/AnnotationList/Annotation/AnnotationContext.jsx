@@ -20,6 +20,11 @@ const AnnotationContext = createContext({
     setCollapsed: () => { },
     handleExpandCollapse: () => { },
 
+    updateAnnotation: () => { },
+    cancelButtonHandler: () => { },
+    submitButtonHandler: () => { },
+
+
     // Annotation 
     editing: false,
     setEditing: () => { },
@@ -27,12 +32,15 @@ const AnnotationContext = createContext({
     handleTrashClick: () => { },
     handleDoneToDo: (id) => { },
     handleExpertReview: () => { },
-    cancelButtonHandler: () => { },
-    submitButtonHandler: () => { },
+
+
 
     transmitPinToParent: () => { },
     notifyParentOfAdopted: () => { },
     getGroupName: () => { },
+    deleteTag: () => { },
+
+
 
     //Replies
     showReplies: false,

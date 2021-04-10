@@ -24,12 +24,14 @@ const Annotation = ({ idx, annotation, notifyParent, currentUrl, userGroups, cur
   const [collapsed, setCollapsed] = useState(true);
   const [anno, setAnno] = useState(annotation);
 
-  useEffect(() => {
-    // document.addEventListener('keydown', this.keydown, false);
-    if (annotation !== anno) {
-      setAnno(annotation);
-    }
-  });
+  // useEffect(() => {
+  //   // document.addEventListener('keydown', this.keydown, false);
+  //   if (annotation !== anno) {
+  //     setAnno(annotation);
+  //   }
+  // });
+
+
   return (<div>
     <AnnotationContext.Provider
       value={{
@@ -49,7 +51,43 @@ const Annotation = ({ idx, annotation, notifyParent, currentUrl, userGroups, cur
 
         formatTimestamp: null,
         transmitPinToParent: (id, pinned) => { notifyParent(id, pinned) },
-
+        updateAnnotation: (newAnno) => {
+          console.log("update", newAnno);
+          if (newAnno !== anno) {
+            chrome.runtime.sendMessage({
+              msg: 'ANNOTATION_UPDATED',
+              from: 'content',
+              payload: {
+                id: newAnno.id,
+                type: newAnno.type.toLowerCase(),
+                content: newAnno.content,
+                tags: newAnno.tags,
+                isPrivate: newAnno.private,
+                groups: newAnno.groups,
+                childAnchor: newAnno.childAnchor
+              }
+            });
+            setAnno(newAnno);
+          }
+          setEditing(false);
+        },
+        //   submitButtonHandler = (CardWrapperState, id) => {
+        //     this.setState({ annoGroups: CardWrapperState.groups });
+        //     chrome.runtime.sendMessage({
+        //       msg: 'ANNOTATION_UPDATED',
+        //       from: 'content',
+        //       payload: {
+        //         id: CardWrapperState.id,
+        //         type: CardWrapperState.annotationType.toLowerCase(),
+        //         content: CardWrapperState.annotationContent,
+        //         tags: CardWrapperState.tags,
+        //         isPrivate: CardWrapperState.private,
+        //         groups: CardWrapperState.groups,
+        //         childAnchor: CardWrapperState.childAnchor
+        //       }
+        //     });
+        //     this.setState({ editing: false });
+        //   }
         // Anchors
         brokenAnchor: false,
         handleNewAnchor: () => {

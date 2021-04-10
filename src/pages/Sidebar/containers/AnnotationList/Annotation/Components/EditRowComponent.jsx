@@ -79,7 +79,7 @@ const EditRowComponent = () => {
                                 <img src={newAnchor} alt="add new anchor" id="newAnchor" className="profile" onClick={ctx.handleNewAnchor} />
                             </div>
                         </Tooltip>
-                        {ctx.currentUser.uid === ctx.authorId ? (
+                        {ctx.currentUser.uid === ctx.anno.authorId ? (
                             <React.Fragment>
                                 <Tooltip title={"Edit annotation"} aria-label="edit tooltip">
                                     <div className="TopIconContainer" >

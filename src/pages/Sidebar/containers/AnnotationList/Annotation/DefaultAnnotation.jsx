@@ -67,7 +67,7 @@ const DefaultAnnotation = () => {
                 <AnnotationBadgeContainer />  {/*donish*/}
                 <EditRowComponent /> {/*donish*/}
                 <AnchorList />
-                {/* <CardWrapper /> */}
+                <CardWrapper />
                 <AnnotationTagsList /> {/*donish*/}
                 {ctx.replying && <ReplyEditor id={id} finishReply={() => ctx.setReplying(false)} />}
                 {/* <RepliesList /> 

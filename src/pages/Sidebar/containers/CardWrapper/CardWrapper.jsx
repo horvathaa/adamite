@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import './CardWrapper.module.css';
 import classNames from 'classnames';
 import { GiCancel } from 'react-icons/gi';
@@ -6,105 +6,56 @@ import RichEditor from '../RichTextEditor/RichTextEditor';
 import TagsInput from 'react-tagsinput';
 import Dropdown from 'react-dropdown';
 import { SplitButton, Dropdown as BootstrapDropdown } from 'react-bootstrap';
-
-
-
+import AnnotationContext from "../AnnotationList/Annotation/AnnotationContext";
 
 const CardWrapper = () => {
     const ctx = useContext(AnnotationContext);
 
     const id = ctx.anno.id,
         pageAnnotation = ctx.anno.anchor,
-        edit = ctx.editing,
         elseContent = ctx.anno.content,
         collapsed = ctx.collapsed,
         userGroups = ctx.userGroups;
 
-    const [annotationContent, setAnnotationContent] = useState(ctx.anno.content);
-    const [annotationType, setAnnotationType] = useState(ctx.anno.annotationType);
-    const [tags, setTags] = useState(ctx.anno.tags);
-    const [groups, setGroups] = useState([]);
-
-
+    const [newAnno, setNewAnno] = useState(ctx.anno);
+    const [groups, setGroups] = useState(ctx.userGroups);
 
     useEffect(() => {
-        document.addEventListener('keydown', this.keydown, false);
-        this.updateData();
-        if (tags !== ctx.anno.tags) setTags(ctx.anno.tags);
-        if (ctx.anno.annotationContent !== annotationContent) setAnnotationContent(ctx.anno.annotationContent);
-        if (ctx.anno.annotationType !== annotationType) setAnnotationType(ctx.anno.annotationType);
-
-        return function cleanup() {
-            document.removeEventListener('keydown', this.keydown, false);
-        };
-
+        if (newAnno !== ctx.anno) setNewAnno(newAnno);
     });
-
-
-    submitPassthrough = () => {
-        this.setState({ edit: this.props.submitButtonHandler(this.state) });
-    }
-
-    const cancelPassthrough = () => {
-        this.props.cancelButtonHandler();
-    }
-
-    const disabled = (annotationContent) => {
-        return annotationContent.trim().length === 0;
-    }
-
     const dropDownSelection = (option) => {
-        if (option.value === 'Normal') {
-            this.setState({ annotationType: "default" });
-        }
-        else if (option.value === 'highlight') {
-            this.setState({ annotationType: "highlight" });
-        }
-        else {
-            this.setState({ annotationType: option.value });
-        }
+        let newVal = (option.value === 'Normal') ? "default" : (option.value === 'highlight') ? "highlight" : option.value;
+        setNewAnno({ ...newAnno, type: newVal });
     }
 
-    const options = [
-        'Normal', 'To-do', 'Question', 'Highlight', 'Issue'
-    ];
+    const options = ['Normal', 'To-do', 'Question', 'Highlight', 'Issue'];
     const defaultOption = options[0];
 
 
-    // const { annotationContent, tags, elseContent, id, annotationType, groups } = this.state;
-    // const { userGroups } = this.props;
     let splitButtonText;
-    if (groups.length) {
+    if (groups && groups.length) {
         const name = userGroups.filter(g => g.gid === groups[0])[0].name;
         splitButtonText = "Post to " + name;
     }
     else {
-        splitButtonText = this.state.private ? "Post as Private" : "Post to Public";
+        splitButtonText = newAnno.private ? "Post as Private" : "Post to Public";
     }
-    let annoTypeDropDownValue;
-    if (annotationType === 'default') {
-        annoTypeDropDownValue = 'normal';
-    }
-    else if (annotationType === 'highlight') {
-        annoTypeDropDownValue = 'empty';
-    }
-    else {
-        annoTypeDropDownValue = annotationType;
-    }
+    let annoTypeDropDownValue = (newAnno.type === 'default') ? 'normal' : (newAnno.type === 'highlight') ? 'empty' : newAnno.type;
+
 
     const CardEditor = (<React.Fragment>
-        {this.props.edit ? (
+        {ctx.editing ? (
             <React.Fragment>
                 <div className="TextareaContainer">
-                    <RichEditor annotationContent={annotationContent}
-                        annotationChangeHandler={(content) => setAnnotationContent(content)} />
+                    <RichEditor annotationContent={newAnno.content}
+                        annotationChangeHandler={(content) => setNewAnno({ ...newAnno, content: content })} />
                 </div>
 
                 <div className="Tag-Container">
                     <div className="row">
                         <div className="TextareaContainer">
-                            <TagsInput value={tags}
-                                onChange={(newTags) => setTags(newTags)}
+                            <TagsInput value={newAnno.tags}
+                                onChange={(newTags) => setNewAnno({ ...newAnno, tags: newTags })}
                                 onlyUnique={true}
                             />
                         </div>
@@ -119,7 +70,7 @@ const CardWrapper = () => {
                                     value={annoTypeDropDownValue} />
                             </div>
                             &nbsp; &nbsp;
-                            <button className="btn Cancel-Button" onClick={cancelPassthrough}>
+                            <button className="btn Cancel-Button" onClick={() => ctx.updateAnnotation(ctx.anno)}>
                                 <GiCancel /> Cancel
                             </button>
                             &nbsp; &nbsp;
@@ -128,12 +79,12 @@ const CardWrapper = () => {
                                 id="dropdown-split-variants-secondary"
                                 variant="secondary"
                                 title={splitButtonText}
-                                onClick={this.submitPassthrough}
+                                onClick={() => ctx.updateAnnotation(newAnno)}
                             >
-                                <BootstrapDropdown.Item onClick={_ => this.setState({ private: true })} eventKey="1">Private</BootstrapDropdown.Item>
-                                <BootstrapDropdown.Item onClick={_ => this.setState({ private: false })} eventKey="2">Public</BootstrapDropdown.Item>
+                                <BootstrapDropdown.Item onClick={_ => setNewAnno({ ...newAnno, private: true })} eventKey="1">Private</BootstrapDropdown.Item>
+                                <BootstrapDropdown.Item onClick={_ => setNewAnno({ ...newAnno, private: false })} eventKey="2">Public</BootstrapDropdown.Item>
                                 {userGroups.map((group, i) => {
-                                    return <BootstrapDropdown.Item onClick={_ => this.setState({ groups: [group.gid] })} eventKey={i + 2}>{group.name}</BootstrapDropdown.Item>
+                                    return <BootstrapDropdown.Item onClick={_ => setGroups([group.gid])} eventKey={i + 2}>{group.name}</BootstrapDropdown.Item>
                                 })}
                             </SplitButton>
                         </div>
@@ -166,6 +117,29 @@ const CardWrapper = () => {
 export default CardWrapper;
 
 
+
+
+  // if (ctx.anno.annotationContent !== annotationContent) setAnnotationContent(ctx.anno.annotationContent);
+        // if (ctx.anno.annotationType !== annotationType) setAnnotationType(ctx.anno.annotationType);
+    // submitPassthrough = () => {
+    //     ctx.updateAnnotation(newAnno);
+    //    // this.setState({ edit: this.props.submitButtonHandler(this.state) });
+    // }
+
+    // const cancelPassthrough = () => {
+    //     ctx.updateAnnotation(ctx.anno);
+    //    // this.props.cancelButtonHandler();
+    // }
+    // const disabled = (annotationContent) => {
+    //     return annotationContent.trim().length === 0;
+    // }
+ //const [annotationContent, setAnnotationContent] = useState(ctx.anno.content);
+    //const [annotationType, setAnnotationType] = useState(ctx.anno.annotationType);
+    //const [tags, setTags] = useState(ctx.anno.tags);
+
+
+    // const { annotationContent, tags, elseContent, id, annotationType, groups } = this.state;
+    // const { userGroups } = this.props;
 
 // constructor(props) {
 //     super(props);

@@ -22,7 +22,7 @@ class AnnotationList extends Component {
               idx={idx}
               annotation={anno}
               notifyParentOfPinning={this.notifyParentOfPinning}
-              groups={this.props.groups}
+              userGroups={this.props.groups}
               currentUrl={this.props.url}
               currentUser={currentUser}
             />
