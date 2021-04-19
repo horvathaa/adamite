@@ -8,10 +8,10 @@ import Dropdown from 'react-dropdown';
 import { SplitButton, Dropdown as BootstrapDropdown } from 'react-bootstrap';
 import AnnotationContext from "../AnnotationList/Annotation/AnnotationContext";
 
-const CardWrapper = () => {
+const CardWrapper = ({ isNew = false }) => {
     const ctx = useContext(AnnotationContext);
-
-    const id = ctx.anno.id,
+    if (isNew) console.log(ctx.anno);
+    const id = "id" in ctx.anno ? ctx.anno.id : false,
         pageAnnotation = ctx.anno.anchor,
         elseContent = ctx.anno.content,
         collapsed = ctx.collapsed,
@@ -70,7 +70,10 @@ const CardWrapper = () => {
                                     value={annoTypeDropDownValue} />
                             </div>
                             &nbsp; &nbsp;
-                            <button className="btn Cancel-Button" onClick={() => ctx.updateAnnotation(ctx.anno)}>
+                            <button className="btn Cancel-Button" onClick={
+                                isNew ? () => ctx.cancelButtonHandler() :
+                                    () => ctx.updateAnnotation(ctx.anno)
+                            }>
                                 <GiCancel /> Cancel
                             </button>
                             &nbsp; &nbsp;
@@ -79,7 +82,9 @@ const CardWrapper = () => {
                                 id="dropdown-split-variants-secondary"
                                 variant="secondary"
                                 title={splitButtonText}
-                                onClick={() => ctx.updateAnnotation(newAnno)}
+                                onClick={isNew ? () => ctx.submitButtonHandler(newAnno) :
+                                    () => ctx.updateAnnotation(newAnno)
+                                }
                             >
                                 <BootstrapDropdown.Item onClick={_ => setNewAnno({ ...newAnno, private: true })} eventKey="1">Private</BootstrapDropdown.Item>
                                 <BootstrapDropdown.Item onClick={_ => setNewAnno({ ...newAnno, private: false })} eventKey="2">Public</BootstrapDropdown.Item>
@@ -123,12 +128,12 @@ export default CardWrapper;
         // if (ctx.anno.annotationType !== annotationType) setAnnotationType(ctx.anno.annotationType);
     // submitPassthrough = () => {
     //     ctx.updateAnnotation(newAnno);
-    //    // this.setState({ edit: this.props.submitButtonHandler(this.state) });
+    //   this.setState({ edit: this.props.submitButtonHandler(this.state) });
     // }
 
     // const cancelPassthrough = () => {
     //     ctx.updateAnnotation(ctx.anno);
-    //    // this.props.cancelButtonHandler();
+    //    this.props.cancelButtonHandler();
     // }
     // const disabled = (annotationContent) => {
     //     return annotationContent.trim().length === 0;

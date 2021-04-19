@@ -13,6 +13,7 @@ class AnnotationList extends Component {
   }
   render() {
     const { annotations, currentUser } = this.props;
+    console.log(annotations);
     return (
       <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
         {annotations.map((anno, idx) => {

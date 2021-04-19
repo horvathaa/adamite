@@ -38,6 +38,7 @@ let messagesIn = {
         updateXpaths(findSpan, request.id)
     },
     'ADD_NEW_ANCHOR': (request, sender, sendResponse) => {
+        console.log("add new");
         addNewAnchor({ request: request, type: "child" });
     },
     'ADD_REPLY_ANCHOR': (request, sender, sendResponse) => {
@@ -96,8 +97,8 @@ let messagesIn = {
         findSpan.forEach(e => e.style.backgroundColor = null)
     },
     'ANNOTATION_ADDED': (request, sender, sendResponse) => {
-        request.newAnno.content = request.newAnno.annotation;
-        highlightAnnotation(request.newAnno, request.newAnno.id)
+        //request.newAnno.content = request.newAnno.annotation;
+        highlightAnnotationDeep(request.newAnno, request.newAnno.id)
     },
     'TEMP_ANNOTATION_ADDED': (request, sender, sendResponse) => {
         //  console.log(request);
@@ -121,7 +122,7 @@ function getSpanFromRequest(request) {
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    // console.log(request);
+    console.log(request);
     if (request.msg in messagesIn) {
         messagesIn[request.msg](request, sender, sendResponse);
     }

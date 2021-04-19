@@ -34,11 +34,10 @@ handleDeleteRequest
 
 const EditRowComponent = () => {
     const ctx = useContext(AnnotationContext);
-    if (ctx.collapsed) return (null);
+    if (ctx.collapsed || ctx.isNew) return (null);
 
     return (
         <React.Fragment>
-
             <div className={" container " + classNames({
                 Header: true,
                 Truncated: ctx.collapsed,
@@ -58,6 +57,8 @@ const EditRowComponent = () => {
                         {formatTimestamp(ctx.anno.createdTimestamp)}
                     </div>
                 </div>
+
+
                 <div className="row">
                     <div className="AnnotationIconContainer">
                         <Tooltip title={"Reply to annotation"} aria-label="reply icon tooltip">
@@ -99,7 +100,5 @@ const EditRowComponent = () => {
         </React.Fragment>
     );
 }
-
-
 
 export default EditRowComponent;

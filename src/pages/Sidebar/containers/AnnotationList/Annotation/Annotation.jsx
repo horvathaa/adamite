@@ -1,35 +1,106 @@
 import React, { Component, useEffect, useState } from 'react';
+import classNames from 'classnames';
 import { AiFillPushpin, AiOutlinePushpin } from 'react-icons/ai';
 import outlinepin from '../../../../../assets/img/SVGs/pin.svg';
 import fillpin from '../../../../../assets/img/SVGs/pin_2.svg';
 import './Annotation.css';
 import { deleteAnnotationForeverById, updateAnnotationById, getUserProfileById } from '../../../../../firebase';
-import DefaultAnnotation from './DefaultAnnotation';
-import ToDoAnnotation from './ToDoAnnotation';
-import HighlightAnnotation from './HighlightAnnnotation';
-import IssueAnnotation from './IssueAnnotation';
-import QuestionAnswerAnnotation from './QuestionAnswerAnnotation';
+// import DefaultAnnotation from './DefaultAnnotation';
+// import ToDoAnnotation from './ToDoAnnotation';
+// import HighlightAnnotation from './HighlightAnnnotation';
+// import IssueAnnotation from './IssueAnnotation';
+// import QuestionAnswerAnnotation from './QuestionAnswerAnnotation';
 import { RiTruckLine } from 'react-icons/ri';
 import AnnotationContext from "./AnnotationContext";
+import EditRowComponent from "./Components/EditRowComponent";
+import CollapsedDiv from './Components/CollapsedDiv';
+import AnnotationTagsList from './Components/AnnotationTagsList';
+import RepliesList from './Components/RepliesList';
+import expand from '../../../../../assets/img/SVGs/expand.svg';
+import CardWrapper from '../../CardWrapper/CardWrapper'
+import AnchorList from './AnchorList/AnchorList';
+import Anchor from './AnchorList/Anchor';
+import Reply from './Reply/Reply';
+import ReplyEditor from './Reply/ReplyEditor';
+
+
+import Highlight from '../../../../../assets/img/SVGs/Highlight.svg';
+import Issue from '../../../../../assets/img/SVGs/Issue.svg';
+import Question from '../../../../../assets/img/SVGs/Question.svg';
+import Default from '../../../../../assets/img/SVGs/Default.svg';
+import Todo from '../../../../../assets/img/SVGs/Todo.svg';
 
 /*
 Initiated in Annotation List
 */
 
+let messagesOut = [
+  //sidebarHelper
+  'TEMP_ANNOTATION_ADDED',
+  'REMOVE_TEMP_ANNOTATION',
+  'ANNOTATION_DELETED_ON_PAGE',
+]
 
-const Annotation = ({ idx, annotation, notifyParent, currentUrl, userGroups, currentUser }) => {
 
-  const [editing, setEditing] = useState(false);
+const Annotation = ({ idx, annotation, isNew = false, notifyParent, resetNewSelection = () => { }, currentUrl, userGroups, currentUser }) => {
+
+  const [editing, setEditing] = useState(isNew);
   const [replying, setReplying] = useState(false);
-  const [collapsed, setCollapsed] = useState(true);
+  const [collapsed, setCollapsed] = useState(!isNew);
+  const [repliesCollapsed, setRepliesCollapsed] = useState(true);
   const [anno, setAnno] = useState(annotation);
+  const replyCountString = "";
 
-  // useEffect(() => {
-  //   // document.addEventListener('keydown', this.keydown, false);
-  //   if (annotation !== anno) {
-  //     setAnno(annotation);
-  //   }
-  // });
+  useEffect(() => {
+    if (annotation !== anno && anno.childAnchor !== annotation.childAnchor) {
+      setAnno(annotation);
+    }
+    if (isNew) {
+      chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+        chrome.tabs.sendMessage(
+          tabs[0].id,
+          {
+            msg: 'TEMP_ANNOTATION_ADDED',
+            newAnno: anno.childAnchor[0],
+          }
+        );
+      });
+    }
+  });
+  const cancelButtonHandler = () => {
+    chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+      chrome.tabs.sendMessage(
+        tabs[0].id,
+        {
+          msg: 'REMOVE_TEMP_ANNOTATION',
+        }
+      );
+    });
+    resetNewSelection();
+  }
+
+
+  const ShowRepliesComponent = () => {
+    if (anno.replies === undefined || collapsed || anno.replies.length) return (null);
+    return (<div className="ShowHideReplies">
+      <div className="ExpandCollapse">
+        <img src={expand} className="Icon" id="ShowReplies" alt="Show replies" onClick={_ => setRepliesCollapsed(false)} />
+      </div>
+      {anno.replies.length} {replyCountString}
+    </div>);
+  }
+  const AnnotationBadgeContainer = () => {
+    let badge = anno.type === 'issue' ? Issue : anno.type === 'highlight' ? Highlight : anno.type === 'todo' ? Todo : anno.type === 'question' ? Question : Default;
+    return (<div className="annotationTypeBadgeContainer" onClick={() => setCollapsed(!collapsed)}>
+      <div className="annotationTypeBadge row2">
+        <div className="annotationTypeBadge col2">
+          <div className="badgeContainer">
+            <img src={badge} alt={`${anno.type} type badge`} />
+          </div>
+        </div>
+      </div>
+    </div>);
+  }
 
 
   return (<div>
@@ -38,19 +109,24 @@ const Annotation = ({ idx, annotation, notifyParent, currentUrl, userGroups, cur
         idx: idx,
         id: anno.id,
         anno: anno,
-        userGroups: userGroups,
-        collapsed: collapsed,
-        setCollapsed: (val) => { setCollapsed(val); },
-        brokenReply: [],
-        brokenChild: [],
+        isNew: isNew,
         currentUrl: currentUrl,
         currentUser: currentUser,
         isCurrentUser: currentUser.uid === anno.authorId,
+        userGroups: userGroups,
+
+        collapsed: collapsed,
+        setCollapsed: (val) => { setCollapsed(val); },
         editing: editing,
         setEditing: (val) => { setEditing(val); },
 
-        formatTimestamp: null,
+        brokenReply: [],
+        brokenChild: [],
+
+
+
         transmitPinToParent: (id, pinned) => { notifyParent(id, pinned) },
+
         updateAnnotation: (newAnno) => {
           console.log("update", newAnno);
           if (newAnno !== anno) {
@@ -58,93 +134,43 @@ const Annotation = ({ idx, annotation, notifyParent, currentUrl, userGroups, cur
               msg: 'ANNOTATION_UPDATED',
               from: 'content',
               payload: {
-                id: newAnno.id,
-                type: newAnno.type.toLowerCase(),
-                content: newAnno.content,
-                tags: newAnno.tags,
-                isPrivate: newAnno.private,
-                groups: newAnno.groups,
-                childAnchor: newAnno.childAnchor
+                newAnno: newAnno
               }
             });
             setAnno(newAnno);
           }
           setEditing(false);
         },
-        //   submitButtonHandler = (CardWrapperState, id) => {
-        //     this.setState({ annoGroups: CardWrapperState.groups });
-        //     chrome.runtime.sendMessage({
-        //       msg: 'ANNOTATION_UPDATED',
-        //       from: 'content',
-        //       payload: {
-        //         id: CardWrapperState.id,
-        //         type: CardWrapperState.annotationType.toLowerCase(),
-        //         content: CardWrapperState.annotationContent,
-        //         tags: CardWrapperState.tags,
-        //         isPrivate: CardWrapperState.private,
-        //         groups: CardWrapperState.groups,
-        //         childAnchor: CardWrapperState.childAnchor
-        //       }
-        //     });
-        //     this.setState({ editing: false });
-        //   }
-        // Anchors
         brokenAnchor: false,
         handleNewAnchor: () => {
+          console.log("handle new");
+
           chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-            chrome.tabs.sendMessage(tabs[0].id, {
+            chrome.tabs.sendMessage(
+              tabs[0].id, {
               msg: 'ADD_NEW_ANCHOR',
               payload: {
-                content: anno.content,
-                type: anno.type,
-                sharedId: anno.id,
-                author: currentUser.uid,
-                tags: anno.tags,
-                groups: anno.groups
+                newAnno: anno,
+                updateType: "NewAnchor"
               }
             });
           });
-        },
-        updateAnchorTags: ({ newTags, childId = null }) => {
-          const childAnch = anno.childAnchor.map((c) => {
-            if (c.id !== childId) return c;
-            let y = c;
-            y.tags = newTags;
-            return y;
-          });
-          console.log("anchor");
-          chrome.runtime.sendMessage({
-            msg: 'ANNOTATION_UPDATED',
-            from: 'content',
-            payload: {
-              id: anno.id,
-              type: anno.type.toLowerCase(),
-              content: anno.content,
-              tags: anno.tags,
-              isPrivate: anno.isPrivate,
-              groups: anno.groups,
-              childAnchor: childAnch
-            }
-          })
-        },
-        deleteAnchor: ({ anchorId }) => {
-          const childAnch = anno.childAnchor.filter((c) => c.id !== anchorId)
-          console.log(anno);
-          chrome.runtime.sendMessage({
-            msg: 'ANNOTATION_UPDATED',
-            from: 'content',
-            payload: {
-              id: anno.id,
-              type: anno.type.toLowerCase(),
-              content: anno.content,
-              tags: anno.tags,
-              isPrivate: anno.private,
-              groups: anno.groups,
-              childAnchor: childAnch
-            }
-          });
-        },
 
+        },
+        updateAnchors: (newAnchors) => {
+          //console.log("update anchors")
+          updateAnnotation({ ...anno, childAnchor: newAnchors })
+          // chrome.runtime.sendMessage({
+          //   msg: 'ANNOTATION_UPDATED',
+          //   from: 'content',
+          //   payload: {
+          //     newAnno: { ...anno, childAnchor: newAnchors },
+          //     updateType: "NewAnchor"
+          //   }
+
+          // });
+          // setAnno({ ...anno, childAnchor: newAnchors })
+        },
         // Reply
         replying: replying,
         setReplying: (val) => { setReplying(val); },
@@ -161,9 +187,6 @@ const Annotation = ({ idx, annotation, notifyParent, currentUrl, userGroups, cur
             }
           });
         },
-
-
-
 
         handleEditClick: () => { },
         handleTrashClick: (id) => {
@@ -192,9 +215,6 @@ const Annotation = ({ idx, annotation, notifyParent, currentUrl, userGroups, cur
             return;
           }
         },
-
-
-
         handleDoneToDo: (id) => {
           chrome.runtime.sendMessage({
             msg: 'FINISH_TODO',
@@ -204,23 +224,350 @@ const Annotation = ({ idx, annotation, notifyParent, currentUrl, userGroups, cur
           transmitPinToParent();
         },
         handleExpertReview: () => { console.log('handled'); },
-        cancelButtonHandler: () => { },
-        submitButtonHandler: () => { },
+        cancelButtonHandler: () => {
+          if (isNew) {
+            chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+              chrome.tabs.sendMessage(tabs[0].id, { msg: 'REMOVE_TEMP_ANNOTATION', });
+            });
+            resetNewSelection();
+
+          }
+        },
+        submitButtonHandler: (newAnno) => {
+          //this.setState({ submitted: true });
+          chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+            chrome.tabs.sendMessage(tabs[0].id, { msg: 'REMOVE_TEMP_ANNOTATION', },
+              response => {
+                if (response.msg === 'REMOVED') {
+                  chrome.runtime.sendMessage(
+                    {
+                      msg: 'CREATE_ANNOTATION', //'SAVE_ANNOTATED_TEXT',
+                      payload: {
+                        newAnno: newAnno,
+                        url: currentUrl,
+                      },
+                    },
+                    response => {
+                      console.log('response', response);
+                      if (response.msg === 'DONE') {
+                        console.log('response', response);
+                        resetNewSelection();
+                      }
+                    }
+                  );
+                }
+              }
+            );
+          });
+        },
         handleExpandCollapse: () => { },
         notifyParentOfAdopted: () => { },
         getGroupName: () => { },
-
       }}
     >
-      <DefaultAnnotation />
+      {
+
+        <li key={idx} id={anno.id} className={classNames({ AnnotationItem: true })}>
+          <div className={classNames({ AnnotationContainerPad: true, AnnotationPadActive: true, })} >
+            <div className={classNames({ AnnotationContainerLeftPad: true })}></div>
+          </div>
+          <div id={anno.id} className={classNames({ AnnotationContainer: true, ActiveAnnotationContainer: true, })} >
+            <AnnotationBadgeContainer />
+            <EditRowComponent />
+            <AnchorList />
+            <CardWrapper isNew={isNew} />
+            <AnnotationTagsList />
+
+            {replying && <ReplyEditor id={id} finishReply={() => setReplying(false)} />}
+            {/* <RepliesList /> 
+                <ShowRepliesComponent />  */}
+            <CollapsedDiv />
+          </div>
+          <div className={classNames({ AnnotationContainerPad: true, AnnotationPadActive: true, })} >
+            <div className={classNames({ AnnotationContainerRightPad: true })} ></div>
+          </div>
+          <div className={classNames({ AnnotationContainerPad: true, AnnotationPadActive: true, })} ></div>
+        </li>
+      }
     </AnnotationContext.Provider>
-  </div>
+  </div >
   )
 }
-
 export default Annotation;
 
 
+   // payload: {
+            //   id: anno.id,
+            //   type: anno.type.toLowerCase(),
+            //   content: anno.content,
+            //   tags: anno.tags,
+            //   isPrivate: anno.isPrivate,
+            //   groups: anno.groups,
+            //   childAnchor: newAnchors
+            // }
+  // chrome.tabs.sendMessage(tabs[0].id, {
+          //   msg: 'ADD_NEW_ANCHOR',
+          //   payload: {
+          //     content: anno.content,
+          //     type: anno.type,
+          //     sharedId: anno.id,
+          //     author: currentUser.uid,
+          //     tags: anno.tags,
+          //     groups: anno.groups
+          //   }
+          // });
+          //});
+ // chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs[0].id => {
+          //   chrome.runtime.sendMessage({
+          //     msg: 'ADD_NEW_ANCHOR',
+          //     from: 'sidebar',
+          //     to: "content",
+          //     payload: {
+          //       newAnno: anno,
+          //       updateType: "NewAnchor"
+          //     }
+          // });
+// const Annotation = ({ idx, annotation, notifyParent, currentUrl, userGroups, currentUser }) => {
+
+//   const [editing, setEditing] = useState(false);
+//   const [replying, setReplying] = useState(false);
+//   const [collapsed, setCollapsed] = useState(true);
+//   const [anno, setAnno] = useState(annotation);
+
+//   // useEffect(() => {
+//   //   if (annotation !== anno) {
+//   //     setAnno(annotation);
+//   //   }
+//   // });
+//   return (<div>
+//     <AnnotationContext.Provider
+//       value={{
+//         idx: idx,
+//         id: anno.id,
+//         anno: anno,
+//         currentUrl: currentUrl,
+//         currentUser: currentUser,
+//         isCurrentUser: currentUser.uid === anno.authorId,
+//         userGroups: userGroups,
+
+//         collapsed: collapsed,
+//         setCollapsed: (val) => { setCollapsed(val); },
+//         editing: editing,
+//         setEditing: (val) => { setEditing(val); },
+
+//         brokenReply: [],
+//         brokenChild: [],
+
+    // chrome.runtime.sendMessage({
+            //   msg: 'ANNOTATION_UPDATED',
+            //   from: 'content',
+            //   payload: {
+            //     id: newAnno.id,
+            //     type: newAnno.type.toLowerCase(),
+            //     content: newAnno.content,
+            //     tags: newAnno.tags,
+            //     isPrivate: newAnno.isPrivate,
+            //     groups: newAnno.groups,
+            //     childAnchor: newAnno.childAnchor
+            //   }
+            // });
+
+//         transmitPinToParent: (id, pinned) => { notifyParent(id, pinned) },
+
+//         updateAnnotation: (newAnno) => {
+//           console.log("update", newAnno);
+//           if (newAnno !== anno) {
+//             chrome.runtime.sendMessage({
+//               msg: 'ANNOTATION_UPDATED',
+//               from: 'content',
+//               payload: {
+//                 id: newAnno.id,
+//                 type: newAnno.type.toLowerCase(),
+//                 content: newAnno.content,
+//                 tags: newAnno.tags,
+//                 isPrivate: newAnno.private,
+//                 groups: newAnno.groups,
+//                 childAnchor: newAnno.childAnchor
+//               }
+//             });
+//             setAnno(newAnno);
+//           }
+//           setEditing(false);
+//         },
+
+//         brokenAnchor: false,
+//         handleNewAnchor: () => {
+//           chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+//             chrome.tabs.sendMessage(tabs[0].id, {
+//               msg: 'ADD_NEW_ANCHOR',
+//               payload: {
+//                 content: anno.content,
+//                 type: anno.type,
+//                 sharedId: anno.id,
+//                 author: currentUser.uid,
+//                 tags: anno.tags,
+//                 groups: anno.groups
+//               }
+//             });
+//           });
+//         },
+//         updateAnchors: (newAnchors) => {
+//           chrome.runtime.sendMessage({
+//             msg: 'ANNOTATION_UPDATED',
+//             from: 'content',
+//             payload: {
+//               id: anno.id,
+//               type: anno.type.toLowerCase(),
+//               content: anno.content,
+//               tags: anno.tags,
+//               isPrivate: anno.isPrivate,
+//               groups: anno.groups,
+//               childAnchor: newAnchors
+//             }
+//           })
+//         },
+
+
+//         // Reply
+//         replying: replying,
+//         setReplying: (val) => { setReplying(val); },
+//         showReply: false,
+//         replyCountString: "",
+//         handleShowReply: (id) => { },
+//         deleteReply: (id) => {
+//           const repliesToTransmit = anno.replies.filter(reply => reply.replyId !== id);
+//           chrome.runtime.sendMessage({
+//             msg: 'UPDATE_REPLIES',
+//             payload: {
+//               id: anno.id,
+//               replies: repliesToTransmit
+//             }
+//           });
+//         },
+
+//         handleEditClick: () => { },
+//         handleTrashClick: (id) => {
+//           // eslint-disable-next-line no-restricted-globals
+//           if (confirm("Are you sure? This action cannot be reversed")) {
+//             chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+//               let url = tabs[0].url;
+//               if (this.props.url[0] === url) {
+//                 chrome.tabs.sendMessage(
+//                   tabs[0].id,
+//                   {
+//                     msg: 'ANNOTATION_DELETED_ON_PAGE',
+//                     id: anno.id,
+//                   }
+//                 );
+//               }
+//               chrome.runtime.sendMessage({
+//                 msg: "ANNOTATION_DELETED",
+//                 from: "content",
+//                 payload: {
+//                   id: anno.id
+//                 }
+//               })
+//             });
+//           } else {
+//             return;
+//           }
+//         },
+//         handleDoneToDo: (id) => {
+//           chrome.runtime.sendMessage({
+//             msg: 'FINISH_TODO',
+//             from: 'content',
+//             payload: { id }
+//           });
+//           transmitPinToParent();
+//         },
+//         handleExpertReview: () => { console.log('handled'); },
+//         cancelButtonHandler: () => { },
+//         submitButtonHandler: () => { },
+//         handleExpandCollapse: () => { },
+//         notifyParentOfAdopted: () => { },
+//         getGroupName: () => { },
+
+
+
+//       }}
+//     >
+
+
+//     </AnnotationContext.Provider>
+//   </div>
+//   )
+// }
+// export default Annotation;
+
+
+
+
+
+
+
+
+
+
+
+ //   submitButtonHandler = (CardWrapperState, id) => {
+        //     this.setState({ annoGroups: CardWrapperState.groups });
+        //     chrome.runtime.sendMessage({
+        //       msg: 'ANNOTATION_UPDATED',
+        //       from: 'content',
+        //       payload: {
+        //         id: CardWrapperState.id,
+        //         type: CardWrapperState.annotationType.toLowerCase(),
+        //         content: CardWrapperState.annotationContent,
+        //         tags: CardWrapperState.tags,
+        //         isPrivate: CardWrapperState.private,
+        //         groups: CardWrapperState.groups,
+        //         childAnchor: CardWrapperState.childAnchor
+        //       }
+        //     });
+        //     this.setState({ editing: false });
+        //   }
+        // Anchors
+
+
+        // updateAnchorTags: ({ newTags, childId = null }) => {
+        //   const childAnch = anno.childAnchor.map((c) => {
+        //     if (c.id !== childId) return c;
+        //     let y = c;
+        //     y.tags = newTags;
+        //     return y;
+        //   });
+        //   console.log("anchor");
+        //   chrome.runtime.sendMessage({
+        //     msg: 'ANNOTATION_UPDATED',
+        //     from: 'content',
+        //     payload: {
+        //       id: anno.id,
+        //       type: anno.type.toLowerCase(),
+        //       content: anno.content,
+        //       tags: anno.tags,
+        //       isPrivate: anno.isPrivate,
+        //       groups: anno.groups,
+        //       childAnchor: childAnch
+        //     }
+        //   })
+        // },
+        // deleteAnchor: ({ anchorId }) => {
+        //   const childAnch = anno.childAnchor.filter((c) => c.id !== anchorId)
+        //   console.log(anno);
+        //   chrome.runtime.sendMessage({
+        //     msg: 'ANNOTATION_UPDATED',
+        //     from: 'content',
+        //     payload: {
+        //       id: anno.id,
+        //       type: anno.type.toLowerCase(),
+        //       content: anno.content,
+        //       tags: anno.tags,
+        //       isPrivate: anno.private,
+        //       groups: anno.groups,
+        //       childAnchor: childAnch
+        //     }
+        //   });
+        // },
 
 //tags: null,
 ////const [tags, setTags] = useState(anno);

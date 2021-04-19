@@ -20,6 +20,7 @@ const AnnotationContext = createContext({
     setCollapsed: () => { },
     handleExpandCollapse: () => { },
 
+    createAnnotation: () => { },
     updateAnnotation: () => { },
     cancelButtonHandler: () => { },
     submitButtonHandler: () => { },
@@ -27,12 +28,18 @@ const AnnotationContext = createContext({
 
     // Annotation 
     editing: false,
+    isNew: false,
     setEditing: () => { },
     handleEditClick: () => { },
     handleTrashClick: () => { },
-    handleDoneToDo: (id) => { },
-    handleExpertReview: () => { },
 
+    // todo annotation
+    handleDoneToDo: (id) => { },
+    // Issue Annotation
+    handleExpertReview: () => { },
+    // Question Annotation
+    handleCloseQuestion: () => { },
+    handleQuestionAdopted: () => { },
 
 
     transmitPinToParent: () => { },
@@ -55,8 +62,9 @@ const AnnotationContext = createContext({
 
     //Anchors
     handleNewAnchor: () => { },
-    updateAnchorTags: () => { },
-    deleteAnchor: () => { },
+    // updateAnchorTags: (newAnchors) => { },
+    // deleteAnchor: () => { },
+    updateAnchors: (newAnchors) => { },
 
 
 

@@ -5,13 +5,16 @@ import classNames from 'classnames';
 import Title from './containers/Title/Title';
 import Authentication from './containers//Authentication//Authentication';
 import AnnotationList from './containers/AnnotationList/AnnotationList';
-import NewAnnotation from './containers/NewAnnotation/NewAnnotation';
+import NewAnnotation from './containers/old/NewAnnotation/NewAnnotation';
 import Filter from './containers/Filter/Filter';
 import FilterSummary from './containers/Filter/FilterSummary';
 import SearchBar from './containers/SearchBar/SearchBar';
 import { Button } from 'react-bootstrap';
 import { left } from 'glamor';
 import { AiOutlineConsoleSql } from 'react-icons/ai';
+import { v4 as uuidv4 } from 'uuid';
+import Annotation from './containers/AnnotationList/Annotation/Annotation';
+///Annotation/Annotation';
 
 
 
@@ -923,6 +926,8 @@ class Sidebar extends React.Component {
     else {
       tempSearchCount = renderedAnnotations.length - numChildAnchs.length;
     }
+    //let url = new URL(this.state.url);
+    const newAnnoId = uuidv4();
     return (
       <div className="SidebarContainer" >
         <Title currentUser={currentUser}
@@ -959,21 +964,50 @@ class Sidebar extends React.Component {
                 />
               }
 
-              {this.state.newSelection !== null &&
-                !this.state.annotatingPage &&
+              {this.state.newSelection &&
                 (
-                  <NewAnnotation
-                    url={this.state.url}
-                    newSelection={this.state.newSelection}
-                    resetNewSelection={this.resetNewSelection}
-                    offsets={this.state.offsets}
-                    xpath={this.state.xpath}
-                    type={this.state.newAnnotationType}
-                    annoContent={this.state.newAnnotationContent}
+                  <Annotation
+                    key={uuidv4()}
+                    idx={-1}
+                    isNew={true}
+                    annotation={{
+                      id: newAnnoId,
+                      type: this.state.newAnnotationType,
+                      content: '',
+                      tags: [],
+                      isPrivate: false,
+                      groups: [],
+                      childAnchor: this.state.annotatingPage ? null : [
+                        {
+                          id: uuidv4(),
+                          anchor: this.state.newSelection,
+                          // hostname: url.hostname,
+                          parentId: newAnnoId,
+                          xpath: this.state.xpath,
+                          offsets: this.state.offsets,
+                          url: this.state.url,
+                          tags: []
+                        }
+                      ]
+                    }}
+                    notifyParentOfPinning={this.handlePinnedAnnotation}
                     userGroups={groups}
+                    currentUrl={this.state.url}
+                    currentUser={currentUser}
+                    resetNewSelection={this.resetNewSelection}
                   />
+                  // <NewAnnotation
+                  //   url={this.state.url}
+                  //   newSelection={this.state.newSelection}
+                  //   resetNewSelection={this.resetNewSelection}
+                  //   offsets={this.state.offsets}
+                  //   xpath={this.state.xpath}
+                  //   type={this.state.newAnnotationType}
+                  //   annoContent={this.state.newAnnotationContent}
+                  //   userGroups={groups}
+                  // />
                 )}
-              {this.state.annotatingPage &&
+              {/* {this.state.annotatingPage &&
                 <NewAnnotation
                   url={this.state.url}
                   newSelection={this.state.pageName}
@@ -983,7 +1017,7 @@ class Sidebar extends React.Component {
                   xpath={null}
                   userGroups={groups}
                 />
-              }
+              } */}
             </div>
             <div className="userQuestions">
               {pinnedAnnosCopy.length ? (
@@ -1025,14 +1059,14 @@ class Sidebar extends React.Component {
                   There's nothing here! Try searching for an annotation, modifying your groups or filters, or creating a new annotation
                 </div>
               ) : (
-                  <AnnotationList annotations={renderedAnnotations}
-                    // altAnnotationList={pinnedAnnosCopy}
-                    groups={groups}
-                    currentUser={currentUser}
-                    url={this.state.url}
-                    requestFilterUpdate={this.requestChildAnchorFilterUpdate}
-                    notifyParentOfPinning={this.handlePinnedAnnotation} />
-                )}
+                <AnnotationList annotations={renderedAnnotations}
+                  // altAnnotationList={pinnedAnnosCopy}
+                  groups={groups}
+                  currentUser={currentUser}
+                  url={this.state.url}
+                  requestFilterUpdate={this.requestChildAnchorFilterUpdate}
+                  notifyParentOfPinning={this.handlePinnedAnnotation} />
+              )}
               {(this.state.url.includes("facebook.com") || this.state.url.includes("google.com") || this.state.url.includes("twitter.com")) && !this.state.url.includes("developer") ? (
                 <div className="whoops">
                   NOTE: Adamite does not work well on dynamic webpages such as Facebook or Twitter where content is likely to change. Proceed with caution.

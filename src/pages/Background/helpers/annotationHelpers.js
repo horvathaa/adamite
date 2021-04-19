@@ -6,6 +6,13 @@ import { getCurrentUserId } from '../../../firebase/index';
 import { getPathFromUrl } from '../backgroundEventListeners';
 
 
+
+function assert(condition, message) {
+    if (!condition) {
+        throw new Error(message || "Assertion failed");
+    }
+}
+
 //let unsubscribeAnnotations = null;
 export let tabAnnotationCollect = [];
 let annotationsAcrossWholeSite = [];
@@ -63,53 +70,47 @@ export function getAnnotationById(request, sender, sendResponse) {
         console.log('getAnnotationById error', error);
     });
 }
-
+// TODO  
+// export async function createAnnotation(request, sender, sendResponse) {
+//     fb.createAnnotation(_createAnnotation(request)).then(value => {
+//         console.log("background", value);
+//         console.log('sendResponse', sendResponse);
+//     });
+//     sendResponse({ "msg": 'DONE' });
+// }
 export async function createAnnotation(request, sender, sendResponse) {
-    fb.createAnnotation(_createAnnotation(request)).then(value => {
+    //let { url, anchor, xpath, offsets } = request.payload;
+    let { url, newAnno } = request.payload;
+    // Add checks
+    console.log(request.payload);
+
+    const hostname = new URL(url).hostname;
+    const author = getAuthor();
+    //const id = new Date().getTime();
+
+    fb.createAnnotation({
+        ...newAnno,
+        taskId: null,
+        SharedId: null,
+        authorId: getCurrentUserId(),
+        url: [url],
+        hostname: hostname,
+        pinned: newAnno.type === 'question' || newAnno.type === 'to-do',
+        isPrivate: true,
+        author: author,
+        groups: [], // later have this be a default group
+        readCount: 0,
+        deleted: false,
+        trashed: false,
+        createdTimestamp: new Date().getTime(),
+    }).then(value => {
         console.log("background", value);
         console.log('sendResponse', sendResponse);
     });
     sendResponse({ "msg": 'DONE' });
 }
-export async function createAnnotationHighlight(request, sender, sendResponse) {
-    let { url, anchor, xpath, offsets } = request.payload;
-    const hostname = new URL(url).hostname;
-    const author = getAuthor();
-    const id = new Date().getTime();
-    fb.createAnnotation({
-        taskId: null,
-        SharedId: null,
-        AnnotationContent: "",
-        AnnotationAnchorContent: anchor ?? "",
-        AnnotationAnchorPath: null,
-        offsets: offsets,
-        xpath: xpath,
-        AnnotationType: "highlight",
-        url: [url],
-        hostname,
-        pinned: false,
-        AnnotationTags: [],
-        childAnchor: [
-            {
-                parentId: null,
-                id: id,
-                anchor: anchor ?? "",
-                url: url,
-                offsets: offsets,
-                hostname: hostname,
-                xpath: xpath,
-                tags: []
-            }
-        ],
-        isPrivate: true,
-        author,
-        groups: [], // later have this be a default group
-        readCount: 0,
-        deleted: false,
-        events: []
-    });
-}
-// 
+
+
 export async function createAnnotationReply(request, sender, sendResponse) {
     const { id, url } = request.payload;
     if (url !== undefined && url !== "") {
@@ -165,16 +166,30 @@ export async function createAnnotationChildAnchor(request, sender, sendResponse)
 
 
 export async function updateAnnotation(request, sender, sendResponse) {
-    const { id, content, type, tags, isPrivate, groups, childAnchor } = request.payload;
-    let doc = await fb.getAnnotationById(id).get();
-    await fb.updateAnnotationById(id, {
-        content, type, tags, private: isPrivate, groups, childAnchor,
-        createdTimestamp: new Date().getTime(),
+    // const { id, content, type, tags, isPrivate, groups, childAnchor } = request.payload;
+    const { newAnno, updateType } = request.payload;
+    let doc = await fb.getAnnotationById(newAnno.id).get();
+    console.log(newAnno);
+    await fb.updateAnnotationById(newAnno.id, {
+        ...newAnno,
         deletedTimestamp: 0,
         events: fbUnion(editEvent(request.msg, doc.data())),
-    })
-    broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
-    console.log("TODO", request.message);
+    }).then(value => {
+        if (updateType === "NewAnchor") {
+            chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+                chrome.tabs.sendMessage(
+                    tabs[0].id,
+                    {
+                        msg: 'ANNOTATION_ADDED',
+                        newAnno: newAnno,
+                    }
+                );
+            });
+        }
+        broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', newAnno.id);
+    });
+    //broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
+    console.log("TODO", request.msg);
 }
 
 
@@ -338,7 +353,7 @@ const editEvent = (msg, data = {}, author = null, eventTime = null,) => {
             oldType: data.type,
             oldTags: data.tags,
             oldGroups: data.groups,
-            oldPrivate: data.private
+            oldPrivate: data.isPrivate
         }
     } else if (data !== {}) {
         content = {
@@ -371,47 +386,7 @@ const _createReply = (request) => {
     });
 }
 
-const _createAnnotation = (request) => {
-    let { url, content } = request.payload;
-    // console.log("background", url, content);
-    const hostname = new URL(url).hostname;
-    // username is just front of email
-    const author = getAuthor();
-    const id = new Date().getTime();
-    return {
-        taskId: null,
-        SharedId: null,
-        AnnotationContent: content.annotation,
-        AnnotationAnchorContent: content.anchor ?? "",
-        AnnotationAnchorPath: null,
-        offsets: content.offsets,
-        xpath: content.xpath,
-        AnnotationType: content.annotationType, // could be other types (string)
-        url: [url],
-        hostname,
-        isClosed: false,
-        pinned: false,
-        AnnotationTags: content.tags,
-        childAnchor: [
-            {
-                parentId: null,
-                id: id,
-                anchor: content.anchor ?? "",
-                url: url,
-                offsets: content.offsets,
-                hostname: hostname,
-                xpath: content.xpath,
-                tags: []
-            }
-        ],
-        isPrivate: content.private,
-        author,
-        groups: content.groups,
-        readCount: 0,
-        deleted: false,
-        events: []
-    };
-}
+
 
 
 
@@ -466,6 +441,7 @@ function getAllAnnotationsByUrlListener(url, tabId) {
     publicListener = fb.getAllAnnotationsByUrl(url, fb.getCurrentUser().uid).onSnapshot(annotationsSnapshot => {
         let tempPublicAnnotations = getListFromSnapshots(annotationsSnapshot);
         let annotationsToBroadcast = tempPublicAnnotations.concat(privateAnnotations);
+        console.log(annotationsSnapshot);
         annotationsToBroadcast = annotationsToBroadcast.filter(anno => !anno.deleted && anno.url.includes(url));
 
         chrome.tabs.query({}, tabs => {
@@ -482,7 +458,7 @@ function getAllAnnotationsByUrlListener(url, tabId) {
             })
         });
         publicAnnotations = tempPublicAnnotations;
-
+        //console.log(publicAnnotations);
     });
 }
 
@@ -492,6 +468,7 @@ function getPrivateAnnotationsByUrlListener(url, tabId) {
     privateListener = fb.getPrivateAnnotationsByUrl(url, fb.getCurrentUser().uid).onSnapshot(annotationsSnapshot => {
         let tempPrivateAnnotations = getListFromSnapshots(annotationsSnapshot);
         let annotationsToBroadcast = tempPrivateAnnotations.concat(publicAnnotations);
+        console.log(annotationsToBroadcast);
         annotationsToBroadcast = annotationsToBroadcast.filter(anno => !anno.deleted && anno.url.includes(url));
 
         chrome.tabs.query({}, tabs => {
@@ -514,3 +491,78 @@ function getPrivateAnnotationsByUrlListener(url, tabId) {
 
 }
 
+
+// const _createAnnotation = (request) => {
+//     let { url, content } = request.payload;
+//     // console.log("background", url, content);
+//     const hostname = new URL(url).hostname;
+//     // username is just front of email
+//     const author = getAuthor();
+//     const id = new Date().getTime();
+//     return {
+//         taskId: null,
+//         SharedId: null,
+//         AnnotationContent: content.annotation,
+//         AnnotationAnchorContent: content.anchor ?? "",
+//         AnnotationAnchorPath: null,
+//         AnnotationType: content.annotationType, // could be other types (string)
+//         url: [url],
+//         hostname,
+//         isClosed: false,
+//         pinned: false,
+//         AnnotationTags: content.tags,
+//         childAnchor: content.childAnchor,
+//         isPrivate: content.private,
+//         author,
+//         groups: content.groups,
+//         readCount: 0,
+//         deleted: false,
+//         events: []
+//     };
+// }
+// export async function createAnnotation(request, sender, sendResponse) {
+//     fb.createAnnotation(_createAnnotation(request)).then(value => {
+//         console.log("background", value);
+//         console.log('sendResponse', sendResponse);
+//     });
+//     sendResponse({ "msg": 'DONE' });
+// }
+// export async function createAnnotationHighlight(request, sender, sendResponse) {
+//     let { url, anchor, xpath, offsets } = request.payload;
+//     const hostname = new URL(url).hostname;
+//     const author = getAuthor();
+//     const id = new Date().getTime();
+//     fb.createAnnotation({
+//         taskId: null,
+//         SharedId: null,
+//         AnnotationContent: "",
+//         AnnotationAnchorContent: anchor ?? "",
+//         AnnotationAnchorPath: null,
+//         offsets: offsets,
+//         xpath: xpath,
+//         AnnotationType: "highlight",
+//         url: [url],
+//         hostname,
+//         pinned: false,
+//         AnnotationTags: [],
+//         childAnchor: [
+//             {
+//                 parentId: null,
+//                 id: id,
+//                 anchor: anchor ?? "",
+//                 url: url,
+//                 offsets: offsets,
+//                 hostname: hostname,
+//                 xpath: xpath,
+//                 tags: []
+//             }
+//         ],
+//         isPrivate: true,
+//         author,
+//         groups: [], // later have this be a default group
+//         readCount: 0,
+//         deleted: false,
+//         events: []
+//     });
+// }
+// 

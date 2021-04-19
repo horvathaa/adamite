@@ -9,13 +9,11 @@ import AnnotationContext from "../AnnotationContext";
 
 /*
 Context Used
-
 anno.replies
 collapsed
 editing
 handleShowReplies
 replyCountString
-
 */
 const RepliesList = () => {
     const ctx = useContext(AnnotationContext);

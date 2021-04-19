@@ -63,7 +63,6 @@ const BrokenAnchorComponent = ({ anchorContent, anchorIcon, collapsed }) => {
 
 const Anchor = ({ anchor }) => {
     const ctx = useContext(AnnotationContext);
-
     //tagsIn, anchorContent, pageAnchor, brokenAnchor
     const id = ctx.anno.id,
         url = anchor.url,
@@ -82,6 +81,20 @@ const Anchor = ({ anchor }) => {
     const [tags, setTags] = useState(anchor.tags ?? []);
 
 
+
+    const updateAnchorTags = ({ newTags, childId = null }) => {
+        const childAnch = ctx.anno.childAnchor.map((c) => {
+            if (c.id !== id) return c;
+            let y = c;
+            y.tags = newTags;
+            return y;
+        });
+        ctx.updateAnchors(childAnch);
+    }
+    const deleteAnchor = ({ anchorId }) => {
+        const childAnch = anno.childAnchor.filter((c) => c.id !== anchorId)
+        ctx.updateAnchors(childAnch);
+    }
     // useEffect(() => {
     // document.addEventListener('keydown', this.keydown, false);
     // if (tags !== tagsIn) setTags(tagsIn);
@@ -113,7 +126,7 @@ const Anchor = ({ anchor }) => {
     }
 
     const handleOnEditDone = () => {
-        if (tags !== anchor.tags) { ctx.updateAnchorTags({ newTags: tags, anchorId: anchorId }); }
+        if (tags !== anchor.tags) { updateAnchorTags({ newTags: tags, anchorId: anchorId }); }
         setEditMode(false);
     }
 
@@ -187,7 +200,7 @@ const Anchor = ({ anchor }) => {
                                         {id && !ctx.anno.childAnchor.length > 1 &&
                                             <Tooltip title={"Delete Anchor"} aria-label="delete annotation tooltip">
                                                 <div className="TopIconContainer" >
-                                                    <img src={trash} alt="delete annotation" className="profile" id="trash" onClick={() => ctx.deleteAnchor({ anchorId: anchorId })} />
+                                                    <img src={trash} alt="delete annotation" className="profile" id="trash" onClick={() => deleteAnchor({ anchorId: anchorId })} />
                                                 </div>
                                             </Tooltip>}
                                     </div>

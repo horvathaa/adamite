@@ -10,7 +10,7 @@ export const highlightAnnotationDeep = (anno) => {
     //console.log("highlight deep");
     // if (!document.getElementsByName(anno.id.toString()).length > 0)
     //     highlightAnnotation(anno, anno.id.toString(), "root") 
-
+    console.log(anno);
     if (anno.childAnchor !== undefined && anno.childAnchor.length) {
         anno.childAnchor.forEach(child => {
             if (child.xpath !== undefined && child.xpath !== null) {

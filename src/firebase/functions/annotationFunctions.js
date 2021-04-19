@@ -1,6 +1,7 @@
 import { DB_COLLECTIONS, db, getCurrentUserId } from '../index';
 import firebase from '../firebase';
 
+
 export const getUserByUserId = uid => {
   return db.collection(DB_COLLECTIONS.USERS).where('uid', '==', uid);
 };
@@ -10,16 +11,17 @@ export const getAllAnnotationsByUserId = uid => {
 };
 
 export const getAllAnnotationsByUrl = url => {
+  console.log(url);
   return db.collection(DB_COLLECTIONS.ANNOTATIONS)
     .where('url', 'array-contains', url)
-    .where('private', '==', false);
+    .where('isPrivate', '==', false);
 };
 
 export const getPrivateAnnotationsByUrl = (url, uid) => {
   return db.collection(DB_COLLECTIONS.ANNOTATIONS)
     .where('url', 'array-contains', url)
     .where('authorId', '==', uid)
-    .where('private', '==', true);
+    .where('isPrivate', '==', true);
 };
 
 export const getAllUserGroups = uid => {
@@ -51,14 +53,14 @@ export const addNewGroup = async ({
 export const getAnnotationsAcrossSite = hostname => {
   return db.collection(DB_COLLECTIONS.ANNOTATIONS)
     .where('hostname', '==', hostname)
-    .where('private', '==', false)
+    .where('isPrivate', '==', false)
     .limit(15);
 };
 
 export const getPrivateAnnotationsAcrossSite = (hostname, uid) => {
   return db.collection(DB_COLLECTIONS.ANNOTATIONS)
     .where('hostname', '==', hostname)
-    .where('private', '==', true)
+    .where('isPrivate', '==', true)
     .where('authorId', '==', uid)
     .limit(15);
 };
@@ -90,7 +92,7 @@ export const getAllPinnedAnnotationsByUserId = (uid) => {
     .collection(DB_COLLECTIONS.ANNOTATIONS)
     .where('authorId', '==', uid)
     .where('pinned', '==', true)
-    .where('private', '==', false);
+    .where('isPrivate', '==', false);
 };
 
 export const getGroupAnnotationsByGroupId = (gid) => {
@@ -98,7 +100,7 @@ export const getGroupAnnotationsByGroupId = (gid) => {
   return db
     .collection(DB_COLLECTIONS.ANNOTATIONS)//.doc("06OlxrYfO08cofa2mDb9");
     .where('groups', 'array-contains-any', gid) // switch to array-contains-any to look across all groups that user is in
-    .where('private', '==', true);
+    .where('isPrivate', '==', true);
 };
 
 export const getAllPrivatePinnedAnnotationsByUserId = (uid) => {
@@ -106,7 +108,7 @@ export const getAllPrivatePinnedAnnotationsByUserId = (uid) => {
     .collection(DB_COLLECTIONS.ANNOTATIONS)
     .where('authorId', '==', uid)
     .where('pinned', '==', true)
-    .where('private', '==', true);
+    .where('isPrivate', '==', true);
 };
 
 export const getAnnotationById = id => {
@@ -145,57 +147,65 @@ export const updateAllAnnotations = () => {
     });
 }
 
-export const createAnnotation = async ({
-  authorId,
-  taskId,
-  SharedId,
-  AnnotationContent,
-  AnnotationAnchorContent,
-  AnnotationType,
-  url,
-  hostname,
-  AnnotationTags,
-  offsets,
-  xpath,
-  childAnchor,
-  pinned,
-  isPrivate,
-  author,
-  groups,
-  readCount,
-  events
-}) => {
-  authorId = authorId ? authorId : getCurrentUserId();
-  if (!authorId) {
-    return;
-  }
-  // SharedId = SharedId ? SharedId : undefined;
 
-  let newAnnotation = {
-    authorId,
-    taskId,
-    SharedId,
-    trashed: false,
-    createdTimestamp: new Date().getTime(),
-    content: AnnotationContent,
-    //anchorContent: "",
-    anchorPath: null,
-    type: AnnotationType,
-    url,
-    hostname,
-    tags: AnnotationTags,
-    offsets,
-    xpath,
-    childAnchor,
-    pinned: AnnotationType === 'question' || AnnotationType === 'to-do',
-    replies: [],
-    private: isPrivate,
-    adopted: false,
-    author,
-    groups,
-    readCount,
-    deleted: false,
-    events
-  };
-  return db.collection(DB_COLLECTIONS.ANNOTATIONS).add(newAnnotation);
+export const createAnnotation = async (newAnno) => {
+  return db.collection(DB_COLLECTIONS.ANNOTATIONS).doc(newAnno.id).set(newAnno);
 };
+
+
+
+// export const createAnnotation = async ({
+//   authorId,
+//   taskId,
+//   SharedId,
+//   AnnotationContent,
+//   AnnotationAnchorContent,
+//   AnnotationType,
+//   url,
+//   hostname,
+//   AnnotationTags,
+//   offsets,
+//   xpath,
+//   childAnchor,
+//   pinned,
+//   isPrivate,
+//   author,
+//   groups,
+//   readCount,
+//   events
+// }) => {
+//   authorId = authorId ? authorId : getCurrentUserId();
+//   if (!authorId) {
+//     return;
+//   }
+//   // SharedId = SharedId ? SharedId : undefined;
+
+//   let newAnnotation = {
+//     authorId,
+//     taskId,
+//     SharedId,
+//     trashed: false,
+//     createdTimestamp: new Date().getTime(),
+//     content: AnnotationContent,
+//     //anchorContent: "",
+//     anchorPath: null,
+//     type: AnnotationType,
+//     url,
+//     hostname,
+//     tags: AnnotationTags,
+//     offsets,
+//     xpath,
+//     childAnchor,
+//     pinned: AnnotationType === 'question' || AnnotationType === 'to-do',
+//     replies: [],
+//     private: isPrivate,
+//     adopted: false,
+//     author,
+//     groups,
+//     readCount,
+//     deleted: false,
+//     events
+//   };
+//   return db.collection(DB_COLLECTIONS.ANNOTATIONS).add(newAnnotation);
+// };
+
