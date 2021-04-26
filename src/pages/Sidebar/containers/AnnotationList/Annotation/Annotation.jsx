@@ -15,14 +15,13 @@ import AnnotationContext from "./AnnotationContext";
 import EditRowComponent from "./Components/EditRowComponent";
 import CollapsedDiv from './Components/CollapsedDiv';
 import AnnotationTagsList from './Components/AnnotationTagsList';
-import RepliesList from './Components/RepliesList';
 import expand from '../../../../../assets/img/SVGs/expand.svg';
 import CardWrapper from '../../CardWrapper/CardWrapper'
 import AnchorList from './AnchorList/AnchorList';
 import Anchor from './AnchorList/Anchor';
 import Reply from './Reply/Reply';
 import ReplyEditor from './Reply/ReplyEditor';
-
+import RepliesList from './Reply/RepliesList';
 
 import Highlight from '../../../../../assets/img/SVGs/Highlight.svg';
 import Issue from '../../../../../assets/img/SVGs/Issue.svg';
@@ -42,7 +41,7 @@ let messagesOut = [
 ]
 
 
-const Annotation = ({ idx, annotation, isNew = false, notifyParent, resetNewSelection = () => { }, currentUrl, userGroups, currentUser }) => {
+const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, resetNewSelection = () => { }, currentUrl, userGroups, currentUser }) => {
 
   const [editing, setEditing] = useState(isNew);
   const [replying, setReplying] = useState(false);
@@ -125,7 +124,7 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParent, resetNewSele
 
 
 
-        transmitPinToParent: (id, pinned) => { notifyParent(id, pinned) },
+        transmitPinToParent: (id, pinned) => { notifyParentOfPinning(id, pinned) },
 
         updateAnnotation: (newAnno) => {
           console.log("update", newAnno);
@@ -141,6 +140,23 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParent, resetNewSele
           }
           setEditing(false);
         },
+        updateAnnotationFields: (annotationFields) => {
+          console.log("update", annotationFields);
+          if (!annotationFields) { setEditing(false); return; }
+          const newAnno = { ...anno, ...annotationFields };
+          if (newAnno !== anno) {
+            chrome.runtime.sendMessage({
+              msg: 'ANNOTATION_UPDATED',
+              from: 'content',
+              payload: {
+                newAnno: newAnno
+              }
+            });
+            setAnno(newAnno);
+          }
+          setEditing(false);
+        },
+
         brokenAnchor: false,
         handleNewAnchor: () => {
           console.log("handle new");
@@ -189,12 +205,12 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParent, resetNewSele
         },
 
         handleEditClick: () => { },
-        handleTrashClick: (id) => {
+        handleTrashClick: () => {
           // eslint-disable-next-line no-restricted-globals
           if (confirm("Are you sure? This action cannot be reversed")) {
             chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
               let url = tabs[0].url;
-              if (this.props.url[0] === url) {
+              if (currentUrl[0] === url) {
                 chrome.tabs.sendMessage(
                   tabs[0].id,
                   {
@@ -261,7 +277,9 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParent, resetNewSele
           });
         },
         handleExpandCollapse: () => { },
-        notifyParentOfAdopted: () => { },
+        notifyParentOfAdopted: () => {
+
+        },
         getGroupName: () => { },
       }}
     >
@@ -277,10 +295,9 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParent, resetNewSele
             <AnchorList />
             <CardWrapper isNew={isNew} />
             <AnnotationTagsList />
-
-            {replying && <ReplyEditor id={id} finishReply={() => setReplying(false)} />}
-            {/* <RepliesList /> 
-                <ShowRepliesComponent />  */}
+            {replying && <ReplyEditor finishReply={() => setReplying(false)} />}
+            <RepliesList />
+            <ShowRepliesComponent />
             <CollapsedDiv />
           </div>
           <div className={classNames({ AnnotationContainerPad: true, AnnotationPadActive: true, })} >

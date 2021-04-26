@@ -80,8 +80,6 @@ const Anchor = ({ anchor }) => {
     const [editMode, setEditMode] = useState(false);
     const [tags, setTags] = useState(anchor.tags ?? []);
 
-
-
     const updateAnchorTags = ({ newTags, childId = null }) => {
         const childAnch = ctx.anno.childAnchor.map((c) => {
             if (c.id !== id) return c;

@@ -10,61 +10,38 @@ import edit from '../../../../../../assets/img/SVGs/edit.svg';
 import trash from '../../../../../../assets/img/SVGs/delet.svg';
 import AnnotationContext from "../AnnotationContext";
 import { formatTimestamp } from "../../../../utils"
-
+import cleanReplyModel from './ReplyModel';
 
 const Reply = ({ idx, reply }) => {
 
     const ctx = useContext(AnnotationContext);
-    const content = reply.replyContent,
-        author = reply.author,
-        currentUser = ctx.currentUser,
-        authorId = ctx.authorId,
-        tags = reply.tags,
-        answer = ("answer" in reply) ? reply.answer : false,
-        question = ("question" in reply) ? reply.question : false,
-        showQuestionAnswerInterface = null,
-        xpath = null,
-        anchor = null,
-        hostname = null,
-        url = null,
-        offsets = null,
-        brokenAnchor = null;
-
+    // const content = reply.replyContent,
+    //author = reply.author,
+    const currentUser = ctx.currentUser;
+    const [replyData, setReply] = useState(cleanReplyModel(reply));
     const [editing, setEditing] = useState(false);
     const [adopted, setAdopted] = useState(false);
+    let showQuestionAnswerInterface = false; //TODO
+
 
 
     const finishReply = () => {
         setEditing(false);
         ctx.setReplying(false);
     }
+    const deleteReply = () => {
 
-
+    }
 
     const adoptedStar = adopted ?
-        <FaStar className="profile" onClick={this.transmitAdoptedToParent} /> :
+        <FaStar className="profile" onClick={ctx.transmitAdoptedToParent} /> :
         <FaRegStar className="profile" onClick={this.transmitAdoptedToParent} />;
 
     return (<React.Fragment>
         {editing ?
             (<ReplyEditor
                 edit={true}
-                replyId={this.props.replyId}
-                replies={this.props.replies}
-                author={author}
-                authorId={currentUser.uid}
-                replyContent={content}
-                id={this.props.annoId}
-                idx={idx}
-                finishReply={this.finishReply}
-                answer={answer}
-                question={question}
-                tags={tags}
-                xpath={xpath}
-                anchor={anchor}
-                hostname={hostname}
-                url={url}
-                offsets={offsets}
+                reply={replyData}
                 showQuestionAnswerInterface={showQuestionAnswerInterface}
             />) : (
                 <React.Fragment>
@@ -76,7 +53,7 @@ const Reply = ({ idx, reply }) => {
                             </div>
                             <div className="userProfileContainer">
                                 <div className="author">
-                                    {author}
+                                    {replyData.author}
                                 </div>
                                 <div className="timestamp">
                                     {formatTimestamp()}
@@ -88,27 +65,27 @@ const Reply = ({ idx, reply }) => {
                                     {currentUser.uid === authorId ? (
                                         <React.Fragment>
                                             <div className="TopIconContainer" >
-                                                <img src={edit} alt="edit reply" className="profile" id="edit" onClick={_ => this.setState({ editing: true })} />
+                                                <img src={edit} alt="edit reply" className="profile" id="edit" onClick={_ => setEditing(true)} />
                                             </div>
                                             <div className="TopIconContainer" >
-                                                <img src={trash} alt="delete reply" className="profile" id="delete" onClick={this.deleteReply} />
+                                                <img src={trash} alt="delete reply" className="profile" id="delete" onClick={deleteReply} />
                                             </div>
                                         </React.Fragment>
                                     ) : (null)}
                                 </div>
                             </div>
                         </div>
-                        {xpath !== null && xpath !== undefined ? (
-                            <Anchor anchor={anchor} replyId={replyId} />) : (null)}
+                        {reply.xpath !== null && replyData.xpath !== undefined ? (
+                            <Anchor anchor={replyData.anchor} replyId={replyData.replyId} />) : (null)}
                         <div className="annotationContent">
                             <div className="contentBody">
-                                {content}
+                                {replyData.replyContent}
                             </div>
                         </div>
-                        {tags.length ? (
+                        {replyData.tags.length ? (
                             <div className="TagRow">
                                 <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
-                                    {tags.map((tagContent, idx) => {
+                                    {replyData.tags.map((tagContent, idx) => {
                                         return (
                                             <CustomTag idx={idx} content={tagContent} />
                                         )
@@ -125,6 +102,22 @@ const Reply = ({ idx, reply }) => {
 }
 
 export default Reply;
+
+
+   //authorId = ctx.authorId,
+        //tags = reply.tags,
+        // answer = ("answer" in reply) ? reply.answer : false,
+        // question = ("question" in reply) ? reply.question : false,
+        // showQuestionAnswerInterface = null,
+        // xpath = null,
+        // anchor = null,
+        // hostname = null,
+        // url = null,
+        // offsets = null,
+        // brokenAnchor = null;
+
+
+
 
 
 // class Reply extends Component {

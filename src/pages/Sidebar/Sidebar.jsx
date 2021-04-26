@@ -15,6 +15,15 @@ import { AiOutlineConsoleSql } from 'react-icons/ai';
 import { v4 as uuidv4 } from 'uuid';
 import Annotation from './containers/AnnotationList/Annotation/Annotation';
 ///Annotation/Annotation';
+import {
+  getPathFromUrl,
+  containsObject,
+  containsObjectWithId,
+  containsObjectWithUrl,
+  containsReplyWithAnchor,
+  removeDuplicates,
+  checkTimeRange
+} from "./utils"
 
 
 
@@ -66,51 +75,14 @@ class Sidebar extends React.Component {
   };
 
 
-  setUpAnnotationsListener = (uid, url, tabId) => {
-    chrome.runtime.sendMessage(
-      {
-        msg: 'GET_ANNOTATIONS_PAGE_LOAD',
-        url: url,
-        uid: uid,
-        tabId: tabId
-      }
-    );
+  setUpAnnotationsListener = (uid, url, tabId) => messagesOut['GET_ANNOTATIONS_PAGE_LOAD']({ url: url, uid: uid, tabId: tabId });
+  setUpGroupsListener = (uid) => messagesOut['GET_GROUPS_PAGE_LOAD']({ uid: uid });
+  setUpPinnedListener = (uid) => messagesOut['SET_UP_PIN']();
 
-  };
-
-  setUpGroupsListener = (uid) => {
-    chrome.runtime.sendMessage({
-      msg: 'GET_GROUPS_PAGE_LOAD',
-      from: 'content',
-      uid: uid
-    });
-  }
-
-  setUpPinnedListener = (uid) => {
-    chrome.runtime.sendMessage({
-      msg: 'SET_UP_PIN',
-      from: 'content',
-    });
-  }
-
-  // componentWillMount() {
-  //   if (this.unsubscribeAnnotations) {
-  //     this.unsubscribeAnnotations();
-  //   }
-  // }
-  // UNSAFE_componentWillMount() {
-  //   if (this.unsubscribeAnnotations) {
-  //     this.unsubscribeAnnotations();
-  //   }
-  // }
 
   componentWillUnmount() {
-    // console.log('in unmount????');
     window.removeEventListener('scroll', this.handleScroll);
-    chrome.runtime.sendMessage({
-      from: 'content',
-      msg: 'UNSUBSCRIBE'
-    });
+    messagesOut['UNSUBSCRIBE']();
   }
 
   ElasticSearch = (msg) => {
@@ -164,11 +136,11 @@ class Sidebar extends React.Component {
         //   tabInfo => {
         chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
           let tab = tabs[0];
-          this.setState({ url: this.getPathFromUrl(tab.url), tabId: tab.id });
+          this.setState({ url: getPathFromUrl(tab.url), tabId: tab.id });
           if (currentUserData.payload.currentUser) {
             this.setUpAnnotationsListener(
               currentUserData.payload.currentUser.uid,
-              this.getPathFromUrl(tab.url),
+              getPathFromUrl(tab.url),
               tab.id
             );
           } else {
@@ -438,56 +410,6 @@ class Sidebar extends React.Component {
     });
   }
 
-  // helper method from
-  // https://stackoverflow.com/questions/2540969/remove-querystring-from-url
-  getPathFromUrl = (url) => {
-    return url.split(/[?#]/)[0];
-  }
-
-  containsObjectWithUrl = (url, list) => {
-    const test = list.filter(obj => obj.url.includes(url));
-    return test.length !== 0;
-  }
-
-  // if length is 0 does not contain object, else does contain object
-  // stupid helper method made out of necessity
-  containsObjectWithId(id, list) {
-    const test = list.filter(obj => obj.id === id);
-    return test.length !== 0;
-  }
-
-  // if length is 0 does not contain object, else does contain object
-  // stupid helper method made out of necessity
-  containsReplyWithAnchor(list) {
-    const test = list.filter(obj => obj.xpath !== null);
-    return test;
-  }
-
-  // helper method from 
-  // https://stackoverflow.com/questions/4587061/how-to-determine-if-object-is-in-array
-  containsObject(obj, list) {
-    var i;
-    for (i = 0; i < list.length; i++) {
-      if (list[i] === obj) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  // helper method from
-  // https://stackoverflow.com/questions/18773778/create-array-of-unique-objects-by-property
-  removeDuplicates(annotationArray) {
-    const flags = new Set();
-    const annotations = annotationArray.filter(anno => {
-      if (flags.has(anno.id)) {
-        return false;
-      }
-      flags.add(anno.id);
-      return true;
-    });
-    return annotations;
-  }
 
   handleShowAnnotatePage = () => {
     this.setState({ annotatingPage: true });
@@ -496,10 +418,6 @@ class Sidebar extends React.Component {
     });
   };
 
-  // handleUnanchoredAnnotation = () => {
-  //   // this.setState({ annotatingPage: true });
-  //   this.setState({ unanchored: true });
-  // }
 
   updateSidebarGroup = (options) => {
     let groupKV = [];
@@ -548,9 +466,6 @@ class Sidebar extends React.Component {
       this.setState({ filteredGroupAnnotations: [] });
 
     });
-
-
-    // this.setState({ activeGroup: option[0].label })
   }
 
   notifySidebarSort = (option) => {
@@ -570,7 +485,7 @@ class Sidebar extends React.Component {
 
   handlePinnedAnnotation = (id, pinned) => {
     let annotation;
-    if (this.containsObjectWithId(id, this.state.filteredAnnotations)) {
+    if (containsObjectWithId(id, this.state.filteredAnnotations)) {
       annotation = this.state.filteredAnnotations.filter(anno => anno.id === id);
       annotation[0].pinned = pinned;
       let remainingAnnos = this.state.filteredAnnotations.filter(anno => anno.id !== id);
@@ -578,7 +493,7 @@ class Sidebar extends React.Component {
       this.setState({ filteredAnnotations: remainingAnnos });
       this.state.pinnedAnnos.push(annotation[0]);
     }
-    else if (this.containsObjectWithId(id, this.state.pinnedAnnos)) {
+    else if (containsObjectWithId(id, this.state.pinnedAnnos)) {
       this.setState({ pinnedAnnos: this.state.pinnedAnnos.filter(anno => anno.id !== id) });
       chrome.runtime.sendMessage({
         msg: 'REQUEST_PIN_UPDATE',
@@ -593,13 +508,12 @@ class Sidebar extends React.Component {
     else {
       if (this.state.activeGroups.length) {
         this.state.groupAnnotations.forEach((group) => {
-          if (this.containsObjectWithId(id, group.annotations)) {
+          if (containsObjectWithId(id, group.annotations)) {
             annotation = group.annotations.filter(anno => anno.id === id);
             annotation[0].pinned = pinned;
             this.state.pinnedAnnos.push(annotation[0]);
           }
-        })
-
+        });
       }
 
     }
@@ -616,6 +530,7 @@ class Sidebar extends React.Component {
         this.setState({ pinnedAnnos: this.state.pinnedAnnos.filter(anno => anno.id !== id) });
       }
     }
+
     chrome.runtime.sendMessage({
       msg: 'REQUEST_PIN_UPDATE',
       from: 'content',
@@ -624,7 +539,6 @@ class Sidebar extends React.Component {
         pinned: pinned
       }
     })
-
   };
 
   resetView = () => {
@@ -668,7 +582,7 @@ class Sidebar extends React.Component {
     if (!annoType.length || annoType === 'all' || annotation.pinned) {
       return true;
     }
-    return this.containsObject(annotation.type, annoType);
+    return containsObject(annotation.type, annoType);
   }
 
   async checkSiteScope(annotation, siteScope) {
@@ -700,26 +614,7 @@ class Sidebar extends React.Component {
     }
   }
 
-  checkTimeRange(annotation, timeRange) {
-    if (timeRange === null || timeRange === 'all' || annotation.pinned) {
-      return true;
-    }
-    if (timeRange === 'day') {
-      return (new Date().getTime() - annotation.createdTimestamp) < 86400000;
-    }
-    else if (timeRange === 'week') {
-      return (new Date().getTime() - annotation.createdTimestamp) < 604800000;
-    }
-    else if (timeRange === 'month') {
-      return (new Date().getTime() - annotation.createdTimestamp) < 2629746000;
-    }
-    else if (timeRange === '6months') {
-      return (new Date().getTime() - annotation.createdTimestamp) < 15778476000;
-    }
-    else if (timeRange === 'year') {
-      return (new Date().getTime() - annotation.createdTimestamp) < 31556952000;
-    }
-  }
+
 
   checkUserScope(annotation, userScope) {
     if (!userScope.length || annotation.pinned) {
@@ -780,11 +675,11 @@ class Sidebar extends React.Component {
       annotations = annotations.filter(annotation => {
         return this.checkUserScope(annotation, filterSelection.userScope) &&
           this.checkAnnoType(annotation, filterSelection.annoType) &&
-          this.checkTimeRange(annotation, filterSelection.timeRange) &&
+          checkTimeRange(annotation, filterSelection.timeRange) &&
           this.checkTags(annotation, filterSelection.tags)
       });
       let newList = annotations.concat(this.state.filteredAnnotations);
-      newList = this.removeDuplicates(newList); // - for now commenting this out but for pagination
+      newList = removeDuplicates(newList); // - for now commenting this out but for pagination
       // purposes, will probably need this back - should have background transmit whether or not we're still paginating
       // or whether all annotations across site have been received
       this.setState({ filteredAnnotations: newList });
@@ -805,7 +700,7 @@ class Sidebar extends React.Component {
               return this.checkSiteScope(annotation, filterSelection.siteScope) &&
                 this.checkUserScope(annotation, filterSelection.userScope) &&
                 this.checkAnnoType(annotation, filterSelection.annoType) &&
-                this.checkTimeRange(annotation, filterSelection.timeRange) &&
+                checkTimeRange(annotation, filterSelection.timeRange) &&
                 this.checkTags(annotation, filterSelection.tags)
             })
         })
@@ -816,7 +711,7 @@ class Sidebar extends React.Component {
             return this.checkSiteScope(annotation, filterSelection.siteScope) &&
               this.checkUserScope(annotation, filterSelection.userScope) &&
               this.checkAnnoType(annotation, filterSelection.annoType) &&
-              this.checkTimeRange(annotation, filterSelection.timeRange) &&
+              checkTimeRange(annotation, filterSelection.timeRange) &&
               this.checkTags(annotation, filterSelection.tags)
           })
       });
@@ -833,7 +728,7 @@ class Sidebar extends React.Component {
           return this.checkSiteScope(annotation, this.state.filterSelection.siteScope) &&
             this.checkUserScope(annotation, this.state.filterSelection.userScope) &&
             this.checkAnnoType(annotation, this.state.filterSelection.annoType) &&
-            this.checkTimeRange(annotation, this.state.filterSelection.timeRange) &&
+            checkTimeRange(annotation, this.state.filterSelection.timeRange) &&
             this.checkTags(annotation, this.state.filterSelection.tags);
         })
     });
@@ -850,7 +745,7 @@ class Sidebar extends React.Component {
           return this.checkSiteScope(annotation, this.state.filterSelection.siteScope) &&
             this.checkUserScope(annotation, this.state.filterSelection.userScope) &&
             this.checkAnnoType(annotation, this.state.filterSelection.annoType) &&
-            this.checkTimeRange(annotation, this.state.filterSelection.timeRange) &&
+            checkTimeRange(annotation, this.state.filterSelection.timeRange) &&
             this.checkTags(annotation, this.state.filterSelection.tags);
         })
     });
@@ -996,28 +891,7 @@ class Sidebar extends React.Component {
                     currentUser={currentUser}
                     resetNewSelection={this.resetNewSelection}
                   />
-                  // <NewAnnotation
-                  //   url={this.state.url}
-                  //   newSelection={this.state.newSelection}
-                  //   resetNewSelection={this.resetNewSelection}
-                  //   offsets={this.state.offsets}
-                  //   xpath={this.state.xpath}
-                  //   type={this.state.newAnnotationType}
-                  //   annoContent={this.state.newAnnotationContent}
-                  //   userGroups={groups}
-                  // />
                 )}
-              {/* {this.state.annotatingPage &&
-                <NewAnnotation
-                  url={this.state.url}
-                  newSelection={this.state.pageName}
-                  resetNewSelection={this.resetNewSelection}
-                  annoContent={''}
-                  offsets={null}
-                  xpath={null}
-                  userGroups={groups}
-                />
-              } */}
             </div>
             <div className="userQuestions">
               {pinnedAnnosCopy.length ? (
@@ -1090,3 +964,132 @@ class Sidebar extends React.Component {
 }
 
 export default Sidebar;
+
+
+
+  // // helper method from
+  // // https://stackoverflow.com/questions/2540969/remove-querystring-from-url
+  // getPathFromUrl = (url) => {
+  //   return url.split(/[?#]/)[0];
+  // }
+
+  // containsObjectWithUrl = (url, list) => {
+  //   const test = list.filter(obj => obj.url.includes(url));
+  //   return test.length !== 0;
+  // }
+
+  // // if length is 0 does not contain object, else does contain object
+  // // stupid helper method made out of necessity
+  // containsObjectWithId(id, list) {
+  //   const test = list.filter(obj => obj.id === id);
+  //   return test.length !== 0;
+  // }
+
+  // // if length is 0 does not contain object, else does contain object
+  // // stupid helper method made out of necessity
+  // containsReplyWithAnchor(list) {
+  //   const test = list.filter(obj => obj.xpath !== null);
+  //   return test;
+  // }
+
+  // // helper method from 
+  // // https://stackoverflow.com/questions/4587061/how-to-determine-if-object-is-in-array
+  // containsObject(obj, list) {
+  //   var i;
+  //   for (i = 0; i < list.length; i++) {
+  //     if (list[i] === obj) {
+  //       return true;
+  //     }
+  //   }
+  //   return false;
+  // }
+
+  // // helper method from
+  // // https://stackoverflow.com/questions/18773778/create-array-of-unique-objects-by-property
+  // removeDuplicates(annotationArray) {
+  //   const flags = new Set();
+  //   const annotations = annotationArray.filter(anno => {
+  //     if (flags.has(anno.id)) {
+  //       return false;
+  //     }
+  //     flags.add(anno.id);
+  //     return true;
+  //   });
+  //   return annotations;
+  // }
+
+  // checkTimeRange(annotation, timeRange) {
+  //   if (timeRange === null || timeRange === 'all' || annotation.pinned) {
+  //     return true;
+  //   }
+  //   if (timeRange === 'day') {
+  //     return (new Date().getTime() - annotation.createdTimestamp) < 86400000;
+  //   }
+  //   else if (timeRange === 'week') {
+  //     return (new Date().getTime() - annotation.createdTimestamp) < 604800000;
+  //   }
+  //   else if (timeRange === 'month') {
+  //     return (new Date().getTime() - annotation.createdTimestamp) < 2629746000;
+  //   }
+  //   else if (timeRange === '6months') {
+  //     return (new Date().getTime() - annotation.createdTimestamp) < 15778476000;
+  //   }
+  //   else if (timeRange === 'year') {
+  //     return (new Date().getTime() - annotation.createdTimestamp) < 31556952000;
+  //   }
+  // }
+
+/*
+function transmitMessage({ msg, data = {}, callback = (res) => { } }) {
+chrome.runtime.sendMessage(
+  {
+    msg: msg,
+    from: 'content',
+    ...data
+  }, callback
+);
+}
+
+const messagesOut = {
+
+'GET_GROUPS_PAGE_LOAD': (data) => transmitMessage({ msg: 'GET_GROUPS_PAGE_LOAD', data: data, callback: () => { } }),
+'SET_UP_PIN': () => { },
+"GET_ANNOTATIONS_PAGE_LOAD": () => { },
+'UNSUBSCRIBE': () => { },
+'GET_CURRENT_USER': () => { },
+'GET_PINNED_ANNOTATIONS': () => { },
+'ANNOTATION_FOCUS': () => { },
+'ANNOTATION_DEFOCUS': () => { },
+'HIGHLIGHT_ANNOTATIONS': () => { },
+'GET_ANNOTATION_BY_ID': () => { },
+}
+
+let messagesIn = {
+//authHelper
+'USER_AUTH_STATUS_CHANGED': () => { },
+
+'CONTENT_SELECTED': () => { },
+'CONTENT_UPDATED': () => { },
+
+'PINNED_CHANGED': () => { },
+//content
+'ANCHOR_CLICKED': () => { },
+'ANCHOR_BROKEN': () => { },
+'USER_FORGET_PWD': () => { },
+'TOGGLE_SIDEBAR': () => { },
+'CONTENT_UPDATED': () => { },
+'GROUPS_UPDATED': () => { },
+
+
+'SORT_LIST': () => { },
+'TOGGLE_SIDEBAR': () => { },
+'ELASTIC_CONTENT_UPDATED': () => { },
+'ELASTIC_CONTENT_DELETED': () => { },
+'ELASTIC_CHILD_ANCHOR_ADDED': () => { },
+'FILTER_BY_TAG': () => { },
+
+
+
+};
+
+*/

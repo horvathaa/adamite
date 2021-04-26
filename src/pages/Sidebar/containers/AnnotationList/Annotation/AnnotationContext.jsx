@@ -22,6 +22,7 @@ const AnnotationContext = createContext({
 
     createAnnotation: () => { },
     updateAnnotation: () => { },
+    updateAnnotationFields: () => { },
     cancelButtonHandler: () => { },
     submitButtonHandler: () => { },
 

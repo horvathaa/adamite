@@ -2,10 +2,12 @@
 import React, { useContext } from 'react';
 import '../Annotation.css';
 import expand from '../../../../../../assets/img/SVGs/expand.svg';
-import Reply from '../Reply/Reply';
+import Reply from './Reply';
 
 import AnnotationContext from "../AnnotationContext";
 
+
+import ReplyModel from "./ReplyModel";
 
 /*
 Context Used

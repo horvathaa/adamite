@@ -89,7 +89,7 @@ const EditRowComponent = () => {
                                 </Tooltip>
                                 <Tooltip title={"Delete annotation"} aria-label="delete annotation tooltip">
                                     <div className="TopIconContainer" >
-                                        <img src={trash} alt="delete annotation" className="profile" id="trash" onClick={ctx.deleteAnchor} />
+                                        <img src={trash} alt="delete annotation" className="profile" id="trash" onClick={ctx.handleTrashClick} />
                                     </div>
                                 </Tooltip>
                             </React.Fragment>
