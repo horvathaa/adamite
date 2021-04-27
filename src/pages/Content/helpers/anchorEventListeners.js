@@ -16,6 +16,32 @@ import {
 
 import { updateXpaths, } from './AnchorEngine/AnchorDestroy';
 
+// from: https://stackoverflow.com/questions/11805955/how-to-get-the-distance-from-the-top-for-an-element
+function getPosition(element) {
+    var xPosition = 0;
+    var yPosition = 0;
+
+    while (element) {
+        xPosition += (element.offsetLeft - element.scrollLeft + element.clientLeft);
+        yPosition += (element.offsetTop - element.scrollTop + element.clientTop);
+        element = element.offsetParent;
+    }
+
+    return { x: xPosition, y: yPosition };
+}
+
+function removeDuplicates(idArray) {
+    const flags = new Set();
+    const annotations = idArray.filter(highlight => {
+        if (flags.has(highlight.id)) {
+            return false;
+        }
+        flags.add(highlight.id);
+        return true;
+    });
+    return annotations;
+}
+
 
 document.addEventListener('mouseup', event => {
     transmitMessage({
@@ -80,8 +106,13 @@ let messagesIn = {
         // Ensure that nothing is unintentionally selected 
         let sel = window.getSelection();
         sel.removeAllRanges();
-        let spanNames = Array.from(document.querySelectorAll('.highlight-adamite-annotation')).map(s => s.getAttribute('name'));
-        sendResponse({ spanNames })
+        let kv = [];
+        document.querySelectorAll('.highlight-adamite-annotation').forEach(s => {
+            kv.push({ id: s.getAttribute('name'), y: getPosition(s).y, x: getPosition(s).x })
+        })
+        kv = removeDuplicates(kv);
+        // let spanNames = Array.from(document.querySelectorAll('.highlight-adamite-annotation')).map(s => s.getAttribute('name'));
+        sendResponse({ spanNames: kv })
     },
     'ANNOTATION_FOCUS_ONCLICK': (request, sender, sendResponse) => {
         let findSpan = getSpanFromRequest(request);

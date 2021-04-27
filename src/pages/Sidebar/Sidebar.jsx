@@ -14,6 +14,7 @@ import { left } from 'glamor';
 import { AiOutlineConsoleSql } from 'react-icons/ai';
 import { v4 as uuidv4 } from 'uuid';
 import Annotation from './containers/AnnotationList/Annotation/Annotation';
+import { messagesOut, transmitMessage } from '../Background/backgroundTransmitter';
 ///Annotation/Annotation';
 import {
   getPathFromUrl,
@@ -74,15 +75,40 @@ class Sidebar extends React.Component {
     }
   };
 
+  setUpAnnotationsListener = (uid, url, tabId) => {
+    chrome.runtime.sendMessage(
+      {
+        msg: 'GET_ANNOTATIONS_PAGE_LOAD',
+        url: url,
+        uid: uid,
+        tabId: tabId
+      }
+    );
 
-  setUpAnnotationsListener = (uid, url, tabId) => messagesOut['GET_ANNOTATIONS_PAGE_LOAD']({ url: url, uid: uid, tabId: tabId });
-  setUpGroupsListener = (uid) => messagesOut['GET_GROUPS_PAGE_LOAD']({ uid: uid });
-  setUpPinnedListener = (uid) => messagesOut['SET_UP_PIN']();
+  };
+
+  setUpGroupsListener = (uid) => {
+    chrome.runtime.sendMessage({
+      msg: 'GET_GROUPS_PAGE_LOAD',
+      from: 'content',
+      uid: uid
+    });
+  }
+
+  setUpPinnedListener = (uid) => {
+    chrome.runtime.sendMessage({
+      msg: 'SET_UP_PIN',
+      from: 'content',
+    });
+  }
+  // setUpAnnotationsListener = (uid, url, tabId) => transmitMessage['GET_ANNOTATIONS_PAGE_LOAD']({ url: url, uid: uid, tabId: tabId });
+  // setUpGroupsListener = (uid) => transmitMessage['GET_GROUPS_PAGE_LOAD']({ uid: uid });
+  // setUpPinnedListener = (uid) => transmitMessage['SET_UP_PIN']();
 
 
   componentWillUnmount() {
     window.removeEventListener('scroll', this.handleScroll);
-    messagesOut['UNSUBSCRIBE']();
+    transmitMessage['UNSUBSCRIBE']();
   }
 
   ElasticSearch = (msg) => {
@@ -263,7 +289,7 @@ class Sidebar extends React.Component {
           clickedAnnos.forEach(anno => {
             // setTimeout(() => {
             let annoDiv = document.getElementById(anno.id);
-            annoDiv.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
+            annoDiv.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
             // annoDiv.style.backgroundColor = "purple";
             let anchors = annoDiv.querySelectorAll(".AnchorContainer");
             // console.log('anchors', anchors);
@@ -318,45 +344,72 @@ class Sidebar extends React.Component {
         request.from === 'background' &&
         request.msg === 'CONTENT_UPDATED'
       ) {
+        if (request === undefined) {
+          return;
+        }
         let annotations = request.payload;
+        console.log('annotations', annotations)
         this.setState({ url: request.url });
-        chrome.storage.local.get(['sidebarOpen'], response => {
-          if (response !== undefined && response.sidebarOpen) {
+        chrome.runtime.sendMessage({
+          msg: 'REQUEST_SIDEBAR_STATUS',
+          from: 'content'
+        }, (sidebarOpen) => {
+          if (sidebarOpen !== undefined && sidebarOpen) {
+            // REAALLLY hate this so-called "solution" lmao
+            chrome.runtime.sendMessage({
+              msg: 'REQUEST_TOGGLE_SIDEBAR',
+              from: 'content',
+              toStatus: true
+            });
             chrome.tabs.sendMessage(request.tabId, {
               msg: 'HIGHLIGHT_ANNOTATIONS',
               payload: request.payload,
               url: request.url
             }, response => {
-              let spanNames = new Array(...new Set(response.spanNames));
-              spanNames = spanNames.map((id) => {
-                return id.includes('-') ? id.substring(0, id.indexOf('-')) : id;
-              });
-              annotations.sort((a, b) => {
-                const index1 = spanNames.indexOf(a.id);
-                const index2 = spanNames.indexOf(b.id);
-                return ((index1 > -1 ? index1 : Infinity) - (index2 > -1 ? index2 : Infinity))
-              });
+              let spanNames = response.spanNames;
+              if (spanNames !== undefined) {
+                spanNames = spanNames.map((obj) => {
+                  return obj.id.includes('-') ? obj.id.substring(0, obj.id.indexOf('-')) : obj.id;
+                });
+                spanNames.sort((a, b) => {
+                  return a.y !== b.y ? a.y - b.y : a.x - b.x
+                })
+                annotations.sort((a, b) => {
+                  const index1 = spanNames.findIndex(obj => obj === a.id);
+                  const index2 = spanNames.findIndex(obj => obj === b.id)
+                  return ((index1 > -1 ? index1 : Infinity) - (index2 > -1 ? index2 : Infinity))
+                });
+              }
+
               this.setState({ annotations, pageLocationSort: annotations })
               this.requestFilterUpdate();
             });
           }
           else {
             this.setState({ annotations });
+            this.requestFilterUpdate();
+
           }
-        });
+        })
+
         chrome.browserAction.setBadgeText({ tabId: request.tabId, text: request.payload.length ? String(request.payload.length) : "0" });
       }
       else if (request.msg === 'SORT_LIST' && request.from === 'background') {
-        let spanNames = new Array(...new Set(request.payload.spanNames));
-        spanNames = spanNames.map((id) => {
-          return id.includes('-') ? id.substring(0, id.indexOf('-')) : id;
-        })
+        let spanNames = request.payload.spanNames;
         let annotations = this.state.annotations;
-        annotations.sort((a, b) => {
-          const index1 = spanNames.indexOf(a.id);
-          const index2 = spanNames.indexOf(b.id);
-          return ((index1 > -1 ? index1 : Infinity) - (index2 > -1 ? index2 : Infinity))
-        });
+        if (spanNames !== undefined) {
+          spanNames = spanNames.map((obj) => {
+            return obj.id.includes('-') ? obj.id.substring(0, obj.id.indexOf('-')) : obj.id;
+          });
+          spanNames.sort((a, b) => {
+            return a.y !== b.y ? a.y - b.y : a.x - b.x
+          })
+          annotations.sort((a, b) => {
+            const index1 = spanNames.findIndex(obj => obj === a.id);
+            const index2 = spanNames.findIndex(obj => obj === b.id)
+            return ((index1 > -1 ? index1 : Infinity) - (index2 > -1 ? index2 : Infinity))
+          });
+        }
         this.setState({ annotations, pageLocationSort: annotations })
         this.requestFilterUpdate();
       }
@@ -773,6 +826,7 @@ class Sidebar extends React.Component {
     // console.log("ll code", groupAnnotations, activeGroups, activeGroups.length);
     // console.log("these are searched annotations", searchedAnnotations, searchedAnnotations.length === 0)
     let renderedAnnotations = [];
+    console.log('filteredAnnotations', filteredAnnotations)
     if (searchedAnnotations.length) {
       renderedAnnotations = searchedAnnotations;
     }
@@ -788,6 +842,7 @@ class Sidebar extends React.Component {
       // }
     }
     else {
+      console.log('in here?')
       renderedAnnotations = filteredAnnotations;
     }
 
@@ -801,26 +856,29 @@ class Sidebar extends React.Component {
         renderedAnnotations = pageLocationSort;
     }
 
+    console.log('rendered before filter', renderedAnnotations);
 
-    renderedAnnotations = renderedAnnotations.filter(anno => !anno.deleted && anno.SharedId === null);
-
+    renderedAnnotations = renderedAnnotations.filter(anno => !anno.deleted);
+    console.log('rendered after filter', renderedAnnotations)
     let pinnedAnnosCopy = pinnedAnnos.sort((a, b) =>
       (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
     );
 
-    pinnedAnnosCopy = pinnedAnnosCopy.filter(anno => !anno.deleted && anno.SharedId === null);
-    const pinnedNumChildAnchs = pinnedAnnosCopy.filter(anno => anno.SharedId !== null);
+    pinnedAnnosCopy = pinnedAnnosCopy.filter(anno => !anno.deleted);
+    // const pinnedNumChildAnchs = pinnedAnnosCopy.filter(anno => anno.SharedId !== null);
 
-    const numChildAnchs = renderedAnnotations.filter(anno => anno.SharedId !== null);
+    // const numChildAnchs = renderedAnnotations.filter(anno => anno.SharedId !== null);
     // chrome.browserAction.setBadgeText({ tabId: this.state.tabId, text: String(renderedAnnotations.length) });
 
     let tempSearchCount;
     if (this.state.showPinned) {
-      tempSearchCount = renderedAnnotations.length - numChildAnchs.length + pinnedAnnosCopy.length - pinnedNumChildAnchs.length;
+      tempSearchCount = renderedAnnotations.length + pinnedAnnosCopy.length;
     }
     else {
-      tempSearchCount = renderedAnnotations.length - numChildAnchs.length;
+      tempSearchCount = renderedAnnotations.length;
     }
+
+    // console.log('rendered', renderedAnnotations)
     //let url = new URL(this.state.url);
     const newAnnoId = uuidv4();
     return (
@@ -899,7 +957,7 @@ class Sidebar extends React.Component {
                   <div className="ModifyFilter userQuestions" onClick={_ => {
                     this.setState({ showPinned: !this.state.showPinned })
                   }}>
-                    {this.state.showPinned ? ("Hide " + (pinnedAnnosCopy.length - pinnedNumChildAnchs.length) + " Pinned Annotations") : ("Show " + (pinnedAnnosCopy.length - pinnedNumChildAnchs.length) + " Pinned Annotations")}
+                    {this.state.showPinned ? ("Hide " + (pinnedAnnosCopy.length) + " Pinned Annotations") : ("Show " + (pinnedAnnosCopy.length) + " Pinned Annotations")}
                   </div>
                 </div>
               ) : (null)}
@@ -918,7 +976,7 @@ class Sidebar extends React.Component {
                   {pinnedAnnosCopy.length && (
                     <div className="userQuestionButtonContainer">
                       <div className="ModifyFilter userQuestions" onClick={_ => { this.setState({ showPinned: !this.state.showPinned }) }}>
-                        {this.state.showPinned ? ("Hide " + (pinnedAnnosCopy.length - pinnedNumChildAnchs.length) + " Pinned Annotations") : ("Show " + (pinnedAnnosCopy.length - pinnedNumChildAnchs.length) + " Pinned Annotations")}
+                        {this.state.showPinned ? ("Hide " + (pinnedAnnosCopy.length) + " Pinned Annotations") : ("Show " + (pinnedAnnosCopy.length) + " Pinned Annotations")}
                       </div>
                     </div>
                   )}

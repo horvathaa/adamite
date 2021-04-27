@@ -13,7 +13,7 @@ export function getPathFromUrl(url) {
 }
 
 const isContent = (res) => res.from === 'content';
-let clicked = false;
+export let sidebarStatus = [];
 
 let commands = {
     //authHelper
@@ -89,16 +89,25 @@ let commands = {
     // LOCAL COMMANDS
     'UPDATE_ANNOTATIONS_ON_TAB_ACTIVATED': anno.updateAnnotationsOnTabActivated,
     'HANDLE_BROWSER_ACTION_CLICK': () => {
-        clicked = !clicked;
-        toggleSidebar(clicked);
-        if (clicked) {
-            chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-                if (anno.containsObjectWithUrl(tabs[0].url, anno.tabAnnotationCollect)) {
-                    const tabInfo = anno.tabAnnotationCollect.filter(obj => obj.tabUrl === tabs[0].url);
+        chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+            const index = sidebarStatus.findIndex(side => side.id === tabs[0].id);
+            let opening;
+            if (index > -1) {
+                opening = !sidebarStatus[index].open;
+                sidebarStatus[index].open = opening;
+            }
+            else if (getPathFromUrl(tabs[0].url) !== "" && getPathFromUrl(tabs[0].url) !== "chrome://newtab/") {
+                sidebarStatus.push({ id: tabs[0].id, open: true, url: getPathFromUrl(tabs[0].url) })
+                opening = true;
+            }
+            toggleSidebar(opening);
+            if (opening) {
+                if (anno.containsObjectWithUrl(getPathFromUrl(tabs[0].url), anno.tabAnnotationCollect)) {
+                    const tabInfo = anno.tabAnnotationCollect.filter(obj => obj.tabUrl === getPathFromUrl(tabs[0].url));
                     chrome.tabs.sendMessage(tabs[0].id, {
                         msg: 'HIGHLIGHT_ANNOTATIONS',
                         payload: tabInfo[0].annotations,
-                        url: tabs[0].url
+                        url: getPathFromUrl(tabs[0].url)
                     }, response => {
                         chrome.runtime.sendMessage({
                             msg: 'SORT_LIST',
@@ -107,18 +116,39 @@ let commands = {
                         })
                     })
                 }
-            })
-        }
-        else {
-            chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+            }
+            else {
                 chrome.tabs.sendMessage(tabs[0].id, {
                     msg: 'REMOVE_HIGHLIGHTS'
                 })
-            })
-        }
+            }
+
+
+        })
     },
     'HANDLE_TAB_URL_UPDATE': (tabId, changeInfo, tab) => {
-        if (changeInfo.url) { anno.handleTabUpdate(changeInfo.url, tabId); }
+        if ("url" in changeInfo) {
+            anno.handleTabUpdate(getPathFromUrl(changeInfo.url), tabId);
+            const index = sidebarStatus.findIndex(side => side.id === tabId);
+            if (index === -1 && getPathFromUrl(changeInfo.url) !== "" && getPathFromUrl(changeInfo.url) !== "chrome://newtab/") {
+                sidebarStatus.push({ id: tabId, open: false, url: getPathFromUrl(changeInfo.url) })
+            }
+            else if (index > -1 && sidebarStatus[index].url !== getPathFromUrl(changeInfo.url) && getPathFromUrl(changeInfo.url) !== "chrome://newtab/") {
+                sidebarStatus[index].open = false;
+                toggleSidebar(false);
+            }
+            else if (index > -1) {
+                toggleSidebar(sidebarStatus[index].open)
+            }
+            else {
+                return;
+            }
+        }
+    },
+    'HANDLE_TAB_CREATED': (tab) => {
+        if (getPathFromUrl(tab.url) !== "" && getPathFromUrl(tab.url) !== "chrome://newtab/") {
+            sidebarStatus.push({ id: tab.id, open: false, url: getPathFromUrl(tab.url) });
+        }
     },
 
     //sidebarHelper
@@ -156,4 +186,8 @@ chrome.browserAction.onClicked.addListener(function () {
 
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
     commands['HANDLE_TAB_URL_UPDATE'](tabId, changeInfo, tab);
+});
+
+chrome.tabs.onCreated.addListener(function (tab) {
+    commands['HANDLE_TAB_CREATED'](tab);
 });
