@@ -42,7 +42,7 @@ let messagesOut = {
 export function transmitMessage({ msg, data, sentFrom, responseCallback = null }) {
 
     if (msg in messagesOut) {
-        console.log(msg);
+        // console.log(msg);
         messagesOut[msg](data, responseCallback);
     } else {
         // console.log("ERR");

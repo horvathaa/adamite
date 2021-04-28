@@ -35,6 +35,7 @@ const RepliesList = () => {
             </div>
             <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
                 {ctx.anno.replies.map((reply, idx) => {
+                    console.log('broke?', reply, ctx.anno)
                     return (<Reply reply={reply} />)
                 }
                 )}

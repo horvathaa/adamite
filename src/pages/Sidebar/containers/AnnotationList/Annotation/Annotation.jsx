@@ -133,7 +133,7 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, res
               msg: 'ANNOTATION_UPDATED',
               from: 'content',
               payload: {
-                newAnno: newAnno
+                newAnno
               }
             });
             setAnno(newAnno);
@@ -204,7 +204,7 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, res
           });
         },
 
-        handleEditClick: () => { },
+        // handleEditClick: () => { },
         handleTrashClick: () => {
           // eslint-disable-next-line no-restricted-globals
           if (confirm("Are you sure? This action cannot be reversed")) {
@@ -266,9 +266,9 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, res
                       },
                     },
                     response => {
-                      console.log('response', response);
+                      // console.log('response', response);
                       if (response.msg === 'DONE') {
-                        console.log('response', response);
+                        // console.log('response', response);
                         resetNewSelection();
                       }
                     }
@@ -279,10 +279,37 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, res
           });
         },
         handleExpandCollapse: () => { },
-        notifyParentOfAdopted: () => {
+        // notifyParentOfAdopted: () => {
+        //   chrome.runtime.sendMessage({
+        //     msg: 'REQUEST_ADOPTED_UPDATE',
+        //     from: 'content',
+        //     payload: {
+        //       annoId: anno.id, replyId: , adoptedState
+        //     }
+        //   })
 
+        // },
+        getGroupName: () => {
+          let matches = [];
+          if (anno.userGroups !== undefined && anno.annoGroups !== undefined) {
+            matches = anno.userGroups.filter(group => anno.annoGroups.includes(group.gid));
+          }
+          if (matches.length > 0) {
+            let formattedString = "";
+            matches.forEach((group, i) => {
+              if (i === (matches.length - 1)) {
+                formattedString += group.name;
+              }
+              else {
+                formattedString += group.name + ", ";
+              }
+            });
+            return formattedString;
+          }
+          else {
+            return anno.isPrivate ? "Private" : "Public";
+          }
         },
-        getGroupName: () => { },
       }}
     >
       {

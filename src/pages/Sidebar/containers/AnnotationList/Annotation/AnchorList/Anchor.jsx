@@ -90,7 +90,7 @@ const Anchor = ({ anchor }) => {
         ctx.updateAnchors(childAnch);
     }
     const deleteAnchor = ({ anchorId }) => {
-        const childAnch = anno.childAnchor.filter((c) => c.id !== anchorId)
+        const childAnch = ctx.anno.childAnchor.filter((c) => c.id !== anchorId)
         ctx.updateAnchors(childAnch);
     }
     // useEffect(() => {
@@ -102,7 +102,9 @@ const Anchor = ({ anchor }) => {
     // };
     // });
 
-    const handleEvent = ({ isClick, isHover }) => {
+    const handleEvent = ({ isClick, isHover, e }) => {
+        // e.stopPropagation();
+        // console.log('isClick', isClick, 'isHover', isHover, 'e', e)
 
         let message = isClick ? 'ANNOTATION_FOCUS_ONCLICK' : isHover ? 'ANNOTATION_FOCUS' : 'ANNOTATION_DEFOCUS';
         if (id === null) { return; }

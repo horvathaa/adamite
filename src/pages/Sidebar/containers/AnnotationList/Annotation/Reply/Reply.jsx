@@ -21,7 +21,7 @@ const Reply = ({ idx, reply }) => {
     const [replyData, setReply] = useState(cleanReplyModel(reply));
     const [editing, setEditing] = useState(false);
     const [adopted, setAdopted] = useState(false);
-    let showQuestionAnswerInterface = false; //TODO
+    let showQuestionAnswerInterface = ctx.anno.type === 'question';
 
 
 
@@ -33,9 +33,19 @@ const Reply = ({ idx, reply }) => {
 
     }
 
+    const answerIsAdopted = () => {
+        chrome.runtime.sendMessage({
+            msg: 'REQUEST_ADOPTED_UPDATE',
+            from: 'content',
+            payload: {
+                annoId: ctx.anno.id, replyId: replyData.replyId, adoptedState: adopted
+            }
+        })
+    }
+
     const adoptedStar = adopted ?
         <FaStar className="profile" onClick={ctx.transmitAdoptedToParent} /> :
-        <FaRegStar className="profile" onClick={this.transmitAdoptedToParent} />;
+        <FaRegStar className="profile" onClick={ctx.transmitAdoptedToParent} />;
 
     return (<React.Fragment>
         {editing ?
@@ -62,7 +72,7 @@ const Reply = ({ idx, reply }) => {
                             <div className="row">
                                 <div className="AnnotationIconContainer">
                                     {adoptedStar}
-                                    {currentUser.uid === authorId ? (
+                                    {currentUser.uid === replyData.authorId ? (
                                         <React.Fragment>
                                             <div className="TopIconContainer" >
                                                 <img src={edit} alt="edit reply" className="profile" id="edit" onClick={_ => setEditing(true)} />

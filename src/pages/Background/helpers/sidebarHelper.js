@@ -1,22 +1,23 @@
 import '../../../assets/img/iframe-background.gif';
+import { sidebarStatus } from '../backgroundEventListeners';
 
-let sidebarOpen = true; // open -> true  |  close -> false
+// let sidebarOpen = true; // open -> true  |  close -> false
 
 /**
  * Sidebar open
  */
-chrome.storage.local.get(['sidebarOpen'], (result) => {
-  if (result.sidebarOpen !== undefined) {
-    sidebarOpen = result.sidebarOpen === true;
-  }
-});
+// chrome.storage.local.get(['sidebarOpen'], (result) => {
+//   if (result.sidebarOpen !== undefined) {
+//     sidebarOpen = result.sidebarOpen === true;
+//   }
+// });
 
-const persistSidebarOpenStatus = (status) => {
-  console.log('persist call', status);
-  chrome.storage.local.set({
-    sidebarOpen: status,
-  });
-};
+// const persistSidebarOpenStatus = (status) => {
+//   console.log('persist call', status);
+//   chrome.storage.local.set({
+//     sidebarOpen: status,
+//   });
+// };
 
 /**
  * Sidebar on Left
@@ -27,7 +28,7 @@ chrome.storage.sync.get(['sidebarOnLeft'], (result) => {
   if (result.sidebarOnLeft !== undefined) {
     sidebarOnLeft = result.sidebarOnLeft === true;
   } else {
-    persistSidebarOnLeftStatus(true); // default on left
+    persistSidebarOnLeftStatus(false); // default on right
   }
 });
 
@@ -57,12 +58,13 @@ const persistShouldShrinkBodyStatus = (status) => {
 };
 
 export const toggleSidebar = (toStatus = null) => {
+  let sidebarOpen;
   if (toStatus === null || toStatus === undefined) {
     sidebarOpen = !sidebarOpen;
   } else {
     sidebarOpen = toStatus;
   }
-  persistSidebarOpenStatus(sidebarOpen);
+  // persistSidebarOpenStatus(sidebarOpen);
   let sidebarOpenCopy = sidebarOpen;
   chrome.tabs.query(
     {
@@ -134,8 +136,17 @@ const updateShouldShrinkBodyStatus = (toStatus) => {
 };
 
 export async function requestSidebarStatus(request, sender, sendResponse) {
-  console.log('getting sidebar status', sidebarOpen);
-  sendResponse(sidebarOpen);
+  chrome.tabs.query(({ active: true, currentWindow: true }), tab => {
+    let status;
+    if (sidebarStatus.length && tab !== undefined) {
+      const i = sidebarStatus.findIndex(t => t.id === tab[0].id);
+      status = i > -1 ? sidebarStatus[i].open : false;
+    }
+    else {
+      status = false;
+    }
+    sendResponse(status);
+  })
 }
 
 export async function requestToggleSidebar(request, sender, sendResponse) {

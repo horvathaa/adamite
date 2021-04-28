@@ -64,7 +64,7 @@ let messagesIn = {
         updateXpaths(findSpan, request.id)
     },
     'ADD_NEW_ANCHOR': (request, sender, sendResponse) => {
-        console.log("add new");
+        // console.log("add new");
         addNewAnchor({ request: request, type: "child" });
     },
     'ADD_REPLY_ANCHOR': (request, sender, sendResponse) => {
@@ -117,7 +117,7 @@ let messagesIn = {
     'ANNOTATION_FOCUS_ONCLICK': (request, sender, sendResponse) => {
         let findSpan = getSpanFromRequest(request);
         if (findSpan.length === 0) { console.log('len is 0?'); return; }
-        findSpan[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        window.scroll({ top: getPosition(findSpan[0]).y - window.innerHeight / 2, left: getPosition(findSpan[0]).x, behavior: 'smooth' });
     },
     'ANNOTATION_FOCUS': (request, sender, sendResponse) => {
         let findSpan = getSpanFromRequest(request);
@@ -153,7 +153,6 @@ function getSpanFromRequest(request) {
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    console.log(request);
     if (request.msg in messagesIn) {
         messagesIn[request.msg](request, sender, sendResponse);
     }

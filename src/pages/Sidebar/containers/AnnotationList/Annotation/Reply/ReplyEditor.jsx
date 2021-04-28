@@ -10,13 +10,14 @@ import { SplitButton, Button, Dropdown as BootstrapDropdown } from 'react-bootst
 import AnnotationContext from "../AnnotationContext";
 import { v4 as uuidv4 } from 'uuid';
 import cleanReplyModel from './ReplyModel';
+import { formatTimestamp } from '../../../../utils';
 
 
 const ReplyEditor = ({ reply = null, finishReply = () => { } }) => {
     const ctx = useContext(AnnotationContext);
     const id = ctx.anno.id;
     const replies = ctx.anno.replies;
-    let showQuestionAnswerInterface = false;
+    let showQuestionAnswerInterface = ctx.anno.type === 'question';
     const isNewReply = reply === null;
     const [newReply, setNewReply] = useState(cleanReplyModel(reply));
 
@@ -37,7 +38,7 @@ const ReplyEditor = ({ reply = null, finishReply = () => { } }) => {
         });
     });
 
-    const replyChangeHandler = (value) => { setNewReply(value); }
+    const replyChangeHandler = (value) => { setNewReply({ ...newReply, replyContent: value }); }
     const cancelReply = () => { setNewReply(reply); finishReply({ reply: reply }); }
     const tagsHandleChange = (newTag) => { setNewReply({ ...newReply, tags: newTag }) }
 
@@ -71,16 +72,28 @@ const ReplyEditor = ({ reply = null, finishReply = () => { } }) => {
 
     const submitReply = (e, adopted, answer) => {
         if (isNewReply) {
-
-            let replies = ctx.anno.replies.filter(r => r.replyId !== newReply.replyId);
-            const repliesToTransmit = replies.concat(newReply);
-            ctx.updateAnnotation({ ...ctx.anno, replies: repliesToTransmit });
+            // console.log('in here', ctx.anno.replies);
+            let tempReplies = ctx.anno.replies;
+            if (tempReplies !== undefined && ctx.anno.replies.length) {
+                tempReplies.push(cleanReplyModel(newReply))
+            } else {
+                tempReplies = [cleanReplyModel(newReply)];
+            }
+            // const repliesToTransmit = replies;
+            console.log('replies', tempReplies, newReply);
+            setNewReply({
+                url: ctx.currentUrl,
+                author: ctx.currentUser,
+                timestamp: new Date().getTime(),
+                authorId: ctx.currentUser.uid
+            })
+            ctx.updateAnnotation({ ...ctx.anno, replies: tempReplies });
 
 
         } else {
             let replies = ctx.anno.replies.filter(r => r.replyId !== newReply.replyId);
-            const repliesToTransmit = replies.concat(newReply);
-            ctx.updateAnnotation({});
+            const repliesToTransmit = replies.concat(cleanReplyModel(newReply));
+            ctx.updateAnnotation({ ...ctx.anno, replies: repliesToTransmit });
 
             // chrome.runtime.sendMessage({
             //     msg: 'ADD_NEW_REPLY',

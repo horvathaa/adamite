@@ -108,7 +108,11 @@ class Sidebar extends React.Component {
 
   componentWillUnmount() {
     window.removeEventListener('scroll', this.handleScroll);
-    transmitMessage['UNSUBSCRIBE']();
+    chrome.runtime.sendMessage({
+      msg: 'UNSUBSCRIBE',
+      from: 'content'
+    })
+    // transmitMessage['UNSUBSCRIBE']();
   }
 
   ElasticSearch = (msg) => {
@@ -348,7 +352,6 @@ class Sidebar extends React.Component {
           return;
         }
         let annotations = request.payload;
-        console.log('annotations', annotations)
         this.setState({ url: request.url });
         chrome.runtime.sendMessage({
           msg: 'REQUEST_SIDEBAR_STATUS',
@@ -462,7 +465,10 @@ class Sidebar extends React.Component {
       }
     });
   }
-
+  containsReplyWithAnchor(list) {
+    const test = list.filter(obj => obj.xpath !== null);
+    return test;
+  }
 
   handleShowAnnotatePage = () => {
     this.setState({ annotatingPage: true });
@@ -820,29 +826,17 @@ class Sidebar extends React.Component {
     if (currentUser === undefined) {
       return null;
     }
-    // console.log("this is a render");
-    // console.log('bad bad', this.state.relatedQuestions);
     const inputText = searchBarInputText.toLowerCase();
-    // console.log("ll code", groupAnnotations, activeGroups, activeGroups.length);
-    // console.log("these are searched annotations", searchedAnnotations, searchedAnnotations.length === 0)
     let renderedAnnotations = [];
-    console.log('filteredAnnotations', filteredAnnotations)
     if (searchedAnnotations.length) {
       renderedAnnotations = searchedAnnotations;
     }
     else if (activeGroups.length) {
-      // if (filteredGroupAnnotations.length) {
-      //   renderedAnnotations = renderedAnnotations.concat(filteredGroupAnnotations);
-      // }
-      // else {
       groupAnnotations.forEach((group) => {
-        // console.log('groupppp', group);
         renderedAnnotations = renderedAnnotations.concat(group.annotations);
       });
-      // }
     }
     else {
-      console.log('in here?')
       renderedAnnotations = filteredAnnotations;
     }
 
@@ -856,19 +850,12 @@ class Sidebar extends React.Component {
         renderedAnnotations = pageLocationSort;
     }
 
-    console.log('rendered before filter', renderedAnnotations);
-
     renderedAnnotations = renderedAnnotations.filter(anno => !anno.deleted);
-    console.log('rendered after filter', renderedAnnotations)
     let pinnedAnnosCopy = pinnedAnnos.sort((a, b) =>
       (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
     );
 
     pinnedAnnosCopy = pinnedAnnosCopy.filter(anno => !anno.deleted);
-    // const pinnedNumChildAnchs = pinnedAnnosCopy.filter(anno => anno.SharedId !== null);
-
-    // const numChildAnchs = renderedAnnotations.filter(anno => anno.SharedId !== null);
-    // chrome.browserAction.setBadgeText({ tabId: this.state.tabId, text: String(renderedAnnotations.length) });
 
     let tempSearchCount;
     if (this.state.showPinned) {
@@ -878,8 +865,6 @@ class Sidebar extends React.Component {
       tempSearchCount = renderedAnnotations.length;
     }
 
-    // console.log('rendered', renderedAnnotations)
-    //let url = new URL(this.state.url);
     const newAnnoId = uuidv4();
     return (
       <div className="SidebarContainer" >
@@ -913,7 +898,6 @@ class Sidebar extends React.Component {
                   clearSelectedAnno={this.clearSelectedAnno}
                   notifySidebarSort={this.notifySidebarSort}
                   currentSort={this.state.sortBy}
-                // activeGroup={activeGroups.length ? activeGroup : "Public"}
                 />
               }
 
@@ -934,7 +918,6 @@ class Sidebar extends React.Component {
                         {
                           id: uuidv4(),
                           anchor: this.state.newSelection,
-                          // hostname: url.hostname,
                           parentId: newAnnoId,
                           xpath: this.state.xpath,
                           offsets: this.state.offsets,
@@ -966,7 +949,6 @@ class Sidebar extends React.Component {
                 <React.Fragment>
                   <AnnotationList
                     annotations={pinnedAnnosCopy}
-                    // altAnnotationList={renderedAnnotations}
                     groups={groups}
                     currentUser={currentUser}
                     url={this.state.url}
@@ -992,7 +974,6 @@ class Sidebar extends React.Component {
                 </div>
               ) : (
                 <AnnotationList annotations={renderedAnnotations}
-                  // altAnnotationList={pinnedAnnosCopy}
                   groups={groups}
                   currentUser={currentUser}
                   url={this.state.url}
