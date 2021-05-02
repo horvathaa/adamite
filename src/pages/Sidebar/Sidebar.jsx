@@ -912,7 +912,7 @@ class Sidebar extends React.Component {
                       type: this.state.newAnnotationType,
                       content: '',
                       tags: [],
-                      isPrivate: false,
+                      isPrivate: true,
                       groups: [],
                       childAnchor: this.state.annotatingPage ? null : [
                         {

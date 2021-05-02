@@ -414,11 +414,11 @@ function updateList(list, url, annotations, isPrivate) {
     let obj = list.filter(obj => url === obj.tabUrl);
     let objToUpdate = obj[0];
     if (isPrivate) {
-        let newList = objToUpdate.annotations.filter(anno => anno.private !== true && anno.isPrivate !== true && !anno.deleted && anno.url.includes(url))
+        let newList = objToUpdate.annotations.filter(anno => anno.isPrivate !== true && !anno.deleted && anno.url.includes(url)) // removed anno.private check - if things break, well...
         objToUpdate.annotations = newList.concat(annotations);
     }
     else {
-        let newList = objToUpdate.annotations.filter(anno => anno.private === true && anno.isPrivate === true && !anno.deleted && anno.url.includes(url))
+        let newList = objToUpdate.annotations.filter(anno => anno.isPrivate === true && !anno.deleted && anno.url.includes(url))
         objToUpdate.annotations = newList.concat(annotations);
     }
     // objToUpdate.annotations = annotations;

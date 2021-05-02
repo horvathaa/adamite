@@ -251,12 +251,12 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, res
         },
         submitButtonHandler: (newAnno) => {
           //this.setState({ submitted: true });
-          console.log('sending', newAnno);
+          // console.log('sending', newAnno);
           chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
             chrome.tabs.sendMessage(tabs[0].id, { msg: 'REMOVE_TEMP_ANNOTATION', },
               response => {
                 if (response.msg === 'REMOVED') {
-                  console.log('about to send create annotaiton message');
+                  // console.log('about to send create annotaiton message');
                   chrome.runtime.sendMessage(
                     {
                       msg: 'CREATE_ANNOTATION', //'SAVE_ANNOTATED_TEXT',

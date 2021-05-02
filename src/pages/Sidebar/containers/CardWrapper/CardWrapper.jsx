@@ -10,7 +10,7 @@ import AnnotationContext from "../AnnotationList/Annotation/AnnotationContext";
 
 const CardWrapper = ({ isNew = false }) => {
     const ctx = useContext(AnnotationContext);
-    if (isNew) console.log(ctx.anno);
+    // if (isNew) console.log(ctx.anno);
     const id = "id" in ctx.anno ? ctx.anno.id : false,
         pageAnnotation = ctx.anno.anchor,
         elseContent = ctx.anno.content,
@@ -38,7 +38,7 @@ const CardWrapper = ({ isNew = false }) => {
         splitButtonText = "Post to " + name;
     }
     else {
-        splitButtonText = newAnno.private ? "Post as Private" : "Post to Public";
+        splitButtonText = !newAnno.isPrivate ? "Post to Public" : "Post as Private";
     }
     let annoTypeDropDownValue = (newAnno.type === 'default') ? 'normal' : (newAnno.type === 'highlight') ? 'empty' : newAnno.type;
 
@@ -86,8 +86,8 @@ const CardWrapper = ({ isNew = false }) => {
                                     () => ctx.updateAnnotation(newAnno)
                                 }
                             >
-                                <BootstrapDropdown.Item onClick={_ => setNewAnno({ ...newAnno, private: true })} eventKey="1">Private</BootstrapDropdown.Item>
-                                <BootstrapDropdown.Item onClick={_ => setNewAnno({ ...newAnno, private: false })} eventKey="2">Public</BootstrapDropdown.Item>
+                                <BootstrapDropdown.Item onClick={_ => setNewAnno({ ...newAnno, isPrivate: true })} eventKey="1">Private</BootstrapDropdown.Item>
+                                <BootstrapDropdown.Item onClick={_ => setNewAnno({ ...newAnno, isPrivate: false })} eventKey="2">Public</BootstrapDropdown.Item>
                                 {userGroups.map((group, i) => {
                                     return <BootstrapDropdown.Item onClick={_ => setGroups([group.gid])} eventKey={i + 2}>{group.name}</BootstrapDropdown.Item>
                                 })}

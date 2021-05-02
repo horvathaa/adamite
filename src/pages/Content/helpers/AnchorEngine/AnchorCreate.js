@@ -148,7 +148,7 @@ const alertBackgroundOfNewSelection = (selection, offsets, xpath, type, content,
                         type: 'highlight',
                         content: '',
                         tags: [],
-                        isPrivate: false,
+                        isPrivate: true,
                         groups: [],
                         childAnchor: [
                             {
@@ -188,10 +188,10 @@ const alertBackgroundOfNewSelection = (selection, offsets, xpath, type, content,
 
 
 export function addNewAnchor({ request, type }) {
-    console.log("aff new Anchor")
+    // console.log("aff new Anchor")
     var selection = window.getSelection();
     const { newAnno } = request.payload;
-    console.log(newAnno);
+    // console.log(newAnno);
     if (selection.type === 'Range') {
         const rect = selection.getRangeAt(0);
 
@@ -236,7 +236,7 @@ export function addNewAnchor({ request, type }) {
             // payload['newAnno'] = request.payload;
             // console.log(payload);
             const newA = { ...newAnno, childAnchor: childAnchor };
-            console.log(newA);
+            // console.log(newA);
             transmitMessage({ msg: 'ANNOTATION_UPDATED', data: { "payload": { newAnno: newA, updateType: "NewAnchor" } } });
         }
         selection.removeAllRanges();
@@ -315,7 +315,7 @@ export const createAnnotationCallback = (response, event) => {
             };
 
             const rectPopover = rect.getBoundingClientRect();
-            console.log("Display Popover", rectPopover);
+            // console.log("Display Popover", rectPopover);
             displayPopoverBasedOnRectPosition(rectPopover, { selection, xpathToNode, offsets, rectPopover });
 
             return;
