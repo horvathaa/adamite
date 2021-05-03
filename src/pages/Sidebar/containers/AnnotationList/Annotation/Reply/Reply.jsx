@@ -1,4 +1,4 @@
-import React, { Component, useContext, useState } from 'react';
+import React, { Component, useContext, useEffect, useState } from 'react';
 import profile from '../../../../../../assets/img/SVGs/Profile.svg';
 import CustomTag from '../../../CustomTag/CustomTag';
 import Anchor from '../AnchorList/Anchor';
@@ -23,6 +23,12 @@ const Reply = ({ idx, reply }) => {
     const [adopted, setAdopted] = useState(false);
     let showQuestionAnswerInterface = ctx.anno.type === 'question';
 
+    useEffect(() => {
+        if (reply !== replyData) {
+            setReply(reply);
+        }
+    }, [reply, replyData])
+
 
 
     const finishReply = () => {
@@ -30,7 +36,8 @@ const Reply = ({ idx, reply }) => {
         ctx.setReplying(false);
     }
     const deleteReply = () => {
-
+        const remainingReplies = ctx.anno.replies.filter(r => r.replyId !== replyData.replyId);
+        ctx.updateAnnotation({ ...ctx.anno, replies: remainingReplies });
     }
 
     const answerIsAdopted = () => {
@@ -53,6 +60,7 @@ const Reply = ({ idx, reply }) => {
                 edit={true}
                 reply={replyData}
                 showQuestionAnswerInterface={showQuestionAnswerInterface}
+                finishReply={finishReply}
             />) : (
                 <React.Fragment>
                     {idx !== 0 && <hr className="divider" />}
@@ -66,7 +74,7 @@ const Reply = ({ idx, reply }) => {
                                     {replyData.author}
                                 </div>
                                 <div className="timestamp">
-                                    {formatTimestamp()}
+                                    {formatTimestamp(replyData.timestamp)}
                                 </div>
                             </div>
                             <div className="row">
@@ -85,7 +93,7 @@ const Reply = ({ idx, reply }) => {
                                 </div>
                             </div>
                         </div>
-                        {reply.xpath !== null && replyData.xpath !== undefined ? (
+                        {reply.anchor !== null ? (
                             <Anchor anchor={replyData.anchor} replyId={replyData.replyId} />) : (null)}
                         <div className="annotationContent">
                             <div className="contentBody">

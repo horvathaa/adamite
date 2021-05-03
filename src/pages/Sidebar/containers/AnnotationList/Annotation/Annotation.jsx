@@ -46,12 +46,13 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, res
   const [editing, setEditing] = useState(isNew);
   const [replying, setReplying] = useState(false);
   const [collapsed, setCollapsed] = useState(!isNew);
-  const [repliesCollapsed, setRepliesCollapsed] = useState(true);
+  const [showReplies, setShowReplies] = useState(false);
   const [anno, setAnno] = useState(annotation);
   const replyCountString = "";
 
   useEffect(() => {
     if (annotation !== anno && anno.childAnchor !== annotation.childAnchor) {
+      // console.log('in annotation useEffect - annotation first, anno second', annotation, anno)
       setAnno(annotation);
     }
     if (isNew) {
@@ -65,7 +66,8 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, res
         );
       });
     }
-  });
+  }, [annotation, anno, isNew]);
+
   const cancelButtonHandler = () => {
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
       chrome.tabs.sendMessage(
@@ -83,7 +85,7 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, res
     if (anno.replies === undefined || collapsed || anno.replies.length) return (null);
     return (<div className="ShowHideReplies">
       <div className="ExpandCollapse">
-        <img src={expand} className="Icon" id="ShowReplies" alt="Show replies" onClick={_ => setRepliesCollapsed(false)} />
+        <img src={expand} className="Icon" id="ShowReplies" alt="Show replies" onClick={_ => setShowReplies(false)} />
       </div>
       {anno.replies.length} {replyCountString}
     </div>);
@@ -118,7 +120,10 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, res
         setCollapsed: (val) => { setCollapsed(val); },
         editing: editing,
         setEditing: (val) => { setEditing(val); },
-
+        showReplies: showReplies,
+        handleShowReplies: (val) => { setShowReplies(val) },
+        replying: replying,
+        setReplying: (val) => { setReplying(val) },
         brokenReply: [],
         brokenChild: [],
 
@@ -188,23 +193,8 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, res
           // setAnno({ ...anno, childAnchor: newAnchors })
         },
         // Reply
-        replying: replying,
-        setReplying: (val) => { setReplying(val); },
-        showReply: false,
-        replyCountString: "",
-        handleShowReply: (id) => { },
-        deleteReply: (id) => {
-          const repliesToTransmit = anno.replies.filter(reply => reply.replyId !== id);
-          chrome.runtime.sendMessage({
-            msg: 'UPDATE_REPLIES',
-            payload: {
-              id: anno.id,
-              replies: repliesToTransmit
-            }
-          });
-        },
 
-        // handleEditClick: () => { },
+        replyCountString: anno.replies !== undefined && anno.replies.length === 1 ? "reply" : "replies",
         handleTrashClick: () => {
           // eslint-disable-next-line no-restricted-globals
           if (confirm("Are you sure? This action cannot be reversed")) {
@@ -326,7 +316,6 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, res
             <AnnotationTagsList />
             {replying && <ReplyEditor finishReply={() => setReplying(false)} />}
             <RepliesList />
-            <ShowRepliesComponent />
             {!isNew && <CollapsedDiv />}
           </div>
           <div className={classNames({ AnnotationContainerPad: true, AnnotationPadActive: true, })} >

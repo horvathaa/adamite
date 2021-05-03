@@ -19,6 +19,11 @@ const ReplyEditor = ({ reply = null, finishReply = () => { } }) => {
     const replies = ctx.anno.replies;
     let showQuestionAnswerInterface = ctx.anno.type === 'question';
     const isNewReply = reply === null;
+    const replyMetadata = {
+        author: ctx.currentUser.email.substring(0, ctx.currentUser.email.indexOf('@')),
+        url: [ctx.currentUrl], authorId: ctx.currentUser.uid, hostname: new URL(ctx.currentUrl).hostname,
+        replyId: uuidv4(), timestamp: new Date().getTime()
+    }
     const [newReply, setNewReply] = useState(cleanReplyModel(reply));
 
     useEffect(() => {
@@ -27,11 +32,13 @@ const ReplyEditor = ({ reply = null, finishReply = () => { } }) => {
                 const { xpath, url, anchor, offsets, hostname } = request.payload;
                 setNewReply({
                     ...newReply,
-                    xpath: xpath,
-                    url: url,
-                    anchor: anchor,
-                    offsets: offsets,
-                    hostname: hostname
+                    anchor: {
+                        xpath: xpath,
+                        url: url,
+                        anchor: anchor,
+                        offsets: offsets,
+                        hostname: hostname
+                    }
                 })
 
             }
@@ -48,7 +55,7 @@ const ReplyEditor = ({ reply = null, finishReply = () => { } }) => {
     const requestNewAnchor = () => {
 
         let replyId;
-        if (newReply.replyId === undefined) {
+        if (replyMetadata.replyId === undefined) {
             if (replies === undefined) {
                 replyId = 0;
             }
@@ -56,15 +63,17 @@ const ReplyEditor = ({ reply = null, finishReply = () => { } }) => {
                 replyId = replies.length;
             }
         } else {
-            replyId = newReply.replyId;
+            replyId = replyMetadata.replyId;
         }
         chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
             chrome.tabs.sendMessage(tabs[0].id, {
                 msg: 'ADD_REPLY_ANCHOR',
                 payload: {
-                    replyId,
-                    id,
-                    replies
+                    newAnno: {
+                        replyId,
+                        id,
+                        replies
+                    }
                 }
             });
         });
@@ -72,91 +81,30 @@ const ReplyEditor = ({ reply = null, finishReply = () => { } }) => {
 
     const submitReply = (e, adopted, answer) => {
         if (isNewReply) {
-            // console.log('in here', ctx.anno.replies);
             let tempReplies = ctx.anno.replies;
+            const reply = { ...newReply, ...replyMetadata }
             if (tempReplies !== undefined && ctx.anno.replies.length) {
-                tempReplies.push(cleanReplyModel(newReply))
+                tempReplies.push(cleanReplyModel(reply))
             } else {
-                tempReplies = [cleanReplyModel(newReply)];
+                tempReplies = [cleanReplyModel(reply)];
             }
-            // const repliesToTransmit = replies;
-            console.log('replies', tempReplies, newReply);
-            setNewReply({
-                url: ctx.currentUrl,
-                author: ctx.currentUser,
-                timestamp: new Date().getTime(),
-                authorId: ctx.currentUser.uid
-            })
             ctx.updateAnnotation({ ...ctx.anno, replies: tempReplies });
 
 
         } else {
             let replies = ctx.anno.replies.filter(r => r.replyId !== newReply.replyId);
-            const repliesToTransmit = replies.concat(cleanReplyModel(newReply));
+            const repliesToTransmit = replies.length ? replies.concat(cleanReplyModel(newReply)) : [cleanReplyModel(newReply)];
             ctx.updateAnnotation({ ...ctx.anno, replies: repliesToTransmit });
-
-            // chrome.runtime.sendMessage({
-            //     msg: 'ADD_NEW_REPLY',
-            //     payload: {
-            //         replyId: replies !== undefined ? replies.length : 0,
-            //         id: id,
-            //         reply: this.state.reply,
-            //         replyTags: this.state.replyTags,
-            //         answer: answer !== undefined ? answer : false,
-            //         question: this.state.question,
-            //         xpath: this.state.xpath !== undefined ? this.state.xpath : null,
-            //         anchor: this.state.anchor,
-            //         hostname: this.state.hostname,
-            //         url: this.state.url,
-            //         offsets: this.state.offsets !== undefined ? this.state.offsets : null,
-            //         adopted: adopted !== undefined ? adopted : false
-            //     }
-            // }, (response) => {
-            //     if (response.msg === 'DONE') {
-            //         if (adopted) {
-            //             const replyId = this.props.replies !== undefined ? this.props.replies.length : 0;
-            //             chrome.runtime.sendMessage({
-            //                 msg: 'REQUEST_ADOPTED_UPDATE',
-            //                 from: 'content',
-            //                 payload: {
-            //                     annoId: this.props.id, replyId, adoptedState: adopted
-            //                 }
-            //             });
-            //             // consider changing to callback to parent so we can also unpin annotation
-            //             chrome.runtime.sendMessage({
-            //                 msg: 'UPDATE_QUESTION',
-            //                 from: 'content',
-            //                 payload: {
-            //                     id: this.props.id,
-            //                     isClosed: true,
-            //                     howClosed: "Answered"
-            //                 }
-            //             });
-            //         }
-            //         if (this.state.xpath !== undefined) {
-            //             chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-            //                 chrome.tabs.sendMessage(tabs[0].id, {
-            //                     msg: 'ADD_REPLY_HIGHLIGHT',
-            //                     payload: {
-            //                         replyId: this.props.replies !== undefined ? this.props.replies.length : 0,
-            //                         id: this.props.id,
-            //                         xpath: this.state.xpath
-            //                     }
-            //                 });
-            //             });
-            //         }
-            //     }
-            // });
         }
         finishReply();
     }
     // const { edit } = this.props;
-    const edit = true;
-    // const { anchor } = this.state;
-    let content = undefined;
-    if (edit !== undefined && edit) {
-        content = newReply.replyContent;
-    }
+    // const edit = true;
+    // // const { anchor } = this.state;
+    // let content = undefined;
+    // if (edit !== undefined && edit) {
+    //     content = newReply.replyContent;
+    // }
 
     //  const { replyTags } = this.state;
 
@@ -191,9 +139,9 @@ const ReplyEditor = ({ reply = null, finishReply = () => { } }) => {
             <div className="ReplyHeader">
                 <hr className="divider" id="editor" />
             </div>
-            {newReply.anchor !== "" ? (
+            {newReply.anchor !== null ? (
                 <div className="SelectedTextContainer">
-                    {newReply.anchor}
+                    {newReply.anchor.anchor}
                 </div>
             ) : (null)}
             <div className="ReplyField">
@@ -272,6 +220,58 @@ export default ReplyEditor;
 
 
 
+            // chrome.runtime.sendMessage({
+            //     msg: 'ADD_NEW_REPLY',
+            //     payload: {
+            //         replyId: replies !== undefined ? replies.length : 0,
+            //         id: id,
+            //         reply: this.state.reply,
+            //         replyTags: this.state.replyTags,
+            //         answer: answer !== undefined ? answer : false,
+            //         question: this.state.question,
+            //         xpath: this.state.xpath !== undefined ? this.state.xpath : null,
+            //         anchor: this.state.anchor,
+            //         hostname: this.state.hostname,
+            //         url: this.state.url,
+            //         offsets: this.state.offsets !== undefined ? this.state.offsets : null,
+            //         adopted: adopted !== undefined ? adopted : false
+            //     }
+            // }, (response) => {
+            //     if (response.msg === 'DONE') {
+            //         if (adopted) {
+            //             const replyId = this.props.replies !== undefined ? this.props.replies.length : 0;
+            //             chrome.runtime.sendMessage({
+            //                 msg: 'REQUEST_ADOPTED_UPDATE',
+            //                 from: 'content',
+            //                 payload: {
+            //                     annoId: this.props.id, replyId, adoptedState: adopted
+            //                 }
+            //             });
+            //             // consider changing to callback to parent so we can also unpin annotation
+            //             chrome.runtime.sendMessage({
+            //                 msg: 'UPDATE_QUESTION',
+            //                 from: 'content',
+            //                 payload: {
+            //                     id: this.props.id,
+            //                     isClosed: true,
+            //                     howClosed: "Answered"
+            //                 }
+            //             });
+            //         }
+            //         if (this.state.xpath !== undefined) {
+            //             chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+            //                 chrome.tabs.sendMessage(tabs[0].id, {
+            //                     msg: 'ADD_REPLY_HIGHLIGHT',
+            //                     payload: {
+            //                         replyId: this.props.replies !== undefined ? this.props.replies.length : 0,
+            //                         id: this.props.id,
+            //                         xpath: this.state.xpath
+            //                     }
+            //                 });
+            //             });
+            //         }
+            //     }
+            // });
 
 
 // class ReplyEditor extends Component {

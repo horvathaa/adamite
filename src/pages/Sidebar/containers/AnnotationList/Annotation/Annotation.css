@@ -398,6 +398,9 @@
   color: RED;
 }
 
+.ExpandCollapse.hidden {
+  transform: rotate(270deg);
+}
 
 .Icon {
   width: 1.4em;

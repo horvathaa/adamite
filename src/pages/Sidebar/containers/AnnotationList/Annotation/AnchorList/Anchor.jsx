@@ -160,7 +160,7 @@ const Anchor = ({ anchor }) => {
                     {anchorIcon}
                 </div>
 
-                {url.includes(currentUrl) && !pageAnchor ?
+                {url === currentUrl && !pageAnchor ?
                     editMode ?
                         (
                             <div className={textClass}>

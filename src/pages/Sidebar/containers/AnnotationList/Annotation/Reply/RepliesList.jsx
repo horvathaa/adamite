@@ -8,6 +8,7 @@ import AnnotationContext from "../AnnotationContext";
 
 
 import ReplyModel from "./ReplyModel";
+import classNames from 'classnames';
 
 /*
 Context Used
@@ -26,20 +27,19 @@ const RepliesList = () => {
         <div className="Replies">
             <div className="SeparationRow">
                 <div className="ShowHideReplies">
-                    <div className="ExpandCollapse">
-                        <img src={expand} className="Icon" alt="Show replies" onClick={ctx.handleShowReplies} />
+                    <div className={classNames({ ExpandCollapse: true, hidden: !ctx.showReplies })}>
+                        <img src={expand} className={classNames({ Icon: true })} alt="Show replies" onClick={() => ctx.handleShowReplies(!ctx.showReplies)} />
                     </div>
                     {ctx.anno.replies.length} {ctx.replyCountString}
                 </div>
-                <hr className="divider" />
+                {ctx.showReplies && <hr className="divider" />}
             </div>
-            <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
+            {ctx.showReplies && <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
                 {ctx.anno.replies.map((reply, idx) => {
-                    console.log('broke?', reply, ctx.anno)
-                    return (<Reply reply={reply} />)
+                    return (<Reply reply={reply} idx={idx} />)
                 }
                 )}
-            </ul>
+            </ul>}
         </div>
     );
 }

@@ -191,7 +191,7 @@ export function addNewAnchor({ request, type }) {
     // console.log("aff new Anchor")
     var selection = window.getSelection();
     const { newAnno } = request.payload;
-    // console.log(newAnno);
+    console.log('addNewAnchor newAnno', newAnno, request, type);
     if (selection.type === 'Range') {
         const rect = selection.getRangeAt(0);
 
