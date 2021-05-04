@@ -454,6 +454,7 @@ class Sidebar extends React.Component {
         }
       }
       else if (request.from === 'background' && request.msg === 'FILTER_BY_TAG') {
+
         let filterSelection = this.state.filterSelection;
         filterSelection.tags = [request.payload];
         this.setState({
@@ -687,6 +688,10 @@ class Sidebar extends React.Component {
     }
   }
 
+  getFilteredAnnotations = () => {
+    return this.state.filteredAnnotations;
+  }
+
   checkTags(annotation, tags) {
     // console.log('check tag', annotation, tags);
     if (!tags.length || annotation.pinned) {
@@ -846,7 +851,7 @@ class Sidebar extends React.Component {
       );
     }
     else {
-      if (searchedAnnotations.length === 0 && groupAnnotations.length === 0) // this is bad if we have an in-place filter that doesn't match with pageLocationSort - fix later
+      if (searchedAnnotations.length === 0 && groupAnnotations.length === 0 && filteredAnnotations.length === pageLocationSort.length) // this is bad if we have an in-place filter that doesn't match with pageLocationSort - fix later
         renderedAnnotations = pageLocationSort;
     }
 
@@ -898,6 +903,7 @@ class Sidebar extends React.Component {
                   clearSelectedAnno={this.clearSelectedAnno}
                   notifySidebarSort={this.notifySidebarSort}
                   currentSort={this.state.sortBy}
+                  getFilteredAnnotations={this.getFilteredAnnotations}
                 />
               }
 

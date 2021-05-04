@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import './FilterSummary.css';
-import { GoEye } from 'react-icons/go';
 import { AiFillClockCircle, AiOutlineCheck, AiOutlineCloseCircle, AiOutlineUsergroupAdd } from 'react-icons/ai';
 import { BsChatSquareDots, BsXCircle } from 'react-icons/bs';
 import { BiSort } from 'react-icons/bi';
+import { GiCancel } from 'react-icons/gi';
+import classNames from 'classnames';
 import tag from '../../../../assets/img/SVGs/tag.svg';
 import { Dropdown } from 'react-bootstrap';
 import GroupMultiSelect from './MultiSelect/MultiSelect'
-import classNames from 'classnames';
 import Tooltip from '@material-ui/core/Tooltip';
+import expand from '../../../../assets/img/SVGs/expand.svg';
 
 
 /** assumes array elements are primitive types
@@ -43,7 +44,9 @@ function areArraysEqualSets(a1, a2) {
 class FilterSummary extends React.Component {
 
     state = {
-        hoverText: ""
+        hoverText: "",
+        showTagFilter: false,
+        tagSelect: false
     }
 
     selection = {
@@ -53,6 +56,55 @@ class FilterSummary extends React.Component {
         timeRange: 'all',
         archive: null,
         tags: []
+    }
+
+    tagSet = {}
+
+    componentDidMount() {
+        let tagSet = {};
+        this.props.getFilteredAnnotations().forEach(annotation => {
+            annotation.tags.forEach(tag => {
+                if (tagSet.hasOwnProperty(tag)) {
+                    tagSet[tag] += 1;
+                }
+                else {
+                    tagSet[tag] = 1;
+                }
+            });
+        })
+        this.tagSet = tagSet;
+    }
+
+    async handleTagSelect() {
+        await this.getTags();
+        this.setState({ tagSelect: !this.state.tagSelect })
+    }
+
+    async getTags() {
+        let tagSet = {};
+        await this.props.getFilteredAnnotations().forEach(annotation => {
+            annotation.tags.forEach(tag => {
+                if (tagSet.hasOwnProperty(tag)) {
+                    tagSet[tag] += 1;
+                }
+                else {
+                    tagSet[tag] = 1;
+                }
+            });
+        })
+        this.tagSet = tagSet;
+    }
+
+    async handleTagClick(event) {
+        console.log('in handleTagClick', event)
+        let tagName = event.target.value;
+        if (this.selection.tags.includes(tagName)) {
+            this.selection.tags = this.selection.tags.filter(e => e !== tagName);
+        }
+        else {
+            this.selection.tags.push(tagName);
+        }
+        this.props.applyFilter(this.selection);
     }
 
     updateTimeRange = (eventKey, event) => {
@@ -76,9 +128,10 @@ class FilterSummary extends React.Component {
         if (choice === 'all') {
             this.selection.annoType = ['default', 'to-do', 'question', 'highlight', 'issue'];
         }
-        else if (this.selection.annoType.includes(choice)) {
-            this.selection.annoType = this.selection.annoType.filter(e => e !== choice);
-        } else {
+        else if (choice !== 'all' && areArraysEqualSets(this.selection.annoType, ['default', 'to-do', 'question', 'highlight', 'issue'])) {
+            this.selection.annoType = [choice];
+        }
+        else {
             this.selection.annoType.push(choice);
         }
         this.props.applyFilter(this.selection);
@@ -224,15 +277,6 @@ class FilterSummary extends React.Component {
                     </div>
                     <div className="FilterSectionRow">
                         <div className="FilterSection" id="FilterSectionText">Filters</div>
-                        {/* <div className="FilterSection">
-                        {this.createDropDown({
-                            Icon: GoEye,
-                            activeFilter: filter.userScope.includes('public') ? 'Anyone' : 'Only Me',
-                            header: "Post Type",
-                            updateFunction: this.updateUserScope,
-                            items: [{ visible: "Anyone", value: 'public' }, { visible: "Only Me", value: 'onlyMe' }]
-                        })}
-                    </div> */}
                         <div className="FilterSection">
                             {this.createDropDown({
                                 Icon: AiFillClockCircle,
@@ -270,14 +314,68 @@ class FilterSummary extends React.Component {
                                 { visible: "Time", value: 'time' }]
                             })}
                         </div>
-                        {filter.tags.length ? (
-                            <div className="FilterSection">
+                        {this.state.showTagFilter ? (
+                            <div className="FilterByTag" >
+                                <div onClick={() => this.setState({ showTagFilter: false })}>
+                                    Filter By Tag
+                                </div>
+                                <div className="TagListContainer">
+                                    {this.selection.tags.length ? (
+                                        this.selection.tags.map(tag => {
+                                            return (<div className="TagButtonPad">
+                                                <button value={tag}
+                                                    className={
+                                                        classNames({ TagButton: true, selected: this.selection.tags.includes(tag) })}
+                                                    onClick={e => { e.stopPropagation(); this.handleTagClick(e); }}>
+                                                    {tag} &nbsp; {this.tagSet[tag]}
+                                                </button>
+                                            </div>);
+                                        })
+                                    ) : (null)}
+                                    <div className="TagButtonPad">
+                                        <button value="chooseTag" className="TagButton" onClick={e => this.handleTagSelect(e)}>
+                                            Choose tag(s)
+                                </button>
+                                    </div>
+                                    <React.Fragment>
+                                        {Object.entries(this.tagSet).map(tagCountPair => {
+                                            if (!this.selection.tags.includes(tagCountPair[0]))
+                                                return (<div className="TagButtonPad">
+                                                    <button value={tagCountPair[0]} className={
+                                                        classNames({ TagButton: true, selected: this.selection.tags.includes(tagCountPair[0]) })}
+                                                        onClick={e => { e.stopPropagation(); this.handleTagClick(e) }}>
+                                                        {tagCountPair[0]} &nbsp; {tagCountPair[1]}
+                                                    </button>
+                                                </div>);
+                                        })}
+                                        <div className="TagButtonPad">
+                                            <button className="TagButton" >
+                                                <img src={expand} alt="collapse tag list" id="collapseTagList" onClick={() => { this.setState({ showTagFilter: false }) }} />
+                                            </button>
+
+                                        </div>
+                                        <div className="TagButtonPad">
+                                            <button className="btn Cancel-Button TagButton" style={{ padding: '0px 10px' }} onClick={(e) => { e.stopPropagation(); this.selection.tags = []; this.props.applyFilter(this.selection) }}>
+                                                <GiCancel />
+                                            </button>
+                                        </div>
+                                    </React.Fragment>
+
+                                </div>
+                            </div>
+                        ) : (null)}
+
+                        {filter.tags.length && !this.state.showTagFilter ? (
+                            <div className={classNames({
+                                FilterSection: true,
+                                tagFilterNotEnabled: !filter.tags.length
+                            })} >
                                 <div className="FilterIconContainer">
                                     <img src={tag} alt="tag icon" />
                                 </div>
                         &nbsp; &nbsp;
-                                <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
-                                    {filter.tags.map((tag, idx) => {
+                                <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }} >
+                                    {filter.tags.length ? (filter.tags.map((tag, idx) => {
                                         if (idx !== (filter.tags.length - 1)) {
                                             return (<li key={idx} style={{ display: "inline" }}>
                                                 {tag},&nbsp;
@@ -286,12 +384,30 @@ class FilterSummary extends React.Component {
                                         else {
                                             return (<li key={idx} style={{ display: "inline" }}>
                                                 {tag}
+                                                <div style={{ display: "inline" }} className="FilterIconContainer" onClick={(e) => { e.stopPropagation(); this.selection.tags = []; this.props.applyFilter(this.selection) }}>
+                                                    <GiCancel />
+                                                </div>
                                             </li>);
                                         }
-                                    })}
+                                    })) : (
+                                        "Select Tag"
+                                    )}
+
                                 </ul>
                             </div>
-                        ) : (null)}
+
+                        ) : (null)} {
+                            !filter.tags.length && !this.state.showTagFilter ? (
+                                <div className={classNames({
+                                    FilterSection: true,
+                                    tagFilterNotEnabled: !filter.tags.length
+                                })} onClick={() => { this.setState({ showTagFilter: !this.state.showTagFilter }) }} >
+                                    <div className="FilterIconContainer">
+                                        <img src={tag} alt="tag icon" />
+                                    </div> &nbsp; &nbsp; Select Tag
+                                </div>
+                            ) : (null)
+                        }
                         <Tooltip title={this.props.tempSearchCount + " annotations"} aria-label="annotation count">
                             <div className="outerSearchBar">
                                 <div className="SearchResultsCountContainer">
@@ -308,8 +424,9 @@ class FilterSummary extends React.Component {
                                 </div>
                             </div>
                         </Tooltip>
+
                     </div>
-                </div >
+                </div>
             );
         }
     }

@@ -57,6 +57,7 @@ const CardWrapper = ({ isNew = false }) => {
                             <TagsInput value={newAnno.tags}
                                 onChange={(newTags) => setNewAnno({ ...newAnno, tags: newTags })}
                                 onlyUnique={true}
+                                addOnBlur
                             />
                         </div>
                     </div>
