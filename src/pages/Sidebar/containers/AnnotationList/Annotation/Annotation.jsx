@@ -15,6 +15,7 @@ import AnnotationContext from "./AnnotationContext";
 import EditRowComponent from "./Components/EditRowComponent";
 import CollapsedDiv from './Components/CollapsedDiv';
 import AnnotationTagsList from './Components/AnnotationTagsList';
+import AnnotationType from './Components/AnnotationType';
 import expand from '../../../../../assets/img/SVGs/expand.svg';
 import CardWrapper from '../../CardWrapper/CardWrapper'
 import AnchorList from './AnchorList/AnchorList';
@@ -28,6 +29,7 @@ import Issue from '../../../../../assets/img/SVGs/Issue.svg';
 import Question from '../../../../../assets/img/SVGs/Question.svg';
 import Default from '../../../../../assets/img/SVGs/Default.svg';
 import Todo from '../../../../../assets/img/SVGs/Todo.svg';
+import { updateAnnotation } from '../../../../Background/helpers/annotationHelpers';
 
 /*
 Initiated in Annotation List
@@ -48,11 +50,9 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, res
   const [collapsed, setCollapsed] = useState(!isNew);
   const [showReplies, setShowReplies] = useState(false);
   const [anno, setAnno] = useState(annotation);
-  const replyCountString = "";
 
   useEffect(() => {
     if (annotation !== anno && anno.childAnchor !== annotation.childAnchor) {
-      // console.log('in annotation useEffect - annotation first, anno second', annotation, anno)
       setAnno(annotation);
     }
     if (isNew) {
@@ -68,28 +68,7 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, res
     }
   }, [annotation, anno, isNew]);
 
-  const cancelButtonHandler = () => {
-    chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-      chrome.tabs.sendMessage(
-        tabs[0].id,
-        {
-          msg: 'REMOVE_TEMP_ANNOTATION',
-        }
-      );
-    });
-    resetNewSelection();
-  }
 
-
-  const ShowRepliesComponent = () => {
-    if (anno.replies === undefined || collapsed || anno.replies.length) return (null);
-    return (<div className="ShowHideReplies">
-      <div className="ExpandCollapse">
-        <img src={expand} className="Icon" id="ShowReplies" alt="Show replies" onClick={_ => setShowReplies(false)} />
-      </div>
-      {anno.replies.length} {replyCountString}
-    </div>);
-  }
   const AnnotationBadgeContainer = () => {
     let badge = anno.type === 'issue' ? Issue : anno.type === 'highlight' ? Highlight : anno.type === 'todo' ? Todo : anno.type === 'question' ? Question : Default;
     return (<div className="annotationTypeBadgeContainer" onClick={() => setCollapsed(!collapsed)}>
@@ -180,7 +159,7 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, res
         },
         updateAnchors: (newAnchors) => {
           //console.log("update anchors")
-          this.updateAnnotation({ ...anno, childAnchor: newAnchors })
+          // this.updateAnnotation({ ...anno, childAnchor: newAnchors })
           // chrome.runtime.sendMessage({
           //   msg: 'ANNOTATION_UPDATED',
           //   from: 'content',
@@ -230,6 +209,19 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, res
           this.transmitPinToParent();
         },
         handleExpertReview: () => { console.log('handled'); },
+        closeOut: (questionState) => {
+          const newAnno = { ...anno, howClosed: questionState, isClosed: questionState === "Answered" || questionState === "No Longer Relevant", pinned: !(questionState === "Answered" || questionState === "No Longer Relevant") }
+          if (newAnno !== anno) {
+            chrome.runtime.sendMessage({
+              msg: 'ANNOTATION_UPDATED',
+              from: 'content',
+              payload: {
+                newAnno
+              }
+            });
+            setAnno(newAnno);
+          }
+        },
         cancelButtonHandler: () => {
           if (isNew) {
             chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
@@ -313,6 +305,7 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, res
             <EditRowComponent />
             <AnchorList />
             <CardWrapper isNew={isNew} />
+            {!editing && <AnnotationType />}
             <AnnotationTagsList />
             {replying && <ReplyEditor finishReply={() => setReplying(false)} />}
             <RepliesList />
@@ -539,7 +532,28 @@ export default Annotation;
 
 
 
+// const cancelButtonHandler = () => {
+//   chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+//     chrome.tabs.sendMessage(
+//       tabs[0].id,
+//       {
+//         msg: 'REMOVE_TEMP_ANNOTATION',
+//       }
+//     );
+//   });
+//   resetNewSelection();
+// }
 
+
+// const ShowRepliesComponent = () => {
+//   if (anno.replies === undefined || collapsed || anno.replies.length) return (null);
+//   return (<div className="ShowHideReplies">
+//     <div className="ExpandCollapse">
+//       <img src={expand} className="Icon" id="ShowReplies" alt="Show replies" onClick={_ => setShowReplies(false)} />
+//     </div>
+//     {anno.replies.length} {replyCountString}
+//   </div>);
+// }
 
 
 

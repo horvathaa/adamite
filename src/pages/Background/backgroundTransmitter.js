@@ -57,7 +57,6 @@ export let messagesOut = [
 
 
 export function transmitMessage({ msg, data, sentFrom, responseCallback = null, currentTab = false, specificTab = false }) {
-    console.log('transmitOut', msg, data, sentFrom);
     if (messagesOut.includes(msg)) sendMsg(msg, data, responseCallback, currentTab, specificTab);
     else console.log("ERR");
 }

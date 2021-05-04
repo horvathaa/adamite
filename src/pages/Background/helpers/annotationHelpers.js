@@ -39,7 +39,6 @@ function broadcastAnnotationsUpdatedTab(msg, id, url, tabId) {
 }
 
 function broadcastAnnotationsToTab(msg, id, url, tabId) {
-    console.log('transmit', msg, id)
     transmitMessage({ msg: msg, data: { payload: id, url, tabId }, sentFrom: "AnnotationHelper", currentTab: false, specificTab: true })
 }
 
@@ -202,7 +201,7 @@ export async function updateAnnotation(request, sender, sendResponse) {
         broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', newAnno.id);
     });
     //broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
-    console.log("TODO", request.msg);
+    // console.log("TODO", request.msg);
 }
 
 
@@ -502,7 +501,6 @@ function getPrivateAnnotationsByUrlListener(url, tabId) {
             tempPrivateAnnotations = tempPrivateAnnotations.filter(anno => !anno.deleted && anno.url.includes(url))
             let annotationsToBroadcast = tempPrivateAnnotations.concat(publicAnnotations);
             annotationsToBroadcast = annotationsToBroadcast.filter(anno => !anno.deleted && anno.url.includes(url));
-            console.log('annos to broadcast', annotationsToBroadcast)
             chrome.tabs.query({}, tabs => {
                 const tabsWithUrl = tabs.filter(t => getPathFromUrl(t.url) === url);
                 if (containsObjectWithUrl(url, tabAnnotationCollect)) {
@@ -512,7 +510,6 @@ function getPrivateAnnotationsByUrlListener(url, tabId) {
                     tabAnnotationCollect.push({ tabUrl: url, annotations: annotationsToBroadcast });
                 }
                 let newList = tabAnnotationCollect.filter(obj => obj.tabUrl === url);
-                console.log('ugh', newList)
                 tabsWithUrl.forEach(t => {
                     broadcastAnnotationsToTab("CONTENT_UPDATED", newList[0].annotations, url, t.id);
                 })

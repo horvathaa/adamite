@@ -39,7 +39,16 @@ const ReplyEditor = ({ reply = null, finishReply = () => { } }) => {
                         offsets: offsets,
                         hostname: hostname
                     }
-                })
+                });
+                const highlightInfo = {
+                    xpath, offsets
+                };
+                chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+                    chrome.tabs.sendMessage(tabs[0].id, {
+                        msg: 'TEMP_ANNOTATION_ADDED',
+                        newAnno: highlightInfo
+                    });
+                });
 
             }
         });
@@ -79,22 +88,24 @@ const ReplyEditor = ({ reply = null, finishReply = () => { } }) => {
         });
     }
 
-    const submitReply = (e, adopted, answer) => {
+    const submitReply = (answer = false) => {
         if (isNewReply) {
             let tempReplies = ctx.anno.replies;
-            const reply = { ...newReply, ...replyMetadata }
+            console.log('answer', answer);
+            const reply = { ...newReply, ...replyMetadata, answer };
+            console.log('made new reply', reply);
             if (tempReplies !== undefined && ctx.anno.replies.length) {
                 tempReplies.push(cleanReplyModel(reply))
             } else {
                 tempReplies = [cleanReplyModel(reply)];
             }
-            ctx.updateAnnotation({ ...ctx.anno, replies: tempReplies });
+            ctx.anno.type === 'question' && answer ? ctx.updateAnnotation({ ...ctx.anno, replies: tempReplies, isClosed: answer, howClosed: "Answered", pinned: false }) : ctx.updateAnnotation({ ...ctx.anno, replies: tempReplies });
 
 
         } else {
             let replies = ctx.anno.replies.filter(r => r.replyId !== newReply.replyId);
             const repliesToTransmit = replies.length ? replies.concat(cleanReplyModel(newReply)) : [cleanReplyModel(newReply)];
-            ctx.updateAnnotation({ ...ctx.anno, replies: repliesToTransmit });
+            ctx.anno.type === 'question' && answer ? ctx.updateAnnotation({ ...ctx.anno, replies, isClosed: answer, howClosed: "Answered", pinned: false }) : ctx.updateAnnotation({ ...ctx.anno, replies });
         }
         finishReply();
     }
@@ -114,16 +125,10 @@ const ReplyEditor = ({ reply = null, finishReply = () => { } }) => {
             id="dropdown-split-variants-secondary"
             variant="secondary"
             title={"Post Answer"}
-            onClick={_ => submitReply(true, true)}
+            onClick={_ => submitReply(true)}
         >
-            {showQuestionAnswerInterface &&
-                <BootstrapDropdown.Item
-                    onClick={_ => {
-                        let p = newReply;
-                        p.setVars({ adopted: false, answer: false })
-                        setNewReply(p);
-                        submitReply(false, false)
-                    }} eventKey="2">Reply</BootstrapDropdown.Item>}
+            <BootstrapDropdown.Item
+                onClick={_ => submitReply(false)} eventKey="2">Reply</BootstrapDropdown.Item>
         </SplitButton>) : (
         <Button
             key="replySubmit"

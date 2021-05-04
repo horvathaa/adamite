@@ -39,8 +39,7 @@ const AnnotationContext = createContext({
     // Issue Annotation
     handleExpertReview: () => { },
     // Question Annotation
-    handleCloseQuestion: () => { },
-    handleQuestionAdopted: () => { },
+    closeOut: () => { },
 
 
     transmitPinToParent: () => { },
