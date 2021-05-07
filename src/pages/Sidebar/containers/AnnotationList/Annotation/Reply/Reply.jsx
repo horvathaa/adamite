@@ -20,7 +20,7 @@ const Reply = ({ idx, reply }) => {
     const currentUser = ctx.currentUser;
     const [replyData, setReply] = useState(cleanReplyModel(reply));
     const [editing, setEditing] = useState(false);
-    const [adopted, setAdopted] = useState(false);
+    const [adopted, setAdopted] = useState(false); // switch to liked - array of objects where each item in the list is an object {id: currentUser.id, liked: true/false}
     let showQuestionAnswerInterface = ctx.anno.type === 'question';
 
     useEffect(() => {
@@ -40,17 +40,7 @@ const Reply = ({ idx, reply }) => {
         ctx.updateAnnotation({ ...ctx.anno, replies: remainingReplies });
     }
 
-    const answerIsAdopted = () => {
-        chrome.runtime.sendMessage({
-            msg: 'REQUEST_ADOPTED_UPDATE',
-            from: 'content',
-            payload: {
-                annoId: ctx.anno.id, replyId: replyData.replyId, adoptedState: adopted
-            }
-        })
-    }
-
-    const adoptedStar = adopted ?
+    const star = adopted ?
         <FaStar className="profile" onClick={ctx.transmitAdoptedToParent} /> :
         <FaRegStar className="profile" onClick={ctx.transmitAdoptedToParent} />;
 
@@ -79,7 +69,7 @@ const Reply = ({ idx, reply }) => {
                             </div>
                             <div className="row">
                                 <div className="AnnotationIconContainer">
-                                    {adoptedStar}
+                                    {star}
                                     {currentUser.uid === replyData.authorId ? (
                                         <React.Fragment>
                                             <div className="TopIconContainer" >
@@ -94,7 +84,7 @@ const Reply = ({ idx, reply }) => {
                             </div>
                         </div>
                         {reply.anchor !== null ? (
-                            <Anchor anchor={replyData.anchor} replyId={replyData.replyId} />) : (null)}
+                            <Anchor anchor={replyData.anchor} replyIdProp={replyData.replyId} />) : (null)}
                         <div className="annotationContent">
                             <div className="contentBody">
                                 {replyData.replyContent}

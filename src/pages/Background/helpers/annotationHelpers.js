@@ -51,20 +51,20 @@ export function setPinnedAnnotationListeners(request, sender, sendResponse) {
 export async function getAnnotationsPageLoad(request, sender, sendResponse) {
     let { email, uid } = fb.getCurrentUser();
     let userName = email.substring(0, email.indexOf('@'));
-    if (request.tabId !== undefined) {
-        chrome.tabs.sendMessage(
-            request.tabId,
-            {
-                msg: 'CREATE_GROUP',
-                from: 'background',
-                owner: {
-                    uid: uid,
-                    email: email,
-                    userName: userName
-                }
-            }
-        );
-    }
+    // if (request.tabId !== undefined) {
+    //     chrome.tabs.sendMessage(
+    //         request.tabId,
+    //         {
+    //             msg: 'CREATE_GROUP',
+    //             from: 'background',
+    //             owner: {
+    //                 uid: uid,
+    //                 email: email,
+    //                 userName: userName
+    //             }
+    //         }
+    //     );
+    // }
     getAllAnnotationsByUrlListener(request.url, request.tabId,)
     getPrivateAnnotationsByUrlListener(request.url, request.tabId,);
     // chrome.browserAction.setBadgeText({ text: String(annotations.length) });
@@ -113,7 +113,7 @@ export async function createAnnotation(request, sender, sendResponse) {
         groups: [], // later have this be a default group
         readCount: 0,
         deleted: false,
-        trashed: false,
+        archived: false,
         createdTimestamp: new Date().getTime(),
     }).then(value => {
         console.log("background", value);
@@ -237,7 +237,8 @@ export async function updateAnnotationTodoFinished(request, sender, sendResponse
     const { id } = request.payload;
     await fb.updateAnnotationById(id, {
         createdTimestamp: new Date().getTime(),
-        trashed: true,
+        archived: true,
+        pinned: false,
         events: fbUnion(editEvent(request.msg))
     });
     broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
@@ -278,7 +279,7 @@ export async function updateAnnotationUnarchive(request, sender, sendResponse) {
     const { id } = request.payload;
     await fb.updateAnnotationById(id, {
         createdTimestamp: new Date().getTime(),
-        trashed: false,
+        archived: false,
         events: fbUnion(editEvent(request.msg))
     });
     broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
@@ -297,6 +298,7 @@ export async function deleteAnnotation(request, sender, sendResponse) {
 }
 
 export function unsubscribeAnnotations(request, sender, sendResponse) {
+    console.log('unsubscribe called');
     if (typeof privateListener === "function") privateListener();
     if (typeof publicListener === "function") publicListener();
     if (typeof pinnedPrivateListener === "function") pinnedPrivateListener();
@@ -413,11 +415,11 @@ function updateList(list, url, annotations, isPrivate) {
     let obj = list.filter(obj => url === obj.tabUrl);
     let objToUpdate = obj[0];
     if (isPrivate) {
-        let newList = objToUpdate.annotations.filter(anno => anno.isPrivate !== true && !anno.deleted && anno.url.includes(url)) // removed anno.private check - if things break, well...
+        let newList = objToUpdate.annotations.filter(anno => anno.isPrivate !== true && !anno.deleted && !anno.archived && anno.url.includes(url)) // removed anno.private check - if things break, well...
         objToUpdate.annotations = newList.concat(annotations);
     }
     else {
-        let newList = objToUpdate.annotations.filter(anno => anno.isPrivate === true && !anno.deleted && anno.url.includes(url))
+        let newList = objToUpdate.annotations.filter(anno => anno.isPrivate === true && !anno.deleted && !anno.archived && anno.url.includes(url))
         objToUpdate.annotations = newList.concat(annotations);
     }
     // objToUpdate.annotations = annotations;
@@ -468,9 +470,9 @@ function getAllAnnotationsByUrlListener(url, tabId) {
     if (user !== null) {
         publicListener = fb.getAllAnnotationsByUrl(url, user.uid).onSnapshot(annotationsSnapshot => {
             let tempPublicAnnotations = getListFromSnapshots(annotationsSnapshot);
-            tempPublicAnnotations = tempPublicAnnotations.filter(anno => !anno.deleted && anno.url.includes(url))
+            tempPublicAnnotations = tempPublicAnnotations.filter(anno => !anno.deleted && !anno.archived && anno.url.includes(url))
             let annotationsToBroadcast = tempPublicAnnotations.concat(privateAnnotations);
-            annotationsToBroadcast = annotationsToBroadcast.filter(anno => !anno.deleted && anno.url.includes(url));
+            annotationsToBroadcast = annotationsToBroadcast.filter(anno => !anno.deleted && !anno.archived && anno.url.includes(url));
             // console.log('annos to public broadcast', annotationsToBroadcast)
             chrome.tabs.query({}, tabs => {
                 const tabsWithUrl = tabs.filter(t => getPathFromUrl(t.url) === url);
@@ -498,9 +500,9 @@ function getPrivateAnnotationsByUrlListener(url, tabId) {
         // console.log('what is happening lol');
         privateListener = fb.getPrivateAnnotationsByUrl(url, user.uid).onSnapshot(annotationsSnapshot => {
             let tempPrivateAnnotations = getListFromSnapshots(annotationsSnapshot);
-            tempPrivateAnnotations = tempPrivateAnnotations.filter(anno => !anno.deleted && anno.url.includes(url))
+            tempPrivateAnnotations = tempPrivateAnnotations.filter(anno => !anno.deleted && !anno.archived && anno.url.includes(url))
             let annotationsToBroadcast = tempPrivateAnnotations.concat(publicAnnotations);
-            annotationsToBroadcast = annotationsToBroadcast.filter(anno => !anno.deleted && anno.url.includes(url));
+            annotationsToBroadcast = annotationsToBroadcast.filter(anno => !anno.deleted && !anno.archived && anno.url.includes(url));
             chrome.tabs.query({}, tabs => {
                 const tabsWithUrl = tabs.filter(t => getPathFromUrl(t.url) === url);
                 if (containsObjectWithUrl(url, tabAnnotationCollect)) {

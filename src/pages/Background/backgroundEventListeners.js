@@ -170,7 +170,9 @@ let commands = {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.msg in commands) {
         commands[request.msg](request, sender, sendResponse);
-    } else console.log("Unknown Command", request.msg);
+    } else {
+        // console.log("Unknown Command", request.msg);
+    }
     return true;
 });
 
@@ -190,3 +192,8 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
 chrome.tabs.onCreated.addListener(function (tab) {
     commands['HANDLE_TAB_CREATED'](tab);
 });
+
+chrome.runtime.onSuspend.addListener(function () {
+    anno.unsubscribeAnnotations();
+    chrome.runtime.Port.disconnect();
+})

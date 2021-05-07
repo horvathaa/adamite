@@ -130,7 +130,6 @@ function displayPopoverBasedOnRectPosition(rect, props) {
 const alertBackgroundOfNewSelection = (selection, offsets, xpath, type, content, rectPopover) => {
     // supporting creation of annotations in sidebar
     const annoContent = content === undefined ? "" : content;
-    // console.log('transmitting content selected', annoContent);
     //Here's where issue would be 
     const newAnnoId = uuidv4();
     const url = getPathFromUrl(window.location.href);

@@ -21,7 +21,7 @@ const CardWrapper = ({ isNew = false }) => {
     const [groups, setGroups] = useState(ctx.userGroups);
 
     useEffect(() => {
-        if (newAnno !== ctx.anno) setNewAnno(newAnno);
+        if (newAnno !== ctx.anno) { setNewAnno(newAnno); }
     });
     const dropDownSelection = (option) => {
         let newVal = (option.value === 'Normal') ? "default" : (option.value === 'highlight') ? "highlight" : option.value;
@@ -84,7 +84,7 @@ const CardWrapper = ({ isNew = false }) => {
                                 variant="secondary"
                                 title={splitButtonText}
                                 onClick={isNew ? () => ctx.submitButtonHandler(newAnno) :
-                                    () => ctx.updateAnnotation(newAnno)
+                                    () => ctx.updateAnnotationFields({ type: newAnno.type, content: newAnno.content, isPrivate: newAnno.isPrivate, tags: newAnno.tags })
                                 }
                             >
                                 <BootstrapDropdown.Item onClick={_ => setNewAnno({ ...newAnno, isPrivate: true })} eventKey="1">Private</BootstrapDropdown.Item>

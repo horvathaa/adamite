@@ -42,7 +42,7 @@ const AnnotationContext = createContext({
     closeOut: () => { },
 
 
-    transmitPinToParent: () => { },
+    handlePin: () => { },
     notifyParentOfAdopted: () => { },
     getGroupName: () => { },
     deleteTag: () => { },

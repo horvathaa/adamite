@@ -89,35 +89,30 @@ const ReplyEditor = ({ reply = null, finishReply = () => { } }) => {
     }
 
     const submitReply = (answer = false) => {
+        const answerBool = typeof answer === 'boolean' ? answer : false; // stupid fix sigh
         if (isNewReply) {
             let tempReplies = ctx.anno.replies;
-            console.log('answer', answer);
-            const reply = { ...newReply, ...replyMetadata, answer };
-            console.log('made new reply', reply);
+            const reply = { ...newReply, ...replyMetadata, answer: answerBool };
             if (tempReplies !== undefined && ctx.anno.replies.length) {
                 tempReplies.push(cleanReplyModel(reply))
             } else {
                 tempReplies = [cleanReplyModel(reply)];
             }
-            ctx.anno.type === 'question' && answer ? ctx.updateAnnotation({ ...ctx.anno, replies: tempReplies, isClosed: answer, howClosed: "Answered", pinned: false }) : ctx.updateAnnotation({ ...ctx.anno, replies: tempReplies });
+            ctx.anno.type === 'question' && answer ? ctx.updateAnnotation({ ...ctx.anno, replies: tempReplies, isClosed: answerBool, howClosed: "Answered", pinned: false }) : ctx.updateAnnotation({ ...ctx.anno, replies: tempReplies });
 
 
         } else {
             let replies = ctx.anno.replies.filter(r => r.replyId !== newReply.replyId);
             const repliesToTransmit = replies.length ? replies.concat(cleanReplyModel(newReply)) : [cleanReplyModel(newReply)];
-            ctx.anno.type === 'question' && answer ? ctx.updateAnnotation({ ...ctx.anno, replies, isClosed: answer, howClosed: "Answered", pinned: false }) : ctx.updateAnnotation({ ...ctx.anno, replies });
+            ctx.anno.type === 'question' && answerBool ? ctx.updateAnnotation({ ...ctx.anno, replies: repliesToTransmit, isClosed: answerBool, howClosed: "Answered", pinned: false }) : ctx.updateAnnotation({ ...ctx.anno, replies: repliesToTransmit });
+        }
+        if (newReply.anchor !== null) {
+            chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+                chrome.tabs.sendMessage(tabs[0].id, { msg: 'REMOVE_TEMP_ANNOTATION', });
+            });
         }
         finishReply();
     }
-    // const { edit } = this.props;
-    // const edit = true;
-    // // const { anchor } = this.state;
-    // let content = undefined;
-    // if (edit !== undefined && edit) {
-    //     content = newReply.replyContent;
-    // }
-
-    //  const { replyTags } = this.state;
 
     let submission = showQuestionAnswerInterface ? (
         <SplitButton

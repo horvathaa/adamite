@@ -96,7 +96,7 @@ export const getAllPinnedAnnotationsByUserId = (uid) => {
 };
 
 export const getGroupAnnotationsByGroupId = (gid) => {
-  console.log('in annofunctions', gid);
+  // console.log('in annofunctions', gid);
   return db
     .collection(DB_COLLECTIONS.ANNOTATIONS)//.doc("06OlxrYfO08cofa2mDb9");
     .where('groups', 'array-contains-any', gid) // switch to array-contains-any to look across all groups that user is in
@@ -118,10 +118,6 @@ export const getAnnotationById = id => {
 export const getGroupByGid = gid => {
   return db.collection(DB_COLLECTIONS.GROUPS).doc(gid);
 }
-
-export const trashAnnotationById = id => {
-  getAnnotationById(id).update({ trashed: true });
-};
 
 export const deleteAnnotationForeverById = (id) => {
   return getAnnotationById(id).delete();

@@ -21,9 +21,9 @@ export const highlightAnnotationDeep = (anno) => {
     }
     if (anno.replies !== undefined && anno.replies !== null && anno.replies.length) {
         anno.replies.forEach(reply => {
-            if (reply.xpath !== undefined && reply.xpath !== null) {
+            if (reply.anchor !== undefined) {
                 let domId = anno.id.toString() + "-" + reply.replyId.toString();
-                highlightAnnotation(reply, domId, "reply")
+                highlightAnnotation(reply.anchor, domId, "reply")
             }
         })
     }

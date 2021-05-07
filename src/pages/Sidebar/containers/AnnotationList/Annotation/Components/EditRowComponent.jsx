@@ -67,7 +67,7 @@ const EditRowComponent = () => {
                             </div>
                         </Tooltip>
                         <Tooltip title={"Pin or unpin annotation"} aria-label="pin icon tooltip">
-                            <div className="TopIconContainer" onClick={ctx.transmitPinToParent}>
+                            <div className="TopIconContainer" onClick={ctx.handlePin}>
                                 {ctx.anno.pinned ? (
                                     <img src={fillpin} id="pin" alt="pin" className="profile" />
                                 ) : (

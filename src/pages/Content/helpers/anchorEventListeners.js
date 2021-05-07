@@ -96,12 +96,12 @@ let messagesIn = {
             });
             let ids = getHighlightSpanIds({ isPreview: false });
             //console.log(ids);
-            annotationsOnPage.reverse().forEach(anno => {
-                //console.log(anno.id);
-                if (!(ids.includes(anno.id.toString()))) {
-                    transmitMessage({ msg: "ANCHOR_BROKEN", data: { payload: { "id": anno.id } }, sentFrom: "AnchorHighlight" })
-                }
-            });
+            // annotationsOnPage.reverse().forEach(anno => {
+            //     //console.log(anno.id);
+            //     if (!(ids.includes(anno.id.toString()))) {
+            //         transmitMessage({ msg: "ANCHOR_BROKEN", data: { payload: { "id": anno.id } }, sentFrom: "AnchorHighlight" })
+            //     }
+            // });
         }
         // Ensure that nothing is unintentionally selected 
         let sel = window.getSelection();

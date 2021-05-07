@@ -96,7 +96,6 @@ class FilterSummary extends React.Component {
     }
 
     async handleTagClick(event) {
-        console.log('in handleTagClick', event)
         let tagName = event.target.value;
         if (this.selection.tags.includes(tagName)) {
             this.selection.tags = this.selection.tags.filter(e => e !== tagName);

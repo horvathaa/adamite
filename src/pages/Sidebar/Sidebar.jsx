@@ -70,7 +70,7 @@ class Sidebar extends React.Component {
       userScope: ['public'],
       annoType: ['default', 'to-do', 'question', 'highlight', 'issue'],
       timeRange: 'all',
-      archive: null,
+      showArchive: false,
       tags: []
     }
   };
@@ -241,38 +241,18 @@ class Sidebar extends React.Component {
         request.from === 'content' &&
         request.msg === 'ANCHOR_CLICKED'
       ) {
-        const { target } = request.payload
-        let childAnchorId = [];
-        let replyAnchorId = [];
+        const { target } = request.payload;
         if (request.payload.url === this.state.url) {
           // this.setState({
           let clickedAnnos = this.state.annotations.filter(element => {
             let repliesWithAnchors = element.replies !== undefined && element.replies !== null && element.replies.length ? this.containsReplyWithAnchor(element.replies) : [];
-            if (element.childAnchor !== undefined && element.childAnchor !== null && element.childAnchor.length) {
-              let doesContain = false;
-              element.childAnchor.forEach(c => {
-                if (c.url === this.state.url) {
-                  target.forEach(id => {
-                    if ((String(c.parentId) + '-' + String(c.id)) === id) {
-                      childAnchorId.push(String(c.parentId) + '-' + String(c.id));
-                      doesContain = true;
-                    }
-                  })
-                }
-              })
-              if (!doesContain) {
-                doesContain = target.includes(element.id);
-              }
-              return doesContain;
-            }
-            else if (repliesWithAnchors.length) {
-              let doesContain = false;
+            let doesContain = false;
+            if (repliesWithAnchors.length) {
               repliesWithAnchors.forEach(r => {
-                if (r.url === this.state.url) {
+                if (r.anchor.url === this.state.url) {
                   target.forEach(id => {
                     if ((String(element.id) + '-' + String(r.replyId)) === id) {
                       doesContain = true;
-                      replyAnchorId.push(String(element.id) + '-' + String(r.replyId))
                     }
                   })
                 }
@@ -280,16 +260,24 @@ class Sidebar extends React.Component {
               if (!doesContain) {
                 doesContain = target.includes(element.id);
               }
-              return doesContain;
+              else {
+                return doesContain;
+              }
             }
-            return target.includes(element.id);
+            if (element.childAnchor !== undefined && element.childAnchor !== null && element.childAnchor.length) {
+
+              element.childAnchor.forEach(c => {
+                if (c.url === this.state.url) {
+                  target.forEach(id => {
+                    if ((String(element.id) + '-' + String(c.id)) === id) {
+                      doesContain = true;
+                    }
+                  })
+                }
+              })
+            }
+            return doesContain;
           })
-          // });
-          // this.setState({ showClearClickedAnnotation: true });
-          // clickedAnnos = clickedAnnos.forEach(anno => {
-          //   console.log('id', id);
-          //   return anno.id.includes('-') ? id.substring(0, id.indexOf('-')) : id
-          // })
           clickedAnnos.forEach(anno => {
             // setTimeout(() => {
             let annoDiv = document.getElementById(anno.id);
@@ -467,7 +455,7 @@ class Sidebar extends React.Component {
     });
   }
   containsReplyWithAnchor(list) {
-    const test = list.filter(obj => obj.xpath !== null);
+    const test = list.filter(obj => obj.anchor !== null);
     return test;
   }
 
@@ -855,12 +843,12 @@ class Sidebar extends React.Component {
         renderedAnnotations = pageLocationSort;
     }
 
-    renderedAnnotations = renderedAnnotations.filter(anno => !anno.deleted);
+    renderedAnnotations = renderedAnnotations.filter(anno => !anno.deleted && !anno.archived);
     let pinnedAnnosCopy = pinnedAnnos.sort((a, b) =>
       (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
     );
 
-    pinnedAnnosCopy = pinnedAnnosCopy.filter(anno => !anno.deleted);
+    pinnedAnnosCopy = pinnedAnnosCopy.filter(anno => !anno.deleted && !anno.archived);
 
     let tempSearchCount;
     if (this.state.showPinned) {
@@ -916,7 +904,7 @@ class Sidebar extends React.Component {
                     annotation={{
                       id: newAnnoId,
                       type: this.state.newAnnotationType,
-                      content: '',
+                      content: this.state.newAnnotationContent ?? '',
                       tags: [],
                       isPrivate: true,
                       groups: [],

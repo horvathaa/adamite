@@ -61,7 +61,7 @@ const BrokenAnchorComponent = ({ anchorContent, anchorIcon, collapsed }) => {
 
 
 
-const Anchor = ({ anchor }) => {
+const Anchor = ({ anchor, replyIdProp }) => {
     const ctx = useContext(AnnotationContext);
     //tagsIn, anchorContent, pageAnchor, brokenAnchor
     const id = ctx.anno.id,
@@ -69,7 +69,7 @@ const Anchor = ({ anchor }) => {
         currentUrl = ctx.currentUrl,
         collapsed = ctx.collapsed,
         isCurrentUser = ctx.isCurrentUser,
-        replyId = ctx.anno.replyId,
+        replyId = replyIdProp,
         anchorContent = anchor.anchor,
         anchorId = anchor.id,
         pageAnchor = anchor.xpath == null,
@@ -82,7 +82,7 @@ const Anchor = ({ anchor }) => {
 
     const updateAnchorTags = ({ newTags, childId = null }) => {
         const childAnch = ctx.anno.childAnchor.map((c) => {
-            if (c.id !== id) return c;
+            if (c.id !== anchorId) return c;
             let y = c;
             y.tags = newTags;
             return y;
@@ -102,9 +102,7 @@ const Anchor = ({ anchor }) => {
     // };
     // });
 
-    const handleEvent = ({ isClick, isHover, e }) => {
-        // e.stopPropagation();
-        // console.log('isClick', isClick, 'isHover', isHover, 'e', e)
+    const handleEvent = ({ isClick = false, isHover, e }) => {
 
         let message = isClick ? 'ANNOTATION_FOCUS_ONCLICK' : isHover ? 'ANNOTATION_FOCUS' : 'ANNOTATION_DEFOCUS';
         if (id === null) { return; }
@@ -126,7 +124,7 @@ const Anchor = ({ anchor }) => {
     }
 
     const handleOnEditDone = () => {
-        if (tags !== anchor.tags) { updateAnchorTags({ newTags: tags, anchorId: anchorId }); }
+        if (tags !== anchor.tags) { console.log('tags', tags, 'anchor.tags', anchor.tags); updateAnchorTags({ newTags: tags, anchorId: anchorId }); }
         setEditMode(false);
     }
 
@@ -154,7 +152,9 @@ const Anchor = ({ anchor }) => {
                 className={classNames({ AnchorContainer: true, Truncated: collapsed })}
                 onMouseEnter={() => handleEvent({ isClick: false, isHover: true })}
                 onMouseLeave={() => handleEvent({ isClick: false, isHover: false })}
-                onClick={(pageAnchor || url !== currentUrl) ? handleExternalAnchor : handleEvent({ isClick: true, isHover: false })}
+                onClick={() => {
+                    (pageAnchor || url !== currentUrl) ? handleExternalAnchor() : handleEvent({ isClick: true, isHover: false })
+                }}
             >
                 <div className="AnchorIconContainer">
                     {anchorIcon}
@@ -169,7 +169,7 @@ const Anchor = ({ anchor }) => {
                                 </div>
                                 <div className="AnchorTagMenu">
                                     <div className="AnchorTagsList">
-                                        <TagsInput value={tags ?? []} onChange={(newTags) => setTags(newTags)} />
+                                        <TagsInput value={tags ?? []} onChange={(newTags) => setTags(newTags)} addOnBlur />
                                     </div>
                                     <div className="AnchorTagEdit"
                                         onClick={() => handleOnEditDone()}
@@ -197,7 +197,7 @@ const Anchor = ({ anchor }) => {
                                                 <img src={edit} alt="edit annotation" className="profile" id="edit" onClick={() => { setEditMode(true) }} />
                                             </div>
                                         </Tooltip>
-                                        {id && !ctx.anno.childAnchor.length > 1 &&
+                                        {id && ctx.anno.childAnchor.length > 1 &&
                                             <Tooltip title={"Delete Anchor"} aria-label="delete annotation tooltip">
                                                 <div className="TopIconContainer" >
                                                     <img src={trash} alt="delete annotation" className="profile" id="trash" onClick={() => deleteAnchor({ anchorId: anchorId })} />
