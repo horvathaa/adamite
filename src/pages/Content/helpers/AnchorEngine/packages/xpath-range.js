@@ -133,7 +133,7 @@ export function toRangeNew(startPath, startOffset, endPath, endOffset, root, mat
   startNode = xpath.toNode(startPath, root);
   endNode = xpath.toNode(endPath, root);
   if (startNode !== null && endNode !== null) {
-    //console.log(startOffset, endOffset, matchContent);
+    // console.log(startOffset, endOffset, matchContent);
     if (startPath === endPath && startOffset > endOffset) {
       endOffset = startOffset + matchContent.trim().length;
       //console.log(startOffset, endOffset, matchContent);
@@ -167,7 +167,7 @@ export function toRangeNew(startPath, startOffset, endPath, endOffset, root, mat
 function toRangeMissing(startPath, startOffset, endPath, endOffset, root, matchContent) {
   let startNode, startIterator, so, endNode, endIterator, eo, sharedParentPath;
   //Find Node Containing Match String
-  //console.log("toRangeMissing")
+  // console.log("toRangeMissing")
   let [parentPath, parentRange] = findParentWithMatch(startPath, root, formatText(matchContent));
   let nodes = getNodesInRange(parentRange)
   // console.log(nodes);
@@ -175,7 +175,7 @@ function toRangeMissing(startPath, startOffset, endPath, endOffset, root, matchC
     return element.nodeType === 3 && element.data.trim() !== "";
   });
 
-  //console.log(nodes);
+  // console.log(nodes);
   if (nodes.length === 0) return;
   if (nodes.length === 1) { console.log("TODO"); return; }
 
@@ -232,7 +232,7 @@ function toRangeMissing(startPath, startOffset, endPath, endOffset, root, matchC
 
 
 const findParentWithMatch = (startPath, root, matchString) => {
-  //console.log(matchString);
+  // console.log(matchString);
   let startTime = new Date().getTime();
   let startNode = xpath.toNode(startPath, root);
   let maxLoops = 4; let loops = 0;
@@ -276,8 +276,8 @@ const findParentWithMatch = (startPath, root, matchString) => {
   // console.log(`Parent Xpath ${currentPath}`);
 
   let finishTime = new Date().getTime();
-  //console.log("Path traversal took " + (finishTime - startTime) + " ms.");
-  //console.log(outRange);
+  // console.log("Path traversal took " + (finishTime - startTime) + " ms.");
+  // console.log(outRange);
   // Restricted -> don't save dom documents, just the content
   //if (debug) { console.log("allPaths"); console.log(allPaths); }
   return [currentPath, outRange];
@@ -320,7 +320,7 @@ function getNodeSelectionTextRange(node, shouldRestoreSelection, match) {
   text = sel.toString().trim().replace(/\n/g, " ").replace(/[ ][ ]+/g, " ");
 
   if (shouldRestoreSelection) { restoreSelection(); }
-  //console.log(text)
+  // console.log(text)
   return [text, sel.getRangeAt(0)];
 };
 

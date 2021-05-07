@@ -32,7 +32,7 @@ function sendMsg(msg, data, responseCallback, currentTab, specificTab) {
 }
 
 
-let messagesOut = [
+export let messagesOut = [
     //sidebarHelper
     'TOGGLE_SIDEBAR',
     'UPDATE_SIDEBAR_ON_LEFT_STATUS',
@@ -60,7 +60,6 @@ let messagesOut = [
 
 
 export function transmitMessage({ msg, data, sentFrom, responseCallback = null, currentTab = false, specificTab = false }) {
-    //  console.log(msg);
     if (messagesOut.includes(msg)) sendMsg(msg, data, responseCallback, currentTab, specificTab);
     else console.log("ERR");
 }

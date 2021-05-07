@@ -12,6 +12,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import { FaHighlighter } from 'react-icons/fa';
 import 'react-toastify/dist/ReactToastify.css';
 import { transmitMessage } from '../anchorEventTransmitter';
+import { v4 as uuidv4 } from 'uuid';
 /*
 Bug with page overlay
 */
@@ -46,7 +47,7 @@ const Popover = ({ selection, xpathToNode, offsets, rectPopover, removePopover }
                 <div className="buttonIconContainer">
                     <img src={chrome.extension.getURL('Default.svg')} alt="default annotation" className="svg-button" />
                 </div>
-                 Normal
+                Normal
             </div>
             <div className="onHoverCreateAnnotation" onClick={(e) => buttonClickedHandler(e, "highlight")} >
                 <div className="buttonIconContainer">
@@ -73,10 +74,10 @@ const Popover = ({ selection, xpathToNode, offsets, rectPopover, removePopover }
                     <div className="buttonColumn">
                         <div className="onHoverCreateQuestionAnnotation" onClick={(e) => buttonClickedHandler(e, "question", "What is this?")} >
                             What is this?
-                    </div>
+                        </div>
                         <div className="onHoverCreateAnnotation" onClick={(e) => buttonClickedHandler(e, "question", "How do I use this?")} >
                             How do I use this?
-                     </div>
+                        </div>
                     </div>
                 )}
             </div>
@@ -91,8 +92,6 @@ const Popover = ({ selection, xpathToNode, offsets, rectPopover, removePopover }
 };
 
 
-//
-//
 //
 //
 /* Set up popover box anchor */
@@ -132,18 +131,38 @@ function displayPopoverBasedOnRectPosition(rect, props) {
 const alertBackgroundOfNewSelection = (selection, offsets, xpath, type, content, rectPopover) => {
     // supporting creation of annotations in sidebar
     const annoContent = content === undefined ? "" : content;
-    // console.log('transmitting content selected', annoContent);
     //Here's where issue would be 
+    const newAnnoId = uuidv4();
+    const url = getPathFromUrl(window.location.href);
     if (type === 'highlight') {
         transmitMessage({
-            msg: 'SAVE_HIGHLIGHT', sentFrom: "AnchorCreate",
+            msg: 'CREATE_ANNOTATION', sentFrom: "AnchorCreate",
             data: {
                 payload: {
                     anchor: selection,
                     xpath: xpath,
                     offsets: offsets,
-                    url: getPathFromUrl(window.location.href),
-
+                    url: url,
+                    newAnno: {
+                        id: newAnnoId,
+                        type: 'highlight',
+                        content: '',
+                        tags: [],
+                        isPrivate: true,
+                        groups: [],
+                        childAnchor: [
+                            {
+                                id: uuidv4(),
+                                anchor: selection,
+                                // hostname: url.hostname,
+                                parentId: newAnnoId,
+                                xpath: xpath,
+                                offsets: offsets,
+                                url: url,
+                                tags: []
+                            }
+                        ]
+                    }
                 }
             }
         });
@@ -169,7 +188,10 @@ const alertBackgroundOfNewSelection = (selection, offsets, xpath, type, content,
 
 
 export function addNewAnchor({ request, type }) {
+    // console.log("aff new Anchor")
     var selection = window.getSelection();
+    const { newAnno } = request.payload;
+    console.log('addNewAnchor newAnno', newAnno, request, type);
     if (selection.type === 'Range') {
         const rect = selection.getRangeAt(0);
 
@@ -194,21 +216,28 @@ export function addNewAnchor({ request, type }) {
             startOffset: rect.startOffset,
             endOffset: rect.endOffset
         };
-        let payload = {
+
+        let anchor = {
+            parentId: newAnno.id,
+            id: uuidv4(),
             xpath: xpathToNode,
             url: getPathFromUrl(window.location.href),
             anchor: selection.toString(),
             offsets: offsets,
-            hostname: window.location.hostname
+            hostname: window.location.hostname,
+            tags: []
         };
 
         if (type == "reply") {
-            transmitMessage({ msg: 'TRANSMIT_REPLY_ANCHOR', data: { "payload": payload } });
+            transmitMessage({ msg: 'TRANSMIT_REPLY_ANCHOR', data: { "payload": anchor } });
 
         } else {
-            payload['newAnno'] = request.payload;
+            let childAnchor = [...newAnno.childAnchor, anchor];
+            // payload['newAnno'] = request.payload;
             // console.log(payload);
-            transmitMessage({ msg: 'SAVE_NEW_ANCHOR', data: { "payload": payload } });
+            const newA = { ...newAnno, childAnchor: childAnchor };
+            // console.log(newA);
+            transmitMessage({ msg: 'ANNOTATION_UPDATED', data: { "payload": { newAnno: newA, updateType: "NewAnchor" } } });
         }
         selection.removeAllRanges();
         removePopover();
@@ -286,7 +315,7 @@ export const createAnnotationCallback = (response, event) => {
             };
 
             const rectPopover = rect.getBoundingClientRect();
-            console.log("Display Popover", rectPopover);
+            // console.log("Display Popover", rectPopover);
             displayPopoverBasedOnRectPosition(rectPopover, { selection, xpathToNode, offsets, rectPopover });
 
             return;

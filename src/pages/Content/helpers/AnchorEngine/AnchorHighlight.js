@@ -7,10 +7,10 @@ import * as xpathRange from "./packages/xpath-range";
 
 
 export const highlightAnnotationDeep = (anno) => {
-    // console.log("highlight deep");
-    if (!document.getElementsByName(anno.id.toString()).length > 0)
-        highlightAnnotation(anno, anno.id.toString(), "root")
-
+    //console.log("highlight deep");
+    // if (!document.getElementsByName(anno.id.toString()).length > 0)
+    //     highlightAnnotation(anno, anno.id.toString(), "root") 
+    // console.log(anno);
     if (anno.childAnchor !== undefined && anno.childAnchor.length) {
         anno.childAnchor.forEach(child => {
             if (child.xpath !== undefined && child.xpath !== null) {
@@ -21,18 +21,18 @@ export const highlightAnnotationDeep = (anno) => {
     }
     if (anno.replies !== undefined && anno.replies !== null && anno.replies.length) {
         anno.replies.forEach(reply => {
-            if (reply.xpath !== undefined && reply.xpath !== null) {
+            if (reply.anchor !== undefined) {
                 let domId = anno.id.toString() + "-" + reply.replyId.toString();
-                highlightAnnotation(reply, domId, "reply")
+                highlightAnnotation(reply.anchor, domId, "reply")
             }
         })
     }
 }
 export const checkForBrokenAnnotationDeep = (anno, ids) => {
     //will show annotation type
-    if (!(ids.includes(anno.id.toString()))) {
-        transmitMessage({ msg: "ANCHOR_BROKEN", data: { payload: { "id": anno.id } }, sentFrom: "AnchorHighlight" })
-    }
+    // if (!(ids.includes(anno.id.toString()))) {
+    //     transmitMessage({ msg: "ANCHOR_BROKEN", data: { payload: { "id": anno.id } }, sentFrom: "AnchorHighlight" })
+    // }
 
     if (anno.childAnchor !== undefined && anno.childAnchor.length) {
         anno.childAnchor.forEach(child => {
@@ -66,7 +66,7 @@ export const highlightAnnotation = (annotation, domId, type) => {
     console.log('highlighting anno');
     let nodePairs = getNodeSubstringPairs({ annotation: annotation, type: type });
     if (!nodePairs || nodePairs.length == 0) {
-        // console.log("no matches");
+        //console.log("no matches");
         return false;
     }
     nodePairs.forEach((pair) => {
@@ -87,6 +87,7 @@ export const highlightAnnotation = (annotation, domId, type) => {
 * Finds Range and highlights each element
 */
 export const tempHighlight = (annotation) => {
+    // console.log(annotation);
     let nodePairs = getNodeSubstringPairs({ annotation: annotation, type: "temp" });
     if (!nodePairs || nodePairs.length == 0) {
         // console.log("no matches");
@@ -166,7 +167,7 @@ function getNodeSubstringPairs({ annotation, type, }) {
     let startOffset = range.startOffset;
 
     nodes = getNodesInRange(range).filter(function (element) { return element.nodeType === 3 && element.data.trim() !== ""; });
-    // console.log(nodes);
+    //console.log(nodes);
     if ((startPath === endPath) && nodes.length === 1) {
         // If content string exists use that otherwise use indexes
         let substring = nodes[0].data.substring(startOffset, endOffset ? endOffset : nodes[0].data.length);

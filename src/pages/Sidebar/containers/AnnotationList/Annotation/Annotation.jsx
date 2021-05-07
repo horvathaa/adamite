@@ -1,546 +1,318 @@
-import React, { Component } from 'react';
+import React, { Component, useEffect, useState } from 'react';
+import classNames from 'classnames';
 import { AiFillPushpin, AiOutlinePushpin } from 'react-icons/ai';
 import outlinepin from '../../../../../assets/img/SVGs/pin.svg';
 import fillpin from '../../../../../assets/img/SVGs/pin_2.svg';
 import './Annotation.css';
 import { deleteAnnotationForeverById, updateAnnotationById, getUserProfileById } from '../../../../../firebase';
-import DefaultAnnotation from './DefaultAnnotation';
-import ToDoAnnotation from './ToDoAnnotation';
-import HighlightAnnotation from './HighlightAnnnotation';
-import IssueAnnotation from './IssueAnnotation';
-import QuestionAnswerAnnotation from './QuestionAnswerAnnotation';
+// import DefaultAnnotation from './DefaultAnnotation';
+// import ToDoAnnotation from './ToDoAnnotation';
+// import HighlightAnnotation from './HighlightAnnnotation';
+// import IssueAnnotation from './IssueAnnotation';
+// import QuestionAnswerAnnotation from './QuestionAnswerAnnotation';
 import { RiTruckLine } from 'react-icons/ri';
+import AnnotationContext from "./AnnotationContext";
+import EditRowComponent from "./Components/EditRowComponent";
+import CollapsedDiv from './Components/CollapsedDiv';
+import AnnotationTagsList from './Components/AnnotationTagsList';
+import AnnotationType from './Components/AnnotationType';
+import expand from '../../../../../assets/img/SVGs/expand.svg';
+import CardWrapper from '../../CardWrapper/CardWrapper'
+import AnchorList from './AnchorList/AnchorList';
+import Anchor from './AnchorList/Anchor';
+import Reply from './Reply/Reply';
+import ReplyEditor from './Reply/ReplyEditor';
+import RepliesList from './Reply/RepliesList';
+
+import Highlight from '../../../../../assets/img/SVGs/Highlight.svg';
+import Issue from '../../../../../assets/img/SVGs/Issue.svg';
+import Question from '../../../../../assets/img/SVGs/Question.svg';
+import Default from '../../../../../assets/img/SVGs/Default.svg';
+import Todo from '../../../../../assets/img/SVGs/Todo.svg';
+import { updateAnnotation } from '../../../../Background/helpers/annotationHelpers';
+
+/*
+Initiated in Annotation List
+*/
+
+let messagesOut = [
+  //sidebarHelper
+  'TEMP_ANNOTATION_ADDED',
+  'REMOVE_TEMP_ANNOTATION',
+  'ANNOTATION_DELETED_ON_PAGE',
+]
 
 
-class Annotation extends Component {
+const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, resetNewSelection = () => { }, currentUrl, userGroups, currentUser }) => {
 
-  constructor(props) {
-    super(props);
-    this.handleEditClick = this.handleEditClick.bind(this);
-    this.handleNewAnchor = this.handleNewAnchor.bind(this);
-    this.handleTrashClick = this.handleTrashClick.bind(this);
-  }
+  const [editing, setEditing] = useState(isNew);
+  const [replying, setReplying] = useState(false);
+  const [collapsed, setCollapsed] = useState(!isNew);
+  const [showReplies, setShowReplies] = useState(false);
+  const [anno, setAnno] = useState(annotation);
 
-  state = {
-    tags: this.props.tags,
-    content: this.props.content,
-    collapsed: true,
-    annotationType: this.props.type,
-    editing: false,
-    id: this.props.id,
-    idx: this.props.idx,
-    authorId: this.props.authorId,
-    pinned: this.props.pinned,
-    brokenAnchor: false,
-    brokenReply: [],
-    brokenChild: [],
-    isClosed: this.props.isClosed,
-    howClosed: this.props.howClosed,
-    userGroups: this.props.userGroups === undefined ? [] : this.props.userGroups,
-    annoGroups: this.props.annoGroups === undefined ? [] : this.props.annoGroups,
-    readCount: this.props.readCount === undefined ? 0 : this.props.readCount,
-    anchor: this.props.anchor,
-    active: this.props.active,
-    trashed: this.props.trashed,
-    childAnchor: this.props.childAnchor,
-    xpath: this.props.xpath,
-    replies: this.props.replies,
-    isPrivate: this.props.isPrivate,
-    adopted: this.props.adopted
-  };
-
-  updateData = () => {
-    let { id, tags, content, type, authorId, pinned, isClosed, howClosed, childAnchor, anchor, replies, adopted } = this.props;
-    this.setState({
-      id, tags, content, annotationType: type, authorId, pinned, isClosed, howClosed, childAnchor, anchor, replies, adopted
-    });
-  }
-
-  async componentDidMount() {
-    document.addEventListener('keydown', this.keydown, false);
-    this.updateData();
-    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-      if (request.from === 'content' && request.msg === 'ANCHOR_BROKEN' && request.payload.id === this.state.id) {
-        if (this.props.url.includes(this.props.currentUrl) &&
-          request.payload.replyId !== undefined) {
-          const broken = this.state.replies.filter(r => r.replyId === request.payload.replyId);
-          let temp = this.state.brokenReply;
-          temp.push(String(broken[0].replyId));
-          this.setState({ brokenReply: temp });
-        }
-        else if (this.props.url.includes(this.props.currentUrl) &&
-          request.payload.childId !== undefined) {
-          const broken = this.state.childAnchor.filter(c => c.id === request.payload.childId);
-          let temp = this.state.brokenChild;
-          temp.push(broken[0].id);
-          this.setState({ brokenChild: temp });
-        }
-        else if (this.props.url[0] === this.props.currentUrl) {
-          if (sender.tab.url === this.props.currentUrl) {
-            this.setState({ brokenAnchor: true });
-          }
-        }
-      }
-    })
-
-  }
-
-  componentDidUpdate(prevProps) {
-    if (this.state.id !== this.props.id ||
-      this.state.tags !== this.props.tags ||
-      this.state.content !== this.props.content ||
-      this.state.annotationType !== this.props.type ||
-      this.state.anchor !== this.props.anchor ||
-      this.state.childAnchor !== this.props.childAnchor ||
-      this.state.replies !== this.props.replies ||
-      prevProps.authorId !== this.props.authorId ||
-      prevProps.pinned !== this.props.pinned ||
-      prevProps.isClosed !== this.props.isClosed ||
-      prevProps.howClosed !== this.props.howClosed ||
-      prevProps.author !== this.props.author
-    ) {
-      this.updateData();
+  useEffect(() => {
+    if (annotation !== anno && anno.childAnchor !== annotation.childAnchor) {
+      setAnno(annotation);
     }
-  }
-
-  componentWillUnmount() {
-    document.removeEventListener('keydown', this.keydown, false);
-  }
-
-  formatTimestamp = () => {
-    let date = new Date(this.props.timeStamp);
-    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    var year = date.getFullYear();
-    var month = months[date.getMonth()];
-    var day = date.getDate();
-    var hour = date.getHours();
-    var min = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
-    var time = hour + ':' + min + ' ' + day + ' ' + month + ' ' + year;
-    return time;
-  }
-
-  getGroupName = () => {
-    let matches = [];
-    if (this.props.userGroups !== undefined && this.props.annoGroups !== undefined) {
-      matches = this.props.userGroups.filter(group => this.props.annoGroups.includes(group.gid));
-    }
-    if (matches.length > 0) {
-      let formattedString = "";
-      matches.forEach((group, i) => {
-        if (i === (matches.length - 1)) {
-          formattedString += group.name;
-        }
-        else {
-          formattedString += group.name + ", ";
-        }
-      });
-      return formattedString;
-    }
-    else {
-      return this.props.isPrivate ? "Private" : "Public";
-    }
-  }
-
-  handleDoneToDo = () => {
-    const { id } = this.state;
-    chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-      let url = tabs[0].url;
-      if (this.props.url[0] === url) {
+    if (isNew) {
+      chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
         chrome.tabs.sendMessage(
           tabs[0].id,
           {
-            msg: 'ANNOTATION_DELETED_ON_PAGE',
-            id: id,
+            msg: 'TEMP_ANNOTATION_ADDED',
+            newAnno: anno.childAnchor[0],
           }
         );
-      }
-      chrome.runtime.sendMessage({
-        msg: "ANNOTATION_DELETED",
-        from: "content",
-        payload: {
-          id: id
-        }
-      })
-    });
+      });
+    }
+  }, [annotation, anno, isNew]);
+
+
+  const AnnotationBadgeContainer = () => {
+    let badge = anno.type === 'issue' ? Issue : anno.type === 'highlight' ? Highlight : anno.type === 'todo' ? Todo : anno.type === 'question' ? Question : Default;
+    return (<div className="annotationTypeBadgeContainer" onClick={() => setCollapsed(!collapsed)}>
+      <div className="annotationTypeBadge row2">
+        <div className="annotationTypeBadge col2">
+          <div className="badgeContainer">
+            <img src={badge} alt={`${anno.type} type badge`} />
+          </div>
+        </div>
+      </div>
+    </div>);
   }
 
-  handleExpertReview = () => {
-    // could imagine having user's who are deemed "experts" in certain APIs or are documentation writers
-    // sort of like how Google had code reviewers with "readability" in certain languages and could provide
-    // expert opinion - this would require us to know a bit more about the current API we're looking at (may be able to ascertain
-    // from URL + anchor content)
-    // console.log('handled');
-  }
 
-  handleUnArchive(e) {
-    let id = e.target.value;
-    chrome.runtime.sendMessage({
-      msg: 'UNARCHIVE',
-      from: 'content',
-      payload: { id }
-    });
-    this.transmitPinToParent();
-  }
+  return (<div>
+    <AnnotationContext.Provider
+      value={{
+        idx: idx,
+        id: anno.id,
+        anno: anno,
+        isNew: isNew,
+        currentUrl: currentUrl,
+        currentUser: currentUser,
+        isCurrentUser: currentUser.uid === anno.authorId,
+        userGroups: userGroups,
 
-  handleTrashClick(id) {
-    // eslint-disable-next-line no-restricted-globals
-    if (confirm("Are you sure? This action cannot be reversed")) {
-      chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-        let url = tabs[0].url;
-        if (this.props.url[0] === url) {
-          chrome.tabs.sendMessage(
-            tabs[0].id,
-            {
-              msg: 'ANNOTATION_DELETED_ON_PAGE',
-              id: id,
+        collapsed: collapsed,
+        setCollapsed: (val) => { setCollapsed(val); },
+        editing: editing,
+        setEditing: (val) => { setEditing(val); },
+        showReplies: showReplies,
+        handleShowReplies: (val) => { setShowReplies(val) },
+        replying: replying,
+        setReplying: (val) => { setReplying(val) },
+        brokenReply: [],
+        brokenChild: [],
+
+
+
+        handlePin: () => {
+          const newAnno = { ...anno, pinned: !anno.pinned };
+          if (newAnno !== anno) {
+            chrome.runtime.sendMessage({
+              msg: 'ANNOTATION_UPDATED',
+              from: 'content',
+              payload: {
+                newAnno
+              }
+            });
+            setAnno(newAnno);
+          }
+        },
+
+        updateAnnotation: (newAnno) => {
+          console.log("update", newAnno);
+          if (newAnno !== anno) {
+            chrome.runtime.sendMessage({
+              msg: 'ANNOTATION_UPDATED',
+              from: 'content',
+              payload: {
+                newAnno
+              }
+            });
+            setAnno(newAnno);
+          }
+          setEditing(false);
+        },
+        updateAnnotationFields: (annotationFields) => {
+          if (!annotationFields) { setEditing(false); return; }
+          const newAnno = { ...anno, ...annotationFields };
+          if (newAnno !== anno) {
+            chrome.runtime.sendMessage({
+              msg: 'ANNOTATION_UPDATED',
+              from: 'content',
+              payload: {
+                newAnno: newAnno
+              }
+            });
+            setAnno(newAnno);
+          }
+          setEditing(false);
+        },
+
+        brokenAnchor: false,
+        handleNewAnchor: () => {
+          console.log("handle new");
+
+          chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+            chrome.tabs.sendMessage(
+              tabs[0].id, {
+              msg: 'ADD_NEW_ANCHOR',
+              payload: {
+                newAnno: anno,
+                updateType: "NewAnchor"
+              }
+            });
+          });
+
+        },
+        updateAnchors: (newAnchors) => {
+          chrome.runtime.sendMessage({
+            msg: 'ANNOTATION_UPDATED',
+            from: 'content',
+            payload: {
+              newAnno: { ...anno, childAnchor: newAnchors },
+              updateType: "NewAnchor"
             }
-          );
-        }
-        chrome.runtime.sendMessage({
-          msg: "ANNOTATION_DELETED",
-          from: "content",
-          payload: {
-            id: id
+
+          });
+          setAnno({ ...anno, childAnchor: newAnchors })
+        },
+        // Reply
+
+        replyCountString: anno.replies !== undefined && anno.replies.length === 1 ? "reply" : "replies",
+        handleTrashClick: () => {
+          // eslint-disable-next-line no-restricted-globals
+          if (confirm("Are you sure? This action cannot be reversed")) {
+            chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+              let url = tabs[0].url;
+              if (currentUrl[0] === url) {
+                chrome.tabs.sendMessage(
+                  tabs[0].id,
+                  {
+                    msg: 'ANNOTATION_DELETED_ON_PAGE',
+                    id: anno.id,
+                  }
+                );
+              }
+              chrome.runtime.sendMessage({
+                msg: "ANNOTATION_DELETED",
+                from: "content",
+                payload: {
+                  id: anno.id
+                }
+              })
+            });
+          } else {
+            return;
           }
-        })
-      });
-    } else {
-      return;
-    }
-  }
-
-  keydown = e => {
-    if (e.key === 'Enter' && e.target.className === 'tag-control-editAnnotation' && e.target.value !== '') {
-      e.preventDefault();
-      this.state.tags.push(e.target.value);
-    }
-  }
-
-  annotationTagHandler = event => {
-
-  }
-
-  annotationChangeHandler = event => {
-    this.setState({ content: event.target.value });
-  };
-
-  submitButtonHandler = (CardWrapperState, id) => {
-    this.setState({ annoGroups: CardWrapperState.groups });
-    chrome.runtime.sendMessage({
-      msg: 'ANNOTATION_UPDATED',
-      from: 'content',
-      payload: {
-        id: CardWrapperState.id,
-        type: CardWrapperState.annotationType.toLowerCase(),
-        content: CardWrapperState.annotationContent,
-        tags: CardWrapperState.tags,
-        isPrivate: CardWrapperState.private,
-        groups: CardWrapperState.groups
-      }
-    });
-    this.setState({
-      editing: false,
-      annotationType: CardWrapperState.annotationType.toLowerCase(),
-      content: CardWrapperState.annotationContent,
-      tags: CardWrapperState.tags,
-      isPrivate: CardWrapperState.private,
-    });
-  }
-
-  updateAnnotationType(eventKey) {
-    this.setState({ annotationType: eventKey });
-  }
-
-  handleEditClick(id) {
-    this.setState({ editing: true })
-  }
-
-  handleEditCancel() {
-    this.setState({ editing: false });
-  }
-
-  handleNewAnchor = (id) => {
-
-    chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-      chrome.tabs.sendMessage(tabs[0].id, {
-        msg: 'ADD_NEW_ANCHOR',
-        payload: {
-          content: this.state.content,
-          type: this.state.annotationType,
-          sharedId: id,
-          author: this.props.currentUser.uid,
-          tags: this.state.tags,
-          groups: this.state.annoGroups
-        }
-      });
-    });
-
-  }
-
-  transmitPinToParent = () => {
-    this.handlePin().then(pinState => { this.props.notifyParentOfPinning(this.props.id, pinState) });
-  }
-
-  handlePin = () => {
-    return new Promise((resolve, reject) => {
-      const { pinned } = this.state;
-      this.setState({ pinned: !pinned });
-      resolve(!pinned);
-    });
-  }
-
-  notifyParentOfAdopted = (annoId, replyId, adoptedState) => {
-    chrome.runtime.sendMessage({
-      msg: 'REQUEST_ADOPTED_UPDATE',
-      from: 'content',
-      payload: {
-        annoId, replyId, adoptedState
-      }
-    })
-  }
-
-  cancelButtonHandler = () => {
-    this.setState({ editing: false });
-  }
-
-  deleteTag = (tagName) => {
-    this.setState({ tags: this.state.tags.filter(tag => tag !== tagName) });
-  }
-
-  handleExpandCollapse = (request) => {
-    if (request === 'collapse') {
-      this.setState({ collapsed: true });
-    }
-    else {
-      this.setState({ collapsed: false });
-      // this.setState({ readCount: this.state.readCount + 1 })
-      // chrome.runtime.sendMessage({
-      //   msg: 'UPDATE_READ_COUNT',
-      //   from: 'content',
-      //   payload: {
-      //     id: this.props.id,
-      //     readCount: this.state.readCount
-      //   }
-      // })
-    }
-  }
-
-  render() {
-    const { active, authorId, currentUser, timeStamp, url, currentUrl } = this.props;
-    const { anchor, idx, id, editing,
-      collapsed, tags, trashed, content,
-      annotationType, pinned, isClosed,
-      howClosed, userGroups, annoGroups,
-      readCount, brokenAnchor, brokenReply,
-      brokenChild, childAnchor, xpath, replies,
-      isPrivate, adopted } = this.state;
-    const author = this.props.author === undefined ? "anonymous" : this.props.author;
-    if (annotationType === 'default' && !trashed) {
-      return (<DefaultAnnotation
-        idx={idx}
-        id={id}
-        collapsed={collapsed}
-        author={author}
-        formatTimestamp={this.formatTimestamp}
-        pin={pinned}
-        transmitPinToParent={this.transmitPinToParent}
-        currentUser={currentUser}
-        authorId={authorId}
-        handleNewAnchor={this.handleNewAnchor}
-        handleEditClick={this.handleEditClick}
-        handleTrashClick={this.handleTrashClick}
-        childAnchor={childAnchor}
-        currentUrl={currentUrl}
-        url={url}
-        anchor={anchor}
-        xpath={xpath}
-        tags={tags}
-        annotationType={annotationType}
-        annotationContent={content}
-        editing={editing}
-        cancelButtonHandler={this.cancelButtonHandler}
-        submitButtonHandler={this.submitButtonHandler}
-        handleExpandCollapse={this.handleExpandCollapse}
-        isPrivate={isPrivate}
-        replies={replies}
-        notifyParentOfAdopted={this.notifyParentOfAdopted}
-        getGroupName={this.getGroupName}
-        userGroups={userGroups}
-        brokenAnchor={brokenAnchor}
-        brokenReply={brokenReply}
-        brokenChild={brokenChild}
-      />);
-    }
-    else if (annotationType === 'to-do' && !trashed && currentUser.uid === authorId) {
-      return (<ToDoAnnotation
-        idx={idx}
-        id={id}
-        collapsed={collapsed}
-        author={author}
-        formatTimestamp={this.formatTimestamp}
-        pin={pinned}
-        transmitPinToParent={this.transmitPinToParent}
-        currentUser={currentUser}
-        authorId={authorId}
-        handleNewAnchor={this.handleNewAnchor}
-        handleEditClick={this.handleEditClick}
-        handleTrashClick={this.handleTrashClick}
-        childAnchor={childAnchor}
-        currentUrl={currentUrl}
-        url={url}
-        anchor={anchor}
-        xpath={xpath}
-        tags={tags}
-        annotationType={annotationType}
-        annotationContent={content}
-        editing={editing}
-        handleDoneToDo={this.handleDoneToDo}
-        cancelButtonHandler={this.cancelButtonHandler}
-        submitButtonHandler={this.submitButtonHandler}
-        handleExpandCollapse={this.handleExpandCollapse}
-        replies={replies}
-        isPrivate={isPrivate}
-        notifyParentOfAdopted={this.notifyParentOfAdopted}
-        getGroupName={this.getGroupName}
-        userGroups={userGroups}
-        brokenAnchor={brokenAnchor}
-        brokenReply={brokenReply}
-        brokenChild={brokenChild}
-      />);
-    }
-    else if (annotationType === 'highlight') {
-      return (
-        <HighlightAnnotation
-          idx={idx}
-          id={id}
-          collapsed={collapsed}
-          author={author}
-          formatTimestamp={this.formatTimestamp}
-          pin={pinned}
-          transmitPinToParent={this.transmitPinToParent}
-          currentUser={currentUser}
-          authorId={authorId}
-          handleNewAnchor={this.handleNewAnchor}
-          handleEditClick={this.handleEditClick}
-          handleTrashClick={this.handleTrashClick}
-          childAnchor={childAnchor}
-          currentUrl={currentUrl}
-          url={url}
-          anchor={anchor}
-          xpath={xpath}
-          tags={tags}
-          annotationType={annotationType}
-          annotationContent={content}
-          editing={editing}
-          cancelButtonHandler={this.cancelButtonHandler}
-          submitButtonHandler={this.submitButtonHandler}
-          handleExpandCollapse={this.handleExpandCollapse}
-          replies={replies}
-          isPrivate={isPrivate}
-          notifyParentOfAdopted={this.notifyParentOfAdopted}
-          getGroupName={this.getGroupName}
-          userGroups={userGroups}
-          brokenAnchor={brokenAnchor}
-          brokenReply={brokenReply}
-          brokenChild={brokenChild}
-        />
-      );
-    }
-    else if (annotationType === 'question') {
-      return (
-        <QuestionAnswerAnnotation
-          idx={idx}
-          id={id}
-          collapsed={collapsed}
-          author={author}
-          formatTimestamp={this.formatTimestamp}
-          pin={pinned}
-          transmitPinToParent={this.transmitPinToParent}
-          currentUser={currentUser}
-          authorId={authorId}
-          handleNewAnchor={this.handleNewAnchor}
-          handleEditClick={this.handleEditClick}
-          handleTrashClick={this.handleTrashClick}
-          childAnchor={childAnchor}
-          currentUrl={currentUrl}
-          url={url}
-          anchor={anchor}
-          xpath={xpath}
-          tags={tags}
-          annotationType={annotationType}
-          annotationContent={content}
-          editing={editing}
-          replies={replies}
-          cancelButtonHandler={this.cancelButtonHandler}
-          submitButtonHandler={this.submitButtonHandler}
-          handleExpandCollapse={this.handleExpandCollapse}
-          isPrivate={isPrivate}
-          isClosed={isClosed}
-          howClosed={howClosed}
-          adopted={adopted}
-          notifyParentOfAdopted={this.notifyParentOfAdopted}
-          getGroupName={this.getGroupName}
-          userGroups={userGroups}
-          brokenAnchor={brokenAnchor}
-          brokenReply={brokenReply}
-          brokenChild={brokenChild}
-        />
-      );
-    }
-    else if (annotationType === 'issue') {
-      return (
-        <IssueAnnotation
-          idx={idx}
-          id={id}
-          collapsed={collapsed}
-          author={author}
-          formatTimestamp={this.formatTimestamp}
-          pin={pinned}
-          transmitPinToParent={this.transmitPinToParent}
-          currentUser={currentUser}
-          authorId={authorId}
-          handleNewAnchor={this.handleNewAnchor}
-          handleEditClick={this.handleEditClick}
-          handleTrashClick={this.handleTrashClick}
-          childAnchor={childAnchor}
-          currentUrl={currentUrl}
-          url={url}
-          anchor={anchor}
-          xpath={xpath}
-          tags={tags}
-          annotationType={annotationType}
-          annotationContent={content}
-          editing={editing}
-          handleExpertReview={this.handleExpertReview}
-          cancelButtonHandler={this.cancelButtonHandler}
-          submitButtonHandler={this.submitButtonHandler}
-          handleExpandCollapse={this.handleExpandCollapse}
-          replies={replies}
-          isPrivate={isPrivate}
-          getGroupName={this.getGroupName}
-          userGroups={userGroups}
-          brokenAnchor={brokenAnchor}
-          brokenReply={brokenReply}
-          brokenChild={brokenChild}
-        />
-      );
-    }
-    else {
-      return (
-        <React.Fragment>
-          {authorId === currentUser.uid ? (
-            <div className="whoops">
-              This annotation is archived &nbsp; &nbsp;
-              <button value={id} className="Unarchive" onClick={this.handleUnArchive}>
-                Un-archive?
-            </button>
-            </div>
-          ) : (null)
+        },
+        handleDoneToDo: (id) => {
+          chrome.runtime.sendMessage({
+            msg: 'FINISH_TODO',
+            from: 'content',
+            payload: { id }
+          });
+        },
+        handleExpertReview: () => { console.log('handled'); },
+        closeOut: (questionState) => {
+          const newAnno = { ...anno, howClosed: questionState, isClosed: questionState === "Answered" || questionState === "No Longer Relevant", pinned: !(questionState === "Answered" || questionState === "No Longer Relevant") }
+          if (newAnno !== anno) {
+            chrome.runtime.sendMessage({
+              msg: 'ANNOTATION_UPDATED',
+              from: 'content',
+              payload: {
+                newAnno
+              }
+            });
+            setAnno(newAnno);
           }
-        </React.Fragment>
-      );
-    }
-  }
+        },
+        cancelButtonHandler: () => {
+          if (isNew) {
+            chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+              chrome.tabs.sendMessage(tabs[0].id, { msg: 'REMOVE_TEMP_ANNOTATION', });
+            });
+            resetNewSelection();
+
+          }
+        },
+        submitButtonHandler: (newAnno) => {
+          chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+            chrome.tabs.sendMessage(tabs[0].id, { msg: 'REMOVE_TEMP_ANNOTATION', },
+              response => {
+                if (response.msg === 'REMOVED') {
+                  chrome.runtime.sendMessage(
+                    {
+                      msg: 'CREATE_ANNOTATION', //'SAVE_ANNOTATED_TEXT',
+                      payload: {
+                        newAnno: newAnno,
+                        url: currentUrl,
+                      },
+                    },
+                    response => {
+                      if (response.msg === 'DONE') {
+                        resetNewSelection();
+                      }
+                    }
+                  );
+                }
+              }
+            );
+          });
+        },
+        handleExpandCollapse: () => { },
+        getGroupName: () => {
+          let matches = [];
+          if (anno.userGroups !== undefined && anno.annoGroups !== undefined) {
+            matches = anno.userGroups.filter(group => anno.annoGroups.includes(group.gid));
+          }
+          if (matches.length > 0) {
+            let formattedString = "";
+            matches.forEach((group, i) => {
+              if (i === (matches.length - 1)) {
+                formattedString += group.name;
+              }
+              else {
+                formattedString += group.name + ", ";
+              }
+            });
+            return formattedString;
+          }
+          else {
+            return anno.isPrivate ? "Private" : "Public";
+          }
+        },
+      }}
+    >
+      {
+
+        <li key={idx} id={anno.id} className={classNames({ AnnotationItem: true })}>
+          <div className={classNames({ AnnotationContainerPad: true, AnnotationPadActive: true, })} >
+            <div className={classNames({ AnnotationContainerLeftPad: true })}></div>
+          </div>
+          <div id={anno.id} className={classNames({ AnnotationContainer: true, ActiveAnnotationContainer: true, })} >
+            {!isNew && <AnnotationBadgeContainer />}
+            <EditRowComponent />
+            <AnchorList />
+            <CardWrapper isNew={isNew} />
+            {!editing && <AnnotationType />}
+            <AnnotationTagsList />
+            {replying && <ReplyEditor finishReply={() => setReplying(false)} />}
+            <RepliesList />
+            {!isNew && <CollapsedDiv />}
+          </div>
+          <div className={classNames({ AnnotationContainerPad: true, AnnotationPadActive: true, })} >
+            <div className={classNames({ AnnotationContainerRightPad: true })} ></div>
+          </div>
+          <div className={classNames({ AnnotationContainerPad: true, AnnotationPadActive: true, })} ></div>
+        </li>
+      }
+    </AnnotationContext.Provider>
+  </div >
+  )
 }
-
 export default Annotation;
+

@@ -32,15 +32,18 @@ let messagesOut = {
     'CONTENT_NOT_SELECTED': (data, responseCallback) => sendMsg('CONTENT_NOT_SELECTED', data, responseCallback),
     'REQUEST_SIDEBAR_STATUS': (data, responseCallback) => sendMsg('REQUEST_SIDEBAR_STATUS', data, responseCallback),
     'SAVE_HIGHLIGHT': (data, responseCallback) => sendMsg('SAVE_HIGHLIGHT', data, responseCallback),
+    'CREATE_ANNOTATION': (data, responseCallback) => sendMsg('CREATE_ANNOTATION', data, responseCallback),
     'TRANSMIT_REPLY_ANCHOR': (data, responseCallback) => sendMsg('TRANSMIT_REPLY_ANCHOR', data, responseCallback),
     'SAVE_NEW_ANCHOR': (data, responseCallback) => sendMsg('SAVE_NEW_ANCHOR', data, responseCallback),
+    'ANNOTATION_UPDATED': (data, responseCallback) => sendMsg('ANNOTATION_UPDATED', data, responseCallback),
     'UPDATE_XPATH_BY_IDS': (data, responseCallback) => sendMsg('UPDATE_XPATH_BY_IDS', data, responseCallback),
 }
 
 
 export function transmitMessage({ msg, data, sentFrom, responseCallback = null }) {
-    // console.log(msg);
+
     if (msg in messagesOut) {
+        // console.log(msg);
         messagesOut[msg](data, responseCallback);
     } else {
         // console.log("ERR");

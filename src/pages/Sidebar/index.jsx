@@ -6,7 +6,9 @@ import 'bootstrap/dist/css/bootstrap.css';
 import './index.css';
 
 const App = () => {
+
   return <Sidebar />;
 };
+
 
 render(<App />, window.document.querySelector('#app-container'));

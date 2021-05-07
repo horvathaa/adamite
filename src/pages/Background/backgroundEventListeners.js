@@ -42,13 +42,17 @@ let commands = {
     'GET_PINNED_ANNOTATIONS': anno.getPinnedAnnotations,
     'SET_UP_PIN': anno.setPinnedAnnotationListeners,
 
-    'SAVE_ANNOTATED_TEXT': anno.createAnnotation,
-    'SAVE_HIGHLIGHT': anno.createAnnotationHighlight,
+    //'SAVE_ANNOTATED_TEXT': anno.createAnnotation,
+    'CREATE_ANNOTATION': anno.createAnnotation,
+    //  'SAVE_HIGHLIGHT': anno.createAnnotation,
     'ADD_NEW_REPLY': anno.createAnnotationReply,
-    'SAVE_NEW_ANCHOR': anno.createAnnotationChildAnchor,
+    'SAVE_NEW_ANCHOR': anno.createAnnotation,
+    // anno.createAnnotationChildAnchor,
+    // 'SAVE_NEW_ANCHOR': anno.createAnnotationChildAnchor,
 
     'ANNOTATION_UPDATED': anno.updateAnnotation,
     'REQUEST_ADOPTED_UPDATE': anno.updateAnnotationAdopted,
+
     'REQUEST_PIN_UPDATE': anno.updateAnnotationPinned,
     'UPDATE_QUESTION': anno.updateAnnotationQuestion,
     'FINISH_TODO': anno.updateAnnotationTodoFinished,
@@ -164,10 +168,11 @@ let commands = {
 };
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    // console.log(request);
     if (request.msg in commands) {
         commands[request.msg](request, sender, sendResponse);
-    } else console.log("Unknown Command", request.msg);
+    } else {
+        // console.log("Unknown Command", request.msg);
+    }
     return true;
 });
 
@@ -186,4 +191,9 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
 
 chrome.tabs.onCreated.addListener(function (tab) {
     commands['HANDLE_TAB_CREATED'](tab);
+});
+
+chrome.runtime.onSuspend.addListener(function () {
+    anno.unsubscribeAnnotations();
+    chrome.runtime.Port.disconnect();
 })

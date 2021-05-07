@@ -1,6 +1,6 @@
 {
-  "name": "ADAMITE",
-  "version": "0.75.37",
+  "name": "Adamite",
+  "version": "0.75.365",
   "description": "A documentation annotator to help software developers learn from one another",
   "license": "MIT",
   "scripts": {
@@ -13,6 +13,10 @@
     "@hot-loader/react-dom": "^16.13.0",
     "@material-ui/core": "^4.11.0",
     "@octokit/core": "^3.2.4",
+    "@types/jest": "^26.0.22",
+    "@types/node": "^14.14.41",
+    "@types/react": "^17.0.3",
+    "@types/react-dom": "^17.0.3",
     "axios": "^0.19.2",
     "bootstrap": "^4.5.2",
     "classnames": "^2.2.6",
@@ -25,7 +29,7 @@
     "prop-types": "^15.7.2",
     "re-resizable": "^6.6.1",
     "react": "^16.13.1",
-    "react-autosuggest": "^10.0.2",
+    "react-autosuggest": "^10.1.0",
     "react-bootstrap": "^1.3.0",
     "react-bootstrap-multiselect": "^2.4.1",
     "react-dom": "^16.13.1",
@@ -39,7 +43,9 @@
     "react-toastify": "^6.0.9",
     "react-widgets": "^4.6.0",
     "throttle-debounce": "^2.3.0",
+    "typescript": "^4.2.4",
     "url-loader": "^4.1.0",
+    "uuid": "^8.3.2",
     "xpath-range": "^1.1.1"
   },
   "devDependencies": {
@@ -72,7 +78,7 @@
     "style-loader": "^1.2.1",
     "webpack": "^4.44.2",
     "webpack-cli": "^3.3.12",
-    "webpack-dev-server": "^3.2.1",
+    "webpack-dev-server": "^3.11.2",
     "write-file-webpack-plugin": "^4.5.1"
   }
 }

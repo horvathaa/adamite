@@ -29,8 +29,15 @@
     display: flex;
     font-size: 0.9rem;
     color: #6B778C;
-    padding: 4px 8px 0px 8px;
+    padding: 0px 8px 0px 8px;
     flex-wrap: wrap;
+    line-height: 2em;
+    height: 2em;
+}
+
+.FilterSection:hover {
+    cursor: pointer;
+    color: #6b778ca1 !important;
 }
 
 .FilterSection:hover {

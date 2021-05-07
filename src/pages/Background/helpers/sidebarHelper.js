@@ -1,6 +1,8 @@
 import '../../../assets/img/iframe-background.gif';
 import { sidebarStatus } from '../backgroundEventListeners';
 
+// let sidebarOpen = true; // open -> true  |  close -> false
+
 /**
  * Sidebar open
  */
@@ -145,7 +147,6 @@ export async function requestSidebarStatus(request, sender, sendResponse) {
     }
     sendResponse(status);
   })
-
 }
 
 export async function requestToggleSidebar(request, sender, sendResponse) {

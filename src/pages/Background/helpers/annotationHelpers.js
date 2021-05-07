@@ -6,6 +6,13 @@ import { getCurrentUserId } from '../../../firebase/index';
 import { getPathFromUrl } from '../backgroundEventListeners';
 
 
+
+function assert(condition, message) {
+    if (!condition) {
+        throw new Error(message || "Assertion failed");
+    }
+}
+
 //let unsubscribeAnnotations = null;
 export let tabAnnotationCollect = [];
 let annotationsAcrossWholeSite = [];
@@ -44,20 +51,20 @@ export function setPinnedAnnotationListeners(request, sender, sendResponse) {
 export async function getAnnotationsPageLoad(request, sender, sendResponse) {
     let { email, uid } = fb.getCurrentUser();
     let userName = email.substring(0, email.indexOf('@'));
-    if (request.tabId !== undefined) {
-        chrome.tabs.sendMessage(
-            request.tabId,
-            {
-                msg: 'CREATE_GROUP',
-                from: 'background',
-                owner: {
-                    uid: uid,
-                    email: email,
-                    userName: userName
-                }
-            }
-        );
-    }
+    // if (request.tabId !== undefined) {
+    //     chrome.tabs.sendMessage(
+    //         request.tabId,
+    //         {
+    //             msg: 'CREATE_GROUP',
+    //             from: 'background',
+    //             owner: {
+    //                 uid: uid,
+    //                 email: email,
+    //                 userName: userName
+    //             }
+    //         }
+    //     );
+    // }
     getAllAnnotationsByUrlListener(request.url, request.tabId,)
     getPrivateAnnotationsByUrlListener(request.url, request.tabId,);
     // chrome.browserAction.setBadgeText({ text: String(annotations.length) });
@@ -75,48 +82,47 @@ export function getAnnotationById(request, sender, sendResponse) {
         console.log('getAnnotationById error', error);
     });
 }
-
+// TODO  
+// export async function createAnnotation(request, sender, sendResponse) {
+//     fb.createAnnotation(_createAnnotation(request)).then(value => {
+//         console.log("background", value);
+//         console.log('sendResponse', sendResponse);
+//     });
+//     sendResponse({ "msg": 'DONE' });
+// }
 export async function createAnnotation(request, sender, sendResponse) {
-    fb.createAnnotation(_createAnnotation(request)).then(value => {
-        sendResponse({ "msg": 'DONE', "value": value.id });
-    });
+    //let { url, anchor, xpath, offsets } = request.payload;
+    let { url, newAnno } = request.payload;
+    // Add checks
+    console.log(request.payload);
 
-}
-export async function createAnnotationHighlight(request, sender, sendResponse) {
-    let { url, anchor, xpath, offsets } = request.payload;
     const hostname = new URL(url).hostname;
     const author = getAuthor();
+    //const id = new Date().getTime();
+
     fb.createAnnotation({
-        taskId: null,
-        SharedId: null,
-        AnnotationContent: "",
-        AnnotationAnchorContent: anchor,
-        AnnotationAnchorPath: null,
-        offsets: offsets,
-        xpath: xpath,
-        AnnotationType: "highlight",
+        ...newAnno,
+        // taskId: null,
+        // SharedId: null,
+        authorId: getCurrentUserId(),
         url: [url],
-        hostname,
-        pinned: false,
-        AnnotationTags: [],
-        childAnchor: [],
-        isPrivate: true,
-        author,
+        hostname: hostname,
+        pinned: newAnno.type === 'question' || newAnno.type === 'to-do',
+        // isPrivate: true,
+        author: author,
         groups: [], // later have this be a default group
         readCount: 0,
         deleted: false,
-        events: []
-    }).then((value => {
-        chrome.runtime.sendMessage({
-            msg: 'SCROLL_INTO_VIEW',
-            payload: {
-                id: value.id
-            },
-            from: 'background'
-        })
-    }));
+        archived: false,
+        createdTimestamp: new Date().getTime(),
+    }).then(value => {
+        console.log("background", value);
+        console.log('sendResponse', sendResponse);
+    });
+    sendResponse({ "msg": 'DONE' });
 }
-// 
+
+
 export async function createAnnotationReply(request, sender, sendResponse) {
     const { id, url } = request.payload;
     if (url !== undefined && url !== "") {
@@ -172,15 +178,30 @@ export async function createAnnotationChildAnchor(request, sender, sendResponse)
 
 
 export async function updateAnnotation(request, sender, sendResponse) {
-    const { id, content, type, tags, isPrivate, groups } = request.payload;
-    let doc = await fb.getAnnotationById(id).get();
-    await fb.updateAnnotationById(id, {
-        content, type, tags, private: isPrivate, groups,
-        createdTimestamp: new Date().getTime(),
+    // const { id, content, type, tags, isPrivate, groups, childAnchor } = request.payload;
+    const { newAnno, updateType } = request.payload;
+    let doc = await fb.getAnnotationById(newAnno.id).get();
+    console.log(newAnno);
+    await fb.updateAnnotationById(newAnno.id, {
+        ...newAnno,
         deletedTimestamp: 0,
         events: fbUnion(editEvent(request.msg, doc.data())),
-    })
-    broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
+    }).then(value => {
+        if (updateType === "NewAnchor") {
+            chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+                chrome.tabs.sendMessage(
+                    tabs[0].id,
+                    {
+                        msg: 'ANNOTATION_ADDED',
+                        newAnno: newAnno,
+                    }
+                );
+            });
+        }
+        broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', newAnno.id);
+    });
+    //broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
+    // console.log("TODO", request.msg);
 }
 
 
@@ -216,7 +237,8 @@ export async function updateAnnotationTodoFinished(request, sender, sendResponse
     const { id } = request.payload;
     await fb.updateAnnotationById(id, {
         createdTimestamp: new Date().getTime(),
-        trashed: true,
+        archived: true,
+        pinned: false,
         events: fbUnion(editEvent(request.msg))
     });
     broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
@@ -257,7 +279,7 @@ export async function updateAnnotationUnarchive(request, sender, sendResponse) {
     const { id } = request.payload;
     await fb.updateAnnotationById(id, {
         createdTimestamp: new Date().getTime(),
-        trashed: false,
+        archived: false,
         events: fbUnion(editEvent(request.msg))
     });
     broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
@@ -276,6 +298,7 @@ export async function deleteAnnotation(request, sender, sendResponse) {
 }
 
 export function unsubscribeAnnotations(request, sender, sendResponse) {
+    console.log('unsubscribe called');
     if (typeof privateListener === "function") privateListener();
     if (typeof publicListener === "function") publicListener();
     if (typeof pinnedPrivateListener === "function") pinnedPrivateListener();
@@ -346,7 +369,7 @@ const editEvent = (msg, data = {}, author = null, eventTime = null,) => {
             oldType: data.type,
             oldTags: data.tags,
             oldGroups: data.groups,
-            oldPrivate: data.private
+            oldPrivate: data.isPrivate
         }
     } else if (data !== {}) {
         content = {
@@ -379,35 +402,7 @@ const _createReply = (request) => {
     });
 }
 
-const _createAnnotation = (request) => {
-    let { url, content } = request.payload;
-    // console.log("background", url, content);
-    const hostname = new URL(url).hostname;
-    // username is just front of email
-    const author = getAuthor();
-    return {
-        taskId: null,
-        SharedId: null,
-        AnnotationContent: content.annotation,
-        AnnotationAnchorContent: content.anchor,
-        AnnotationAnchorPath: null,
-        offsets: content.offsets,
-        xpath: content.xpath,
-        AnnotationType: content.annotationType, // could be other types (string)
-        url: [url],
-        hostname,
-        isClosed: false,
-        pinned: false,
-        AnnotationTags: content.tags,
-        childAnchor: [],
-        isPrivate: content.private,
-        author,
-        groups: content.groups,
-        readCount: 0,
-        deleted: false,
-        events: []
-    };
-}
+
 
 
 
@@ -420,11 +415,11 @@ function updateList(list, url, annotations, isPrivate) {
     let obj = list.filter(obj => url === obj.tabUrl);
     let objToUpdate = obj[0];
     if (isPrivate) {
-        let newList = objToUpdate.annotations.filter(anno => anno.private !== true && !anno.deleted && anno.url.includes(url))
+        let newList = objToUpdate.annotations.filter(anno => anno.isPrivate !== true && !anno.deleted && anno.url.includes(url)) // removed anno.private check - if things break, well...
         objToUpdate.annotations = newList.concat(annotations);
     }
     else {
-        let newList = objToUpdate.annotations.filter(anno => anno.private === true && !anno.deleted && anno.url.includes(url))
+        let newList = objToUpdate.annotations.filter(anno => anno.isPrivate === true && !anno.deleted && anno.url.includes(url))
         objToUpdate.annotations = newList.concat(annotations);
     }
     // objToUpdate.annotations = annotations;
@@ -433,7 +428,6 @@ function updateList(list, url, annotations, isPrivate) {
     // temp2 = removeDuplicates(temp2);
     return temp2;
 }
-
 
 function getListFromSnapshots(snapshots) {
     let out = [];
@@ -455,8 +449,6 @@ function getAllPrivatePinnedAnnotationsListener() {
             broadcastAnnotationsUpdated("PINNED_CHANGED", pinnedAnnotations);
         });
     }
-
-
 }
 
 
@@ -470,7 +462,6 @@ function getAllPublicPinnedAnnotationsListener() {
             broadcastAnnotationsUpdated("PINNED_CHANGED", pinnedAnnotations);
         });
     }
-
 }
 
 
@@ -482,10 +473,8 @@ function getAllAnnotationsByUrlListener(url, tabId) {
             tempPublicAnnotations = tempPublicAnnotations.filter(anno => !anno.deleted && anno.url.includes(url))
             let annotationsToBroadcast = tempPublicAnnotations.concat(privateAnnotations);
             annotationsToBroadcast = annotationsToBroadcast.filter(anno => !anno.deleted && anno.url.includes(url));
-
             chrome.tabs.query({}, tabs => {
                 const tabsWithUrl = tabs.filter(t => getPathFromUrl(t.url) === url);
-
                 if (containsObjectWithUrl(url, tabAnnotationCollect)) {
                     tabAnnotationCollect = updateList(tabAnnotationCollect, url, tempPublicAnnotations, false);
                 }
@@ -498,12 +487,8 @@ function getAllAnnotationsByUrlListener(url, tabId) {
                 })
             });
             publicAnnotations = tempPublicAnnotations;
-
         });
-
     }
-
-
 }
 
 
@@ -511,15 +496,14 @@ function getAllAnnotationsByUrlListener(url, tabId) {
 function getPrivateAnnotationsByUrlListener(url, tabId) {
     const user = fb.getCurrentUser();
     if (user !== null) {
+        // console.log('what is happening lol');
         privateListener = fb.getPrivateAnnotationsByUrl(url, user.uid).onSnapshot(annotationsSnapshot => {
             let tempPrivateAnnotations = getListFromSnapshots(annotationsSnapshot);
             tempPrivateAnnotations = tempPrivateAnnotations.filter(anno => !anno.deleted && anno.url.includes(url))
             let annotationsToBroadcast = tempPrivateAnnotations.concat(publicAnnotations);
             annotationsToBroadcast = annotationsToBroadcast.filter(anno => !anno.deleted && anno.url.includes(url));
-
             chrome.tabs.query({}, tabs => {
                 const tabsWithUrl = tabs.filter(t => getPathFromUrl(t.url) === url);
-
                 if (containsObjectWithUrl(url, tabAnnotationCollect)) {
                     tabAnnotationCollect = updateList(tabAnnotationCollect, url, tempPrivateAnnotations, true);
                 }
@@ -530,13 +514,85 @@ function getPrivateAnnotationsByUrlListener(url, tabId) {
                 tabsWithUrl.forEach(t => {
                     broadcastAnnotationsToTab("CONTENT_UPDATED", newList[0].annotations, url, t.id);
                 })
-
             });
-
             privateAnnotations = tempPrivateAnnotations;
         });
     }
 
-
 }
 
+
+// const _createAnnotation = (request) => {
+//     let { url, content } = request.payload;
+//     // console.log("background", url, content);
+//     const hostname = new URL(url).hostname;
+//     // username is just front of email
+//     const author = getAuthor();
+//     const id = new Date().getTime();
+//     return {
+//         taskId: null,
+//         SharedId: null,
+//         AnnotationContent: content.annotation,
+//         AnnotationAnchorContent: content.anchor ?? "",
+//         AnnotationAnchorPath: null,
+//         AnnotationType: content.annotationType, // could be other types (string)
+//         url: [url],
+//         hostname,
+//         isClosed: false,
+//         pinned: false,
+//         AnnotationTags: content.tags,
+//         childAnchor: content.childAnchor,
+//         isPrivate: content.private,
+//         author,
+//         groups: content.groups,
+//         readCount: 0,
+//         deleted: false,
+//         events: []
+//     };
+// }
+// export async function createAnnotation(request, sender, sendResponse) {
+//     fb.createAnnotation(_createAnnotation(request)).then(value => {
+//         console.log("background", value);
+//         console.log('sendResponse', sendResponse);
+//     });
+//     sendResponse({ "msg": 'DONE' });
+// }
+// export async function createAnnotationHighlight(request, sender, sendResponse) {
+//     let { url, anchor, xpath, offsets } = request.payload;
+//     const hostname = new URL(url).hostname;
+//     const author = getAuthor();
+//     const id = new Date().getTime();
+//     fb.createAnnotation({
+//         taskId: null,
+//         SharedId: null,
+//         AnnotationContent: "",
+//         AnnotationAnchorContent: anchor ?? "",
+//         AnnotationAnchorPath: null,
+//         offsets: offsets,
+//         xpath: xpath,
+//         AnnotationType: "highlight",
+//         url: [url],
+//         hostname,
+//         pinned: false,
+//         AnnotationTags: [],
+//         childAnchor: [
+//             {
+//                 parentId: null,
+//                 id: id,
+//                 anchor: anchor ?? "",
+//                 url: url,
+//                 offsets: offsets,
+//                 hostname: hostname,
+//                 xpath: xpath,
+//                 tags: []
+//             }
+//         ],
+//         isPrivate: true,
+//         author,
+//         groups: [], // later have this be a default group
+//         readCount: 0,
+//         deleted: false,
+//         events: []
+//     });
+// }
+// 

@@ -4,8 +4,7 @@
   "name": "ADAMITE",
   "options_page": "options.html",
   "background": {
-    "page": "background.html",
-    "persistent": true
+    "page": "background.html"
   },
   "browser_action": {
     "default_title": "ADAMITE"

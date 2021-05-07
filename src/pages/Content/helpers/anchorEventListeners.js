@@ -63,6 +63,7 @@ let messagesIn = {
         updateXpaths(findSpan, request.id)
     },
     'ADD_NEW_ANCHOR': (request, sender, sendResponse) => {
+        // console.log("add new");
         addNewAnchor({ request: request, type: "child" });
     },
     'ADD_REPLY_ANCHOR': (request, sender, sendResponse) => {
@@ -70,6 +71,11 @@ let messagesIn = {
     },
     'ADD_REPLY_HIGHLIGHT': async (request, sender, sendResponse) => {
         // console.log(request);
+        // const octokit = new Octokit({ auth: });
+        // let l = await octokit.request('GET /orgs/{org}/repos', {
+        //     org: 'collective-sanity'
+        // });
+        // console.log(l);
         const { xpath, id } = request.payload;
         highlightReplyRange(xpath, id);
     },
@@ -82,12 +88,12 @@ let messagesIn = {
             });
             let ids = getHighlightSpanIds({ isPreview: false });
             //console.log(ids);
-            annotationsOnPage.reverse().forEach(anno => {
-                //console.log(anno.id);
-                if (!(ids.includes(anno.id.toString()))) {
-                    transmitMessage({ msg: "ANCHOR_BROKEN", data: { payload: { "id": anno.id } }, sentFrom: "AnchorHighlight" })
-                }
-            });
+            // annotationsOnPage.reverse().forEach(anno => {
+            //     //console.log(anno.id);
+            //     if (!(ids.includes(anno.id.toString()))) {
+            //         transmitMessage({ msg: "ANCHOR_BROKEN", data: { payload: { "id": anno.id } }, sentFrom: "AnchorHighlight" })
+            //     }
+            // });
         }
         // Ensure that nothing is unintentionally selected 
         let sel = window.getSelection();
@@ -102,8 +108,8 @@ let messagesIn = {
     },
     'ANNOTATION_FOCUS_ONCLICK': (request, sender, sendResponse) => {
         let findSpan = getSpanFromRequest(request);
-        if (findSpan.length === 0) { console.log('len is 0?'); transmitMessage({ msg: "ANCHOR_BROKEN", data: { payload: { "id": request.id } }, sentFrom: "AnchorHighlight" }); return; }
-        window.scroll({ top: getPosition(findSpan[0]).y - window.innerHeight / 2, left: getPosition(findSpan[0]).x, behavior: 'smooth' })
+        if (findSpan.length === 0) { console.log('len is 0?'); return; }
+        window.scroll({ top: getPosition(findSpan[0]).y - window.innerHeight / 2, left: getPosition(findSpan[0]).x, behavior: 'smooth' });
     },
     'ANNOTATION_FOCUS': (request, sender, sendResponse) => {
         let findSpan = getSpanFromRequest(request);
@@ -114,10 +120,11 @@ let messagesIn = {
         findSpan.forEach(e => e.style.backgroundColor = null)
     },
     'ANNOTATION_ADDED': (request, sender, sendResponse) => {
-        request.newAnno.content = request.newAnno.annotation;
-        highlightAnnotation(request.newAnno, request.newAnno.id)
+        //request.newAnno.content = request.newAnno.annotation;
+        highlightAnnotationDeep(request.newAnno, request.newAnno.id)
     },
     'TEMP_ANNOTATION_ADDED': (request, sender, sendResponse) => {
+        //  console.log(request);
         tempHighlight(request.newAnno);
     },
     'REMOVE_TEMP_ANNOTATION': (request, sender, sendResponse) => {
@@ -138,7 +145,6 @@ function getSpanFromRequest(request) {
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    // console.log(request);
     if (request.msg in messagesIn) {
         messagesIn[request.msg](request, sender, sendResponse);
     }
