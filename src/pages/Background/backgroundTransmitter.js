@@ -52,7 +52,10 @@ export let messagesOut = [
     'REMOVE_HIGHLIGHTS',
     'HIGHLIGHT_ANNOTATIONS',
     "CONTENT_UPDATED",
-    "PINNED_CHANGED"
+    "PINNED_CHANGED",
+    // elastic
+    "ELASTIC_CONTENT_UPDATED",
+    "ELASTIC_CONTENT_DELETED"
 ]
 
 

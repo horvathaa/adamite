@@ -788,6 +788,7 @@ export default Anchor;
             console.log(suggestions);
 
             return (
+<<<<<<< HEAD
                 <Autosuggest
                     suggestions={suggestions}
                     shouldRenderSuggestions={(value) => value && value.trim().length > 0}
@@ -806,6 +807,36 @@ export default Anchor;
                     }}
                 />
             )
+=======
+                <div
+                    className={classNames({
+                        AnchorContainer: true,
+                        Truncated: collapsed
+                    })}
+                    onMouseEnter={this.handleOnLocalOnMouseEnter}
+                    onMouseLeave={this.handleOnLocalOnMouseLeave}
+                    onClick={(pageAnchor || url !== currentUrl) ? this.handleExternalAnchor : this.handleOnLocalOnClick}
+                >
+                    <div className="AnchorIconContainer">
+                        {anchorIcon}
+                    </div>
+                    {url.includes(currentUrl) && !pageAnchor ? (
+                        <div className="AnchorTextContainer">
+                            {anchorContent}
+                        </div>
+                    ) : (
+
+                            <div className="AnchorTextContainer">
+                                {anchorContent}
+                                <div className="AnchorUrlContainer" onClick={this.handleExternalAnchor}>
+                                    {url}
+                                </div>
+                            </div>
+                        )
+                    }
+                </div >
+            );
+>>>>>>> master
         }
 function getSuggestionValue(suggestion) {
     return suggestion.name;

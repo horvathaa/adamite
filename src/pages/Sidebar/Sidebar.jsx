@@ -159,11 +159,6 @@ class Sidebar extends React.Component {
           );
           this.setUpPinnedListener();
         }
-        // chrome.runtime.sendMessage(
-        //   {
-        //     msg: 'REQUEST_TAB_INFO',
-        //   },
-        //   tabInfo => {
         chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
           let tab = tabs[0];
           this.setState({ url: getPathFromUrl(tab.url), tabId: tab.id });
@@ -178,9 +173,7 @@ class Sidebar extends React.Component {
               this.unsubscribeAnnotations();
             }
           }
-          // })
-        }
-        );
+        });
       }
     );
 
@@ -237,6 +230,9 @@ class Sidebar extends React.Component {
       // else if (request.from === 'content' && request.msg === 'ANCHOR_BROKEN') {
       //   console.log('this worked', request.payload);
       // }
+      else if (request.from === 'background' && request.msg === 'SCROLL_INTO_VIEW') {
+        this.scrollToNewAnnotation(request.payload.id);
+      }
       else if (
         request.from === 'content' &&
         request.msg === 'ANCHOR_CLICKED'
@@ -809,6 +805,21 @@ class Sidebar extends React.Component {
     // }
   };
 
+  scrollToNewAnnotation = (id) => {
+    let annoDiv = document.getElementById(id);
+    if (annoDiv !== null) {
+      annoDiv.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
+    }
+
+  }
+
+  scrollToNewAnnotationEditor = () => {
+    let editorDiv = document.getElementById("NewAnnoEditor");
+    if (editorDiv !== null) {
+      editorDiv.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
+    }
+  }
+
   render() {
     const { currentUser, filteredAnnotations, searchBarInputText, searchedAnnotations, groupAnnotations, filteredGroupAnnotations, pinnedAnnos, groups, activeGroups, sortBy, pageLocationSort } = this.state;
     if (currentUser === undefined) {
@@ -972,7 +983,7 @@ class Sidebar extends React.Component {
               )}
               {(this.state.url.includes("facebook.com") || this.state.url.includes("google.com") || this.state.url.includes("twitter.com")) && !this.state.url.includes("developer") ? (
                 <div className="whoops">
-                  NOTE: Adamite does not work well on dynamic webpages such as Facebook or Twitter where content is likely to change. Proceed with caution.
+                  NOTE: Adamite does not work well on dynamic webpages such as Facebook, Google Docs, or Twitter where content is likely to change. Proceed with caution.
                 </div>
               ) : (null)}
             </div>
@@ -994,131 +1005,3 @@ class Sidebar extends React.Component {
 
 export default Sidebar;
 
-
-
-  // // helper method from
-  // // https://stackoverflow.com/questions/2540969/remove-querystring-from-url
-  // getPathFromUrl = (url) => {
-  //   return url.split(/[?#]/)[0];
-  // }
-
-  // containsObjectWithUrl = (url, list) => {
-  //   const test = list.filter(obj => obj.url.includes(url));
-  //   return test.length !== 0;
-  // }
-
-  // // if length is 0 does not contain object, else does contain object
-  // // stupid helper method made out of necessity
-  // containsObjectWithId(id, list) {
-  //   const test = list.filter(obj => obj.id === id);
-  //   return test.length !== 0;
-  // }
-
-  // // if length is 0 does not contain object, else does contain object
-  // // stupid helper method made out of necessity
-  // containsReplyWithAnchor(list) {
-  //   const test = list.filter(obj => obj.xpath !== null);
-  //   return test;
-  // }
-
-  // // helper method from 
-  // // https://stackoverflow.com/questions/4587061/how-to-determine-if-object-is-in-array
-  // containsObject(obj, list) {
-  //   var i;
-  //   for (i = 0; i < list.length; i++) {
-  //     if (list[i] === obj) {
-  //       return true;
-  //     }
-  //   }
-  //   return false;
-  // }
-
-  // // helper method from
-  // // https://stackoverflow.com/questions/18773778/create-array-of-unique-objects-by-property
-  // removeDuplicates(annotationArray) {
-  //   const flags = new Set();
-  //   const annotations = annotationArray.filter(anno => {
-  //     if (flags.has(anno.id)) {
-  //       return false;
-  //     }
-  //     flags.add(anno.id);
-  //     return true;
-  //   });
-  //   return annotations;
-  // }
-
-  // checkTimeRange(annotation, timeRange) {
-  //   if (timeRange === null || timeRange === 'all' || annotation.pinned) {
-  //     return true;
-  //   }
-  //   if (timeRange === 'day') {
-  //     return (new Date().getTime() - annotation.createdTimestamp) < 86400000;
-  //   }
-  //   else if (timeRange === 'week') {
-  //     return (new Date().getTime() - annotation.createdTimestamp) < 604800000;
-  //   }
-  //   else if (timeRange === 'month') {
-  //     return (new Date().getTime() - annotation.createdTimestamp) < 2629746000;
-  //   }
-  //   else if (timeRange === '6months') {
-  //     return (new Date().getTime() - annotation.createdTimestamp) < 15778476000;
-  //   }
-  //   else if (timeRange === 'year') {
-  //     return (new Date().getTime() - annotation.createdTimestamp) < 31556952000;
-  //   }
-  // }
-
-/*
-function transmitMessage({ msg, data = {}, callback = (res) => { } }) {
-chrome.runtime.sendMessage(
-  {
-    msg: msg,
-    from: 'content',
-    ...data
-  }, callback
-);
-}
-
-const messagesOut = {
-
-'GET_GROUPS_PAGE_LOAD': (data) => transmitMessage({ msg: 'GET_GROUPS_PAGE_LOAD', data: data, callback: () => { } }),
-'SET_UP_PIN': () => { },
-"GET_ANNOTATIONS_PAGE_LOAD": () => { },
-'UNSUBSCRIBE': () => { },
-'GET_CURRENT_USER': () => { },
-'GET_PINNED_ANNOTATIONS': () => { },
-'ANNOTATION_FOCUS': () => { },
-'ANNOTATION_DEFOCUS': () => { },
-'HIGHLIGHT_ANNOTATIONS': () => { },
-'GET_ANNOTATION_BY_ID': () => { },
-}
-
-let messagesIn = {
-//authHelper
-'USER_AUTH_STATUS_CHANGED': () => { },
-
-'CONTENT_SELECTED': () => { },
-'CONTENT_UPDATED': () => { },
-
-'PINNED_CHANGED': () => { },
-//content
-'ANCHOR_CLICKED': () => { },
-'ANCHOR_BROKEN': () => { },
-'USER_FORGET_PWD': () => { },
-'TOGGLE_SIDEBAR': () => { },
-'CONTENT_UPDATED': () => { },
-'GROUPS_UPDATED': () => { },
-
-
-'SORT_LIST': () => { },
-'TOGGLE_SIDEBAR': () => { },
-'ELASTIC_CONTENT_UPDATED': () => { },
-'ELASTIC_CONTENT_DELETED': () => { },
-'ELASTIC_CHILD_ANCHOR_ADDED': () => { },
-'FILTER_BY_TAG': () => { },
-
-
-
-};
-
-*/

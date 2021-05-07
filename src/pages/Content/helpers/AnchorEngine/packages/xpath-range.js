@@ -94,14 +94,14 @@ export function toRange(startPath, startOffset, endPath, endOffset, root) {
   function notFound(which) {
     let error = `The ${which} node was not found.`,
       name = 'NotFoundError';
-    console.error(name, error);
+    //console.error(name, error);
     return false
   }
 
   function indexSize(which) {
     let error = `There is no text at the requested ${which} offset.`,
       name = 'IndexSizeError';
-    console.error(name, error);
+    //console.error(name, error);
     return false
   }
 }
@@ -136,7 +136,7 @@ export function toRangeNew(startPath, startOffset, endPath, endOffset, root, mat
     // console.log(startOffset, endOffset, matchContent);
     if (startPath === endPath && startOffset > endOffset) {
       endOffset = startOffset + matchContent.trim().length;
-      console.log(startOffset, endOffset, matchContent);
+      //console.log(startOffset, endOffset, matchContent);
     }
     let out;
     try {
@@ -315,7 +315,7 @@ function getNodeSelectionTextRange(node, shouldRestoreSelection, match) {
   if (shouldRestoreSelection == null) { shouldRestoreSelection = true; }
   if (shouldRestoreSelection) { saveSelection(); }
 
-  if (debug) console.log("Select Node");
+  //if (debug) console.log("Select Node");
   sel = selectNode2(node);
   text = sel.toString().trim().replace(/\n/g, " ").replace(/[ ][ ]+/g, " ");
 

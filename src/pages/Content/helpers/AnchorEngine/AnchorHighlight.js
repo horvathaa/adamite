@@ -63,12 +63,12 @@ export const checkForBrokenAnnotationDeep = (anno, ids) => {
 
 export const highlightAnnotation = (annotation, domId, type) => {
     //will show annotation type
+    console.log('highlighting anno');
     let nodePairs = getNodeSubstringPairs({ annotation: annotation, type: type });
     if (!nodePairs || nodePairs.length == 0) {
         //console.log("no matches");
         return false;
     }
-    //console.log("NODE PAIRS");
     nodePairs.forEach((pair) => {
         addHighlightToSubstring({
             node: pair.node,
@@ -79,6 +79,7 @@ export const highlightAnnotation = (annotation, domId, type) => {
             isPreview: false
         });
     });
+
     return true;
 }
 
@@ -93,6 +94,7 @@ export const tempHighlight = (annotation) => {
         return false;
     }
     nodePairs.forEach((pair) => {
+
         addHighlightToSubstring({
             node: pair.node,
             substring: pair.substring,
@@ -169,9 +171,14 @@ function getNodeSubstringPairs({ annotation, type, }) {
     if ((startPath === endPath) && nodes.length === 1) {
         // If content string exists use that otherwise use indexes
         let substring = nodes[0].data.substring(startOffset, endOffset ? endOffset : nodes[0].data.length);
-        if (hasContent && substring !== fullContentString) substring = fullContentString;
+        // if (hasContent && substring !== fullContentString) 
+        // substring = fullContentString;
         // Highlight
         return [{ node: nodes[0], substring: substring, startOffset: startOffset, endOffset: endOffset ? endOffset : nodes[0].data.length }];
+    }
+    else if (("hostname" in annotation) && (annotation.hostname.includes("atomiks.github.io") || annotation.hostname.includes("reactjs.org"))) {
+        console.log("exeption");
+        return tippyException(annotation, startOffset, endOffset, nodes, fullContentString,)
     }
     else if (nodes.length > 1) {
         let nodePairs = [];
@@ -201,6 +208,39 @@ function getNodeSubstringPairs({ annotation, type, }) {
 }
 
 
+function tippyException(annotation, startOffset, endOffset, nodes, content) {
+    //console.log("Exeption", content);
+    let nodePairs = [];
+    let start = true;
+    let substring = "";
+    let str = "";
+    for (let i = 0; i < nodes.length; i++) {
+        let so, eo;
+        if (content.length > str.length) {
+
+            if (nodes[i].nodeType === 3) {
+                if (startOffset !== 0 && start) {
+                    substring = nodes[i].data.substring(startOffset, nodes[i].data.length);
+                    start = false;
+                    so = startOffset; eo = nodes[i].data.length;
+                }
+                else if (endOffset !== 0 && i == nodes.length - 1) {
+                    substring = nodes[i].data.substring(0, endOffset);
+                    so = 0; eo = endOffset;
+                }
+                else {
+                    substring = nodes[i].data;// if (!remainingContent.includes(substring)) {   console.log("Middle substring error") }
+                    so = 0; eo = nodes[i].data.length;
+                }
+                str += substring;
+                if (content.length > str.length) {
+                    nodePairs.push({ node: nodes[i], substring: substring, startOffset: so, endOffset: eo });
+                }
+            }
+        }
+    }
+    return nodePairs;
+}
 
 
 

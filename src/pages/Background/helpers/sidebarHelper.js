@@ -60,7 +60,7 @@ const persistShouldShrinkBodyStatus = (status) => {
 export const toggleSidebar = (toStatus = null) => {
   let sidebarOpen;
   if (toStatus === null || toStatus === undefined) {
-    sidebarOpen = !sidebarOpen;
+    sidebarOpen = false;
   } else {
     sidebarOpen = toStatus;
   }

@@ -318,7 +318,6 @@ class FilterSummary extends React.Component {
                                 { visible: "Time", value: 'time' }]
                             })}
                         </div>
-
                         {this.state.showTagFilter ? (
                             <div className="FilterByTag" >
                                 <div onClick={() => this.setState({ showTagFilter: false })}>

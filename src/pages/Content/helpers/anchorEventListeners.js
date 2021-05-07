@@ -5,7 +5,7 @@ import { transmitMessage } from './anchorEventTransmitter';
 import { addNewAnchor, createAnnotationCallback, } from './AnchorEngine/AnchorCreate';
 // Changes to DOM
 import { removeHighlightSpans, getHighlightSpanIds } from './AnchorEngine/AnchorDomChanges';
-//import { Octokit } from "@octokit/core";
+
 import {
     tempHighlight,
     highlightReplyRange,
@@ -41,7 +41,6 @@ function removeDuplicates(idArray) {
     });
     return annotations;
 }
-
 
 document.addEventListener('mouseup', event => {
     transmitMessage({
@@ -79,13 +78,6 @@ let messagesIn = {
         // console.log(l);
         const { xpath, id } = request.payload;
         highlightReplyRange(xpath, id);
-
-        // await octokit.request('POST /repos/{owner}/{repo}/issues/{issue_number}/comments', {
-        //     owner: 'octocat',
-        //     repo: 'hello-world',
-        //     issue_number: 42,
-        //     body: 'body'
-        // })
     },
     'HIGHLIGHT_ANNOTATIONS': (request, sender, sendResponse) => {
         // removeHighlightSpans({ isPreview: false });
@@ -121,7 +113,7 @@ let messagesIn = {
     },
     'ANNOTATION_FOCUS': (request, sender, sendResponse) => {
         let findSpan = getSpanFromRequest(request);
-        findSpan.forEach(e => e.style.backgroundColor = '#7cce7299');
+        findSpan.forEach(e => e.style.backgroundColor = 'rgb(45, 350, 180, 0.4)');
     },
     'ANNOTATION_DEFOCUS': (request, sender, sendResponse) => {
         let findSpan = getSpanFromRequest(request);

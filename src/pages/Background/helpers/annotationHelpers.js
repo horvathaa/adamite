@@ -338,10 +338,10 @@ export function updateAnnotationsOnTabActivated(activeInfo) {
             });
         }
     }
+
 }
 
 export function handleTabUpdate(url, tabId) {
-    console.log("Handle tab update");
     getAllAnnotationsByUrlListener(url, tabId);
     getPrivateAnnotationsByUrlListener(url, tabId);
 }
