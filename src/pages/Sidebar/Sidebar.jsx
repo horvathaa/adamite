@@ -70,7 +70,7 @@ class Sidebar extends React.Component {
       userScope: ['public'],
       annoType: ['default', 'to-do', 'question', 'highlight', 'issue'],
       timeRange: 'all',
-      showArchive: false,
+      showArchived: false,
       tags: []
     }
   };
@@ -359,9 +359,9 @@ class Sidebar extends React.Component {
             }, response => {
               let spanNames = response.spanNames;
               if (spanNames !== undefined) {
-                spanNames = spanNames.map((obj) => {
-                  return obj.id.includes('-') ? obj.id.substring(0, obj.id.indexOf('-')) : obj.id;
-                });
+                // spanNames = spanNames.map((obj) => {
+                //   return obj.id.includes('-') ? obj.id.substring(0, obj.id.indexOf('-')) : obj.id;
+                // });
                 spanNames.sort((a, b) => {
                   return a.y !== b.y ? a.y - b.y : a.x - b.x
                 })
@@ -383,15 +383,15 @@ class Sidebar extends React.Component {
           }
         })
 
-        chrome.browserAction.setBadgeText({ tabId: request.tabId, text: request.payload.length ? String(request.payload.length) : "0" });
+        chrome.browserAction.setBadgeText({ tabId: request.tabId, text: request.payload.length ? String(request.payload.length - request.payload.filter(r => r.archived).length) : "0" });
       }
       else if (request.msg === 'SORT_LIST' && request.from === 'background') {
         let spanNames = request.payload.spanNames;
         let annotations = this.state.annotations;
         if (spanNames !== undefined) {
-          spanNames = spanNames.map((obj) => {
-            return obj.id.includes('-') ? obj.id.substring(0, obj.id.indexOf('-')) : obj.id;
-          });
+          // spanNames = spanNames.map((obj) => {
+          //   return obj.id.includes('-') ? obj.id.substring(0, obj.id.indexOf('-')) : obj.id;
+          // });
           spanNames.sort((a, b) => {
             return a.y !== b.y ? a.y - b.y : a.x - b.x
           })
@@ -420,7 +420,6 @@ class Sidebar extends React.Component {
                 return anno.id === annotation.id;
               });
               tempArray[index] = annotation;
-              // console.log('new list', tempArray);
               this.setState({ searchedAnnotations: tempArray })
             })
         }
@@ -499,20 +498,14 @@ class Sidebar extends React.Component {
         },
           (res) => {
             groupKV.push({ name: group.label, annotations: res.response.data.hits.hits.map(h => h._source) });
-            // console.log('what the groupkv', groupKV);
-            // groupNames.push(group.label);
             this.setState({ groupAnnotations: groupKV });
             this.setState({ activeGroups: groupNames });
 
           });
       }
 
-      // console.log('what is Happening my Dude', groupKV);
       groupNames.push(group.label);
-      this.setState({ groupAnnotations: groupKV });
-      this.setState({ activeGroups: groupNames });
-      this.setState({ filteredGroupAnnotations: [] });
-
+      this.setState({ groupAnnotations: groupKV, activeGroups: groupNames, filteredGroupAnnotations: [] });
     });
   }
 
@@ -566,7 +559,6 @@ class Sidebar extends React.Component {
 
     }
     if (!pinned) {
-      // console.log(annotation);
       if (annotation[0].childAnchor !== undefined && annotation[0].childAnchor.length) {
         const idArray = [];
         annotation[0].childAnchor.forEach(anno => {
@@ -612,7 +604,6 @@ class Sidebar extends React.Component {
   };
 
   searchedSearchCount = (count) => {
-    // console.log("this is being called", count)
     this.setState({ searchCount: count });
   };
 
@@ -626,7 +617,6 @@ class Sidebar extends React.Component {
   };
 
   checkAnnoType(annotation, annoType) {
-    // console.log('annotation type', annotation, annoType);
     if (!annoType.length || annoType === 'all' || annotation.pinned) {
       return true;
     }
@@ -681,11 +671,14 @@ class Sidebar extends React.Component {
   }
 
   checkTags(annotation, tags) {
-    // console.log('check tag', annotation, tags);
     if (!tags.length || annotation.pinned) {
       return true;
     }
     return tags.some(tag => annotation.tags.includes(tag));
+  }
+
+  checkArchived = (annotation, includeArchived) => {
+    return !annotation.archived || (includeArchived && annotation.archived)
   }
 
   sendTagToBackground(tag) {
@@ -764,7 +757,8 @@ class Sidebar extends React.Component {
               this.checkUserScope(annotation, filterSelection.userScope) &&
               this.checkAnnoType(annotation, filterSelection.annoType) &&
               checkTimeRange(annotation, filterSelection.timeRange) &&
-              this.checkTags(annotation, filterSelection.tags)
+              this.checkTags(annotation, filterSelection.tags) &&
+              this.checkArchived(annotation, filterSelection.showArchived)
           })
       });
     }
@@ -781,7 +775,8 @@ class Sidebar extends React.Component {
             this.checkUserScope(annotation, this.state.filterSelection.userScope) &&
             this.checkAnnoType(annotation, this.state.filterSelection.annoType) &&
             checkTimeRange(annotation, this.state.filterSelection.timeRange) &&
-            this.checkTags(annotation, this.state.filterSelection.tags);
+            this.checkTags(annotation, this.state.filterSelection.tags) &&
+            this.checkArchived(annotation, this.state.showArchived);
         })
     });
   }
@@ -843,12 +838,12 @@ class Sidebar extends React.Component {
         renderedAnnotations = pageLocationSort;
     }
 
-    renderedAnnotations = renderedAnnotations.filter(anno => !anno.deleted && !anno.archived);
+    renderedAnnotations = renderedAnnotations.filter(anno => !anno.deleted && (!anno.archived || (this.state.filterSelection.showArchived && anno.archived)));
     let pinnedAnnosCopy = pinnedAnnos.sort((a, b) =>
       (a.createdTimestamp < b.createdTimestamp) ? 1 : -1
     );
 
-    pinnedAnnosCopy = pinnedAnnosCopy.filter(anno => !anno.deleted && !anno.archived);
+    pinnedAnnosCopy = pinnedAnnosCopy.filter(anno => !anno.deleted && (!anno.archived || (this.state.filterSelection.showArchived && anno.archived)));
 
     let tempSearchCount;
     if (this.state.showPinned) {
@@ -892,6 +887,7 @@ class Sidebar extends React.Component {
                   notifySidebarSort={this.notifySidebarSort}
                   currentSort={this.state.sortBy}
                   getFilteredAnnotations={this.getFilteredAnnotations}
+                  numArchivedAnnotations={this.state.annotations.filter(anno => anno.archived).length}
                 />
               }
 

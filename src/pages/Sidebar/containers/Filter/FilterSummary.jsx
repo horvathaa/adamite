@@ -8,7 +8,7 @@ import classNames from 'classnames';
 import tag from '../../../../assets/img/SVGs/tag.svg';
 import { Dropdown } from 'react-bootstrap';
 import GroupMultiSelect from './MultiSelect/MultiSelect'
-import Tooltip from '@material-ui/core/Tooltip';
+import { Tooltip, Checkbox } from '@material-ui/core';
 import expand from '../../../../assets/img/SVGs/expand.svg';
 
 
@@ -54,7 +54,7 @@ class FilterSummary extends React.Component {
         userScope: ['public'],
         annoType: ['default', 'to-do', 'question', 'highlight', 'issue'],
         timeRange: 'all',
-        archive: null,
+        showArchived: false,
         tags: []
     }
 
@@ -162,6 +162,11 @@ class FilterSummary extends React.Component {
         // }
     }
 
+    handleArchived = () => {
+        this.selection.showArchived = !this.selection.showArchived;
+        this.props.applyFilter(this.selection);
+    }
+
     createDropDown = (args) => {
         const listItems = args.items.map((option, idx) => {
             let active = args.activeFilter.includes(option.visible) ? true : false
@@ -196,7 +201,7 @@ class FilterSummary extends React.Component {
     }
 
     render() {
-        const { filter, groups, currentSort, activeGroup } = this.props;
+        const { filter, groups, currentSort, activeGroup, numArchivedAnnotations } = this.props;
         let annoType = "";
         if (areArraysEqualSets(filter.annoType, ['default', 'to-do', 'question', 'highlight', 'issue'])) {
             annoType = "All Types";
@@ -313,6 +318,7 @@ class FilterSummary extends React.Component {
                                 { visible: "Time", value: 'time' }]
                             })}
                         </div>
+
                         {this.state.showTagFilter ? (
                             <div className="FilterByTag" >
                                 <div onClick={() => this.setState({ showTagFilter: false })}>
@@ -407,6 +413,10 @@ class FilterSummary extends React.Component {
                                 </div>
                             ) : (null)
                         }
+                        {numArchivedAnnotations && <div className="FilterSection">
+                            {this.selection.showArchived ? `Hide ${numArchivedAnnotations} archived annotations` : `Show ${numArchivedAnnotations} archived annotations`}
+                            <Checkbox onChange={this.handleArchived} value={this.selection.showArchived} size={'small'} color={'primary'} classes={{ colorPrimary: '#6B778C' }} />
+                        </div>}
                         <Tooltip title={this.props.tempSearchCount + " annotations"} aria-label="annotation count">
                             <div className="outerSearchBar">
                                 <div className="SearchResultsCountContainer">

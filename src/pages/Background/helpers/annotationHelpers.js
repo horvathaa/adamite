@@ -415,11 +415,11 @@ function updateList(list, url, annotations, isPrivate) {
     let obj = list.filter(obj => url === obj.tabUrl);
     let objToUpdate = obj[0];
     if (isPrivate) {
-        let newList = objToUpdate.annotations.filter(anno => anno.isPrivate !== true && !anno.deleted && !anno.archived && anno.url.includes(url)) // removed anno.private check - if things break, well...
+        let newList = objToUpdate.annotations.filter(anno => anno.isPrivate !== true && !anno.deleted && anno.url.includes(url)) // removed anno.private check - if things break, well...
         objToUpdate.annotations = newList.concat(annotations);
     }
     else {
-        let newList = objToUpdate.annotations.filter(anno => anno.isPrivate === true && !anno.deleted && !anno.archived && anno.url.includes(url))
+        let newList = objToUpdate.annotations.filter(anno => anno.isPrivate === true && !anno.deleted && anno.url.includes(url))
         objToUpdate.annotations = newList.concat(annotations);
     }
     // objToUpdate.annotations = annotations;
@@ -470,10 +470,9 @@ function getAllAnnotationsByUrlListener(url, tabId) {
     if (user !== null) {
         publicListener = fb.getAllAnnotationsByUrl(url, user.uid).onSnapshot(annotationsSnapshot => {
             let tempPublicAnnotations = getListFromSnapshots(annotationsSnapshot);
-            tempPublicAnnotations = tempPublicAnnotations.filter(anno => !anno.deleted && !anno.archived && anno.url.includes(url))
+            tempPublicAnnotations = tempPublicAnnotations.filter(anno => !anno.deleted && anno.url.includes(url))
             let annotationsToBroadcast = tempPublicAnnotations.concat(privateAnnotations);
-            annotationsToBroadcast = annotationsToBroadcast.filter(anno => !anno.deleted && !anno.archived && anno.url.includes(url));
-            // console.log('annos to public broadcast', annotationsToBroadcast)
+            annotationsToBroadcast = annotationsToBroadcast.filter(anno => !anno.deleted && anno.url.includes(url));
             chrome.tabs.query({}, tabs => {
                 const tabsWithUrl = tabs.filter(t => getPathFromUrl(t.url) === url);
                 if (containsObjectWithUrl(url, tabAnnotationCollect)) {
@@ -500,9 +499,9 @@ function getPrivateAnnotationsByUrlListener(url, tabId) {
         // console.log('what is happening lol');
         privateListener = fb.getPrivateAnnotationsByUrl(url, user.uid).onSnapshot(annotationsSnapshot => {
             let tempPrivateAnnotations = getListFromSnapshots(annotationsSnapshot);
-            tempPrivateAnnotations = tempPrivateAnnotations.filter(anno => !anno.deleted && !anno.archived && anno.url.includes(url))
+            tempPrivateAnnotations = tempPrivateAnnotations.filter(anno => !anno.deleted && anno.url.includes(url))
             let annotationsToBroadcast = tempPrivateAnnotations.concat(publicAnnotations);
-            annotationsToBroadcast = annotationsToBroadcast.filter(anno => !anno.deleted && !anno.archived && anno.url.includes(url));
+            annotationsToBroadcast = annotationsToBroadcast.filter(anno => !anno.deleted && anno.url.includes(url));
             chrome.tabs.query({}, tabs => {
                 const tabsWithUrl = tabs.filter(t => getPathFromUrl(t.url) === url);
                 if (containsObjectWithUrl(url, tabAnnotationCollect)) {
