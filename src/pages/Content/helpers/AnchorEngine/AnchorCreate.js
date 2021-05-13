@@ -192,7 +192,6 @@ export function addNewAnchor({ request, type }) {
     // console.log("aff new Anchor")
     var selection = window.getSelection();
     const { newAnno } = request.payload;
-    console.log('addNewAnchor newAnno', newAnno, request, type);
     if (selection.type === 'Range') {
         const rect = selection.getRangeAt(0);
 
@@ -229,15 +228,14 @@ export function addNewAnchor({ request, type }) {
             tags: []
         };
 
+        newAnno.url = newAnno.url.includes(anchor.url) ? newAnno.url : newAnno.url.concat([anchor.url]);
+
         if (type == "reply") {
             transmitMessage({ msg: 'TRANSMIT_REPLY_ANCHOR', data: { "payload": anchor } });
 
         } else {
             let childAnchor = [...newAnno.childAnchor, anchor];
-            // payload['newAnno'] = request.payload;
-            // console.log(payload);
             const newA = { ...newAnno, childAnchor: childAnchor };
-            // console.log(newA);
             transmitMessage({ msg: 'ANNOTATION_UPDATED', data: { "payload": { newAnno: newA, updateType: "NewAnchor" } } });
         }
         selection.removeAllRanges();
