@@ -54,7 +54,7 @@ const CardWrapper = ({ isNew = false }) => {
                 <div className="Tag-Container">
                     <div className="row">
                         <div className="TextareaContainer">
-                            <TagsInput value={newAnno.tags}
+                            <TagsInput value={newAnno.tags !== undefined ? newAnno.tags : []}
                                 onChange={(newTags) => setNewAnno({ ...newAnno, tags: newTags })}
                                 onlyUnique={true}
                                 addOnBlur

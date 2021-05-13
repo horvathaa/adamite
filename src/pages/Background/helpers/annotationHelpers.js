@@ -112,6 +112,8 @@ export async function createAnnotation(request, sender, sendResponse) {
         author: author,
         groups: [], // later have this be a default group
         readCount: 0,
+        replies: [],
+        events: [],
         deleted: false,
         archived: false,
         createdTimestamp: new Date().getTime(),

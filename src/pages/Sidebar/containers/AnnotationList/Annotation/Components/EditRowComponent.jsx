@@ -54,7 +54,7 @@ const EditRowComponent = () => {
                         {ctx.getGroupName()}
                     </div>
                     <div className="timestamp">
-                        {formatTimestamp(ctx.anno.createdTimestamp)}
+                        {ctx.anno.createdTimestamp !== undefined ? formatTimestamp(ctx.anno.createdTimestamp) : (null)}
                     </div>
                 </div>
 

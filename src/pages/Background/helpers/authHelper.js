@@ -20,7 +20,7 @@ auth.onAuthStateChanged(user => {
       chrome.storage.sync.set({
         'ElasticAPIKey': e,
       });
-      // console.log("set");
+      console.log("set", e);
     })
   }
   else {

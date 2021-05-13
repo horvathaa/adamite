@@ -90,7 +90,7 @@ const Reply = ({ idx, reply }) => {
                                 {replyData.replyContent}
                             </div>
                         </div>
-                        {replyData.tags.length ? (
+                        {replyData.tags !== undefined && replyData.tags.length ? (
                             <div className="TagRow">
                                 <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
                                     {replyData.tags.map((tagContent, idx) => {

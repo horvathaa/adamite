@@ -62,68 +62,6 @@ export async function removePaginationSearchCache(request, sender, sendResponse)
     removeQueryForScroll(request.url);
 }
 
-// chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-//     if (request.msg === 'SEARCH_ELASTIC') {
-//         console.log("SEARCH_ELASTIC", request)
-//         keyWrapper(search, { userSearch: request.userSearch, query: searchBarQuery(request, true), url: request.url, successFunction: searchBarSuccess })
-//             .then(e => sendResponse({ response: e }))
-//             .catch(function (err) {
-//                 console.log("wrapper error", err.response.status)
-//             });
-//     }
-//     else if (request.msg === 'GROUP_ELASTIC') {
-//         console.log("GROUP_ELASTIC", request)
-//         keyWrapper(search, { query: groupQuery(request.payload.gid), url: request.payload.url, successFunction: groupSearchSuccess })
-//             .then(e => { console.log('sending response'); sendResponse({ response: e }) })
-//             .catch(function (err) {
-//                 console.log("wrapper error", err.response.status)
-//             });
-//     }
-//     else if (request.msg === 'SCROLL_ELASTIC') {
-//         console.log("SCROLL_ELASTIC")
-//         var query = '';
-//         retrieveUrlQuery(request.url)
-//             .then(function (query) {
-//                 keyWrapper(search, { userSearch: request.url, query: query, url: request.url, successFunction: paginationSuccess })
-//                     .then(e => sendResponse({ response: e }))
-//                     .catch(function (err) {
-//                         console.log("wrapper error", err.response.status)
-//                     });
-//             })
-//             .catch(function (err) {
-//                 console.log("Nothing was found", err);
-//             });
-//     }
-//     else if (request.msg === "SEARCH_ELASTIC_BY_ID") {
-//         console.log("SEARCH_ELASTIC_BY_ID", request)
-//         keyWrapper(search, { userSearch: null, query: searchByID(request.id), url: request.url, successFunction: paginationSuccess })
-//             .then(e => sendResponse({ response: e }))
-//             .catch(function (err) {
-//                 console.log("wrapper error", err.response.status)
-//             });
-//     }
-//     else if (request.msg === "REFRESH_FOR_CONTENT_UPDATED") {
-//         console.log("REFRESH_FOR_CONTENT_UPDATED", request)
-//         var query = '';
-//         retrieveUrlQuery(request.url)
-//             .then(function (query) {
-//                 query.from = 0;
-//                 keyWrapper(search, { userSearch: request.url, query: query, url: request.url, successFunction: refreshSuccess })
-//                     .then(e => sendResponse({ response: e }))
-//                     .catch(function (err) {
-//                         console.log("wrapper error", err.response.status)
-//                     });
-//             })
-//             .catch(function (err) {
-//                 console.log("Nothing was found", err);
-//             });
-//     }
-//     else if (request.msg === 'REMOVE_PAGINATION_SEARCH_CACHE') {
-//         console.log("REMOVE CACHE");
-//         removeQueryForScroll(request.url);
-//     }
-// });
-
 export function regenKey() {
     return new Promise((resolve, reject) => {
         getElasticApiKey().then(function (e) {
@@ -154,7 +92,7 @@ export function keyWrapper(passedFunction, args, count = 0) {
 }
 
 export function findWhereMatched(res, value) {
-    if (res["anchorContent"].toLowerCase().indexOf(value) >= 0) return "Anchor Content";
+    if (res["childAnchor"].map(anch => anch.anchor.toLowerCase().indexOf(value) >= 0)) return "Anchor Content";
     if (res["content"].toLowerCase().indexOf(value) >= 0) return "User Description";
     if (res["hostname"] !== undefined && res["hostname"].toLowerCase().indexOf(value) >= 0) return "Hostname";
     if (res["tags"] !== undefined && res["tags"].length !== 0 && res["tags"].indexOf(value) >= 0) return "Tag";
@@ -192,7 +130,7 @@ function inputQueryBuilder(userSearch) {
                         "query": userSearch,
                         "type": "phrase",
                         "fields": [
-                            "content", "tags", "anchorContent"
+                            "childAnchor.anchor", "content", "tags", "hostname"
                         ],
                         "boost": 10
                     }
@@ -248,7 +186,7 @@ export function searchBarQuery(query) {
         "fragment_size": query.userSearch.length > 100 ? query.userSearch.length : 100,
         "fields": {
             "content": {},
-            "anchorContent": {},
+            "childAnchor.anchor": {},
             "partialSearch": {}
         }
     }
@@ -270,7 +208,14 @@ export function findOffset(highlightString, sourceString) {
 export function highlightOffsetMatch(hlElement, source) {
     for (var element in hlElement) {
         if (typeof hlElement[element] !== "undefined") {
-            hlElement[element] = findOffset(hlElement[element][0], source[element])
+            if (source.matchedAt === "Anchor Content") {
+                const highlightString = hlElement[element][0];
+                source.childAnchor.forEach(anch => { if (anch.anchor === highlightString) hlElement[element] = findOffset(highlightString, anch.anchor) })
+            }
+            else {
+                hlElement[element] = findOffset(hlElement[element][0], source[element])
+            }
+
         } else if (typeof source[element] !== "undefined") {
             hlElement[element] = source[element].substring(0, 30);
             hlElement[element] += hlElement[element].length !== source[element] ? "..." : "";
