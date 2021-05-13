@@ -5,7 +5,10 @@ import firebase from '../../../firebase/firebase';
 import { getCurrentUserId } from '../../../firebase/index';
 import { getPathFromUrl } from '../backgroundEventListeners';
 
-
+// from: https://stackoverflow.com/questions/34151834/javascript-array-contains-includes-sub-array
+function hasSubArray(master, sub) {
+    return sub.every((i => v => i = master.indexOf(v, i) + 1)(0));
+}
 
 function assert(condition, message) {
     if (!condition) {
@@ -19,10 +22,12 @@ let annotationsAcrossWholeSite = [];
 let annotations = [];
 let publicAnnotations = [];
 let privateAnnotations = [];
+let groupAnnotations = [];
 let publicPinnedAnnotations = [];
 let privatePinnedAnnotations = [];
 let pinnedAnnotations = [];
-let pinnedPrivateListener, pinnedPublicListener, publicListener, privateListener
+let pinnedPrivateListener, pinnedPublicListener, publicListener, privateListener;
+let userGroups = [];
 
 
 
@@ -49,7 +54,21 @@ export function setPinnedAnnotationListeners(request, sender, sendResponse) {
 }
 
 export async function getAnnotationsPageLoad(request, sender, sendResponse) {
-    let { email, uid } = fb.getCurrentUser();
+    let { email } = fb.getCurrentUser();
+    if (!userGroups.length) {
+        fb.getAllUserGroups(request.uid).get().then(function (querySnapshot) {
+            userGroups = getListFromSnapshots(querySnapshot);
+            fb.getOtherUserGroupAnnotationsByGroupId(userGroups, request.url, request.uid).get().then(function (querySnapshot) {
+                groupAnnotations = querySnapshot.empty ? [] : getListFromSnapshots(querySnapshot);
+            })
+        })
+    }
+    else {
+        fb.getOtherUserGroupAnnotationsByGroupId(userGroups, request.url, request.uid).get().then(function (querySnapshot) {
+            groupAnnotations = querySnapshot.empty ? [] : getListFromSnapshots(querySnapshot);
+        })
+    }
+
     let userName = email.substring(0, email.indexOf('@'));
     // if (request.tabId !== undefined) {
     //     chrome.tabs.sendMessage(
@@ -65,8 +84,8 @@ export async function getAnnotationsPageLoad(request, sender, sendResponse) {
     //         }
     //     );
     // }
-    getAllAnnotationsByUrlListener(request.url, request.tabId,)
-    getPrivateAnnotationsByUrlListener(request.url, request.tabId,);
+    getAllAnnotationsByUrlListener(request.url, request.tabId) // consider moving these into promise to prevent race condition???
+    getPrivateAnnotationsByUrlListener(request.url, request.tabId);
     // chrome.browserAction.setBadgeText({ text: String(annotations.length) });
 }
 
@@ -474,6 +493,7 @@ function getAllAnnotationsByUrlListener(url, tabId) {
             let tempPublicAnnotations = getListFromSnapshots(annotationsSnapshot);
             tempPublicAnnotations = tempPublicAnnotations.filter(anno => !anno.deleted && anno.url.includes(url))
             let annotationsToBroadcast = tempPublicAnnotations.concat(privateAnnotations);
+            annotationsToBroadcast = !hasSubArray(annotationsToBroadcast, groupAnnotations) ? annotationsToBroadcast.concat(groupAnnotations) : annotationsToBroadcast
             annotationsToBroadcast = annotationsToBroadcast.filter(anno => !anno.deleted && anno.url.includes(url));
             chrome.tabs.query({}, tabs => {
                 const tabsWithUrl = tabs.filter(t => getPathFromUrl(t.url) === url);
@@ -503,6 +523,7 @@ function getPrivateAnnotationsByUrlListener(url, tabId) {
             let tempPrivateAnnotations = getListFromSnapshots(annotationsSnapshot);
             tempPrivateAnnotations = tempPrivateAnnotations.filter(anno => !anno.deleted && anno.url.includes(url))
             let annotationsToBroadcast = tempPrivateAnnotations.concat(publicAnnotations);
+            annotationsToBroadcast = !hasSubArray(annotationsToBroadcast, groupAnnotations) ? annotationsToBroadcast.concat(groupAnnotations) : annotationsToBroadcast
             annotationsToBroadcast = annotationsToBroadcast.filter(anno => !anno.deleted && anno.url.includes(url));
             chrome.tabs.query({}, tabs => {
                 const tabsWithUrl = tabs.filter(t => getPathFromUrl(t.url) === url);
@@ -520,8 +541,9 @@ function getPrivateAnnotationsByUrlListener(url, tabId) {
             privateAnnotations = tempPrivateAnnotations;
         });
     }
-
 }
+
+
 
 
 // const _createAnnotation = (request) => {

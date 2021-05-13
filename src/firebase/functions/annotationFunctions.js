@@ -94,12 +94,13 @@ export const getAllPinnedAnnotationsByUserId = (uid) => {
     .where('isPrivate', '==', false);
 };
 
-export const getGroupAnnotationsByGroupId = (gid) => {
+export const getOtherUserGroupAnnotationsByGroupId = (gids, url, uid) => {
   // console.log('in annofunctions', gid);
   return db
     .collection(DB_COLLECTIONS.ANNOTATIONS)//.doc("06OlxrYfO08cofa2mDb9");
-    .where('groups', 'array-contains-any', gid) // switch to array-contains-any to look across all groups that user is in
-    .where('isPrivate', '==', true);
+    .where('groups', 'array-contains-any', gids) // switch to array-contains-any to look across all groups that user is in
+    .where('url', 'array-contains', url)
+    .where('authorId', '!=', uid);
 };
 
 export const getAllPrivatePinnedAnnotationsByUserId = (uid) => {
