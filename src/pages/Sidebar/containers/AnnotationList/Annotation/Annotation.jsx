@@ -123,7 +123,6 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, res
         },
 
         updateAnnotation: (newAnno) => {
-          console.log("update", newAnno);
           if (newAnno !== anno) {
             chrome.runtime.sendMessage({
               msg: 'ANNOTATION_UPDATED',
@@ -154,8 +153,6 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, res
 
         brokenAnchor: false,
         handleNewAnchor: () => {
-          console.log("handle new");
-
           chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
             chrome.tabs.sendMessage(
               tabs[0].id, {

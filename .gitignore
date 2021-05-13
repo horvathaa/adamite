@@ -17,7 +17,8 @@
 .env.production.local
 /out
 /.vscode
-
+.vscode
+.tours
 # secrets
 secrets.*.js
 

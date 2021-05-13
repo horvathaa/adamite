@@ -412,10 +412,10 @@ class FilterSummary extends React.Component {
                                 </div>
                             ) : (null)
                         }
-                        {numArchivedAnnotations && <div className="FilterSection">
+                        {numArchivedAnnotations ? <div className="FilterSection">
                             {this.selection.showArchived ? `Hide ${numArchivedAnnotations} archived annotations` : `Show ${numArchivedAnnotations} archived annotations`}
                             <Checkbox onChange={this.handleArchived} value={this.selection.showArchived} size={'small'} color={'primary'} classes={{ colorPrimary: '#6B778C' }} />
-                        </div>}
+                        </div> : (null)}
                         <Tooltip title={this.props.tempSearchCount + " annotations"} aria-label="annotation count">
                             <div className="outerSearchBar">
                                 <div className="SearchResultsCountContainer">

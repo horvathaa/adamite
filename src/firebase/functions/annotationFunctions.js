@@ -11,7 +11,6 @@ export const getAllAnnotationsByUserId = uid => {
 };
 
 export const getAllAnnotationsByUrl = url => {
-  console.log(url);
   return db.collection(DB_COLLECTIONS.ANNOTATIONS)
     .where('url', 'array-contains', url)
     .where('isPrivate', '==', false);

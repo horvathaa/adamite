@@ -30,6 +30,7 @@ class SearchBar extends React.Component {
         hits: 0
     }
     highlightSearchWords = (sentence, baseContent) => {
+        sentence = Array.isArray(sentence) ? sentence[0] : sentence;
         return typeof sentence === "undefined" ? baseContent : sentence.match(new RegExp('(?<=<em>)(.*?)(?=<\/em>)', 'g'));
     }
 
@@ -53,35 +54,41 @@ class SearchBar extends React.Component {
 
     renderSuggestion = suggestion => {
         var searchAnchorContent = this.state.value.split(" ");
-        var anchorContent = suggestion.anchorContent;
+        var anchorContent = suggestion.childAnchor[0].anchor;
         var searchContent = this.state.value.split(" ");
         var content = suggestion.content;
 
         if (suggestion.hasOwnProperty("highlight")) {
-            searchAnchorContent = this.highlightSearchWords(suggestion.highlight.anchorContent, searchAnchorContent);
-            anchorContent = suggestion.highlight.hasOwnProperty("anchorContent") ? suggestion.highlight.anchorContent.replace(new RegExp('(<em>)|(<\/em>)', 'g'), '') : anchorContent;
+            if (suggestion.highlight.hasOwnProperty("childAnchor.anchor")) {
+                searchAnchorContent = this.highlightSearchWords(suggestion.highlight["childAnchor.anchor"][0], searchAnchorContent);
+                anchorContent = suggestion.highlight.hasOwnProperty("childAnchor.anchor") ? suggestion.highlight["childAnchor.anchor"][0].replace(new RegExp('(<em>)|(<\/em>)', 'g'), '') : anchorContent;
+            }
+            if (suggestion.highlight.content !== undefined) {
+                searchContent = this.highlightSearchWords(suggestion.highlight.content, searchContent);
+                content = suggestion.highlight.content !== undefined ? suggestion.highlight.content[0].replace(new RegExp('(<em>)|(<\/em>)', 'g'), '') : content;
+            }
 
-            searchContent = this.highlightSearchWords(suggestion.highlight.content, searchContent);
-            content = suggestion.highlight.hasOwnProperty("content") ? suggestion.highlight.content.replace(new RegExp('(<em>)|(<\/em>)', 'g'), '') : content;
+
+
         }
         return (
             <React.Fragment>
                 <div className="autosuggest-row">
                     <div className="autosuggest-col-sm">
-                        <img className="react-autosuggest__icon" src={chrome.extension.getURL(this.iconSelector(suggestion.type))} alt="question annnotation" />
+                        <img className="react-autosuggest__icon" src={chrome.extension.getURL(this.iconSelector(suggestion.type))} alt="annnotation type" />
                     </div>
                     <div className="vr">&nbsp;</div>
                     <div className="autosuggest-col-6">
                         <div className="autosuggest-row-inner">
                             <div className="autosuggest-col-6-icon">
-                                <img className="react-autosuggest__anchor-content-icon" src={this.props.url === suggestion.url ? anchorOnPage : anchorOnOtherPage} alt="question annnotation" />
+                                <img className="react-autosuggest__anchor-content-icon" src={suggestion.url.includes(this.props.url) ? anchorOnPage : anchorOnOtherPage} alt="anchor location" />
                             </div>
                             <div className="autosuggest-col-6">
                                 <Highlighter
                                     highlightClassName="highlight-adamite-search-suggest"
                                     searchWords={searchAnchorContent}
                                     autoEscape={true}
-                                    textToHighlight={suggestion.hasOwnProperty("highlight") && suggestion.highlight.hasOwnProperty("anchorContent") ? suggestion.highlight.anchorContent.replace(new RegExp('(<em>)|(<\/em>)', 'g'), '') : suggestion.anchorContent}
+                                    textToHighlight={suggestion.hasOwnProperty("highlight") && suggestion.highlight.hasOwnProperty("childAnchor.anchor") ? suggestion.highlight["childAnchor.anchor"][0].replace(new RegExp('(<em>)|(<\/em>)', 'g'), '') : anchorContent}
                                 />
                             </div>
                         </div>
@@ -143,21 +150,9 @@ class SearchBar extends React.Component {
     }
 
     onSuggestionSelected = (event, { suggestion, suggestionValue, suggestionIndex, sectionIndex, method }) => {
-        // console.log("suggestions selected", suggestion, event.target.value, method);
         this.props.searchedSearchCount(1);
-        if (suggestion.SharedId !== null) {
-            this.doanothersearch(suggestion.SharedId).then(res => {
-                const results = res.data.hits.hits.map(h => h._source)
-                // console.log("THESE RESULTS IN CLICK", results)
-                this.setState({ suggestions: results, hits: 1 })
-                this.removeSearchCache();
-                this.props.handleSearchBarInputText({ suggestion: results, searchState: false });
-            });
-        }
-        else {
-            this.removeSearchCache();
-            this.props.handleSearchBarInputText({ suggestion: [suggestion], searchState: false })
-        }
+        this.removeSearchCache();
+        this.props.handleSearchBarInputText({ suggestion: [suggestion], searchState: false })
 
     }
 
@@ -298,7 +293,6 @@ class SearchBar extends React.Component {
             onKeyDown: this.onKeyDown,
             onChange: this.onChange
         }
-        // console.log("this is the value!", this.state)
         var searchCount = this.state.value.length !== 0 && suggestions.length !== 0 ? this.state.hits : this.props.searchCount;
 
         return (
@@ -315,20 +309,6 @@ class SearchBar extends React.Component {
                         inputProps={inputProps}
                     />
                 </div>
-                {/* <div className="outerSearchBar">
-                    <div className="SearchResultsCountContainer">
-                        <div
-                            className={classNames({
-                                SearchResultsCount: true,
-                                NoResults: suggestions.length === 0 && searchCount === 0,
-                                Success: suggestions.length > 0 && searchCount >= 1,
-                                //Searching: suggestions.length > 0 && searchCount > 1,
-                            })}
-                        >
-                            {searchCount}
-                        </div>
-                    </div>
-                </div> */}
             </React.Fragment >
 
         )

@@ -94,7 +94,7 @@ export async function createAnnotation(request, sender, sendResponse) {
     //let { url, anchor, xpath, offsets } = request.payload;
     let { url, newAnno } = request.payload;
     // Add checks
-    console.log(request.payload);
+    // console.log(request.payload);
 
     const hostname = new URL(url).hostname;
     const author = getAuthor();
@@ -112,6 +112,8 @@ export async function createAnnotation(request, sender, sendResponse) {
         author: author,
         groups: [], // later have this be a default group
         readCount: 0,
+        replies: [],
+        events: [],
         deleted: false,
         archived: false,
         createdTimestamp: new Date().getTime(),
@@ -181,7 +183,7 @@ export async function updateAnnotation(request, sender, sendResponse) {
     // const { id, content, type, tags, isPrivate, groups, childAnchor } = request.payload;
     const { newAnno, updateType } = request.payload;
     let doc = await fb.getAnnotationById(newAnno.id).get();
-    console.log(newAnno);
+    // console.log(newAnno);
     await fb.updateAnnotationById(newAnno.id, {
         ...newAnno,
         deletedTimestamp: 0,
