@@ -129,6 +129,7 @@ const Anchor = ({ anchor, replyIdProp }) => {
     }
 
     const handleExternalAnchor = () => {
+        console.log('sending', url)
         chrome.runtime.sendMessage({ msg: "LOAD_EXTERNAL_ANCHOR", from: 'content', payload: url });
     }
 

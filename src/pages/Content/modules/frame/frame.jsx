@@ -149,6 +149,7 @@ export class Frame extends Component {
         request.msg === 'UPDATE_SIDEBAR_WIDTH'
       ) {
         this.setState({ width: parseInt(request.width) });
+        return true;
       }
     });
   }

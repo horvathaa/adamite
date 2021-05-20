@@ -336,7 +336,7 @@ class Sidebar extends React.Component {
           return;
         }
         let annotations = request.payload;
-        this.setState({ url: request.url });
+        if (request.url !== undefined) this.setState({ url: request.url });
         chrome.runtime.sendMessage({
           msg: 'REQUEST_SIDEBAR_STATUS',
           from: 'content'
@@ -353,8 +353,8 @@ class Sidebar extends React.Component {
               payload: request.payload,
               url: request.url
             }, response => {
-              let spanNames = response.spanNames;
-              if (spanNames !== undefined) {
+              if (response !== undefined) {
+                let spanNames = response.spanNames;
                 // spanNames = spanNames.map((obj) => {
                 //   return obj.id.includes('-') ? obj.id.substring(0, obj.id.indexOf('-')) : obj.id;
                 // });
@@ -367,7 +367,6 @@ class Sidebar extends React.Component {
                   return ((index1 > -1 ? index1 : Infinity) - (index2 > -1 ? index2 : Infinity))
                 });
               }
-
               this.setState({ annotations, pageLocationSort: annotations })
               this.requestFilterUpdate();
             });
@@ -382,7 +381,7 @@ class Sidebar extends React.Component {
         chrome.browserAction.setBadgeText({ tabId: request.tabId, text: request.payload.length ? String(request.payload.length - request.payload.filter(r => r.archived).length) : "0" });
       }
       else if (request.msg === 'SORT_LIST' && request.from === 'background') {
-        let spanNames = request.payload.spanNames;
+        let spanNames = request.payload.spanNames === undefined ? undefined : request.payload.spanNames;
         let annotations = this.state.annotations;
         if (spanNames !== undefined) {
           // spanNames = spanNames.map((obj) => {
@@ -447,6 +446,8 @@ class Sidebar extends React.Component {
           })
         });
       }
+
+      // return true;
     });
   }
   containsReplyWithAnchor(list) {
@@ -486,22 +487,25 @@ class Sidebar extends React.Component {
       }
       else {
         chrome.runtime.sendMessage({
-          msg: 'GROUP_ELASTIC',
+          msg: 'GET_GROUP_ANNOTATIONS',
           payload: {
             gid: group.value,
-            url: this.state.url
+            // url: this.state.url
           }
         },
           (res) => {
-            groupKV.push({ name: group.label, annotations: res.response.data.hits.hits.map(h => h._source) });
-            this.setState({ groupAnnotations: groupKV });
-            this.setState({ activeGroups: groupNames });
+            if (res !== undefined) {
+              this.setState({ groupAnnotations: res });
+              this.setState({ activeGroups: groupNames });
+            }
+            // groupKV.push({ name: group.label, annotations: res.response.data.hits.hits.map(h => h._source) });
+
 
           });
       }
 
       groupNames.push(group.label);
-      this.setState({ groupAnnotations: groupKV, activeGroups: groupNames, filteredGroupAnnotations: [] });
+      // this.setState({ groupAnnotations: groupKV, activeGroups: groupNames, filteredGroupAnnotations: [] });
     });
   }
 
@@ -731,13 +735,13 @@ class Sidebar extends React.Component {
     this.setState({ filterSelection: filterSelection });
     if (filterSelection.siteScope.includes('onPage') && !filterSelection.siteScope.includes('acrossWholeSite')) {
       if (this.state.groupAnnotations.length) {
-        let viewableGroupAnnotations = [];
-        this.state.groupAnnotations.forEach((group) => {
-          viewableGroupAnnotations = viewableGroupAnnotations.concat(group.annotations);
-        })
+        // let viewableGroupAnnotations = [];
+        // this.state.groupAnnotations.forEach((group) => {
+        //   viewableGroupAnnotations = viewableGroupAnnotations.concat(group.annotations);
+        // })
         this.setState({
           filteredGroupAnnotations:
-            viewableGroupAnnotations.filter(annotation => {
+            this.state.groupAnnotations.filter(annotation => {
               return this.checkSiteScope(annotation, filterSelection.siteScope) &&
                 this.checkUserScope(annotation, filterSelection.userScope) &&
                 this.checkAnnoType(annotation, filterSelection.annoType) &&
@@ -831,9 +835,9 @@ class Sidebar extends React.Component {
       renderedAnnotations = searchedAnnotations;
     }
     else if (activeGroups.length) {
-      groupAnnotations.forEach((group) => {
-        renderedAnnotations = renderedAnnotations.concat(group.annotations);
-      });
+      // groupAnnotations.forEach((group) => {
+      renderedAnnotations = renderedAnnotations.concat(groupAnnotations);
+      // });
     }
     else {
       renderedAnnotations = filteredAnnotations;
@@ -981,7 +985,7 @@ class Sidebar extends React.Component {
                   requestFilterUpdate={this.requestChildAnchorFilterUpdate}
                   notifyParentOfPinning={this.handlePinnedAnnotation} />
               )}
-              {(this.state.url.includes("facebook.com") || this.state.url.includes("google.com") || this.state.url.includes("twitter.com")) && !this.state.url.includes("developer") ? (
+              {((this.state.url !== '') && (this.state.url.includes("facebook.com") || this.state.url.includes("google.com") || this.state.url.includes("twitter.com"))) && !this.state.url.includes("developer") ? (
                 <div className="whoops">
                   NOTE: Adamite does not work well on dynamic webpages such as Facebook, Google Docs, or Twitter where content is likely to change. Proceed with caution.
                 </div>

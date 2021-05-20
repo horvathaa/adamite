@@ -28,24 +28,33 @@ export const getAllUserGroups = uid => {
     .where('uids', 'array-contains', uid);
 }
 
-export const addNewGroup = async ({
+export const getUsersByEmails = emails => {
+  return db.collection(DB_COLLECTIONS.USERS)
+    .where('email', 'in', emails)
+}
+
+export const addNewGroup = ({
   name,
   description,
   owner,
+  uids,
   emails
 }) => {
   let newGroup = {
     name,
     description,
     emails,
-    uids: [owner],
-    owner
+    uids,
+    owner,
+    createdTimestamp: new Date().getTime()
   };
-  db.collection(DB_COLLECTIONS.GROUPS).add(newGroup).then(ref => {
+  console.log('newGroup', newGroup);
+  return db.collection(DB_COLLECTIONS.GROUPS).add(newGroup).then(ref => {
+    console.log('made this', ref.id)
     db.collection(DB_COLLECTIONS.GROUPS).doc(ref.id).update({
-      gid: ref.id
-    });
-  });
+      gid: ref.id,
+    }).then(_ => console.log('success'), _ => console.log('rejected!'));
+  })
 };
 
 
@@ -94,14 +103,18 @@ export const getAllPinnedAnnotationsByUserId = (uid) => {
     .where('isPrivate', '==', false);
 };
 
-export const getOtherUserGroupAnnotationsByGroupId = (gids, url, uid) => {
+export const getGroupAnnotationsByGroupId = (gid) => {
   // console.log('in annofunctions', gid);
   return db
     .collection(DB_COLLECTIONS.ANNOTATIONS)//.doc("06OlxrYfO08cofa2mDb9");
-    .where('groups', 'array-contains-any', gids) // switch to array-contains-any to look across all groups that user is in
-    .where('url', 'array-contains', url)
-    .where('authorId', '!=', uid);
+    .where('groups', 'array-contains', gid) // switch to array-contains-any to look across all groups that user is in
+  // .where('authorId', '!=', uid);     // .where('url', 'array-contains', url) fuck u firestore and ur arbitrary limitations
 };
+
+export const getAnnotationsByUrl = (url) => {
+  return db.collection(DB_COLLECTIONS.ANNOTATIONS)
+    .where('url', 'array-contains', url)
+}
 
 export const getAllPrivatePinnedAnnotationsByUserId = (uid) => {
   return db

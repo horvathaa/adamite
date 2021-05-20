@@ -111,7 +111,8 @@ class Groups extends React.Component {
     }
 
     onClickCreate = (e) => {
-        // console.log("in here", this.state.groupName, this.state.groupName.length)
+        e.stopPropagation();
+        console.log("in here", this.state.groupName, this.state.groupName.length)
         if (this.state.groupName.length <= 0) {
             this.setState({ invalidName: "*group name cannot be blank" })
             return;
@@ -265,7 +266,7 @@ class Groups extends React.Component {
                         <button className="btn-delete btn" onClick={this.onClickDeletez} >Delete</button>
                         : null
                     }
-                    <button className="btn" onClick={this.onClickCreate} >{editState ? "Update" : "Create"}</button>
+                    <button className="btn" onClick={(e) => this.onClickCreate(e)} >{editState ? "Update" : "Create"}</button>
                 </footer>
             </React.Fragment>
         );

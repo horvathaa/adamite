@@ -18,7 +18,7 @@ const CardWrapper = ({ isNew = false }) => {
         userGroups = ctx.userGroups;
 
     const [newAnno, setNewAnno] = useState(ctx.anno);
-    const [groups, setGroups] = useState(ctx.userGroups);
+    const [groups, setGroups] = useState(ctx.anno.groups);
 
     useEffect(() => {
         if (newAnno !== ctx.anno) { setNewAnno(newAnno); }
@@ -33,7 +33,7 @@ const CardWrapper = ({ isNew = false }) => {
 
 
     let splitButtonText;
-    if (groups && groups.length) {
+    if ((userGroups && userGroups.length) && (groups && groups.length)) {
         const name = userGroups.filter(g => g.gid === groups[0])[0].name;
         splitButtonText = "Post to " + name;
     }
@@ -84,13 +84,13 @@ const CardWrapper = ({ isNew = false }) => {
                                 variant="secondary"
                                 title={splitButtonText}
                                 onClick={isNew ? () => ctx.submitButtonHandler(newAnno) :
-                                    () => ctx.updateAnnotationFields({ type: newAnno.type, content: newAnno.content, isPrivate: newAnno.isPrivate, tags: newAnno.tags })
+                                    () => ctx.updateAnnotationFields({ type: newAnno.type, content: newAnno.content, isPrivate: newAnno.isPrivate, tags: newAnno.tags, groups })
                                 }
                             >
                                 <BootstrapDropdown.Item onClick={_ => setNewAnno({ ...newAnno, isPrivate: true })} eventKey="1">Private</BootstrapDropdown.Item>
                                 <BootstrapDropdown.Item onClick={_ => setNewAnno({ ...newAnno, isPrivate: false })} eventKey="2">Public</BootstrapDropdown.Item>
                                 {userGroups.map((group, i) => {
-                                    return <BootstrapDropdown.Item onClick={_ => setGroups([group.gid])} eventKey={i + 2}>{group.name}</BootstrapDropdown.Item>
+                                    return <BootstrapDropdown.Item onClick={_ => { setGroups([group.gid]); setNewAnno({ ...newAnno, groups: [group.gid] }) }} eventKey={i + 2}>{group.name}</BootstrapDropdown.Item>
                                 })}
                             </SplitButton>
                         </div>

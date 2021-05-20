@@ -228,7 +228,10 @@ export function addNewAnchor({ request, type }) {
             tags: []
         };
 
-        newAnno.url = newAnno.url.includes(anchor.url) ? newAnno.url : newAnno.url.concat([anchor.url]);
+        if (newAnno.url !== undefined) {
+            newAnno.url = newAnno.url.includes(anchor.url) ? newAnno.url : newAnno.url.concat([anchor.url]);
+        }
+
 
         if (type == "reply") {
             transmitMessage({ msg: 'TRANSMIT_REPLY_ANCHOR', data: { "payload": anchor } });
