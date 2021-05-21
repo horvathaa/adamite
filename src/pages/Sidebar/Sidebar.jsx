@@ -24,6 +24,7 @@ import {
   removeDuplicates,
   checkTimeRange
 } from "./utils"
+import GroupMultiSelect from './containers/Filter/MultiSelect/MultiSelect';
 
 
 
@@ -349,15 +350,17 @@ class Sidebar extends React.Component {
             }, response => {
               if (response !== undefined) {
                 let spanNames = response.spanNames;
-                // spanNames = spanNames.map((obj) => {
-                //   return obj.id.includes('-') ? obj.id.substring(0, obj.id.indexOf('-')) : obj.id;
-                // });
+                spanNames = spanNames.map((obj) => {
+                  let temp = Object.assign({}, obj);
+                  temp.id = obj.id.substring(0, 36)
+                  return temp
+                });
                 spanNames.sort((a, b) => {
                   return a.y !== b.y ? a.y - b.y : a.x - b.x
                 })
                 annotations.sort((a, b) => {
-                  const index1 = spanNames.findIndex(obj => obj === a.id);
-                  const index2 = spanNames.findIndex(obj => obj === b.id)
+                  const index1 = spanNames.findIndex(obj => obj.id === a.id);
+                  const index2 = spanNames.findIndex(obj => obj.id === b.id)
                   return ((index1 > -1 ? index1 : Infinity) - (index2 > -1 ? index2 : Infinity))
                 });
               }
@@ -375,12 +378,14 @@ class Sidebar extends React.Component {
         chrome.browserAction.setBadgeText({ tabId: request.tabId, text: request.payload.length ? String(request.payload.length - request.payload.filter(r => r.archived).length) : "0" });
       }
       else if (request.msg === 'SORT_LIST' && request.from === 'background') {
-        let spanNames = request.payload.spanNames === undefined ? undefined : request.payload.spanNames;
+        let spanNames = request.payload === undefined && request.payload.spanNames === undefined ? undefined : request.payload.spanNames;
         let annotations = this.state.annotations;
         if (spanNames !== undefined) {
-          // spanNames = spanNames.map((obj) => {
-          //   return obj.id.includes('-') ? obj.id.substring(0, obj.id.indexOf('-')) : obj.id;
-          // });
+          spanNames = spanNames.map((obj) => {
+            let temp = Object.assign({}, obj);
+            temp.id = obj.id.substring(0, 36)
+            return temp
+          });
           spanNames.sort((a, b) => {
             return a.y !== b.y ? a.y - b.y : a.x - b.x
           })
@@ -660,14 +665,11 @@ class Sidebar extends React.Component {
     }
   }
 
-  getFilteredAnnotations = () => {
-    return this.state.filteredAnnotations;
-  }
-
   checkTags(annotation, tags) {
     if (!tags.length || annotation.pinned) {
       return true;
     }
+    console.log('checking tags', tags, tags.some(tag => annotation.tags.includes(tag)))
     return tags.some(tag => annotation.tags.includes(tag));
   }
 
@@ -707,6 +709,15 @@ class Sidebar extends React.Component {
 
   openFilter = () => {
     this.setState({ showFilter: true });
+  }
+  addNewGroup = () => {
+    chrome.runtime.sendMessage({
+      msg: 'SHOW_GROUP',
+      from: 'content',
+      payload: {
+        uid: this.state.currentUser.uid,
+      }
+    })
   }
 
   filterAcrossWholeSite = (filterSelection) => {
@@ -882,23 +893,30 @@ class Sidebar extends React.Component {
               />
             </div>
             <div>
-              {!this.state.showFilter &&
-                <FilterSummary
-                  applyFilter={this.applyFilter}
-                  groups={groups}
-                  filter={this.state.filterSelection}
-                  openFilter={this.openFilter}
+              <div className="FilterSummaryContainer">
+                <GroupMultiSelect
                   uid={currentUser.uid}
-                  updateSidebarGroup={this.updateSidebarGroup}
-                  tempSearchCount={tempSearchCount}
-                  showingSelectedAnno={this.state.showClearClickedAnnotation}
-                  clearSelectedAnno={this.clearSelectedAnno}
-                  notifySidebarSort={this.notifySidebarSort}
-                  currentSort={this.state.sortBy}
-                  getFilteredAnnotations={this.getFilteredAnnotations}
-                  numArchivedAnnotations={this.state.annotations.filter(anno => anno.archived).length}
+                  groups={groups}
+                  handleNotifySidebar={this.updateSidebarGroup}
+                  addNewGroup={this.addNewGroup}
                 />
-              }
+                {!this.state.showFilter && renderedAnnotations.length ?
+                  (<FilterSummary
+                    applyFilter={this.applyFilter}
+                    groups={groups}
+                    filter={this.state.filterSelection}
+                    openFilter={this.openFilter}
+                    uid={currentUser.uid}
+                    tempSearchCount={tempSearchCount}
+                    showingSelectedAnno={this.state.showClearClickedAnnotation}
+                    clearSelectedAnno={this.clearSelectedAnno}
+                    notifySidebarSort={this.notifySidebarSort}
+                    currentSort={this.state.sortBy}
+                    filteredAnnotations={renderedAnnotations}
+                    numArchivedAnnotations={this.state.annotations.filter(anno => anno.archived).length}
+                  />) : (null)
+                }
+              </div>
 
               {this.state.newSelection &&
                 (

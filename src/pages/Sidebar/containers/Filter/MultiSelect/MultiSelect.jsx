@@ -114,24 +114,26 @@ class GroupMultiSelect extends React.Component {
 
         return (
             <React.Fragment>
-
-                <div className="multi-select-wrapper">
-                    <div className="filterDropDown">
-                        <div className="FilterIconContainer2">
-                            <BiGroup className="filterReactIcon" />
+                <div className="FilterSectionRow" id="GroupFilterSection">
+                    <div className="FilterSection" id="GroupFilterSectionText">Groups</div>
+                    <div className="multi-select-wrapper">
+                        <div className="filterDropDown">
+                            <div className="FilterIconContainer2">
+                                <BiGroup className="filterReactIcon" />
+                            </div>
+                            <MultiSelect
+                                options={options}
+                                value={selected}
+                                onChange={this.handleSelection}
+                                labelledBy={"Select"}
+                                ClearIcon={<AiOutlineCloseCircle />}
+                                ClearSelectedIcon={<AiOutlineCloseCircle />}
+                                ItemRenderer={this.DefaultItemRenderer}
+                                disableSearch={true}
+                            />
                         </div>
-                        <MultiSelect
-                            options={options}
-                            value={selected}
-                            onChange={this.handleSelection}
-                            labelledBy={"Select"}
-                            ClearIcon={<AiOutlineCloseCircle />}
-                            ClearSelectedIcon={<AiOutlineCloseCircle />}
-                            ItemRenderer={this.DefaultItemRenderer}
-                            disableSearch={true}
-                        />
-                    </div>
 
+                    </div>
                 </div>
 
             </React.Fragment>
