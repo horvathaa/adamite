@@ -1,46 +1,24 @@
-import React, { Component, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import classNames from 'classnames';
-import { AiFillPushpin, AiOutlinePushpin } from 'react-icons/ai';
-import outlinepin from '../../../../../assets/img/SVGs/pin.svg';
-import fillpin from '../../../../../assets/img/SVGs/pin_2.svg';
 import './Annotation.css';
-import { deleteAnnotationForeverById, updateAnnotationById, getUserProfileById } from '../../../../../firebase';
-// import DefaultAnnotation from './DefaultAnnotation';
-// import ToDoAnnotation from './ToDoAnnotation';
-// import HighlightAnnotation from './HighlightAnnnotation';
-// import IssueAnnotation from './IssueAnnotation';
-// import QuestionAnswerAnnotation from './QuestionAnswerAnnotation';
-import { RiTruckLine } from 'react-icons/ri';
 import AnnotationContext from "./AnnotationContext";
 import EditRowComponent from "./Components/EditRowComponent";
 import CollapsedDiv from './Components/CollapsedDiv';
 import AnnotationTagsList from './Components/AnnotationTagsList';
 import AnnotationType from './Components/AnnotationType';
-import expand from '../../../../../assets/img/SVGs/expand.svg';
 import CardWrapper from '../../CardWrapper/CardWrapper'
 import AnchorList from './AnchorList/AnchorList';
-import Anchor from './AnchorList/Anchor';
-import Reply from './Reply/Reply';
 import ReplyEditor from './Reply/ReplyEditor';
 import RepliesList from './Reply/RepliesList';
-
-import Highlight from '../../../../../assets/img/SVGs/Highlight.svg';
+import { FaHighlighter } from 'react-icons/fa';
 import Issue from '../../../../../assets/img/SVGs/Issue.svg';
 import Question from '../../../../../assets/img/SVGs/Question.svg';
 import Default from '../../../../../assets/img/SVGs/Default.svg';
 import Todo from '../../../../../assets/img/SVGs/Todo.svg';
-// import { updateAnnotation } from '../../../../Background/helpers/annotationHelpers';
 
 /*
 Initiated in Annotation List
 */
-
-let messagesOut = [
-  //sidebarHelper
-  'TEMP_ANNOTATION_ADDED',
-  'REMOVE_TEMP_ANNOTATION',
-  'ANNOTATION_DELETED_ON_PAGE',
-]
 
 
 const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, resetNewSelection = () => { }, currentUrl, userGroups, currentUser }) => {
@@ -70,12 +48,12 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, res
 
 
   const AnnotationBadgeContainer = () => {
-    let badge = anno.type === 'issue' ? Issue : anno.type === 'highlight' ? Highlight : anno.type === 'todo' ? Todo : anno.type === 'question' ? Question : Default;
+    let badge = anno.type === 'issue' ? Issue : anno.type === 'todo' ? Todo : anno.type === 'question' ? Question : Default;
     return (<div className="annotationTypeBadgeContainer" onClick={() => setCollapsed(!collapsed)}>
       <div className="annotationTypeBadge row2">
         <div className="annotationTypeBadge col2">
           <div className="badgeContainer">
-            <img src={badge} alt={`${anno.type} type badge`} />
+            {anno.type !== 'highlight' ? <img src={badge} alt={`${anno.type} type badge`} /> : <FaHighlighter className="badgeIconSvg" />}
           </div>
         </div>
       </div>

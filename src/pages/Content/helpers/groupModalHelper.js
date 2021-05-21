@@ -5,7 +5,6 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 chrome.runtime.onMessage.addListener((request) => {
-    console.log('has listener?', chrome.runtime.onMessage.hasListeners())
     if (request.msg === 'CREATE_GROUP' && request.from === 'background') { renderModal(request.owner); }
     else if (request.msg === 'SHOW_GROUP' && request.from === 'background') { showModal(); }
     else if (request.msg === 'HIDE_GROUP' && request.from === 'background') { hideModal(); }

@@ -130,6 +130,10 @@ class FilterSummary extends React.Component {
         else if (choice !== 'all' && areArraysEqualSets(this.selection.annoType, ['default', 'to-do', 'question', 'highlight', 'issue'])) {
             this.selection.annoType = [choice];
         }
+        else if (this.selection.annoType.includes(choice)) {
+            this.selection.annoType = this.selection.annoType.filter(t => t !== choice);
+            this.selection.annoType = this.selection.annoType.length ? this.selection.annoType : ['default', 'to-do', 'question', 'highlight', 'issue'];
+        }
         else {
             this.selection.annoType.push(choice);
         }
