@@ -14,7 +14,7 @@ import { left } from 'glamor';
 import { AiOutlineConsoleSql } from 'react-icons/ai';
 import { v4 as uuidv4 } from 'uuid';
 import Annotation from './containers/AnnotationList/Annotation/Annotation';
-import { messagesOut, transmitMessage } from '../Background/backgroundTransmitter';
+// import { messagesOut, transmitMessage } from '../Background/backgroundTransmitter';
 ///Annotation/Annotation';
 import {
   getPathFromUrl,
