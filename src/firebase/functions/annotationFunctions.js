@@ -28,12 +28,12 @@ export const getAllUserGroups = uid => {
     .where('uids', 'array-contains', uid);
 }
 
-export const getUsersByEmails = emails => {
+export const getUsersByEmails = async (emails) => {
   return db.collection(DB_COLLECTIONS.USERS)
     .where('email', 'in', emails)
 }
 
-export const addNewGroup = ({
+export const addNewGroup = async ({
   name,
   description,
   owner,
@@ -48,9 +48,7 @@ export const addNewGroup = ({
     owner,
     createdTimestamp: new Date().getTime()
   };
-  console.log('newGroup', newGroup);
   return db.collection(DB_COLLECTIONS.GROUPS).add(newGroup).then(ref => {
-    console.log('made this', ref.id)
     db.collection(DB_COLLECTIONS.GROUPS).doc(ref.id).update({
       gid: ref.id,
     }).then(_ => console.log('success'), _ => console.log('rejected!'));
@@ -140,7 +138,7 @@ export const deleteGroupForeverByGid = (gid) => {
   return getGroupByGid(gid).delete();
 };
 
-export const updateAnnotationById = (id, newAnnotationFields = {}) => {
+export const updateAnnotationById = async (id, newAnnotationFields = {}) => {
   return getAnnotationById(id).update({ ...newAnnotationFields });
 };
 

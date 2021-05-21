@@ -37,13 +37,12 @@ export async function getGroups(request, sender, sendResponse) {
     groupListener = setUpGetGroupListener(request.uid);
 }
 
-export function createGroup(request, sender, sendResponse) {
+export async function createGroup(request, sender, sendResponse) {
     if (!isContent) return;
-    console.log('request', request)
     if (request.group.emails !== undefined && request.group.emails.length) {
-        fb.getUsersByEmails(request.group.emails).get().then(snapshot => {
+        await fb.getUsersByEmails(request.group.emails).get().then(async snapshot => {
             const uids = [request.group.owner].concat(getListFromSnapshots(snapshot).map(u => u.uid));
-            fb.addNewGroup({
+            await fb.addNewGroup({
                 name: request.group.name,
                 description: request.group.description,
                 owner: request.group.owner,
@@ -55,7 +54,7 @@ export function createGroup(request, sender, sendResponse) {
         })
     }
     else {
-        fb.addNewGroup({
+        await fb.addNewGroup({
             name: request.group.name,
             description: request.group.description,
             owner: request.group.owner,

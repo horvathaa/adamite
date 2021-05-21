@@ -14,8 +14,7 @@ import { left } from 'glamor';
 import { AiOutlineConsoleSql } from 'react-icons/ai';
 import { v4 as uuidv4 } from 'uuid';
 import Annotation from './containers/AnnotationList/Annotation/Annotation';
-// import { messagesOut, transmitMessage } from '../Background/backgroundTransmitter';
-///Annotation/Annotation';
+
 import {
   getPathFromUrl,
   containsObject,
@@ -101,10 +100,6 @@ class Sidebar extends React.Component {
       from: 'content',
     });
   }
-  // setUpAnnotationsListener = (uid, url, tabId) => transmitMessage['GET_ANNOTATIONS_PAGE_LOAD']({ url: url, uid: uid, tabId: tabId });
-  // setUpGroupsListener = (uid) => transmitMessage['GET_GROUPS_PAGE_LOAD']({ uid: uid });
-  // setUpPinnedListener = (uid) => transmitMessage['SET_UP_PIN']();
-
 
   componentWillUnmount() {
     window.removeEventListener('scroll', this.handleScroll);
@@ -112,7 +107,6 @@ class Sidebar extends React.Component {
       msg: 'UNSUBSCRIBE',
       from: 'content'
     })
-    // transmitMessage['UNSUBSCRIBE']();
   }
 
   ElasticSearch = (msg) => {

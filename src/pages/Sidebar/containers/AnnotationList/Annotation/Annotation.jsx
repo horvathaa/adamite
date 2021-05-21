@@ -29,7 +29,7 @@ import Issue from '../../../../../assets/img/SVGs/Issue.svg';
 import Question from '../../../../../assets/img/SVGs/Question.svg';
 import Default from '../../../../../assets/img/SVGs/Default.svg';
 import Todo from '../../../../../assets/img/SVGs/Todo.svg';
-import { updateAnnotation } from '../../../../Background/helpers/annotationHelpers';
+// import { updateAnnotation } from '../../../../Background/helpers/annotationHelpers';
 
 /*
 Initiated in Annotation List

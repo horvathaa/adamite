@@ -74,8 +74,8 @@ let commands = {
         sendResponse({ url: cleanUrl, tabId });
     },
 
-    'LOAD_EXTERNAL_ANCHOR': (request, sender, sendResponse) => {
-        chrome.tabs.create({ url: request.payload });
+    'LOAD_EXTERNAL_ANCHOR': async (request, sender, sendResponse) => {
+        await chrome.tabs.create({ url: request.payload });
     },
 
 
@@ -192,6 +192,7 @@ let commands = {
 
 if (!chrome.runtime.onMessage.hasListeners()) {
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+        console.log('msg', request.msg)
         if (request.msg in commands) {
             commands[request.msg](request, sender, sendResponse);
         } else {
