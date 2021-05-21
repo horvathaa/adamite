@@ -109,6 +109,7 @@ const ReplyEditor = ({ reply = null, finishReply = () => { } }) => {
             chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
                 chrome.tabs.sendMessage(tabs[0].id, { msg: 'REMOVE_TEMP_ANNOTATION', });
             });
+            if (!ctx.anno.url.includes(newReply.anchor.url)) { ctx.updateAnnotation({ ...ctx.anno, url: ctx.anno.url.concat([newReply.anchor.url]) }) }
         }
         finishReply();
     }

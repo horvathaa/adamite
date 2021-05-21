@@ -4,7 +4,8 @@
   "name": "ADAMITE",
   "options_page": "options.html",
   "background": {
-    "page": "background.html"
+    "page": "background.html",
+    "persistent": false
   },
   "browser_action": {
     "default_title": "ADAMITE"
@@ -29,7 +30,8 @@
       ],
       "css": [
         "content.styles.css"
-      ]
+      ],
+      "all_frames": false
     }
   ],
   "web_accessible_resources": [

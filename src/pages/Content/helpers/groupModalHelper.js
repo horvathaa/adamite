@@ -133,7 +133,6 @@ function hideOnClickOutside(element) {
         }
     });
 }
-
 const showModal = () => {
     const dialog = document.getElementById("blurg");
     if (dialog.classList.contains('new-group-modal-hidden')) {
@@ -179,5 +178,11 @@ const renderModal = (owner) => {
     );
     ReactDOM.render(App, modal);
 }
+
+
+
+
+
+
 
 

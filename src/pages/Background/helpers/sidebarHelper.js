@@ -74,11 +74,14 @@ export const toggleSidebar = (toStatus = null) => {
     function (tab) {
 
       // tab[0].forEach((tab) => {
-      chrome.tabs.sendMessage(tab[0].id, {
-        from: 'background',
-        msg: 'TOGGLE_SIDEBAR',
-        toStatus: sidebarOpenCopy,
-      });
+      if (tab !== undefined && tab.length) {
+        chrome.tabs.sendMessage(tab[0].id, {
+          from: 'background',
+          msg: 'TOGGLE_SIDEBAR',
+          toStatus: sidebarOpenCopy,
+        });
+      }
+
       // });
     }
   );
@@ -137,15 +140,19 @@ const updateShouldShrinkBodyStatus = (toStatus) => {
 
 export async function requestSidebarStatus(request, sender, sendResponse) {
   chrome.tabs.query(({ active: true, currentWindow: true }), tab => {
-    let status;
-    if (sidebarStatus.length && tab !== undefined) {
-      const i = sidebarStatus.findIndex(t => t.id === tab[0].id);
-      status = i > -1 ? sidebarStatus[i].open : false;
-    }
-    else {
-      status = false;
-    }
-    sendResponse(status);
+    chrome.storage.sync.get(['sidebarStatus'], sidebarStatus => {
+      let status;
+      sidebarStatus = sidebarStatus.sidebarStatus;
+      if (sidebarStatus !== undefined && sidebarStatus.length && tab.length && tab !== undefined) {
+        const i = sidebarStatus.findIndex(t => t.id === tab[0].id);
+        status = i > -1 ? sidebarStatus[i].open : false;
+      }
+      else {
+        status = false;
+      }
+      sendResponse(status);
+    })
+
   })
 }
 

@@ -28,24 +28,31 @@ export const getAllUserGroups = uid => {
     .where('uids', 'array-contains', uid);
 }
 
+export const getUsersByEmails = async (emails) => {
+  return db.collection(DB_COLLECTIONS.USERS)
+    .where('email', 'in', emails)
+}
+
 export const addNewGroup = async ({
   name,
   description,
   owner,
+  uids,
   emails
 }) => {
   let newGroup = {
     name,
     description,
     emails,
-    uids: [owner],
-    owner
+    uids,
+    owner,
+    createdTimestamp: new Date().getTime()
   };
-  db.collection(DB_COLLECTIONS.GROUPS).add(newGroup).then(ref => {
+  return db.collection(DB_COLLECTIONS.GROUPS).add(newGroup).then(ref => {
     db.collection(DB_COLLECTIONS.GROUPS).doc(ref.id).update({
-      gid: ref.id
-    });
-  });
+      gid: ref.id,
+    }).then(_ => console.log('success'), _ => console.log('rejected!'));
+  })
 };
 
 
@@ -98,9 +105,14 @@ export const getGroupAnnotationsByGroupId = (gid) => {
   // console.log('in annofunctions', gid);
   return db
     .collection(DB_COLLECTIONS.ANNOTATIONS)//.doc("06OlxrYfO08cofa2mDb9");
-    .where('groups', 'array-contains-any', gid) // switch to array-contains-any to look across all groups that user is in
-    .where('isPrivate', '==', true);
+    .where('groups', 'array-contains', gid) // switch to array-contains-any to look across all groups that user is in
+  // .where('authorId', '!=', uid);     // .where('url', 'array-contains', url) fuck u firestore and ur arbitrary limitations
 };
+
+export const getAnnotationsByUrl = (url) => {
+  return db.collection(DB_COLLECTIONS.ANNOTATIONS)
+    .where('url', 'array-contains', url)
+}
 
 export const getAllPrivatePinnedAnnotationsByUserId = (uid) => {
   return db
@@ -126,7 +138,7 @@ export const deleteGroupForeverByGid = (gid) => {
   return getGroupByGid(gid).delete();
 };
 
-export const updateAnnotationById = (id, newAnnotationFields = {}) => {
+export const updateAnnotationById = async (id, newAnnotationFields = {}) => {
   return getAnnotationById(id).update({ ...newAnnotationFields });
 };
 

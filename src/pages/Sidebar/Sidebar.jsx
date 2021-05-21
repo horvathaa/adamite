@@ -14,8 +14,7 @@ import { left } from 'glamor';
 import { AiOutlineConsoleSql } from 'react-icons/ai';
 import { v4 as uuidv4 } from 'uuid';
 import Annotation from './containers/AnnotationList/Annotation/Annotation';
-import { messagesOut, transmitMessage } from '../Background/backgroundTransmitter';
-///Annotation/Annotation';
+
 import {
   getPathFromUrl,
   containsObject,
@@ -25,6 +24,7 @@ import {
   removeDuplicates,
   checkTimeRange
 } from "./utils"
+import GroupMultiSelect from './containers/Filter/MultiSelect/MultiSelect';
 
 
 
@@ -101,10 +101,6 @@ class Sidebar extends React.Component {
       from: 'content',
     });
   }
-  // setUpAnnotationsListener = (uid, url, tabId) => transmitMessage['GET_ANNOTATIONS_PAGE_LOAD']({ url: url, uid: uid, tabId: tabId });
-  // setUpGroupsListener = (uid) => transmitMessage['GET_GROUPS_PAGE_LOAD']({ uid: uid });
-  // setUpPinnedListener = (uid) => transmitMessage['SET_UP_PIN']();
-
 
   componentWillUnmount() {
     window.removeEventListener('scroll', this.handleScroll);
@@ -112,7 +108,6 @@ class Sidebar extends React.Component {
       msg: 'UNSUBSCRIBE',
       from: 'content'
     })
-    // transmitMessage['UNSUBSCRIBE']();
   }
 
   ElasticSearch = (msg) => {
@@ -336,7 +331,7 @@ class Sidebar extends React.Component {
           return;
         }
         let annotations = request.payload;
-        this.setState({ url: request.url });
+        if (request.url !== undefined) this.setState({ url: request.url });
         chrome.runtime.sendMessage({
           msg: 'REQUEST_SIDEBAR_STATUS',
           from: 'content'
@@ -353,21 +348,22 @@ class Sidebar extends React.Component {
               payload: request.payload,
               url: request.url
             }, response => {
-              let spanNames = response.spanNames;
-              if (spanNames !== undefined) {
-                // spanNames = spanNames.map((obj) => {
-                //   return obj.id.includes('-') ? obj.id.substring(0, obj.id.indexOf('-')) : obj.id;
-                // });
+              if (response !== undefined) {
+                let spanNames = response.spanNames;
+                spanNames = spanNames.map((obj) => {
+                  let temp = Object.assign({}, obj);
+                  temp.id = obj.id.substring(0, 36)
+                  return temp
+                });
                 spanNames.sort((a, b) => {
                   return a.y !== b.y ? a.y - b.y : a.x - b.x
                 })
                 annotations.sort((a, b) => {
-                  const index1 = spanNames.findIndex(obj => obj === a.id);
-                  const index2 = spanNames.findIndex(obj => obj === b.id)
+                  const index1 = spanNames.findIndex(obj => obj.id === a.id);
+                  const index2 = spanNames.findIndex(obj => obj.id === b.id)
                   return ((index1 > -1 ? index1 : Infinity) - (index2 > -1 ? index2 : Infinity))
                 });
               }
-
               this.setState({ annotations, pageLocationSort: annotations })
               this.requestFilterUpdate();
             });
@@ -382,12 +378,14 @@ class Sidebar extends React.Component {
         chrome.browserAction.setBadgeText({ tabId: request.tabId, text: request.payload.length ? String(request.payload.length - request.payload.filter(r => r.archived).length) : "0" });
       }
       else if (request.msg === 'SORT_LIST' && request.from === 'background') {
-        let spanNames = request.payload.spanNames;
+        let spanNames = request.payload === undefined && request.payload.spanNames === undefined ? undefined : request.payload.spanNames;
         let annotations = this.state.annotations;
         if (spanNames !== undefined) {
-          // spanNames = spanNames.map((obj) => {
-          //   return obj.id.includes('-') ? obj.id.substring(0, obj.id.indexOf('-')) : obj.id;
-          // });
+          spanNames = spanNames.map((obj) => {
+            let temp = Object.assign({}, obj);
+            temp.id = obj.id.substring(0, 36)
+            return temp
+          });
           spanNames.sort((a, b) => {
             return a.y !== b.y ? a.y - b.y : a.x - b.x
           })
@@ -447,6 +445,8 @@ class Sidebar extends React.Component {
           })
         });
       }
+
+      // return true;
     });
   }
   containsReplyWithAnchor(list) {
@@ -486,22 +486,25 @@ class Sidebar extends React.Component {
       }
       else {
         chrome.runtime.sendMessage({
-          msg: 'GROUP_ELASTIC',
+          msg: 'GET_GROUP_ANNOTATIONS',
           payload: {
             gid: group.value,
-            url: this.state.url
+            // url: this.state.url
           }
         },
           (res) => {
-            groupKV.push({ name: group.label, annotations: res.response.data.hits.hits.map(h => h._source) });
-            this.setState({ groupAnnotations: groupKV });
-            this.setState({ activeGroups: groupNames });
+            if (res !== undefined) {
+              this.setState({ groupAnnotations: res });
+              this.setState({ activeGroups: groupNames });
+            }
+            // groupKV.push({ name: group.label, annotations: res.response.data.hits.hits.map(h => h._source) });
+
 
           });
       }
 
       groupNames.push(group.label);
-      this.setState({ groupAnnotations: groupKV, activeGroups: groupNames, filteredGroupAnnotations: [] });
+      // this.setState({ groupAnnotations: groupKV, activeGroups: groupNames, filteredGroupAnnotations: [] });
     });
   }
 
@@ -662,14 +665,11 @@ class Sidebar extends React.Component {
     }
   }
 
-  getFilteredAnnotations = () => {
-    return this.state.filteredAnnotations;
-  }
-
   checkTags(annotation, tags) {
     if (!tags.length || annotation.pinned) {
       return true;
     }
+    console.log('checking tags', tags, tags.some(tag => annotation.tags.includes(tag)))
     return tags.some(tag => annotation.tags.includes(tag));
   }
 
@@ -710,6 +710,15 @@ class Sidebar extends React.Component {
   openFilter = () => {
     this.setState({ showFilter: true });
   }
+  addNewGroup = () => {
+    chrome.runtime.sendMessage({
+      msg: 'SHOW_GROUP',
+      from: 'content',
+      payload: {
+        uid: this.state.currentUser.uid,
+      }
+    })
+  }
 
   filterAcrossWholeSite = (filterSelection) => {
     this.checkSiteScope(undefined, filterSelection.siteScope).then(annotations => {
@@ -731,13 +740,13 @@ class Sidebar extends React.Component {
     this.setState({ filterSelection: filterSelection });
     if (filterSelection.siteScope.includes('onPage') && !filterSelection.siteScope.includes('acrossWholeSite')) {
       if (this.state.groupAnnotations.length) {
-        let viewableGroupAnnotations = [];
-        this.state.groupAnnotations.forEach((group) => {
-          viewableGroupAnnotations = viewableGroupAnnotations.concat(group.annotations);
-        })
+        // let viewableGroupAnnotations = [];
+        // this.state.groupAnnotations.forEach((group) => {
+        //   viewableGroupAnnotations = viewableGroupAnnotations.concat(group.annotations);
+        // })
         this.setState({
           filteredGroupAnnotations:
-            viewableGroupAnnotations.filter(annotation => {
+            this.state.groupAnnotations.filter(annotation => {
               return this.checkSiteScope(annotation, filterSelection.siteScope) &&
                 this.checkUserScope(annotation, filterSelection.userScope) &&
                 this.checkAnnoType(annotation, filterSelection.annoType) &&
@@ -831,9 +840,9 @@ class Sidebar extends React.Component {
       renderedAnnotations = searchedAnnotations;
     }
     else if (activeGroups.length) {
-      groupAnnotations.forEach((group) => {
-        renderedAnnotations = renderedAnnotations.concat(group.annotations);
-      });
+      // groupAnnotations.forEach((group) => {
+      renderedAnnotations = renderedAnnotations.concat(groupAnnotations);
+      // });
     }
     else {
       renderedAnnotations = filteredAnnotations;
@@ -884,23 +893,30 @@ class Sidebar extends React.Component {
               />
             </div>
             <div>
-              {!this.state.showFilter &&
-                <FilterSummary
-                  applyFilter={this.applyFilter}
-                  groups={groups}
-                  filter={this.state.filterSelection}
-                  openFilter={this.openFilter}
+              <div className="FilterSummaryContainer">
+                <GroupMultiSelect
                   uid={currentUser.uid}
-                  updateSidebarGroup={this.updateSidebarGroup}
-                  tempSearchCount={tempSearchCount}
-                  showingSelectedAnno={this.state.showClearClickedAnnotation}
-                  clearSelectedAnno={this.clearSelectedAnno}
-                  notifySidebarSort={this.notifySidebarSort}
-                  currentSort={this.state.sortBy}
-                  getFilteredAnnotations={this.getFilteredAnnotations}
-                  numArchivedAnnotations={this.state.annotations.filter(anno => anno.archived).length}
+                  groups={groups}
+                  handleNotifySidebar={this.updateSidebarGroup}
+                  addNewGroup={this.addNewGroup}
                 />
-              }
+                {!this.state.showFilter && renderedAnnotations.length ?
+                  (<FilterSummary
+                    applyFilter={this.applyFilter}
+                    groups={groups}
+                    filter={this.state.filterSelection}
+                    openFilter={this.openFilter}
+                    uid={currentUser.uid}
+                    tempSearchCount={tempSearchCount}
+                    showingSelectedAnno={this.state.showClearClickedAnnotation}
+                    clearSelectedAnno={this.clearSelectedAnno}
+                    notifySidebarSort={this.notifySidebarSort}
+                    currentSort={this.state.sortBy}
+                    filteredAnnotations={renderedAnnotations}
+                    numArchivedAnnotations={this.state.annotations.filter(anno => anno.archived).length}
+                  />) : (null)
+                }
+              </div>
 
               {this.state.newSelection &&
                 (
@@ -981,7 +997,7 @@ class Sidebar extends React.Component {
                   requestFilterUpdate={this.requestChildAnchorFilterUpdate}
                   notifyParentOfPinning={this.handlePinnedAnnotation} />
               )}
-              {(this.state.url.includes("facebook.com") || this.state.url.includes("google.com") || this.state.url.includes("twitter.com")) && !this.state.url.includes("developer") ? (
+              {((this.state.url !== '') && (this.state.url.includes("facebook.com") || this.state.url.includes("google.com") || this.state.url.includes("twitter.com"))) && !this.state.url.includes("developer") ? (
                 <div className="whoops">
                   NOTE: Adamite does not work well on dynamic webpages such as Facebook, Google Docs, or Twitter where content is likely to change. Proceed with caution.
                 </div>

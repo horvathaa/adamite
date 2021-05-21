@@ -46,7 +46,8 @@ class FilterSummary extends React.Component {
     state = {
         hoverText: "",
         showTagFilter: false,
-        tagSelect: false
+        tagSelect: false,
+        tagSet: {}
     }
 
     selection = {
@@ -58,11 +59,9 @@ class FilterSummary extends React.Component {
         tags: []
     }
 
-    tagSet = {}
-
-    componentDidMount() {
+    componentDidMount(prevProps) {
         let tagSet = {};
-        this.props.getFilteredAnnotations().forEach(annotation => {
+        this.props.filteredAnnotations.forEach(annotation => {
             annotation.tags.forEach(tag => {
                 if (tagSet.hasOwnProperty(tag)) {
                     tagSet[tag] += 1;
@@ -72,30 +71,10 @@ class FilterSummary extends React.Component {
                 }
             });
         })
-        this.tagSet = tagSet;
+        this.setState({ tagSet });
     }
 
-    async handleTagSelect() {
-        await this.getTags();
-        this.setState({ tagSelect: !this.state.tagSelect })
-    }
-
-    async getTags() {
-        let tagSet = {};
-        await this.props.getFilteredAnnotations().forEach(annotation => {
-            annotation.tags.forEach(tag => {
-                if (tagSet.hasOwnProperty(tag)) {
-                    tagSet[tag] += 1;
-                }
-                else {
-                    tagSet[tag] = 1;
-                }
-            });
-        })
-        this.tagSet = tagSet;
-    }
-
-    async handleTagClick(event) {
+    handleTagClick(event) {
         let tagName = event.target.value;
         if (this.selection.tags.includes(tagName)) {
             this.selection.tags = this.selection.tags.filter(e => e !== tagName);
@@ -123,12 +102,15 @@ class FilterSummary extends React.Component {
     }
 
     updateAnnoType = (eventKey, event) => {
-        let choice = event.target.getAttribute('data-value');
+        const choice = event.target.getAttribute('data-value');
         if (choice === 'all') {
             this.selection.annoType = ['default', 'to-do', 'question', 'highlight', 'issue'];
         }
         else if (choice !== 'all' && areArraysEqualSets(this.selection.annoType, ['default', 'to-do', 'question', 'highlight', 'issue'])) {
             this.selection.annoType = [choice];
+        }
+        else if (this.selection.annoType.includes(choice)) {
+            this.selection.annoType = this.selection.annoType.filter(t => t !== choice).length ? this.selection.annoType : ['default', 'to-do', 'question', 'highlight', 'issue'];
         }
         else {
             this.selection.annoType.push(choice);
@@ -136,31 +118,6 @@ class FilterSummary extends React.Component {
         this.props.applyFilter(this.selection);
     }
 
-    addNewGroup = () => {
-        chrome.runtime.sendMessage({
-            msg: 'SHOW_GROUP',
-            from: 'content',
-            payload: {
-                uid: this.props.uid,
-                // name: groupName
-            }
-        })
-        // const groupName = prompt('Please Enter Your New Group\'s Name', 'example');
-        // if (groupName === null || groupName === '') {
-        //     return;
-        // }
-        // else {
-        //     console.log(groupName);
-        //     chrome.runtime.sendMessage({
-        //         msg: 'ADD_NEW_GROUP',
-        //         from: 'content',
-        //         payload: {
-        //             uid: this.props.uid,
-        //             name: groupName
-        //         }
-        //     })
-        // }
-    }
 
     handleArchived = () => {
         this.selection.showArchived = !this.selection.showArchived;
@@ -196,9 +153,6 @@ class FilterSummary extends React.Component {
         this.props.notifySidebarSort(sort);
     }
 
-    handleNotifySidebar = (option) => {
-        this.props.updateSidebarGroup(option);
-    }
 
     render() {
         const { filter, groups, currentSort, activeGroup, numArchivedAnnotations } = this.props;
@@ -269,171 +223,155 @@ class FilterSummary extends React.Component {
         }
         else {
             return (
-                <div className="FilterSummaryContainer">
-                    <div className="FilterSectionRow" id="GroupFilterSection">
-                        <div className="FilterSection" id="GroupFilterSectionText">Groups</div>
-                        <GroupMultiSelect
-                            uid={this.props.uid}
-                            groups={groups}
-                            handleNotifySidebar={this.handleNotifySidebar}
-                            addNewGroup={this.addNewGroup}
-                        />
+                <div className="FilterSectionRow">
+                    <div className="FilterSection" id="FilterSectionText">Filters</div>
+                    <div className="FilterSection">
+                        {this.createDropDown({
+                            Icon: AiFillClockCircle,
+                            activeFilter: this.translateTime(filter.timeRange),
+                            header: "Posted date",
+                            updateFunction: this.updateTimeRange,
+                            items: [{ visible: "All Time", value: "all" },
+                            { visible: "Past Year", value: "year" },
+                            { visible: "Past Month", value: "month" },
+                            { visible: "Past Week", value: "week" },
+                            { visible: "Past Day", value: "day" }]
+                        })}
                     </div>
-                    <div className="FilterSectionRow">
-                        <div className="FilterSection" id="FilterSectionText">Filters</div>
-                        <div className="FilterSection">
-                            {this.createDropDown({
-                                Icon: AiFillClockCircle,
-                                activeFilter: this.translateTime(filter.timeRange),
-                                header: "Posted date",
-                                updateFunction: this.updateTimeRange,
-                                items: [{ visible: "All Time", value: "all" },
-                                { visible: "Past Year", value: "year" },
-                                { visible: "Past Month", value: "month" },
-                                { visible: "Past Week", value: "week" },
-                                { visible: "Past Day", value: "day" }]
-                            })}
-                        </div>
-                        <div className="FilterSection">
-                            {this.createDropDown({
-                                Icon: BsChatSquareDots,
-                                activeFilter: annoType,
-                                header: "Annotation Type",
-                                updateFunction: this.updateAnnoType,
-                                items: [{ visible: "All Types", value: 'all' },
-                                { visible: "Normal", value: 'default' },
-                                { visible: "Highlight", value: 'highlight' },
-                                { visible: "To-do", value: 'to-do' },
-                                { visible: "Question", value: 'question' },
-                                { visible: "Issue", value: 'issue' }]
-                            })}
-                        </div>
-                        <div className="FilterSection">
-                            {this.createDropDown({
-                                Icon: BiSort,
-                                activeFilter: currentSort === 'page' ? "Page" : "Time",
-                                header: "Sort By",
-                                updateFunction: this.updateSort,
-                                items: [{ visible: "Page", value: 'page' },
-                                { visible: "Time", value: 'time' }]
-                            })}
-                        </div>
-                        {this.state.showTagFilter ? (
-                            <div className="FilterByTag" >
-                                <div onClick={() => this.setState({ showTagFilter: false })}>
-                                    Filter By Tag
+                    <div className="FilterSection">
+                        {this.createDropDown({
+                            Icon: BsChatSquareDots,
+                            activeFilter: annoType,
+                            header: "Annotation Type",
+                            updateFunction: this.updateAnnoType,
+                            items: [{ visible: "All Types", value: 'all' },
+                            { visible: "Normal", value: 'default' },
+                            { visible: "Highlight", value: 'highlight' },
+                            { visible: "To-do", value: 'to-do' },
+                            { visible: "Question", value: 'question' },
+                            { visible: "Issue", value: 'issue' }]
+                        })}
+                    </div>
+                    <div className="FilterSection">
+                        {this.createDropDown({
+                            Icon: BiSort,
+                            activeFilter: currentSort === 'page' ? "Page" : "Time",
+                            header: "Sort By",
+                            updateFunction: this.updateSort,
+                            items: [{ visible: "Page", value: 'page' },
+                            { visible: "Time", value: 'time' }]
+                        })}
+                    </div>
+                    {this.state.showTagFilter ? (
+                        <div className="FilterByTag" >
+                            <div onClick={() => this.setState({ showTagFilter: false })}>
+                                Filter By Tag
                                 </div>
-                                <div className="TagListContainer">
-                                    {this.selection.tags.length ? (
-                                        this.selection.tags.map(tag => {
+                            <div className="TagListContainer">
+                                {this.selection.tags.length ? (
+                                    this.selection.tags.map(tag => {
+                                        return (<div className="TagButtonPad">
+                                            <button value={tag}
+                                                className={
+                                                    classNames({ TagButton: true, selected: this.selection.tags.includes(tag) })}
+                                                onClick={e => { e.stopPropagation(); this.handleTagClick(e); }}>
+                                                {tag} &nbsp; {this.state.tagSet[tag]}
+                                            </button>
+                                        </div>);
+                                    })
+                                ) : (null)}
+                                <React.Fragment>
+                                    {Object.entries(this.state.tagSet).map(tagCountPair => {
+                                        if (!this.selection.tags.includes(tagCountPair[0]))
                                             return (<div className="TagButtonPad">
-                                                <button value={tag}
-                                                    className={
-                                                        classNames({ TagButton: true, selected: this.selection.tags.includes(tag) })}
-                                                    onClick={e => { e.stopPropagation(); this.handleTagClick(e); }}>
-                                                    {tag} &nbsp; {this.tagSet[tag]}
+                                                <button value={tagCountPair[0]} className={
+                                                    classNames({ TagButton: true, selected: this.selection.tags.includes(tagCountPair[0]) })}
+                                                    onClick={e => { e.stopPropagation(); this.handleTagClick(e) }}>
+                                                    {tagCountPair[0]} &nbsp; {tagCountPair[1]}
                                                 </button>
                                             </div>);
-                                        })
-                                    ) : (null)}
+                                    })}
                                     <div className="TagButtonPad">
-                                        <button value="chooseTag" className="TagButton" onClick={e => this.handleTagSelect(e)}>
-                                            Choose tag(s)
-                                </button>
+                                        <button className="TagButton" >
+                                            <img src={expand} alt="collapse tag list" id="collapseTagList" onClick={() => { this.setState({ showTagFilter: false }) }} />
+                                        </button>
+
                                     </div>
-                                    <React.Fragment>
-                                        {Object.entries(this.tagSet).map(tagCountPair => {
-                                            if (!this.selection.tags.includes(tagCountPair[0]))
-                                                return (<div className="TagButtonPad">
-                                                    <button value={tagCountPair[0]} className={
-                                                        classNames({ TagButton: true, selected: this.selection.tags.includes(tagCountPair[0]) })}
-                                                        onClick={e => { e.stopPropagation(); this.handleTagClick(e) }}>
-                                                        {tagCountPair[0]} &nbsp; {tagCountPair[1]}
-                                                    </button>
-                                                </div>);
-                                        })}
-                                        <div className="TagButtonPad">
-                                            <button className="TagButton" >
-                                                <img src={expand} alt="collapse tag list" id="collapseTagList" onClick={() => { this.setState({ showTagFilter: false }) }} />
-                                            </button>
+                                    <div className="TagButtonPad">
+                                        <button className="btn Cancel-Button TagButton" style={{ padding: '0px 10px' }} onClick={(e) => { e.stopPropagation(); this.selection.tags = []; this.props.applyFilter(this.selection); this.setState({ showTagFilter: false }) }}>
+                                            <GiCancel />
+                                        </button>
+                                    </div>
+                                </React.Fragment>
 
-                                        </div>
-                                        <div className="TagButtonPad">
-                                            <button className="btn Cancel-Button TagButton" style={{ padding: '0px 10px' }} onClick={(e) => { e.stopPropagation(); this.selection.tags = []; this.props.applyFilter(this.selection) }}>
-                                                <GiCancel />
-                                            </button>
-                                        </div>
-                                    </React.Fragment>
-
-                                </div>
                             </div>
-                        ) : (null)}
+                        </div>
+                    ) : (null)}
 
-                        {filter.tags.length && !this.state.showTagFilter ? (
+                    {filter.tags.length && !this.state.showTagFilter ? (
+                        <div className={classNames({
+                            FilterSection: true,
+                            tagFilterNotEnabled: !filter.tags.length
+                        })} >
+                            <div className="FilterIconContainer">
+                                <img src={tag} alt="tag icon" />
+                            </div>
+                        &nbsp; &nbsp;
+                            <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }} >
+                                {filter.tags.length ? (filter.tags.map((tag, idx) => {
+                                    if (idx !== (filter.tags.length - 1)) {
+                                        return (<li key={idx} style={{ display: "inline" }}>
+                                            {tag},&nbsp;
+                                        </li>);
+                                    }
+                                    else {
+                                        return (<li key={idx} style={{ display: "inline" }}>
+                                            {tag}
+                                            <div style={{ display: "inline" }} className="FilterIconContainer" onClick={(e) => { e.stopPropagation(); this.selection.tags = []; this.props.applyFilter(this.selection) }}>
+                                                <GiCancel />
+                                            </div>
+                                        </li>);
+                                    }
+                                })) : (
+                                    "Select Tag"
+                                )}
+
+                            </ul>
+                        </div>
+
+                    ) : (null)} {
+                        !filter.tags.length && !this.state.showTagFilter ? (
                             <div className={classNames({
                                 FilterSection: true,
                                 tagFilterNotEnabled: !filter.tags.length
-                            })} >
+                            })} onClick={() => { this.setState({ showTagFilter: !this.state.showTagFilter }) }} >
                                 <div className="FilterIconContainer">
                                     <img src={tag} alt="tag icon" />
-                                </div>
-                        &nbsp; &nbsp;
-                                <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }} >
-                                    {filter.tags.length ? (filter.tags.map((tag, idx) => {
-                                        if (idx !== (filter.tags.length - 1)) {
-                                            return (<li key={idx} style={{ display: "inline" }}>
-                                                {tag},&nbsp;
-                                            </li>);
-                                        }
-                                        else {
-                                            return (<li key={idx} style={{ display: "inline" }}>
-                                                {tag}
-                                                <div style={{ display: "inline" }} className="FilterIconContainer" onClick={(e) => { e.stopPropagation(); this.selection.tags = []; this.props.applyFilter(this.selection) }}>
-                                                    <GiCancel />
-                                                </div>
-                                            </li>);
-                                        }
-                                    })) : (
-                                        "Select Tag"
-                                    )}
-
-                                </ul>
+                                </div> &nbsp; &nbsp; Select Tag
                             </div>
-
-                        ) : (null)} {
-                            !filter.tags.length && !this.state.showTagFilter ? (
-                                <div className={classNames({
-                                    FilterSection: true,
-                                    tagFilterNotEnabled: !filter.tags.length
-                                })} onClick={() => { this.setState({ showTagFilter: !this.state.showTagFilter }) }} >
-                                    <div className="FilterIconContainer">
-                                        <img src={tag} alt="tag icon" />
-                                    </div> &nbsp; &nbsp; Select Tag
-                                </div>
-                            ) : (null)
-                        }
-                        {numArchivedAnnotations ? <div className="FilterSection">
-                            {this.selection.showArchived ? `Hide ${numArchivedAnnotations} archived annotations` : `Show ${numArchivedAnnotations} archived annotations`}
-                            <Checkbox onChange={this.handleArchived} value={this.selection.showArchived} size={'small'} color={'primary'} classes={{ colorPrimary: '#6B778C' }} />
-                        </div> : (null)}
-                        <Tooltip title={this.props.tempSearchCount + " annotations"} aria-label="annotation count">
-                            <div className="outerSearchBar">
-                                <div className="SearchResultsCountContainer">
-                                    <div
-                                        className={classNames({
-                                            SearchResultsCount: true,
-                                            NoResults: this.props.tempSearchCount === 0,
-                                            Success: this.props.tempSearchCount >= 1,
-                                            //Searching: suggestions.length > 0 && searchCount > 1,
-                                        })}
-                                    >
-                                        {this.props.tempSearchCount}
-                                    </div>
+                        ) : (null)
+                    }
+                    {numArchivedAnnotations ? <div className="FilterSection">
+                        {this.selection.showArchived ? `Hide ${numArchivedAnnotations} archived annotations` : `Show ${numArchivedAnnotations} archived annotations`}
+                        <Checkbox onChange={this.handleArchived} value={this.selection.showArchived} size={'small'} color={'primary'} classes={{ colorPrimary: '#6B778C' }} />
+                    </div> : (null)}
+                    <Tooltip title={this.props.tempSearchCount + " annotations"} aria-label="annotation count">
+                        <div className="outerSearchBar">
+                            <div className="SearchResultsCountContainer">
+                                <div
+                                    className={classNames({
+                                        SearchResultsCount: true,
+                                        NoResults: this.props.tempSearchCount === 0,
+                                        Success: this.props.tempSearchCount >= 1,
+                                        //Searching: suggestions.length > 0 && searchCount > 1,
+                                    })}
+                                >
+                                    {this.props.tempSearchCount}
                                 </div>
                             </div>
-                        </Tooltip>
+                        </div>
+                    </Tooltip>
 
-                    </div>
                 </div>
             );
         }

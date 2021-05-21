@@ -110,15 +110,14 @@ class Groups extends React.Component {
         this.setState({ emails: results, invalidUser: "" })
     }
 
-    onClickCreate = (e) => {
-        // console.log("in here", this.state.groupName, this.state.groupName.length)
+    onClickCreate = async () => {
         if (this.state.groupName.length <= 0) {
             this.setState({ invalidName: "*group name cannot be blank" })
             return;
         }
         let emails = this.state.emails.filter(e => e !== this.props.email)
         // console.log("sending date", this.state.emails, this.props.email, emails)
-        chrome.runtime.sendMessage({
+        await chrome.runtime.sendMessage({
             msg: 'ADD_NEW_GROUP',
             from: 'content',
             group: {
@@ -265,7 +264,7 @@ class Groups extends React.Component {
                         <button className="btn-delete btn" onClick={this.onClickDeletez} >Delete</button>
                         : null
                     }
-                    <button className="btn" onClick={this.onClickCreate} >{editState ? "Update" : "Create"}</button>
+                    <button className="btn" onClick={() => this.onClickCreate()} >{editState ? "Update" : "Create"}</button>
                 </footer>
             </React.Fragment>
         );

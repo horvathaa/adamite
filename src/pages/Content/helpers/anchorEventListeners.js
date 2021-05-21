@@ -144,12 +144,15 @@ function getSpanFromRequest(request) {
 
 }
 
+// if (!chrome.runtime.onMessage.hasListeners()) {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.msg in messagesIn) {
         messagesIn[request.msg](request, sender, sendResponse);
     }
     return true;
 });
+// }
+
 
 
 

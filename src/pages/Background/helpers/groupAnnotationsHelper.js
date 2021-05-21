@@ -4,6 +4,16 @@ import { transmitMessage, transmitUpdateAnnotationMessage } from '../backgroundT
 const isModal = (res) => res.from === 'modal';
 const isContent = (res) => res.from === 'content';
 
+function getListFromSnapshots(snapshots) {
+    let out = [];
+    snapshots.forEach(snapshot => {
+        out.push({
+            id: snapshot.id, ...snapshot.data(),
+        });
+    });
+    return out;
+}
+
 let groupListener;
 
 function setUpGetGroupListener(uid) {
@@ -16,7 +26,8 @@ function setUpGetGroupListener(uid) {
                     ...snapshot.data()
                 });
             })
-            console.log('groups in listener', groups);
+            // console.log('groups in listener', groups);
+            chrome.storage.local.set({ 'groups': groups });
             transmitMessage({ msg: "GROUPS_UPDATED", sentFrom: "background", data: { groups } });
         }))
     })
@@ -28,14 +39,33 @@ export async function getGroups(request, sender, sendResponse) {
 
 export async function createGroup(request, sender, sendResponse) {
     if (!isContent) return;
-    await fb.addNewGroup({
-        name: request.group.name,
-        description: request.group.description,
-        owner: request.group.owner,
-        emails: request.group.emails
-    }).then(value => {
-        transmitMessage({ msg: 'GROUP_CREATE_SUCCESS', sentFrom: 'background', currentTab: true });
-    })
+    if (request.group.emails !== undefined && request.group.emails.length) {
+        await fb.getUsersByEmails(request.group.emails).get().then(async snapshot => {
+            const uids = [request.group.owner].concat(getListFromSnapshots(snapshot).map(u => u.uid));
+            await fb.addNewGroup({
+                name: request.group.name,
+                description: request.group.description,
+                owner: request.group.owner,
+                emails: request.group.emails,
+                uids: uids
+            }).then(value => {
+                transmitMessage({ msg: 'GROUP_CREATE_SUCCESS', sentFrom: 'background', currentTab: true });
+            })
+        })
+    }
+    else {
+        await fb.addNewGroup({
+            name: request.group.name,
+            description: request.group.description,
+            owner: request.group.owner,
+            emails: request.group.emails,
+            uids: [request.group.owner]
+        }).then(value => {
+            transmitMessage({ msg: 'GROUP_CREATE_SUCCESS', sentFrom: 'background', currentTab: true });
+        })
+    }
+
+
 }
 
 
