@@ -864,6 +864,7 @@ class Sidebar extends React.Component {
     );
 
     pinnedAnnosCopy = pinnedAnnosCopy.filter(anno => !anno.deleted && (!anno.archived || (this.state.filterSelection.showArchived && anno.archived)));
+    renderedAnnotations = this.state.showPinned ? renderedAnnotations.filter(annoR => !pinnedAnnosCopy.find(annoP => (annoR.id === annoP.id))) : renderedAnnotations;
 
     let tempSearchCount;
     if (this.state.showPinned) {
