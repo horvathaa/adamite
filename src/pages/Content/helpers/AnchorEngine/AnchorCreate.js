@@ -256,9 +256,9 @@ function openSelectAnchorToast() {
             positionString = "top-right";
         }
         else { positionString = "top-left"; }
-        toast.warning('Select text on the page to add a new anchor', {
+        toast.warning('To add a new anchor, first select text on the page, then click the anchor plus button', {
             position: positionString,
-            autoClose: 3000,
+            autoClose: 4000,
             hideProgressBar: true,
             closeOnClick: true,
             pauseOnHover: true,
@@ -270,7 +270,7 @@ function openSelectAnchorToast() {
         document.body.appendChild(modal);
         const toastModal = <ToastContainer
             position={positionString}
-            autoClose={3000}
+            autoClose={4000}
             hideProgressBar
             newestOnTop={false}
             closeOnClick

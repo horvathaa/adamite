@@ -16,7 +16,7 @@ import AnnotationContext from "../AnnotationContext";
 //todo fix tomorrow im too tired rn
 const AnchorList = () => {
     const ctx = useContext(AnnotationContext);
-    if (ctx.anno.childAnchor === undefined || !ctx.anno.childAnchor.length) return (null);
+    if (ctx.anno.childAnchor === undefined || ctx.anno.childAnchor === null || !ctx.anno.childAnchor.length) return (null);
     return (
         <ul className='AnchorList' style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
             {ctx.anno.childAnchor.map((childAnch, idx) => {

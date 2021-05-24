@@ -918,7 +918,7 @@ class Sidebar extends React.Component {
                 }
               </div>
 
-              {this.state.newSelection &&
+              {(this.state.newSelection || this.state.annotatingPage) &&
                 (
                   <Annotation
                     key={uuidv4()}
@@ -931,7 +931,17 @@ class Sidebar extends React.Component {
                       tags: [],
                       isPrivate: true,
                       groups: [],
-                      childAnchor: this.state.annotatingPage ? null : [
+                      childAnchor: this.state.annotatingPage ? [
+                        {
+                          id: uuidv4(),
+                          anchor: this.state.pageName,
+                          parentId: newAnnoId,
+                          xpath: null,
+                          offsets: null,
+                          url: this.state.url,
+                          tags: []
+                        }
+                      ] : [
                         {
                           id: uuidv4(),
                           anchor: this.state.newSelection,
