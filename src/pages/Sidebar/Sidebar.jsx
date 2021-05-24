@@ -1,19 +1,14 @@
 import React from 'react';
 import './Sidebar.css';
-import filter from '../../assets/img/SVGs/filter.svg';
 import classNames from 'classnames';
 import Title from './containers/Title/Title';
 import Authentication from './containers//Authentication//Authentication';
 import AnnotationList from './containers/AnnotationList/AnnotationList';
-import NewAnnotation from './containers/old/NewAnnotation/NewAnnotation';
-import Filter from './containers/Filter/Filter';
 import FilterSummary from './containers/Filter/FilterSummary';
 import SearchBar from './containers/SearchBar/SearchBar';
-import { Button } from 'react-bootstrap';
-import { left } from 'glamor';
-import { AiOutlineConsoleSql } from 'react-icons/ai';
 import { v4 as uuidv4 } from 'uuid';
 import Annotation from './containers/AnnotationList/Annotation/Annotation';
+
 
 import {
   getPathFromUrl,
@@ -600,6 +595,16 @@ class Sidebar extends React.Component {
       searchState: searchAnnotations.searchState,
       searchedAnnotations: searchAnnotations.suggestion
     });
+    if (!searchAnnotations.suggestion.length) {
+      chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+        if (!tabs.length) return;
+        chrome.tabs.sendMessage(tabs[0].id, {
+          msg: 'RENDER_NO_SEARCH_RESULTS',
+          from: 'sidebar'
+        })
+      })
+
+    }
   };
 
   searchedSearchCount = (count) => {
@@ -669,7 +674,6 @@ class Sidebar extends React.Component {
     if (!tags.length || annotation.pinned) {
       return true;
     }
-    console.log('checking tags', tags, tags.some(tag => annotation.tags.includes(tag)))
     return tags.some(tag => annotation.tags.includes(tag));
   }
 

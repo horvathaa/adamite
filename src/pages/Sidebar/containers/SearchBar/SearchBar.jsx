@@ -131,11 +131,9 @@ class SearchBar extends React.Component {
             this.ElasticSearch2(input.value)
                 .then(res => {
                     const results = res.data.hits.hits.map(h => h._source)
-                    // console.log("this is a hit", this.state.hits)
                     this.setState({ hits: res.data.hits.total.value })
                     this.props.searchedSearchCount(res.data.hits.total.value);
                     this.props.handleSearchBarInputText({ suggestion: results, searchState: true })
-                    //this.setState({ suggestions: results })
                 })
         }
         /* Backspace clear search */
