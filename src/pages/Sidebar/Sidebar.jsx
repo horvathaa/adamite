@@ -1,19 +1,14 @@
 import React from 'react';
 import './Sidebar.css';
-import filter from '../../assets/img/SVGs/filter.svg';
 import classNames from 'classnames';
 import Title from './containers/Title/Title';
 import Authentication from './containers//Authentication//Authentication';
 import AnnotationList from './containers/AnnotationList/AnnotationList';
-import NewAnnotation from './containers/old/NewAnnotation/NewAnnotation';
-import Filter from './containers/Filter/Filter';
 import FilterSummary from './containers/Filter/FilterSummary';
 import SearchBar from './containers/SearchBar/SearchBar';
-import { Button } from 'react-bootstrap';
-import { left } from 'glamor';
-import { AiOutlineConsoleSql } from 'react-icons/ai';
 import { v4 as uuidv4 } from 'uuid';
 import Annotation from './containers/AnnotationList/Annotation/Annotation';
+
 
 import {
   getPathFromUrl,
@@ -461,6 +456,23 @@ class Sidebar extends React.Component {
     });
   };
 
+  openOptions = () => {
+    chrome.tabs.create({ 'url': "/options.html" })
+  };
+
+  openDocumentation = () => {
+    chrome.tabs.create({ 'url': "https://www.adamite.net" })
+  }
+
+  closeSidebar = () => {
+    chrome.runtime.sendMessage({
+      msg: 'REQUEST_TOGGLE_SIDEBAR',
+      from: 'content',
+      toStatus: false,
+      tabId: this.state.tabId
+    });
+  };
+
 
   updateSidebarGroup = (options) => {
     let groupKV = [];
@@ -497,9 +509,16 @@ class Sidebar extends React.Component {
               this.setState({ groupAnnotations: res });
               this.setState({ activeGroups: groupNames });
             }
-            // groupKV.push({ name: group.label, annotations: res.response.data.hits.hits.map(h => h._source) });
-
-
+            else {
+              chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+                if (tabs.length) {
+                  chrome.tabs.sendMessage(tabs[0].id, {
+                    msg: 'SHOW_NO_GROUP_ANNOTATIONS',
+                    from: 'sidebar'
+                  })
+                }
+              })
+            }
           });
       }
 
@@ -600,6 +619,16 @@ class Sidebar extends React.Component {
       searchState: searchAnnotations.searchState,
       searchedAnnotations: searchAnnotations.suggestion
     });
+    if (!searchAnnotations.suggestion.length) {
+      chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+        if (!tabs.length) return;
+        chrome.tabs.sendMessage(tabs[0].id, {
+          msg: 'RENDER_NO_SEARCH_RESULTS',
+          from: 'sidebar'
+        })
+      })
+
+    }
   };
 
   searchedSearchCount = (count) => {
@@ -669,7 +698,6 @@ class Sidebar extends React.Component {
     if (!tags.length || annotation.pinned) {
       return true;
     }
-    console.log('checking tags', tags, tags.some(tag => annotation.tags.includes(tag)))
     return tags.some(tag => annotation.tags.includes(tag));
   }
 
@@ -864,6 +892,7 @@ class Sidebar extends React.Component {
     );
 
     pinnedAnnosCopy = pinnedAnnosCopy.filter(anno => !anno.deleted && (!anno.archived || (this.state.filterSelection.showArchived && anno.archived)));
+    renderedAnnotations = this.state.showPinned ? renderedAnnotations.filter(annoR => !pinnedAnnosCopy.find(annoP => (annoR.id === annoP.id))) : renderedAnnotations;
 
     let tempSearchCount;
     if (this.state.showPinned) {
@@ -878,6 +907,9 @@ class Sidebar extends React.Component {
       <div className="SidebarContainer" >
         <Title currentUser={currentUser}
           handleShowAnnotatePage={this.handleShowAnnotatePage}
+          closeSidebar={this.closeSidebar}
+          openOptions={this.openOptions}
+          openDocumentation={this.openDocumentation}
         />
         {currentUser === null && <Authentication />}
         {currentUser !== null && (
@@ -918,7 +950,7 @@ class Sidebar extends React.Component {
                 }
               </div>
 
-              {this.state.newSelection &&
+              {(this.state.newSelection || this.state.annotatingPage) &&
                 (
                   <Annotation
                     key={uuidv4()}
@@ -931,7 +963,17 @@ class Sidebar extends React.Component {
                       tags: [],
                       isPrivate: true,
                       groups: [],
-                      childAnchor: this.state.annotatingPage ? null : [
+                      childAnchor: this.state.annotatingPage ? [
+                        {
+                          id: uuidv4(),
+                          anchor: this.state.pageName,
+                          parentId: newAnnoId,
+                          xpath: null,
+                          offsets: null,
+                          url: this.state.url,
+                          tags: []
+                        }
+                      ] : [
                         {
                           id: uuidv4(),
                           anchor: this.state.newSelection,

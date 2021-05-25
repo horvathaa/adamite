@@ -28,7 +28,7 @@ class GroupMultiSelect extends React.Component {
                 uids: group.uids,
                 groupName: group.name,
                 groupDescription: group.description,
-                emails: [],
+                emails: group.emails,
                 gid: gid
             }
         });

@@ -40,29 +40,64 @@ export async function getGroups(request, sender, sendResponse) {
 export async function createGroup(request, sender, sendResponse) {
     if (!isContent) return;
     if (request.group.emails !== undefined && request.group.emails.length) {
-        await fb.getUsersByEmails(request.group.emails).get().then(async snapshot => {
+        console.log('request.group', request.group)
+        console.log('fb', fb)
+        fb.getUsersByEmails(request.group.emails).get().then(function (snapshot) {
             const uids = [request.group.owner].concat(getListFromSnapshots(snapshot).map(u => u.uid));
+            if (request.group.gid !== "") {
+                console.log('in if');
+                fb.updateGroup({
+                    name: request.group.name,
+                    description: request.group.description,
+                    owner: request.group.owner,
+                    emails: request.group.emails,
+                    uids: uids,
+                    gid: request.group.gid
+                }).then(value => {
+                    transmitMessage({ msg: "GROUP_UPDATE_SUCCESS", sentFrom: 'background', currentTab: true })
+                })
+            }
+            else {
+                fb.addNewGroup({
+                    name: request.group.name,
+                    description: request.group.description,
+                    owner: request.group.owner,
+                    emails: request.group.emails,
+                    uids: uids
+                }).then(value => {
+                    transmitMessage({ msg: 'GROUP_CREATE_SUCCESS', sentFrom: 'background', currentTab: true });
+                })
+            }
+
+        })
+    }
+    else {
+        console.log('request.group', request.group)
+        if (request.group.gid !== "") {
+            console.log('in if');
+            fb.updateGroup({
+                name: request.group.name,
+                description: request.group.description,
+                owner: request.group.owner,
+                emails: request.group.emails,
+                uids: [request.group.owner],
+                gid: request.group.gid
+            }).then(value => {
+                transmitMessage({ msg: "GROUP_UPDATE_SUCCESS", sentFrom: 'background', currentTab: true })
+            })
+        }
+        else {
             await fb.addNewGroup({
                 name: request.group.name,
                 description: request.group.description,
                 owner: request.group.owner,
                 emails: request.group.emails,
-                uids: uids
+                uids: [request.group.owner]
             }).then(value => {
                 transmitMessage({ msg: 'GROUP_CREATE_SUCCESS', sentFrom: 'background', currentTab: true });
             })
-        })
-    }
-    else {
-        await fb.addNewGroup({
-            name: request.group.name,
-            description: request.group.description,
-            owner: request.group.owner,
-            emails: request.group.emails,
-            uids: [request.group.owner]
-        }).then(value => {
-            transmitMessage({ msg: 'GROUP_CREATE_SUCCESS', sentFrom: 'background', currentTab: true });
-        })
+        }
+
     }
 
 
@@ -71,9 +106,9 @@ export async function createGroup(request, sender, sendResponse) {
 
 export async function deleteGroup(request, sender, sendResponse) {
     if (!isModal(request)) return;
-    console.log("this is the request for a delete group", request.gid);
     const { gid } = request;
-    fb.deleteGroupForeverByGid(gid).then(value => transmitMessage({ msg: 'GROUP_DELETE_SUCCESS' }));
+    transmitMessage({ msg: 'GROUP_DELETE_SUCCESS', sentFrom: 'background', currentTab: true });
+    fb.deleteGroupForeverByGid(gid) //.then(value => transmitMessage({ msg: 'GROUP_DELETE_SUCCESS' }));
 }
 
 export async function showGroup(request, sender, sendResponse) {
@@ -101,19 +136,3 @@ export async function hideGroup(request, sender, sendResponse) {
             );
         });
 }
-
-// "DELETE_GROUP": (request, sender, sendResponse) => {
-//     if (!isModal(request)) return;
-//     console.log("this is the request for a delete group", request.gid);
-//     const { gid } = request;
-//     deleteGroupForeverByGid(gid).then(value => sendMsg('GROUP_DELETE_SUCCESS', null, true));
-// },
-// 'ADD_NEW_GROUP': (request, sender, sendResponse) => {
-//     if (!isContent(request)) return;
-//     addNewGroup({
-//         name: request.group.name,
-//         description: request.group.description,
-//         owner: request.group.owner,
-//         emails: request.group.emails
-//     }).then(value => sendMsg('GROUP_CREATE_SUCCESS', null, true))
-// },

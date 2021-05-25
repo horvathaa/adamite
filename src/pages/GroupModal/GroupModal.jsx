@@ -36,13 +36,13 @@ class Groups extends React.Component {
                 request.msg === 'GROUP_MODAL_CLOSED'
             ) {
                 this.setState({
-                    ownerUid: initstate.ownerUid,
-                    ownerEmail: initstate.ownerEmail,
+                    ownerUid: this.props.uid,
+                    ownerEmail: this.props.email,
                     userName: initstate.userName,
-                    uids: initstate.uids,
+                    uids: [this.props.uid],
                     groupName: "",
                     groupDescription: "",
-                    emails: [initstate.ownerEmail],
+                    emails: [this.props.email],
                     invalidUser: "",
                     invalidName: "",
                     editState: false,
@@ -53,12 +53,11 @@ class Groups extends React.Component {
                 request.from === 'content' &&
                 request.msg === 'EDIT_EXISTING_GROUP'
             ) {
-                // console.log("edit groups", request)
                 let data = request.payload;
                 this.setState({
-                    ownerUid: data.owner,
-                    ownerEmail: data.ownerEmail,
-                    userName: data.userName,
+                    ownerUid: data.ownerUid,
+                    ownerEmail: this.props.email,
+                    userName: this.props.email.substring(0, this.props.email.indexOf('@')),
                     uids: data.uids,
                     groupName: data.groupName,
                     groupDescription: data.groupDescription,
@@ -116,7 +115,7 @@ class Groups extends React.Component {
             return;
         }
         let emails = this.state.emails.filter(e => e !== this.props.email)
-        // console.log("sending date", this.state.emails, this.props.email, emails)
+
         await chrome.runtime.sendMessage({
             msg: 'ADD_NEW_GROUP',
             from: 'content',
@@ -125,6 +124,7 @@ class Groups extends React.Component {
                 owner: this.state.ownerUid,
                 description: this.state.groupDescription,
                 emails: emails,
+                gid: this.state.gid
             },
         });
     }
@@ -261,7 +261,7 @@ class Groups extends React.Component {
                 </div>
                 <footer>
                     {editState ?
-                        <button className="btn-delete btn" onClick={this.onClickDeletez} >Delete</button>
+                        <button className="btn-delete btn" onClick={this.onClickDeletez} >Delete Group</button>
                         : null
                     }
                     <button className="btn" onClick={() => this.onClickCreate()} >{editState ? "Update" : "Create"}</button>

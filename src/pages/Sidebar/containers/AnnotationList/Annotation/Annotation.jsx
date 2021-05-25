@@ -89,7 +89,6 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, res
         handlePin: () => {
           const newAnno = { ...anno, pinned: !anno.pinned };
           if (newAnno !== anno) {
-            console.log('how many times is this being done')
             chrome.runtime.sendMessage({
               msg: 'ANNOTATION_UPDATED',
               from: 'content',
@@ -216,7 +215,6 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, res
           }
         },
         submitButtonHandler: (newAnno) => {
-          console.log('newanno', newAnno)
           chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
             chrome.tabs.sendMessage(tabs[0].id, { msg: 'REMOVE_TEMP_ANNOTATION', },
               response => {

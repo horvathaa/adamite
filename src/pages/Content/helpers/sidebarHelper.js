@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Frame from '../modules/frame/frame';
+import { ToastContainer, toast } from 'react-toastify';
 
 let shouldShrinkBody = true;
 let sidebarLocation = 'right';
@@ -123,6 +124,72 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     const { toStatus } = request;
     shouldShrinkBody = toStatus;
     Frame.shrinkBody();
+
+  } else if (request.from === 'sidebar' && request.msg === 'RENDER_NO_SEARCH_RESULTS') {
+    let positionString = "";
+    chrome.storage.sync.get(['sidebarOnLeft'], result => {
+      if (result.sidebarOnLeft) {
+        positionString = "top-right";
+      }
+      else { positionString = "top-left"; }
+      toast.warning('No results!', {
+        position: positionString,
+        autoClose: 4000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      let modal = document.createElement("div");
+      modal.classList.add("success-notif-div");
+      document.body.appendChild(modal);
+      const toastModal = <ToastContainer
+        position={positionString}
+        autoClose={4000}
+        hideProgressBar
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />;
+      ReactDOM.render(toastModal, modal);
+    })
+  }
+  else if (request.from === 'sidebar' && request.msg === 'SHOW_NO_GROUP_ANNOTATIONS') {
+    let positionString = "";
+    chrome.storage.sync.get(['sidebarOnLeft'], result => {
+      if (result.sidebarOnLeft) {
+        positionString = "top-right";
+      }
+      else { positionString = "top-left"; }
+      toast.warning('No annotations in this group - try making some!', {
+        position: positionString,
+        autoClose: 4000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      let modal = document.createElement("div");
+      modal.classList.add("success-notif-div");
+      document.body.appendChild(modal);
+      const toastModal = <ToastContainer
+        position={positionString}
+        autoClose={4000}
+        hideProgressBar
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />;
+      ReactDOM.render(toastModal, modal);
+    })
   }
 
   // else if (
