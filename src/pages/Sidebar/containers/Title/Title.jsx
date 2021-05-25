@@ -130,6 +130,15 @@ export default class Title extends React.Component {
                           <Dropdown.Item onClick={this.props.handleShowAnnotatePage}>
                             Add Page Annotation
                         </Dropdown.Item>
+                          <Dropdown.Item onClick={this.props.closeSidebar}>
+                            Close Sidebar
+                        </Dropdown.Item>
+                          <Dropdown.Item onClick={this.props.openOptions}>
+                            Options
+                        </Dropdown.Item>
+                          <Dropdown.Item onClick={this.props.openDocumentation}>
+                            View Adamite Documentation
+                        </Dropdown.Item>
                         </Dropdown.Menu>
                       </Dropdown>
                     </div>

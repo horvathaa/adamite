@@ -26,12 +26,12 @@ export const getPrivateAnnotationsByUrl = (url, uid) => {
 export const getAllUserGroups = uid => {
   return db.collection(DB_COLLECTIONS.GROUPS)
     .where('uids', 'array-contains', uid);
-}
+};
 
-export const getUsersByEmails = async (emails) => {
+export const getUsersByEmails = emails => {
   return db.collection(DB_COLLECTIONS.USERS)
     .where('email', 'in', emails)
-}
+};
 
 export const addNewGroup = async ({
   name,
@@ -53,6 +53,23 @@ export const addNewGroup = async ({
       gid: ref.id,
     }).then(_ => console.log('success'), _ => console.log('rejected!'));
   })
+};
+
+export const updateGroup = async ({
+  name,
+  description,
+  owner,
+  uids,
+  emails,
+  gid
+}) => {
+  return db.collection(DB_COLLECTIONS.GROUPS).doc(gid).update({
+    name,
+    description,
+    owner,
+    uids,
+    emails
+  }).then(_ => console.log('success'), _ => console.log('rejected!'));
 };
 
 

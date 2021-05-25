@@ -34,7 +34,8 @@ const CardWrapper = ({ isNew = false }) => {
 
     let splitButtonText;
     if ((userGroups && userGroups.length) && (groups && groups.length)) {
-        const name = userGroups.filter(g => g.gid === groups[0])[0].name;
+        const group = userGroups.filter(g => g.gid === groups[0]);
+        const name = group.length ? group[0].name : "Private"; // prevent breaking due to group being removed on backend but not updated in anno yet
         splitButtonText = "Post to " + name;
     }
     else {

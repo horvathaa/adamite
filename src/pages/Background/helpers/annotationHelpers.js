@@ -79,40 +79,6 @@ export async function getAnnotationsPageLoad(request, sender, sendResponse) {
         }
         getAnnotationsByUrlListener(request.url, groups)
     })
-    // if (!userGroups.length) {
-    //     fb.getAllUserGroups(request.uid).get().then(function (querySnapshot) {
-    //         userGroups = getListFromSnapshots(querySnapshot);
-    //         const gids = userGroups.map(g => g.gid);
-    //         console.log('gids', gids)
-    //         fb.getOtherUserGroupAnnotationsByGroupId(gids, request.uid).get().then(function (querySnapshot) {
-    //             console.log('querySnapshot in groups', querySnapshot)
-    //             groupAnnotations = querySnapshot.empty ? [] : getListFromSnapshots(querySnapshot).filter(anno => anno.url.includes(request.url));
-    //             console.log('groupAnnotations', groupAnnotations)
-    //             if (groupAnnotations.length) {
-    //                 const annos = publicAnnotations.concat(privateAnnotations, groupAnnotations);
-    //                 console.log('annos', annos, 'request', request)
-    //                 chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-    //                     broadcastAnnotationsToTab("CONTENT_UPDATED", removeDuplicates(annos), request.url, tabs[0].id);
-    //                 })
-
-    //             }
-
-    //         })
-    //     })
-    // }
-    // else {
-    //     const gids = userGroups.map(g => g.gid);
-    //     fb.getOtherUserGroupAnnotationsByGroupId(gids, request.uid).get().then(function (querySnapshot) {
-    //         groupAnnotations = querySnapshot.empty ? [] : getListFromSnapshots(querySnapshot).filter(anno => anno.url.includes(request.url));
-    //         if (groupAnnotations.length) {
-    //             const annos = publicAnnotations.concat(privateAnnotations, groupAnnotations);
-    //             console.log('annos', annos, 'request', request)
-    //             chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-    //                 broadcastAnnotationsToTab("CONTENT_UPDATED", removeDuplicates(annos), request.url, tabs[0].id);
-    //             })
-    //         }
-    //     })
-    // }
 
 
 
@@ -141,9 +107,7 @@ export function getGroupAnnotations(request, sender, sendResponse) {
     // const gids = request.payload.groups.map(g => g.gid);
     // console.log('gids', gids)
     fb.getGroupAnnotationsByGroupId(gid).get().then(function (querySnapshot) {
-        console.log('querySnapshot in groups', querySnapshot)
         groupAnnotations = querySnapshot.empty ? [] : getListFromSnapshots(querySnapshot) // .filter(anno => anno.url.includes(request.payload.url));
-        console.log('groupAnnotations', groupAnnotations)
         if (groupAnnotations.length) {
             // const annos = publicAnnotations.concat(privateAnnotations, groupAnnotations);
             // console.log('annos', annos, 'request', request)
@@ -169,14 +133,7 @@ export function getAnnotationById(request, sender, sendResponse) {
         console.log('getAnnotationById error', error);
     });
 }
-// TODO  
-// export async function createAnnotation(request, sender, sendResponse) {
-//     fb.createAnnotation(_createAnnotation(request)).then(value => {
-//         console.log("background", value);
-//         console.log('sendResponse', sendResponse);
-//     });
-//     sendResponse({ "msg": 'DONE' });
-// }
+
 export async function createAnnotation(request, sender, sendResponse) {
     //let { url, anchor, xpath, offsets } = request.payload;
     let { url, newAnno } = request.payload;

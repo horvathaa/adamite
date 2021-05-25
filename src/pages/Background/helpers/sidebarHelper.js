@@ -158,6 +158,14 @@ export async function requestSidebarStatus(request, sender, sendResponse) {
 
 export async function requestToggleSidebar(request, sender, sendResponse) {
   toggleSidebar(request.toStatus);
+  chrome.storage.sync.get(['sidebarStatus'], sidebarStatus => {
+    sidebarStatus = sidebarStatus.sidebarStatus;
+    if (sidebarStatus !== undefined && sidebarStatus.length && request.tabId !== undefined) {
+      const i = sidebarStatus.findIndex(t => t.id === request.tabId);
+      if (i !== -1) sidebarStatus[i].open = request.toStatus;
+      chrome.storage.sync.set({ sidebarStatus });
+    }
+  })
 }
 
 export async function userChangeSidebarLocation(request, sender, sendResponse) {

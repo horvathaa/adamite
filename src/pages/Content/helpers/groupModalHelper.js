@@ -53,6 +53,51 @@ chrome.runtime.onMessage.addListener((request) => {
         dialogEl.classList.add('new-group-modal-hidden');
         dialogEl.close();
     }
+    else if (request.msg === 'GROUP_UPDATE_SUCCESS' && request.from === 'background') {
+        let positionString = "";
+        chrome.storage.sync.get(['sidebarOnLeft'], result => {
+            if (result.sidebarOnLeft) {
+                positionString = "top-right";
+            }
+            else {
+                positionString = "top-left";
+            }
+            toast.success('Successfully updated group!', {
+                position: positionString,
+                autoClose: 3000,
+                hideProgressBar: true,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
+            let modal = document.createElement("div");
+            modal.classList.add("success-notif-div");
+            document.body.appendChild(modal);
+            const toastModal = <ToastContainer
+                position={positionString}
+                autoClose={3000}
+                hideProgressBar
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+            />;
+            ReactDOM.render(toastModal, modal);
+        });
+        // removeClickListener()
+        // element.classList.add('w3-animate-show');
+        chrome.runtime.sendMessage({
+            msg: 'GROUP_MODAL_CLOSED',
+            from: 'helper'
+        });
+        const dialogEl = document.getElementById('blurg');
+        dialogEl.classList.remove("new-group-modal-shown")
+        dialogEl.classList.add('new-group-modal-hidden');
+        dialogEl.close();
+    }
     else if (request.msg === 'GROUP_DELETE_SUCCESS' && request.from === 'background') {
         let positionString = "";
         chrome.storage.sync.get(['sidebarOnLeft'], result => {

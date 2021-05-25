@@ -456,6 +456,23 @@ class Sidebar extends React.Component {
     });
   };
 
+  openOptions = () => {
+    chrome.tabs.create({ 'url': "/options.html" })
+  };
+
+  openDocumentation = () => {
+    chrome.tabs.create({ 'url': "https://www.adamite.net" })
+  }
+
+  closeSidebar = () => {
+    chrome.runtime.sendMessage({
+      msg: 'REQUEST_TOGGLE_SIDEBAR',
+      from: 'content',
+      toStatus: false,
+      tabId: this.state.tabId
+    });
+  };
+
 
   updateSidebarGroup = (options) => {
     let groupKV = [];
@@ -492,9 +509,16 @@ class Sidebar extends React.Component {
               this.setState({ groupAnnotations: res });
               this.setState({ activeGroups: groupNames });
             }
-            // groupKV.push({ name: group.label, annotations: res.response.data.hits.hits.map(h => h._source) });
-
-
+            else {
+              chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+                if (tabs.length) {
+                  chrome.tabs.sendMessage(tabs[0].id, {
+                    msg: 'SHOW_NO_GROUP_ANNOTATIONS',
+                    from: 'sidebar'
+                  })
+                }
+              })
+            }
           });
       }
 
@@ -883,6 +907,9 @@ class Sidebar extends React.Component {
       <div className="SidebarContainer" >
         <Title currentUser={currentUser}
           handleShowAnnotatePage={this.handleShowAnnotatePage}
+          closeSidebar={this.closeSidebar}
+          openOptions={this.openOptions}
+          openDocumentation={this.openDocumentation}
         />
         {currentUser === null && <Authentication />}
         {currentUser !== null && (
