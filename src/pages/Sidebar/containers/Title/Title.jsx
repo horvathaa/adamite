@@ -142,8 +142,6 @@ export default class Title extends React.Component {
                         </Dropdown.Menu>
                       </Dropdown>
                     </div>
-
-
                   </div>
                 </div>
               </div>

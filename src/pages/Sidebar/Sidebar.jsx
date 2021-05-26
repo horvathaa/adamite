@@ -932,7 +932,7 @@ class Sidebar extends React.Component {
                   handleNotifySidebar={this.updateSidebarGroup}
                   addNewGroup={this.addNewGroup}
                 />
-                {!this.state.showFilter && renderedAnnotations.length ?
+                {!this.state.showFilter && (renderedAnnotations.length || this.state.annotations.length) ?
                   (<FilterSummary
                     applyFilter={this.applyFilter}
                     groups={groups}
