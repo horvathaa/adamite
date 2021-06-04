@@ -149,6 +149,7 @@ class Sidebar extends React.Component {
           );
           this.setUpPinnedListener();
         }
+        else if (chrome.runtime.lastError) { console.error(chrome.runtime.lastError); return }
         chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
           let tab = tabs[0];
           this.setState({ url: getPathFromUrl(tab.url), tabId: tab.id });
@@ -171,6 +172,7 @@ class Sidebar extends React.Component {
       from: 'content',
       msg: 'GET_PINNED_ANNOTATIONS'
     }, response => {
+      if (chrome.runtime.lastError) { console.error(chrome.runtime.lastError); return }
       this.setState({ pinnedAnnos: response.annotations });
     })
 
@@ -180,6 +182,7 @@ class Sidebar extends React.Component {
         request.from === 'background' &&
         request.msg === 'USER_AUTH_STATUS_CHANGED'
       ) {
+        if (chrome.runtime.lastError) { console.error(chrome.runtime.lastError); return }
         this.setState({ currentUser: request.payload.currentUser });
         if (request.payload.currentUser) {
           this.setUpAnnotationsListener(
@@ -322,7 +325,8 @@ class Sidebar extends React.Component {
         request.from === 'background' &&
         request.msg === 'CONTENT_UPDATED'
       ) {
-        if (request === undefined) {
+        if (request === undefined || chrome.runtime.lastError) {
+          console.error(chrome.runtime.lastError)
           return;
         }
         let annotations = request.payload;
