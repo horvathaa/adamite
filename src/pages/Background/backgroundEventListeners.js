@@ -90,53 +90,56 @@ let commands = {
     // LOCAL COMMANDS
     'UPDATE_ANNOTATIONS_ON_TAB_ACTIVATED': anno.updateAnnotationsOnTabActivated,
     'HANDLE_BROWSER_ACTION_CLICK': () => {
-        chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-            chrome.storage.local.get(['sidebarStatus'], sidebarStatus => {
-                sidebarStatus = sidebarStatus.sidebarStatus;
-                const index = sidebarStatus !== undefined && sidebarStatus.length ? sidebarStatus.findIndex(side => side.id === tabs[0].id) : -1;
-                sidebarStatus = sidebarStatus === undefined || Object.keys(sidebarStatus).length === 0 ? [] : sidebarStatus;
-                // console.log('what is sidebarstatus lol', sidebarStatus)
-                let opening;
-                if (index > -1) {
-                    opening = !sidebarStatus[index].open;
-                    sidebarStatus[index].open = opening;
-                }
-                else if (getPathFromUrl(tabs[0].url) !== "" && !getPathFromUrl(tabs[0].url).includes("chrome://")) {
-                    sidebarStatus.push({ id: tabs[0].id, open: true, url: getPathFromUrl(tabs[0].url) })
-                    opening = true;
-                }
-                toggleSidebar(opening);
-                chrome.storage.local.set({ sidebarStatus }, function () {
-                    if (chrome.runtime.lastError) {
-                        chrome.storage.local.clear();
+        try {
+            chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+                chrome.storage.local.get(['sidebarStatus'], sidebarStatus => {
+                    sidebarStatus = sidebarStatus.sidebarStatus;
+                    const index = sidebarStatus !== undefined && sidebarStatus.length ? sidebarStatus.findIndex(side => side.id === tabs[0].id) : -1;
+                    sidebarStatus = sidebarStatus === undefined || Object.keys(sidebarStatus).length === 0 ? [] : sidebarStatus;
+                    // console.log('what is sidebarstatus lol', sidebarStatus)
+                    let opening;
+                    if (index > -1) {
+                        opening = !sidebarStatus[index].open;
+                        sidebarStatus[index].open = opening;
                     }
-                })
-                if (opening) {
-                    if (anno.containsObjectWithUrl(getPathFromUrl(tabs[0].url), anno.tabAnnotationCollect)) {
-                        const tabInfo = anno.tabAnnotationCollect.filter(obj => obj.tabUrl === getPathFromUrl(tabs[0].url));
-                        chrome.tabs.sendMessage(tabs[0].id, {
-                            msg: 'HIGHLIGHT_ANNOTATIONS',
-                            payload: tabInfo[0].annotations,
-                            url: getPathFromUrl(tabs[0].url)
-                        }, response => {
-                            chrome.runtime.sendMessage({
-                                msg: 'SORT_LIST',
-                                from: 'background',
-                                payload: response
+                    else if (getPathFromUrl(tabs[0].url) !== "" && !getPathFromUrl(tabs[0].url).includes("chrome://")) {
+                        sidebarStatus.push({ id: tabs[0].id, open: true, url: getPathFromUrl(tabs[0].url) })
+                        opening = true;
+                    }
+                    toggleSidebar(opening);
+                    chrome.storage.local.set({ sidebarStatus }, function () {
+                        if (chrome.runtime.lastError) {
+                            chrome.storage.local.clear();
+                        }
+                    })
+                    if (opening) {
+                        if (anno.containsObjectWithUrl(getPathFromUrl(tabs[0].url), anno.tabAnnotationCollect)) {
+                            const tabInfo = anno.tabAnnotationCollect.filter(obj => obj.tabUrl === getPathFromUrl(tabs[0].url));
+                            chrome.tabs.sendMessage(tabs[0].id, {
+                                msg: 'HIGHLIGHT_ANNOTATIONS',
+                                payload: tabInfo[0].annotations,
+                                url: getPathFromUrl(tabs[0].url)
+                            }, response => {
+                                chrome.runtime.sendMessage({
+                                    msg: 'SORT_LIST',
+                                    from: 'background',
+                                    payload: response
+                                })
                             })
+                        }
+                    }
+                    else {
+                        chrome.tabs.sendMessage(tabs[0].id, {
+                            msg: 'REMOVE_HIGHLIGHTS'
                         })
                     }
-                }
-                else {
-                    chrome.tabs.sendMessage(tabs[0].id, {
-                        msg: 'REMOVE_HIGHLIGHTS'
-                    })
-                }
+                })
             })
+        }
+        catch (error) {
+            console.error('couldnt query tabs', error);
+        }
 
-
-
-        })
     },
     'HANDLE_TAB_URL_UPDATE': (tabId, changeInfo, tab) => {
         if ("url" in changeInfo) {
@@ -170,19 +173,16 @@ let commands = {
         }
     },
     'HANDLE_TAB_REMOVED': (tab) => {
-        if (getPathFromUrl(tab.url) !== "" && !getPathFromUrl(tab.url).includes("chrome://")) {
-            chrome.storage.local.get(['sidebarStatus'], sidebarStatus => {
-                // console.log('what is sidebarstatus lol', sidebarStatus)
-                sidebarStatus = sidebarStatus.sidebarStatus;
-                const newSidebarStatus = sidebarStatus.length ? sidebarStatus.filter(side => side.id !== tab.id) : -1;
-                chrome.storage.local.set({ sidebarStatus: newSidebarStatus }, function () {
-                    if (chrome.runtime.lastError) {
-                        chrome.storage.local.clear();
-                    }
-                })
+        chrome.storage.local.get(['sidebarStatus'], sidebarStatus => {
+            // console.log('what is sidebarstatus lol', sidebarStatus)
+            sidebarStatus = sidebarStatus.sidebarStatus;
+            const newSidebarStatus = sidebarStatus.length ? sidebarStatus.filter(side => side.id !== tab) : -1;
+            chrome.storage.local.set({ sidebarStatus: newSidebarStatus }, function () {
+                if (chrome.runtime.lastError) {
+                    chrome.storage.local.clear();
+                }
             })
-
-        }
+        })
     },
 
     'HANDLE_TAB_CREATED': (tab) => {

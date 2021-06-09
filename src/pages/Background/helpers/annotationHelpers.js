@@ -373,7 +373,7 @@ export async function searchAnnotationsByTag(request, sender, sendResponse) {
 
 export function updateAnnotationsOnTabActivated(activeInfo) {
     if (activeInfo.url) {
-        if (containsObjectWithUrl(getPathFromUrl(activeInfo.url), tabAnnotationCollect)) {
+        if (tabAnnotationCollect !== undefined && containsObjectWithUrl(getPathFromUrl(activeInfo.url), tabAnnotationCollect)) {
             const tabInfo = tabAnnotationCollect.filter(obj => obj.tabUrl === getPathFromUrl(activeInfo.url));
             broadcastAnnotationsUpdatedTab('CONTENT_UPDATED', tabInfo[0].annotations);
         }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './FilterSummary.css';
+import './Filter.css';
 import { AiFillClockCircle, AiOutlineCheck, AiOutlineCloseCircle, AiOutlineUsergroupAdd } from 'react-icons/ai';
 import { BsChatSquareDots, BsXCircle } from 'react-icons/bs';
 import { BiSort } from 'react-icons/bi';
@@ -60,19 +61,9 @@ class FilterSummary extends React.Component {
     }
 
     componentDidMount(prevProps) {
-        let tagSet = {};
-        this.props.filteredAnnotations.forEach(annotation => {
-            annotation.tags.forEach(tag => {
-                if (tagSet.hasOwnProperty(tag)) {
-                    tagSet[tag] += 1;
-                }
-                else {
-                    tagSet[tag] = 1;
-                }
-            });
-        })
-        this.setState({ tagSet });
+        this.setState({ tagSet: this.props.filterTags() });
     }
+
 
     handleTagClick(event) {
         let tagName = event.target.value;
@@ -292,8 +283,8 @@ class FilterSummary extends React.Component {
                                             </div>);
                                     })}
                                     <div className="TagButtonPad">
-                                        <button className="TagButton" >
-                                            <img src={expand} alt="collapse tag list" id="collapseTagList" onClick={() => { this.setState({ showTagFilter: false }) }} />
+                                        <button className="TagButton" style={{ border: 'none', 'margin-right': '4px' }} >
+                                            <img src={expand} id="collapseTagList" alt="collapse tag list" onClick={() => { this.setState({ showTagFilter: false }) }} />
                                         </button>
 
                                     </div>
@@ -344,7 +335,7 @@ class FilterSummary extends React.Component {
                             <div className={classNames({
                                 FilterSection: true,
                                 tagFilterNotEnabled: !filter.tags.length
-                            })} onClick={() => { this.setState({ showTagFilter: !this.state.showTagFilter }) }} >
+                            })} onClick={() => { this.setState({ showTagFilter: !this.state.showTagFilter, tagSet: this.props.filterTags() }) }} >
                                 <div className="FilterIconContainer">
                                     <img src={tag} alt="tag icon" />
                                 </div> &nbsp; &nbsp; Select Tag

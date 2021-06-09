@@ -18,6 +18,10 @@
     overflow: auto;
     
   }
+
+  .react-tagsinput-input.empty {
+    width: 100%;
+  }
   
   .TextareaContainer {
     padding: 5px;

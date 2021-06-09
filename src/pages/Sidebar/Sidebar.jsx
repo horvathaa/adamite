@@ -854,6 +854,21 @@ class Sidebar extends React.Component {
 
   }
 
+  filterTags = () => {
+    let tagSet = {};
+    this.state.filteredAnnotations.forEach(annotation => {
+      annotation.tags.forEach(tag => {
+        if (tagSet.hasOwnProperty(tag)) {
+          tagSet[tag] += 1;
+        }
+        else {
+          tagSet[tag] = 1;
+        }
+      });
+    })
+    return tagSet;
+  }
+
   scrollToNewAnnotationEditor = () => {
     let editorDiv = document.getElementById("NewAnnoEditor");
     if (editorDiv !== null) {
@@ -942,6 +957,7 @@ class Sidebar extends React.Component {
                     groups={groups}
                     filter={this.state.filterSelection}
                     openFilter={this.openFilter}
+                    filterTags={this.filterTags}
                     uid={currentUser.uid}
                     tempSearchCount={tempSearchCount}
                     showingSelectedAnno={this.state.showClearClickedAnnotation}
