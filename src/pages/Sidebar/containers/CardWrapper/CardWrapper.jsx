@@ -41,7 +41,7 @@ const CardWrapper = ({ isNew = false }) => {
     else {
         splitButtonText = !newAnno.isPrivate ? "Post to Public" : "Post as Private";
     }
-    let annoTypeDropDownValue = (newAnno.type === 'default') ? 'normal' : (newAnno.type === 'highlight') ? 'empty' : newAnno.type;
+    let annoTypeDropDownValue = (ctx.anno.type === 'default') ? 'normal' : (ctx.anno.type === 'highlight') ? 'empty' : ctx.anno.type;
     const placeHolderString = !newAnno.tags.length ? 'Add a tag then hit Enter' : 'Add a tag';
 
 
@@ -49,7 +49,7 @@ const CardWrapper = ({ isNew = false }) => {
         {ctx.editing ? (
             <React.Fragment>
                 <div className="TextareaContainer">
-                    <RichEditor annotationContent={newAnno.content}
+                    <RichEditor annotationContent={ctx.anno.content}
                         annotationChangeHandler={(content) => setNewAnno({ ...newAnno, content: content })} />
                 </div>
 
