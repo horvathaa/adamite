@@ -53,6 +53,7 @@ class Sidebar extends React.Component {
     showPinned: false,
     pinnedAnnos: [],
     annotatingPage: false,
+    newAnnotationId: -1,
     showClearClickedAnnotation: false,
     askAboutRelatedAnnos: false,
     relatedQuestions: [],
@@ -199,30 +200,22 @@ class Sidebar extends React.Component {
         request.msg === 'CONTENT_SELECTED'
       ) {
         const { selection, offsets, xpath, type, annoContent } = request.payload;
+        const newAnnoId = uuidv4();
         this.setState({
           newSelection: selection,
           offsets: offsets,
           xpath: xpath,
           newAnnotationType: type,
-          newAnnotationContent: annoContent
+          newAnnotationContent: annoContent,
+          newAnnotationId: newAnnoId
         });
+        this.scrollToNewAnnotationEditor();
       }
-      //  else if (
-      //   request.from === 'background' &&
-      //   request.msg === 'CONTENT_NOT_SELECTED'
-      // ) {
-      //   // should check whether annotation has user-added content or not - will need to request
-      //   // child annotation's state
-      //   this.resetNewSelection();
-      // } 
       else if (request.from === 'background' && request.msg === 'PINNED_CHANGED') {
         this.setState({
           pinnedAnnos: request.payload
         });
       }
-      // else if (request.from === 'content' && request.msg === 'ANCHOR_BROKEN') {
-      //   console.log('this worked', request.payload);
-      // }
       else if (request.from === 'background' && request.msg === 'SCROLL_INTO_VIEW') {
         this.scrollToNewAnnotation(request.payload.id);
       }
@@ -454,7 +447,7 @@ class Sidebar extends React.Component {
   }
 
   handleShowAnnotatePage = () => {
-    this.setState({ annotatingPage: true });
+    this.setState({ annotatingPage: true, newAnnotationId: uuidv4() });
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
       this.setState({ pageName: tabs[0].title });
     });
@@ -870,7 +863,7 @@ class Sidebar extends React.Component {
   }
 
   scrollToNewAnnotationEditor = () => {
-    let editorDiv = document.getElementById("NewAnnoEditor");
+    let editorDiv = document.getElementById(this.state.newAnnotationId);
     if (editorDiv !== null) {
       editorDiv.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
     }
@@ -921,7 +914,7 @@ class Sidebar extends React.Component {
       tempSearchCount = renderedAnnotations.length;
     }
 
-    const newAnnoId = uuidv4();
+    // const newAnnoId = uuidv4();
     return (
       <div className="SidebarContainer" >
         <Title currentUser={currentUser}
@@ -977,7 +970,7 @@ class Sidebar extends React.Component {
                     idx={-1}
                     isNew={true}
                     annotation={{
-                      id: newAnnoId,
+                      id: this.state.newAnnotationId,
                       type: this.state.newAnnotationType,
                       content: this.state.newAnnotationContent ?? '',
                       tags: [],
@@ -987,7 +980,7 @@ class Sidebar extends React.Component {
                         {
                           id: uuidv4(),
                           anchor: this.state.pageName,
-                          parentId: newAnnoId,
+                          parentId: this.state.newAnnotationId,
                           xpath: null,
                           offsets: null,
                           url: this.state.url,
@@ -997,7 +990,7 @@ class Sidebar extends React.Component {
                         {
                           id: uuidv4(),
                           anchor: this.state.newSelection,
-                          parentId: newAnnoId,
+                          parentId: this.state.newAnnotationId,
                           xpath: this.state.xpath,
                           offsets: this.state.offsets,
                           url: this.state.url,
