@@ -121,9 +121,10 @@ table tbody tr th {
 }
 
 .profile {
-    width: 1.4em;
-    height: 1.4em;
-    color: #6B778C;
+    width: 20px;
+    height: 20px;
+    color: #1d1e24c4;
+    cursor: pointer;
 }
 
 .table-email {

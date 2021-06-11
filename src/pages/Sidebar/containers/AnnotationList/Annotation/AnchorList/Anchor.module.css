@@ -12,16 +12,19 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
+  font-weight: 400;
 }
 .AnchorTextContainerExpanded {
   width: 100%;
   padding: 0px 0px 0px 8px;
+  font-weight: 400;
 }
 .profile {
   width: 20px;
   height: 20px;
-  color: #6B778C;
+  color: #1d1e24c4;
   cursor: pointer;
+  outline-color: transparent !important;
 }
 .AnchorTagMenu{
     display: flex;
@@ -103,7 +106,7 @@
     margin-left: auto;
   }
   body {
-    font-family: Helvetica, sans-serif;
+    font-family: 'Roboto', Helvetica, sans-serif;
   }
   
   .react-autosuggest__container {

@@ -135,11 +135,9 @@ export function getAnnotationById(request, sender, sendResponse) {
 }
 
 export async function createAnnotation(request, sender, sendResponse) {
-    //let { url, anchor, xpath, offsets } = request.payload;
+
     let { url, newAnno } = request.payload;
     // Add checks
-    // console.log(request.payload);
-
     const hostname = new URL(url).hostname;
     const author = getAuthor();
     //const id = new Date().getTime();

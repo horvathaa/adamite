@@ -72,20 +72,30 @@
 }
 
 .profileContainer{
-  padding: 4px;
-  width: 30px;
-  height: 30px;
+  padding: 5px;
+  margin: auto;
+  max-width: 99% !important;
   border-radius: 50%;
   background-color: #EBECF0;
   text-align: center;
   cursor: default;
 }
 
+.userProfile {
+  width: 30px;
+  height: 30px;
+  display: block;
+  text-align: center;
+  margin: auto;
+  color: #1d1e24c4;
+  cursor: pointer;
+}
+
 .profile {
   width: 20px;
   height: 20px;
-  color: #6B778C;
-
+  color: #1d1e24c4;
+  cursor: pointer;
 }
 
 
@@ -98,8 +108,8 @@
 .AnnotationContainer {
   padding: 5px;
   background: white;
-  border: 1px solid #a6a6a694;
-    box-shadow: 5px 5px 2px #88888866;
+  /* border: 1px solid #a6a6a694; */
+  box-shadow: 5px 5px 2px #88888866;
   /* border: 1px solid #bfbebe;
   box-shadow: 2px 2px 2px #88888887; */
   border-bottom-left-radius: 8px;
@@ -267,9 +277,13 @@
 .AnchorContainer {
   flex: 1;
   min-width: 0;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
 
-
-  border-left: 3px solid #6B778C;
+  border-left: 3px solid rgba(34,195,105,0.35);
+  background: rgb(34 195 105 / 12%);
   padding: 11px 5px 11px 5px;
   font-weight: lighter;
   font-size: .9rem;
@@ -280,8 +294,8 @@
   font-style: italic;
   color:  #6B778C;
   max-height: 200px;
-  overflow: hidden;
-  width: 100%;
+  overflow: scroll;
+  width: 98%;
   display: flex;
 
 }
@@ -363,9 +377,10 @@
 }
 
 .Header {
+  max-width: 100% !important;
   position: relative;
   padding-top: 5px;
-  padding-left: 5px;
+  padding-left: 5px !important;
   text-align: left;
   color: #555353;
   display: flex;
@@ -540,11 +555,6 @@
   filter: brightness(.4);
 }
 
-#pin {
-  width: 25px;
-  height: 25px;
-}
-
 .AnnotationIconContainer {
   display: flex;
   align-items: center;
@@ -552,8 +562,22 @@
 }
 
 .TopIconContainer {
-  padding-right: 4px;
+  margin-right: 1em;
+  position: relative;
   cursor: pointer;
+  padding: .35em .35em .35em .35em;
+  background: #e4e6eb;
+  border-radius: 1em;
+}
+
+.TopIconContainer:hover {
+  filter: brightness(.75);
+}
+
+.TopIconContainer:focus, .TopIconContainer:focus-within, .TopIconContainer:active, .TopIconContainer:target  {
+  /* padding: .5em; */
+  background: rgb(34 195 105 / 12%);
+  /* border-radius: 2em; */
 }
 
 
@@ -641,20 +665,4 @@
 
 .SeparationRow {
   display: flex;
-}
-
-#newAnchor {
-  width: 18px;
-  height: 18px;
-}
-
-#edit {
-  width: 18px;
-  height: 18px;
-}
-
-#trash {
-    width: 22px;
-    height: 22px;
-  
 }

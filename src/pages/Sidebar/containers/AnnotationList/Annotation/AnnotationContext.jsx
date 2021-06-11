@@ -66,32 +66,6 @@ const AnnotationContext = createContext({
     // deleteAnchor: () => { },
     updateAnchors: (newAnchors) => { },
 
-
-
-
-
 });
 
 export default AnnotationContext;
-
-
-//setAnnotationType: () => { },
- // tags: null,
-    // setTags: () => { },
-    // setContent: () => { },
-
-
-    //url: null,
-    //content: null,
-    // replies: [],
-    // annotationType: null,
-    // childAnchor: null,
-    // anchor: null,
-    // xpath: null,
-    // isPrivate: false,
-    // annoGroups: null,
-    // readCount: null,
-    // isClosed: null,
-    // howClosed: null,
-    // authorId: null,
-    // pinned: false,

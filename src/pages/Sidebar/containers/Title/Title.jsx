@@ -95,9 +95,7 @@ export default class Title extends React.Component {
           <div className="row">
             <div className="col">
               <div className="Header">
-                <img className="TitleIcon" src={chrome.extension.getURL('Adamite.png')} alt="Adamite logo"></img>
                 <div className="Title">{APP_NAME_FULL}</div>
-
               </div>
             </div>
             {currentUser !== null && (
@@ -105,12 +103,12 @@ export default class Title extends React.Component {
                 <div className="row2">
                   <div className="col2 ">
 
-                    <Dropdown onMouseOver={this.onMouseEnter} onMouseLeave={this.onMouseLeave} show={this.state.dropdownOpen} toggle={this.toggle.toString()}>
+                    {/* <Dropdown onMouseOver={this.onMouseEnter} onMouseLeave={this.onMouseLeave} show={this.state.dropdownOpen} toggle={this.toggle.toString()}>
 
                       <Dropdown.Toggle id="dropdown-menu" className="vertical-center">
                         <div className="UserNameIconContainer">
                           <div className="UserNameSection">
-                            {userName}
+                            {userName.toUpperCase()}
                           </div>
                           <img src={profile} alt="profile" className="profile" />
                         </div>
@@ -120,9 +118,9 @@ export default class Title extends React.Component {
                           Sign Out
                           </Dropdown.Item>
                       </Dropdown.Menu>
-                    </Dropdown>
+                    </Dropdown> */}
                     <div className="NewAnnotationButtonContainer">
-                      <Dropdown onMouseOver={this.onMouseEnterAdd} onMouseLeave={this.onMouseLeaveAdd} show={this.state.dropdownOpenAdd} toggle={this.toggle.toString()} >
+                      <Dropdown onClick={this.onMouseEnterAdd} onBlur={this.onMouseLeaveAdd} show={this.state.dropdownOpenAdd} toggle={this.toggle.toString()} >
                         <Dropdown.Toggle id="dropdown-basic" className="vertical-center">
                           <GiHamburgerMenu alt="Hamburger menu" className="profile" />
                         </Dropdown.Toggle>
@@ -139,6 +137,9 @@ export default class Title extends React.Component {
                           <Dropdown.Item onClick={this.props.openDocumentation}>
                             View Adamite Documentation
                         </Dropdown.Item>
+                          <Dropdown.Item onClick={this.signOutClickedHandler}>
+                            Sign Out
+                          </Dropdown.Item>
                         </Dropdown.Menu>
                       </Dropdown>
                     </div>

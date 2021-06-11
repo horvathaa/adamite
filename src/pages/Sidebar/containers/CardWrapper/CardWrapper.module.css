@@ -1,3 +1,43 @@
+/* pre {
+  border-left: 6px solid #559640;
+  line-height: 1.4;
+  margin: 0 0 24px;
+  max-width: 100%;
+  overflow: auto;
+  padding: 24px;
+  width: 100%;
+}
+
+code, pre {
+  background-color: #eee;
+  cursor: text;
+} */
+.CodeBox{
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  border: 1px solid #e5e5e5;
+}
+
+.PostButton .btn{
+  font-size: .95em !important;
+  color: rgb(30 130 74);
+  background: rgb(34 195 105 / 52%);
+  border: 0px ;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.PostButton .btn:hover, .PostButton .btn:focus {
+  font-size: .95em !important;
+  color: rgb(30 130 74);
+  background: rgb(34 195 105 / 52%);
+  filter: brightness(.65);
+}
+
 .NewAnnotationContainer {
     padding: 5px 15px 5px 15px;
     width: 100%;
@@ -58,15 +98,23 @@
   }
   
   .react-tagsinput {
-    background-color: #dad9d926;
-    border: 1px solid #ccc;
+
+    box-shadow: 2px 2px 1px 0px #ebebebfa;
+    border: 1px solid #e5e5e5;
+    background-color: white;
     overflow: hidden;
     padding-left: 5px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
     padding-top: 5px;
+
   }
+
   
   .react-tagsinput--focused {
-    border-color: darkslategray;
+    border-color: #e5e5e5dc;;
   }
   
   .react-tagsinput-tag {
@@ -102,10 +150,11 @@
     margin-top: 1px;
     outline: none;
     padding: 5px;
-    width: 80px;
+    width: 10em;
   }
   
   .Tag-Container {
+    cursor: text;
     width: 100%;
     padding-top: 10px;
     padding-right: 15px;
@@ -144,7 +193,7 @@
     position: relative;
     overflow: hidden;
     background-color: white;
-    border: 1px solid #ccc;
+    border: 1px solid #e5e5e5;
     border-radius: 2px;
     box-sizing: border-box;
     color: #333;
@@ -156,6 +205,13 @@
   
   .Dropdown-control:hover {
     box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
+  }
+
+  .Dropdown-control:focus, .Dropdown-control:focus-within, .Dropdown-control:active {
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
   }
   
   .Dropdown-arrow {
@@ -274,7 +330,7 @@
     padding: 4px;
     flex: 1;
     min-width: 0;
-    display: flex;
+    display: block;
     align-items: center;
     padding: 4px 6px 0px 6px;
     cursor: default;
@@ -310,14 +366,17 @@
   
   .Cancel-Button{
     position: relative;
-    background-color: #6969692b !important;
-    color: #484848d9 !important;
-    padding: 0.25rem 0.5rem;
-    font-size: 0.875rem;
-    line-height: 1.5;
-    height: 100%;
-   
-    border-radius: 0.2rem;
+    padding: 0.375rem 0.75rem;
+    line-height: 1.5 ;
+    margin-left: auto;
+    height: 3em;
+    font-size: .95em ;
+    background: #ff0000a6 !important;
+    border: 0px ;
+    border-bottom-left-radius: 8px ;
+    border-bottom-right-radius: 8px ;
+    border-top-left-radius: 8px ;
+    border-top-right-radius: 8px ;
   
   }
   

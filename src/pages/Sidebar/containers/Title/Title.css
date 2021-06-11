@@ -1,10 +1,13 @@
 .TitleContainer {
-  border-bottom: 1px solid #65816773;
   padding: 1px;
   width: 100%;
-  display: flex;
-  background-color: white;
   align-items: flex-start;
+  margin-bottom: 1em;
+  padding-top: 5px;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  box-shadow: 1px 4px 2px #88888866;
+  background: white;
 }
 
 .TitleIcon {
@@ -17,7 +20,7 @@
 .TitleContainer .container .row .col .Header {
   display: flex;
   padding: 5px;
-  background: white;
+  /* background: white; */
 }
 
 .TitleContainer .row {
@@ -50,26 +53,27 @@
 }
 
 .TitleContainer .container {
-  width: 100%;
-  margin-right: auto;
-  margin-left: auto;
+  width: auto;
+  /* margin-left: 1em; */
+  margin-right: 1em;
+  max-width: 99%;
+  /* margin-right: auto; */
+  /* margin-left: auto;*/
 }
 
 .TitleContainer .col {
   position: relative;
   width: 100%;
-  /* padding-right: 15px;
-  padding-left: 0px; */
   margin: auto;
-  background: white;
+  background: transparent;
 }
 
 .TitleContainer .Title {
+  font-weight: 600;
+  font-size: x-large;
+  /* line-height: 2; */
   font-family: serif;
-  font-weight: 500;
-  color: #000000bf;
-  font-size: 1.3rem;
-  padding-top: 3px;
+  /* padding-top: 3px; */
 }
 
 .TitleContainer .UserContainer {
@@ -174,9 +178,50 @@
   outline-color: none;
 } 
 
+.dropdown-menu.show {
+  font-family: 'Roboto';
+  display: block;
+  box-shadow: 2px 2px 3px 3px #88888887;
+  border: 0px solid transparent;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
 
 .NewAnnotationButtonContainer {
-  padding: 4px;
+  padding: .5em;
+  cursor: pointer;
+  outline-color: transparent !important;
+}
+
+.NewAnnotationButtonContainer:hover {
+  padding: .5em;
+  background: #e4e6eb;
+  border-radius: 2em;
+}
+
+.dropdown{
+  outline-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.vertical-center .dropdown-toggle .btn .btn-primary{
+  outline-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.TitleContainer .container .row .btn {
+  outline-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.NewAnnotationButtonContainer:focus, .NewAnnotationButtonContainer:focus-within, .NewAnnotationButtonContainer:focus-visible, .NewAnnotationButtonContainer:target, .NewAnnotationButtonContainer:active  {
+  padding: .5em;
+  background: rgb(34 195 105 / 12%);
+  border-radius: 2em;
+  outline-color: transparent;
+  box-shadow: none !important;
 }
 
 .titleDropDown{

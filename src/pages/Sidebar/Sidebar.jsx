@@ -904,7 +904,9 @@ class Sidebar extends React.Component {
 
     const newAnnoId = uuidv4();
     return (
+
       <div className="SidebarContainer" >
+
         <Title currentUser={currentUser}
           handleShowAnnotatePage={this.handleShowAnnotatePage}
           closeSidebar={this.closeSidebar}
@@ -913,85 +915,87 @@ class Sidebar extends React.Component {
         />
         {currentUser === null && <Authentication />}
         {currentUser !== null && (
-          <div>
-            <div className={classNames({ TopRow: true, filterOpen: this.state.showFilter })}>
-              <SearchBar
-                searchBarInputText={searchBarInputText}
-                handleSearchBarInputText={this.handleSearchBarInputText}
-                searchCount={this.state.searchCount === 0 ? tempSearchCount : this.state.searchCount}
-                url={this.state.url}
-                resetView={this.resetView}
-                searchedSearchCount={this.searchedSearchCount}
-              />
-            </div>
-            <div>
-              <div className="FilterSummaryContainer">
-                <GroupMultiSelect
-                  uid={currentUser.uid}
-                  groups={groups}
-                  handleNotifySidebar={this.updateSidebarGroup}
-                  addNewGroup={this.addNewGroup}
+          <div className="SideBarCardContent">
+            <div className="ControlPanel">
+              <div className={classNames({ TopRow: true, filterOpen: this.state.showFilter })}>
+                <SearchBar
+                  searchBarInputText={searchBarInputText}
+                  handleSearchBarInputText={this.handleSearchBarInputText}
+                  searchCount={this.state.searchCount === 0 ? tempSearchCount : this.state.searchCount}
+                  url={this.state.url}
+                  resetView={this.resetView}
+                  searchedSearchCount={this.searchedSearchCount}
                 />
-                {!this.state.showFilter && (renderedAnnotations.length || this.state.annotations.length) ?
-                  (<FilterSummary
-                    applyFilter={this.applyFilter}
-                    groups={groups}
-                    filter={this.state.filterSelection}
-                    openFilter={this.openFilter}
-                    uid={currentUser.uid}
-                    tempSearchCount={tempSearchCount}
-                    showingSelectedAnno={this.state.showClearClickedAnnotation}
-                    clearSelectedAnno={this.clearSelectedAnno}
-                    notifySidebarSort={this.notifySidebarSort}
-                    currentSort={this.state.sortBy}
-                    filteredAnnotations={renderedAnnotations}
-                    numArchivedAnnotations={this.state.annotations.filter(anno => anno.archived).length}
-                  />) : (null)
-                }
               </div>
-
-              {(this.state.newSelection || this.state.annotatingPage) &&
-                (
-                  <Annotation
-                    key={uuidv4()}
-                    idx={-1}
-                    isNew={true}
-                    annotation={{
-                      id: newAnnoId,
-                      type: this.state.newAnnotationType,
-                      content: this.state.newAnnotationContent ?? '',
-                      tags: [],
-                      isPrivate: true,
-                      groups: [],
-                      childAnchor: this.state.annotatingPage ? [
-                        {
-                          id: uuidv4(),
-                          anchor: this.state.pageName,
-                          parentId: newAnnoId,
-                          xpath: null,
-                          offsets: null,
-                          url: this.state.url,
-                          tags: []
-                        }
-                      ] : [
-                        {
-                          id: uuidv4(),
-                          anchor: this.state.newSelection,
-                          parentId: newAnnoId,
-                          xpath: this.state.xpath,
-                          offsets: this.state.offsets,
-                          url: this.state.url,
-                          tags: []
-                        }
-                      ]
-                    }}
-                    notifyParentOfPinning={this.handlePinnedAnnotation}
-                    userGroups={groups}
-                    currentUrl={this.state.url}
-                    currentUser={currentUser}
-                    resetNewSelection={this.resetNewSelection}
+              <div>
+                <div className="FilterSummaryContainer">
+                  <GroupMultiSelect
+                    uid={currentUser.uid}
+                    groups={groups}
+                    handleNotifySidebar={this.updateSidebarGroup}
+                    addNewGroup={this.addNewGroup}
                   />
-                )}
+                  {!this.state.showFilter && (renderedAnnotations.length || this.state.annotations.length) ?
+                    (<FilterSummary
+                      applyFilter={this.applyFilter}
+                      groups={groups}
+                      filter={this.state.filterSelection}
+                      openFilter={this.openFilter}
+                      uid={currentUser.uid}
+                      tempSearchCount={tempSearchCount}
+                      showingSelectedAnno={this.state.showClearClickedAnnotation}
+                      clearSelectedAnno={this.clearSelectedAnno}
+                      notifySidebarSort={this.notifySidebarSort}
+                      currentSort={this.state.sortBy}
+                      filteredAnnotations={renderedAnnotations}
+                      numArchivedAnnotations={this.state.annotations.filter(anno => anno.archived).length}
+                    />) : (null)
+                  }
+                </div>
+
+                {(this.state.newSelection || this.state.annotatingPage) &&
+                  (
+                    <Annotation
+                      key={uuidv4()}
+                      idx={-1}
+                      isNew={true}
+                      annotation={{
+                        id: newAnnoId,
+                        type: this.state.newAnnotationType,
+                        content: this.state.newAnnotationContent ?? '',
+                        tags: [],
+                        isPrivate: true,
+                        groups: [],
+                        childAnchor: this.state.annotatingPage ? [
+                          {
+                            id: uuidv4(),
+                            anchor: this.state.pageName,
+                            parentId: newAnnoId,
+                            xpath: null,
+                            offsets: null,
+                            url: this.state.url,
+                            tags: []
+                          }
+                        ] : [
+                          {
+                            id: uuidv4(),
+                            anchor: this.state.newSelection,
+                            parentId: newAnnoId,
+                            xpath: this.state.xpath,
+                            offsets: this.state.offsets,
+                            url: this.state.url,
+                            tags: []
+                          }
+                        ]
+                      }}
+                      notifyParentOfPinning={this.handlePinnedAnnotation}
+                      userGroups={groups}
+                      currentUrl={this.state.url}
+                      currentUser={currentUser}
+                      resetNewSelection={this.resetNewSelection}
+                    />
+                  )}
+              </div>
             </div>
             <div className="userQuestions">
               {pinnedAnnosCopy.length ? (

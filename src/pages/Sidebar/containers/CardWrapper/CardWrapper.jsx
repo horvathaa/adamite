@@ -1,4 +1,7 @@
 import React, { useContext, useState, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown'
+import CodeBlock from "./CodeBlockMarkdown";
+import Tooltip from '@material-ui/core/Tooltip';
 import './CardWrapper.module.css';
 import classNames from 'classnames';
 import { GiCancel } from 'react-icons/gi';
@@ -10,7 +13,6 @@ import AnnotationContext from "../AnnotationList/Annotation/AnnotationContext";
 
 const CardWrapper = ({ isNew = false }) => {
     const ctx = useContext(AnnotationContext);
-    // if (isNew) console.log(ctx.anno);
     const id = "id" in ctx.anno ? ctx.anno.id : false,
         pageAnnotation = ctx.anno.anchor,
         elseContent = ctx.anno.content,
@@ -43,13 +45,14 @@ const CardWrapper = ({ isNew = false }) => {
     }
     let annoTypeDropDownValue = (newAnno.type === 'default') ? 'normal' : (newAnno.type === 'highlight') ? 'empty' : newAnno.type;
 
-
     const CardEditor = (<React.Fragment>
         {ctx.editing ? (
             <React.Fragment>
                 <div className="TextareaContainer">
-                    <RichEditor annotationContent={newAnno.content}
-                        annotationChangeHandler={(content) => setNewAnno({ ...newAnno, content: content })} />
+                    <RichEditor
+                        annotationContent={newAnno.contentBlock === undefined ? newAnno.content : newAnno.contentBlock}
+                        annotationChangeHandler={(content, contentBlock) => setNewAnno({ ...newAnno, content, contentBlock })}
+                    />
                 </div>
 
                 <div className="Tag-Container">
@@ -72,20 +75,24 @@ const CardWrapper = ({ isNew = false }) => {
                                     value={annoTypeDropDownValue} />
                             </div>
                             &nbsp; &nbsp;
-                            <button className="btn Cancel-Button" onClick={
-                                isNew ? () => ctx.cancelButtonHandler() :
-                                    () => ctx.updateAnnotation(ctx.anno)
-                            }>
-                                <GiCancel /> Cancel
-                            </button>
+                            <Tooltip title={"Cancel"} aria-label="Cancel Submission">
+                                <button className="Cancel-Button" placeholder="Cancel" onClick={
+                                    isNew ? () => ctx.cancelButtonHandler() :
+                                        () => ctx.updateAnnotation(ctx.anno)
+                                }>
+                                    <GiCancel />
+                                </button>
+                            </Tooltip>
                             &nbsp; &nbsp;
                             <SplitButton
                                 key="publicPrivateGroup"
                                 id="dropdown-split-variants-secondary"
                                 variant="secondary"
                                 title={splitButtonText}
-                                onClick={isNew ? () => ctx.submitButtonHandler(newAnno) :
-                                    () => ctx.updateAnnotationFields({ type: newAnno.type, content: newAnno.content, isPrivate: newAnno.isPrivate, tags: newAnno.tags, groups })
+                                className="PostButton"
+                                onClick={isNew ?
+                                    () => ctx.submitButtonHandler(newAnno) :
+                                    () => ctx.updateAnnotationFields({ type: newAnno.type, content: newAnno.content, contentBlock: newAnno.contentBlock, isPrivate: newAnno.isPrivate, tags: newAnno.tags, groups })
                                 }
                             >
                                 <BootstrapDropdown.Item onClick={_ => setNewAnno({ ...newAnno, isPrivate: true })} eventKey="1">Private</BootstrapDropdown.Item>
@@ -103,7 +110,10 @@ const CardWrapper = ({ isNew = false }) => {
                 Truncated: collapsed,
                 annotationContent: true
             })}>
-                {elseContent}
+                <ReactMarkdown
+                    children={elseContent}
+                    components={{ code: CodeBlock }}
+                />
             </div>
         </React.Fragment>}
     </React.Fragment>);
