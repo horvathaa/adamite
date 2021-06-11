@@ -520,7 +520,6 @@ class Sidebar extends React.Component {
       }
 
       groupNames.push(group.label);
-      // this.setState({ groupAnnotations: groupKV, activeGroups: groupNames, filteredGroupAnnotations: [] });
     });
   }
 
@@ -849,7 +848,18 @@ class Sidebar extends React.Component {
 
   filterTags = () => {
     let tagSet = {};
-    this.state.filteredAnnotations.forEach(annotation => {
+    let renderedAnnotations = [];
+    if (this.state.searchedAnnotations.length) {
+      renderedAnnotations = this.state.searchedAnnotations;
+    }
+    else if (this.state.activeGroups.length) {
+      renderedAnnotations = renderedAnnotations.concat(this.state.groupAnnotations);
+    }
+    else {
+      renderedAnnotations = this.state.filteredAnnotations;
+    }
+
+    renderedAnnotations.forEach(annotation => {
       annotation.tags.forEach(tag => {
         if (tagSet.hasOwnProperty(tag)) {
           tagSet[tag] += 1;

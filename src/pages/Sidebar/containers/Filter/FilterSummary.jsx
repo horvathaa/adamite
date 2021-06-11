@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import './FilterSummary.css';
-import './Filter.css';
 import { AiFillClockCircle, AiOutlineCheck, AiOutlineCloseCircle, AiOutlineUsergroupAdd } from 'react-icons/ai';
 import { BsChatSquareDots, BsXCircle } from 'react-icons/bs';
 import { BiSort } from 'react-icons/bi';
@@ -335,7 +334,7 @@ class FilterSummary extends React.Component {
                             <div className={classNames({
                                 FilterSection: true,
                                 tagFilterNotEnabled: !filter.tags.length
-                            })} onClick={() => { this.setState({ showTagFilter: !this.state.showTagFilter, tagSet: this.props.filterTags() }) }} >
+                            })} onClick={() => {  this.setState({ showTagFilter: !this.state.showTagFilter, tagSet: this.props.filterTags() }) }} >
                                 <div className="FilterIconContainer">
                                     <img src={tag} alt="tag icon" />
                                 </div> &nbsp; &nbsp; Select Tag

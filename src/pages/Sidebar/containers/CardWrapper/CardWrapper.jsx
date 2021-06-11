@@ -42,7 +42,7 @@ const CardWrapper = ({ isNew = false }) => {
         splitButtonText = !newAnno.isPrivate ? "Post to Public" : "Post as Private";
     }
     let annoTypeDropDownValue = (ctx.anno.type === 'default') ? 'normal' : (ctx.anno.type === 'highlight') ? 'empty' : ctx.anno.type;
-    const placeHolderString = !newAnno.tags.length ? 'Add a tag then hit Enter' : 'Add a tag';
+    const placeHolderString = newAnno.tags === undefined || !newAnno.tags.length ? 'Add a tag then hit Enter' : 'Add a tag';
 
 
     const CardEditor = (<React.Fragment>
