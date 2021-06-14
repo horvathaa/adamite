@@ -1,30 +1,13 @@
 import React from 'react';
-import classNames from 'classnames';
 import { Dropdown } from 'react-bootstrap';
-// import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { APP_NAME_FULL } from '../../../../shared/constants';
-import { RiGroupLine } from 'react-icons/ri';
 import { AiOutlineUser } from 'react-icons/ai';
 import '../../../../assets/img/Adamite.png';
-import profile from '../../../../assets/img/SVGs/Profile.svg';
 import { GiHamburgerMenu } from 'react-icons/gi';
-// import '../../../Background/test.html';
-import { useState } from 'react';
-import { BsFilePlus } from 'react-icons/bs';
-import addPage from '../../../../assets/img/SVGs/file-add.svg';
+import { BiFileBlank, BiHorizontalCenter, BiBookBookmark, BiCog, BiExit } from 'react-icons/bi';
+
 
 import './Title.css';
-
-// const addAnnotationToggle = React.forwardRef(({ children, onClick }, ref) => (
-//   <a ref={ref}
-//     onClick={(e) => {
-//       e.preventDefault();
-//       onClick(e);
-//     }}><BsFilePlus className="profile" />
-//     {children}
-//   </a>
-// ));
-
 
 export default class Title extends React.Component {
   constructor(props) {
@@ -80,6 +63,7 @@ export default class Title extends React.Component {
 
   render() {
     const { currentUser } = this.props;
+    console.log(currentUser)
     let userName;
     if (currentUser === null) {
       userName = ""
@@ -125,19 +109,48 @@ export default class Title extends React.Component {
                           <GiHamburgerMenu alt="Hamburger menu" className="profile" />
                         </Dropdown.Toggle>
                         <Dropdown.Menu >
-                          <Dropdown.Item onClick={this.props.handleShowAnnotatePage}>
+                          <Dropdown.Item onClick={this.props.handleShowAnnotatePage} className="OptionLineBreak" >
+                            <div className="container">
+                              <div className="row">
+                                <div className="col OptionCol">
+                                  <div className="OptionProfileContainer profileContainer">
+                                    <AiOutlineUser alt="profile" className="userProfile" />
+                                    {/* <img src={profile} alt="profile" className="profile" /> */}
+                                  </div>
+                                </div>
+                                <div className="col">
+
+                                  <div>
+                                    {userName.toUpperCase()}
+                                  </div>
+                                  <div className="EmailNameSection">
+                                    {currentUser.email}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </Dropdown.Item>
+                          <Dropdown.Item className="OptionLineBreak">
+                            <hr></hr>
+                          </Dropdown.Item>
+                          <Dropdown.Item onClick={this.props.handleShowAnnotatePage} className="DropdownItemOverwrite">
+                            <div className="DropdownIconsWrapper"><BiFileBlank className="DropdownIcons" /></div>
                             Add Page Annotation
                         </Dropdown.Item>
-                          <Dropdown.Item onClick={this.props.closeSidebar}>
+                          <Dropdown.Item onClick={this.props.closeSidebar} className="DropdownItemOverwrite">
+                            <div className="DropdownIconsWrapper"><BiHorizontalCenter className="DropdownIcons" /></div>
                             Close Sidebar
                         </Dropdown.Item>
-                          <Dropdown.Item onClick={this.props.openOptions}>
+                          <Dropdown.Item onClick={this.props.openOptions} className="DropdownItemOverwrite">
+                            <div className="DropdownIconsWrapper"><BiCog className="DropdownIcons" /></div>
                             Options
                         </Dropdown.Item>
-                          <Dropdown.Item onClick={this.props.openDocumentation}>
+                          <Dropdown.Item onClick={this.props.openDocumentation} className="DropdownItemOverwrite">
+                            <div className="DropdownIconsWrapper"><BiBookBookmark className="DropdownIcons" /></div>
                             View Adamite Documentation
                         </Dropdown.Item>
-                          <Dropdown.Item onClick={this.signOutClickedHandler}>
+                          <Dropdown.Item onClick={this.signOutClickedHandler} className="DropdownItemOverwrite">
+                            <div className="DropdownIconsWrapper"><BiExit className="DropdownIcons" /></div>
                             Sign Out
                           </Dropdown.Item>
                         </Dropdown.Menu>

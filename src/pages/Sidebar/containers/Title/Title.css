@@ -103,12 +103,11 @@
   height: 1.5em;
 }
 
-.UserNameSection {
+.EmailNameSection {
   position: relative;
   display: flex;
   font-size: 0.9rem;
   color: #6B778C;
-  padding: 6px 4px 0px 8px;
   flex-wrap: wrap;
 }
 
@@ -241,5 +240,24 @@
 }
 .titleDropDown:focus{
   box-shadow: none !important;
+}
+
+.OptionProfileContainer {
+  padding: 10px !important;
+}
+
+.OptionCol{
+  padding-left: 0px !important;
+}
+
+.OptionLineBreak{
+  cursor: auto;
+  padding: 0 1.0rem !important;
+}
+
+.OptionLineBreak:hover{
+
+  background: transparent !important;
+  background-color: transparent !important;
 }
 

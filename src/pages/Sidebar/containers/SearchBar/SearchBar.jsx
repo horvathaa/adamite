@@ -16,6 +16,7 @@ import Highlighter from "react-highlight-words";
 import ReactHtmlParser from 'react-html-parser';
 import classNames from 'classnames';
 import { AiOutlineSearch, AiOutlineCloseCircle } from 'react-icons/ai';
+import { BiWorld, BiWindow, BiLayer } from 'react-icons/bi';
 
 
 class SearchBar extends React.Component {
@@ -226,12 +227,11 @@ class SearchBar extends React.Component {
     }
 
     changeValue = (text) => {
-        // console.log("new value", text)
         this.setState({ dropDownValue: text })
     }
 
     renderInputComponent = inputProps => {
-        const { value, suggestions } = this.state
+        const { value, suggestions, dropDownValue } = this.state
         let clearButton;
         if (value.length > 0) {
             clearButton = (
@@ -240,6 +240,17 @@ class SearchBar extends React.Component {
                     onClick={this.closeButton}
                 />
             );
+        }
+
+        let icon;
+        if (dropDownValue === 'Global') {
+            icon = <BiWorld className="SearchIcon" />;
+        }
+        else if (dropDownValue === 'Across Site') {
+            icon = <BiLayer className="SearchIcon" />;
+        }
+        else if (dropDownValue === 'On Page') {
+            icon = <BiWindow className="SearchIcon" />;
         }
 
         return (
@@ -254,22 +265,29 @@ class SearchBar extends React.Component {
                     </div>
                     <div className="vertical-bar"></div>
                     <Dropdown alignRight>
-                        <Dropdown.Toggle id="dropdown-basic" title={this.state.dropDownValue} className="SearchBar--Dropdown">
-                            {this.state.dropDownValue}
+                        <Dropdown.Toggle id="dropdown-basic" title={dropDownValue} className="SearchBar--Dropdown">
+                            {icon}
+                            {dropDownValue}
+
+
                         </Dropdown.Toggle>
                         <Dropdown.Menu >
-                            <Dropdown.Item >
+                            <Dropdown.Item className="DropdownItemOverwrite">
                                 <div onClick={(e) => this.changeValue(e.target.textContent)}>
+                                    <BiWorld className="SearchIcon" />
                                     Global
-                            </div>
+
+                                </div>
                             </Dropdown.Item>
-                            <Dropdown.Item >
+                            <Dropdown.Item className="DropdownItemOverwrite">
                                 <div onClick={(e) => this.changeValue(e.target.textContent)}>
+                                    <BiWindow className="SearchIcon" />
                                     On Page
                             </div>
                             </Dropdown.Item>
-                            <Dropdown.Item >
+                            <Dropdown.Item className="DropdownItemOverwrite">
                                 <div onClick={(e) => this.changeValue(e.target.textContent)}>
+                                    <BiLayer className="SearchIcon" />
                                     Across Site
                             </div>
                             </Dropdown.Item>

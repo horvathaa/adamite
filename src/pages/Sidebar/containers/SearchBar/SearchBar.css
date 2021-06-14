@@ -194,6 +194,10 @@
 
   }
 
+  .SearchIcon {
+    margin: 5px
+  }
+
   .react-autosuggest__input--focused {
     outline: none;
   } 

@@ -151,18 +151,29 @@
   font-size: small !important;
 }
 
-.dropdown-item {
-  display: block;
-  width: 100%;
-  padding: 0.25rem 1.5rem;
-  clear: both;
-  font-weight: 400;
-  color: #212529;
-  font-size: small;
-  text-align: inherit;
-  white-space: nowrap;
-  background-color: transparent;
-  border: 0;
+.DropdownItemOverwrite {
+  padding: 0.45rem 1.5rem !important;
+  font-weight: 300 !important;
+  font-size: .85em !important;
+}
+
+.DropdownItemOverwrite:hover {
+  padding: 0.45rem 2rem !important;
+}
+
+.DropdownIcons{
+  height: 1.25em;
+  width: 1.25em;
+}
+
+.DropdownIconsWrapper {
+  display: inline;
+  margin-right: 1em;
+  position: relative;
+  cursor: pointer;
+  padding: .35em .35em .35em .35em;
+  background: #69696924;
+  border-radius: 1em;
 }
 
 .openCloseQuestionRow {
