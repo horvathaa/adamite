@@ -290,6 +290,7 @@ class SearchBar extends React.Component {
                                     <BiLayer className="SearchIcon" />
                                     Across Site
                             </div>
+
                             </Dropdown.Item>
                         </Dropdown.Menu>
                     </Dropdown>
