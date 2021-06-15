@@ -28,7 +28,7 @@
     position: relative;
     display: flex;
     font-size: 0.9rem;
-    color: #6B778C;
+    color: #212529;
     padding: 0px 8px 0px 8px;
     flex-wrap: wrap;
     line-height: 2em;
@@ -70,7 +70,7 @@
 
 .filterDropDown{
     font-size: 0.9rem !important;
-    color: #6B778C !important;
+    color: #212529 !important;
     background-color: transparent !important;
     padding: 0px !important;
     border: none !important;

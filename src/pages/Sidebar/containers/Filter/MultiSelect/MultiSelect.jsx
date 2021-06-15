@@ -115,12 +115,12 @@ class GroupMultiSelect extends React.Component {
         return (
             <React.Fragment>
                 <div className="FilterSectionRow" id="GroupFilterSection">
+                    <div className="FilterIconContainer2">
+                        <BiGroup className="filterReactIcon" />
+                    </div>
                     <div className="FilterSection" id="GroupFilterSectionText">Groups</div>
                     <div className="multi-select-wrapper">
                         <div className="filterDropDown">
-                            <div className="FilterIconContainer2">
-                                <BiGroup className="filterReactIcon" />
-                            </div>
                             <MultiSelect
                                 options={options}
                                 value={selected}

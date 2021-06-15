@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './FilterSummary.css';
 import { AiFillClockCircle, AiOutlineCheck, AiOutlineCloseCircle, AiOutlineUsergroupAdd } from 'react-icons/ai';
+import { BiTimeFive } from 'react-icons/bi';
 import { BsChatSquareDots, BsXCircle } from 'react-icons/bs';
 import { BiSort } from 'react-icons/bi';
 import { GiCancel } from 'react-icons/gi';
@@ -227,7 +228,7 @@ class FilterSummary extends React.Component {
                     <div className="FilterSection" id="FilterSectionText">Filters</div>
                     <div className="FilterSection">
                         {this.createDropDown({
-                            Icon: AiFillClockCircle,
+                            Icon: BiTimeFive,
                             activeFilter: this.translateTime(filter.timeRange),
                             header: "Posted date",
                             updateFunction: this.updateTimeRange,

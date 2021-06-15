@@ -68,9 +68,6 @@ class SearchBar extends React.Component {
                 searchContent = this.highlightSearchWords(suggestion.highlight.content, searchContent);
                 content = suggestion.highlight.content !== undefined ? suggestion.highlight.content[0].replace(new RegExp('(<em>)|(<\/em>)', 'g'), '') : content;
             }
-
-
-
         }
         return (
             <React.Fragment>
