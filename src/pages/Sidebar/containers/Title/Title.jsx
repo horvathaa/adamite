@@ -84,16 +84,15 @@ export default class Title extends React.Component {
   };
 
   createDropDown = (args) => {
-    console.log("ARGS!", args)
     const listItems = args.items.map((option, idx) => {
-        let active = args.activeFilter.includes(option.label) ? true : false
-        console.log(option)
+      const currentGroup = Array.isArray(args.activeFilter) ? args.activeFilter[0] : args.activeFilter;
+        let active = currentGroup === option.label ? true : false
         return <Dropdown.Item key={idx} onSelect={(e) => args.updateFunction([option], e)} data-value={option.label}> {active ? <AiOutlineCheck /> : ""} {option.label} </Dropdown.Item>
     });
 
     return (
         <React.Fragment>
-            <Dropdown className={args.className}>
+            <Dropdown className={args.className} style={{margin: 'auto'}}>
                 <Dropdown.Toggle title={args.header} className="filterDropDown">
                     <div className="FilterIconContainer">
                         <args.Icon className="filterReactIcon" />
@@ -111,7 +110,6 @@ export default class Title extends React.Component {
 
   render() {
     const { currentUser, groups } = this.props;
-    console.log(currentUser)
     let userName;
     if (currentUser === null) {
       userName = ""
@@ -136,7 +134,7 @@ export default class Title extends React.Component {
                   {this.createDropDown({
                             Icon: BiGroup,
                             className: 'FilterDropDownSearch',
-                            activeFilter: "Public",
+                            activeFilter: this.props.currentGroup.length ? this.props.currentGroup : 'Public',
                             header: "My Groups",
                             updateFunction: this.props.updateSidebarGroup,
                             items: this.__generateGroups(groups)

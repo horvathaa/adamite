@@ -52,7 +52,7 @@
     position: relative;
     display: flex;
     font-size: 0.9rem;
-    color: #e4e6eba8;
+    color: #6B778C;
     padding: 0px 8px 0px 8px;
     flex-wrap: wrap;
     line-height: 2em;
@@ -74,8 +74,8 @@
 
 
 .FilterIconContainer {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     margin-left: 3px;
 }
 .FilterSummaryContainer{
@@ -114,7 +114,7 @@
     box-shadow: none !important;
 }
 .filterReactIcon{
-    width: 18px;
+    width: 20px;
     height: 20px;
     cursor: pointer;
 }

@@ -470,7 +470,6 @@ class Sidebar extends React.Component {
 
   updateSidebarGroup = (options, e) => {
     console.log("hell", options)
-    let groupKV = [];
     let groupNames = [];
     const { uid } = this.state.currentUser;
     // todo - check options to see whether or not the label is in activeGroups - if it is, then great, do what we already do
@@ -481,15 +480,10 @@ class Sidebar extends React.Component {
     }
     options.forEach(group => {
       if (group.value === "onlyme") {
-        groupKV.push({
-          name: "onlyme", annotations: this.state.annotations.filter(anno => anno.authorId === uid)
-        })
-        // groupNames.push(group.label)
+        this.setState({ filteredAnnotations: this.state.annotations.filter(anno => anno.authorId === uid), groupAnnotations: [], activeGroups: ['Private']})
       }
       else if (group.value === "public") {
-        groupKV.push({
-          name: "public", annotations: this.state.activeGroups.includes("Only Me") ? this.state.annotations.filter(anno => anno.authorId !== uid) : this.state.annotations
-        })
+        this.setState({ filteredAnnotations: this.state.annotations, groupAnnotations: [], activeGroups: ['Public']})
       }
       else {
         chrome.runtime.sendMessage({
@@ -500,7 +494,8 @@ class Sidebar extends React.Component {
           }
         },
           (res) => {
-            if (res !== undefined) {
+            console.log('res', res)
+            if (res !== undefined && res.length) {
               this.setState({ groupAnnotations: res });
               this.setState({ activeGroups: groupNames });
             }
@@ -559,7 +554,7 @@ class Sidebar extends React.Component {
       return;
     }
     else {
-      if (this.state.activeGroups.length) {
+      if (this.state.groupAnnotations.length) {
         this.state.groupAnnotations.forEach((group) => {
           if (containsObjectWithId(id, group.annotations)) {
             annotation = group.annotations.filter(anno => anno.id === id);
@@ -850,7 +845,7 @@ class Sidebar extends React.Component {
     if (this.state.searchedAnnotations.length) {
       renderedAnnotations = this.state.searchedAnnotations;
     }
-    else if (this.state.activeGroups.length) {
+    else if (this.state.groupAnnotations.length) {
       renderedAnnotations = renderedAnnotations.concat(this.state.groupAnnotations);
     }
     else {
@@ -887,7 +882,7 @@ class Sidebar extends React.Component {
     if (searchedAnnotations.length) {
       renderedAnnotations = searchedAnnotations;
     }
-    else if (activeGroups.length) {
+    else if (groupAnnotations.length) {
       // groupAnnotations.forEach((group) => {
       renderedAnnotations = renderedAnnotations.concat(groupAnnotations);
       // });
@@ -934,6 +929,7 @@ class Sidebar extends React.Component {
           openOptions={this.openOptions}
           openDocumentation={this.openDocumentation}
           updateSidebarGroup={this.updateSidebarGroup}
+          currentGroup={this.state.activeGroups}
           // addNewGroup={this.addNewGroup}
         />
         {currentUser === null && <Authentication />}

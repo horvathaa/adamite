@@ -104,20 +104,12 @@ export async function getAnnotationsPageLoad(request, sender, sendResponse) {
 
 export function getGroupAnnotations(request, sender, sendResponse) {
     const { gid } = request.payload;
-    // const gids = request.payload.groups.map(g => g.gid);
-    // console.log('gids', gids)
     fb.getGroupAnnotationsByGroupId(gid).get().then(function (querySnapshot) {
-        groupAnnotations = querySnapshot.empty ? [] : getListFromSnapshots(querySnapshot) // .filter(anno => anno.url.includes(request.payload.url));
-        if (groupAnnotations.length) {
-            // const annos = publicAnnotations.concat(privateAnnotations, groupAnnotations);
-            // console.log('annos', annos, 'request', request)
-            // chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-            //     broadcastAnnotationsToTab("CONTENT_UPDATED", removeDuplicates(groupAnnotations), request.payload.url, tabs[0].id);
-            // })
-            sendResponse(groupAnnotations)
-
-        }
-
+        let groupAnnotations = querySnapshot.empty ? [] : getListFromSnapshots(querySnapshot) // .filter(anno => anno.url.includes(request.payload.url));
+        groupAnnotations = groupAnnotations.filter(anno => !anno.deleted)
+        sendResponse(groupAnnotations)
+    }).catch(function (error) {
+        console.error('Get group annotation error', error)
     })
 }
 
