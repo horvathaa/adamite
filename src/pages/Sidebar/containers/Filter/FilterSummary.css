@@ -18,21 +18,53 @@
 #GroupFilterSectionText  {
     padding-right: 12px;
     font-style: oblique;
+    cursor: auto;
+}
+
+#GroupFilterSectionText:hover {
+    color: #6B778C !important;
+}
+
+.TagListContainer {
+    display: flex;
 }
 
 #FilterSectionText {
     font-style: oblique;
+    cursor: auto;
+}
+
+#FilterSectionText:hover {
+    color: #6B778C !important;
+}
+
+#collapseTagList {
+    width: 14px;
+    height: 14px;
+    border: none;
+}
+
+.FilterDropDownSearch{
+    margin: 0rem .35rem;
 }
 
 .FilterSection {
     position: relative;
     display: flex;
     font-size: 0.9rem;
-    color: #212529;
+    color: #e4e6eba8;
     padding: 0px 8px 0px 8px;
     flex-wrap: wrap;
     line-height: 2em;
     height: 2em;
+
+
+    margin-right: 1em;
+    position: relative;
+    cursor: pointer;
+    padding: .35em .35em .35em .35em;
+    background: #e4e6eb;
+    border-radius: 1em;
 }
 
 .FilterSection:hover {
@@ -40,10 +72,6 @@
     color: #6b778ca1 !important;
 }
 
-.FilterSection:hover {
-    cursor: pointer;
-    color: #6b778ca1 !important;
-}
 
 .FilterIconContainer {
     width: 20px;
@@ -94,3 +122,233 @@
 .FilterSection .tagFilterNotEnabled {
     cursor: default
 }
+
+.Filter {
+    width: 2em;
+    color: #7f8080;
+    height: 2em;
+    cursor: pointer;
+}
+
+.Filter:hover {
+    color: #242424;
+    cursor: pointer;
+  }
+
+.FilterContainer {
+    padding: 5px;
+    background: white;
+    /* border: 1px solid #bfbebe; */
+    box-shadow: 2px 2px 2px #88888887;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    /* border-top-left-radius: 8px;
+    border-top-right-radius: 8px; */
+  
+    flex: 1;
+    min-width: 0;
+    /* padding: 4px 4px 4px 4px;
+    cursor: default;
+    outline-style: solid;
+    color: rgb(44, 44, 44); */
+    /* border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px; */
+    /* background-color: rgba(255, 255, 255, 0.5); */
+    transition: all 0.1s ease-in;
+    position: relative;
+    /* box-shadow: gray; */
+  }
+
+.UserTime {
+    display: flex;
+    font-size: 0.9rem;
+    color: #6B778C;
+}
+
+.User {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 8px;
+}
+
+.Time {
+    display: flex;
+    justify-content: center;
+    padding: 8px;
+    flex-direction: column;
+}
+
+.filterButton {
+    position: relative;
+    background-color: #dcdcdc;
+    color: #6B778C;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    font-weight: bold;
+    line-height: 1.5;
+    border-radius: 0.2rem;
+    border: none;
+}
+
+.filterButton.selected {
+    position: relative;
+    background-color: #0278bf;
+    color: whitesmoke ;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    font-weight: bold;
+    line-height: 1.5;
+    border-radius: 0.2rem;
+}
+
+.SiteScopeButtonContainer {
+    display: flex;
+    justify-content: center;
+    padding: 4px 8px 0px 0px;
+    flex-direction: column;
+    width: 100%;
+}
+
+.SiteScope {
+    padding: 8px;
+    /* display: flex; */
+    font-size: 0.9rem;
+    color: #6B778C;
+}
+
+.SiteScopeRow {
+    display: flex;
+}
+
+.AnnoTypeButtonSelect {
+    background-color: transparent;
+    color: #6B778C;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    font-weight: bold;
+    line-height: 1.5;
+    border-radius: 0.2rem;
+    border: none;
+}
+
+.Revert{
+    padding: 8px;
+    font-size: 0.9rem;
+    color: #6B778C;
+}
+
+.RevertFilterButton {
+    color: #6B778C;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    font-weight: bold;
+    line-height: 1.5;
+    border-radius: 0.2rem;
+    border: none;
+}
+
+.AnnotationTypeFilter {
+    padding: 8px;
+    font-size: 0.9rem;
+    color: #6B778C;
+}
+
+.AnnoTypeButtonRow {
+    display: flex;
+}
+
+.AnnoTypeButtonContainer {
+    display: flex;
+    justify-content: center;
+    padding: 0px 8px 0px 0px;
+    flex-direction: column;
+    /* width: 100%; */
+}
+
+.FilterByTag {
+    padding: 8px;
+    font-size: 0.9rem;
+    color: #6B778C;
+    cursor: pointer;
+}
+
+.SearchByTag {
+    padding: 8px;
+    font-size: 0.9rem;
+    color: #6B778C;
+}
+
+.TagButton {
+    position: relative;
+    background-color: #dcdcdc;
+    color: #6B778C;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    font-weight: bold;
+    line-height: 1.5;
+    border-radius: 0.2rem;
+    border: none;
+}
+
+.TagButton.selected {
+    position: relative;
+    background-color: #5aad45;
+    color: whitesmoke ;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    font-weight: bold;
+    line-height: 1.5;
+    border-radius: 0.2rem;
+}
+
+.TagButtonPad {
+    display: flex;
+    justify-content: center;
+    padding: 4px 8px 0px 0px;
+    flex-direction: column;
+    /* width: 100%; */
+}
+
+.TagListContainer {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+#collapseTagList {
+    transform: rotate(90deg);
+    width: 18px;
+    height: 18px;
+}
+
+.Input {
+    margin: 0;
+    max-width: 100%;
+    -webkit-box-flex: 1;
+    -ms-flex: 1 0 auto;
+    flex: 1 0 auto;
+    outline: 0;
+    -webkit-tap-highlight-color: rgba(255,255,255,0);
+    text-align: left;
+    line-height: 1.21428571em;
+    font-family: Lato,'Helvetica Neue',Arial,Helvetica,sans-serif;
+    padding: 4px 8px;
+    background: #fff;
+    border: 1px solid rgba(34,36,38,.15);
+    color: rgba(0,0,0,.87);
+    border-radius: .28571429rem;
+    -webkit-transition: border-color .1s ease,-webkit-box-shadow .1s ease;
+    transition: border-color .1s ease,-webkit-box-shadow .1s ease;
+    transition: box-shadow .1s ease,border-color .1s ease;
+    transition: box-shadow .1s ease,border-color .1s ease,-webkit-box-shadow .1s ease;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+  
+
+/* .Filter.hover, .Filter:hover {
+    filter: brightness(.5);
+  } */
+

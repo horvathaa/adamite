@@ -2,10 +2,8 @@ import React from 'react';
 import "./RichTextEditor.css"
 import 'draft-js/dist/Draft.css'
 import { Editor, EditorState, RichUtils, convertToRaw, getDefaultKeyBinding, ContentState, convertFromRaw } from 'draft-js';
-import { stateToHTML } from 'draft-js-export-html';
 import { stateToMarkdown } from 'draft-js-export-markdown';
 import { stateFromMarkdown } from 'draft-js-import-markdown';
-import { stateFromHTML } from 'draft-js-import-html';
 import { GrBlockQuote } from "react-icons/gr";
 import { MdFormatBold, MdFormatItalic, MdFormatUnderlined, MdCode, MdFormatListBulleted, MdFormatListNumbered } from 'react-icons/md';
 
@@ -13,8 +11,6 @@ import { MdFormatBold, MdFormatItalic, MdFormatUnderlined, MdCode, MdFormatListB
 export default class RichEditor extends React.Component {
     constructor(props) {
         super(props);
-
-
 
         this.state = {
             editorState: this.getContentFromProp(this.props.annotationContent)

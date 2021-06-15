@@ -16,25 +16,6 @@ import Autosuggest from 'react-autosuggest'
 import AnnotationContext from "../AnnotationContext";
 
 
-
-
-/*
-updateAnchorTags
-
-id = ctx.anno.id,
-url = ctx.anno.url,
-currentUrl = ctx.currentUrl,
-collapsed = ctx.collapsed,
-isCurrentUser = ctx.isCurrentUser,
-replyId = ctx.anno.replyId,
-anchorContent = anchor.content,
-anchorId = anchor.id,
-pageAnchor = anchor.xpath === null,
-isOnlyAnchor = ctx.anno.childAnchor.length === 1,
-brokenAnchor = ctx.brokenChild.includes(anchor.id);
-
-*/
-
 // Using autocomplete example from react tags... still not working for some reason
 //https://github.com/olahol/react-tagsinput/blob/master/example/components/autocomplete.js
 

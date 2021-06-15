@@ -256,8 +256,12 @@
 }
 
 .OptionLineBreak:hover{
-
   background: transparent !important;
   background-color: transparent !important;
+}
+
+.TitleRight{
+  display: inline-flex;
+  float: right;
 }
 

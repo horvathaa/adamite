@@ -8,7 +8,6 @@ import { GiCancel } from 'react-icons/gi';
 import classNames from 'classnames';
 import tag from '../../../../assets/img/SVGs/tag.svg';
 import { Dropdown } from 'react-bootstrap';
-import GroupMultiSelect from './MultiSelect/MultiSelect'
 import { Tooltip, Checkbox } from '@material-ui/core';
 import expand from '../../../../assets/img/SVGs/expand.svg';
 
@@ -61,19 +60,9 @@ class FilterSummary extends React.Component {
     }
 
     componentDidMount(prevProps) {
-        let tagSet = {};
-        this.props.filteredAnnotations.forEach(annotation => {
-            annotation.tags.forEach(tag => {
-                if (tagSet.hasOwnProperty(tag)) {
-                    tagSet[tag] += 1;
-                }
-                else {
-                    tagSet[tag] = 1;
-                }
-            });
-        })
-        this.setState({ tagSet });
+        this.setState({ tagSet: this.props.filterTags() });
     }
+
 
     handleTagClick(event) {
         let tagName = event.target.value;
@@ -133,7 +122,7 @@ class FilterSummary extends React.Component {
 
         return (
             <React.Fragment>
-                <Dropdown>
+                <Dropdown className={args.className}>
                     <Dropdown.Toggle title={args.header} className="filterDropDown">
                         <div className="FilterIconContainer">
                             <args.Icon className="filterReactIcon" />
@@ -225,10 +214,11 @@ class FilterSummary extends React.Component {
         else {
             return (
                 <div className="FilterSectionRow">
-                    <div className="FilterSection" id="FilterSectionText">Filters</div>
+                    {/* <div className="FilterSection" id="FilterSectionText">Filters</div> */}
                     <div className="FilterSection">
                         {this.createDropDown({
                             Icon: BiTimeFive,
+                            className: 'FilterDropDownSearch',
                             activeFilter: this.translateTime(filter.timeRange),
                             header: "Posted date",
                             updateFunction: this.updateTimeRange,
@@ -242,6 +232,7 @@ class FilterSummary extends React.Component {
                     <div className="FilterSection">
                         {this.createDropDown({
                             Icon: BsChatSquareDots,
+                            className: 'FilterDropDownSearch',
                             activeFilter: annoType,
                             header: "Annotation Type",
                             updateFunction: this.updateAnnoType,
@@ -256,6 +247,7 @@ class FilterSummary extends React.Component {
                     <div className="FilterSection">
                         {this.createDropDown({
                             Icon: BiSort,
+                            className: 'FilterDropDownSearch',
                             activeFilter: currentSort === 'page' ? "Page" : "Time",
                             header: "Sort By",
                             updateFunction: this.updateSort,
@@ -293,8 +285,8 @@ class FilterSummary extends React.Component {
                                             </div>);
                                     })}
                                     <div className="TagButtonPad">
-                                        <button className="TagButton" >
-                                            <img src={expand} alt="collapse tag list" id="collapseTagList" onClick={() => { this.setState({ showTagFilter: false }) }} />
+                                        <button className="TagButton" style={{ border: 'none', 'margin-right': '4px' }} >
+                                            <img src={expand} id="collapseTagList" alt="collapse tag list" onClick={() => { this.setState({ showTagFilter: false }) }} />
                                         </button>
 
                                     </div>
@@ -345,7 +337,7 @@ class FilterSummary extends React.Component {
                             <div className={classNames({
                                 FilterSection: true,
                                 tagFilterNotEnabled: !filter.tags.length
-                            })} onClick={() => { this.setState({ showTagFilter: !this.state.showTagFilter }) }} >
+                            })} onClick={() => {  this.setState({ showTagFilter: !this.state.showTagFilter, tagSet: this.props.filterTags() }) }} >
                                 <div className="FilterIconContainer">
                                     <img src={tag} alt="tag icon" />
                                 </div> &nbsp; &nbsp; Select Tag

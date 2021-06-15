@@ -43,14 +43,15 @@ const CardWrapper = ({ isNew = false }) => {
     else {
         splitButtonText = !newAnno.isPrivate ? "Post to Public" : "Post as Private";
     }
-    let annoTypeDropDownValue = (newAnno.type === 'default') ? 'normal' : (newAnno.type === 'highlight') ? 'empty' : newAnno.type;
+    let annoTypeDropDownValue = (ctx.anno.type === 'default') ? 'normal' : (ctx.anno.type === 'highlight') ? 'empty' : ctx.anno.type;
+    const placeHolderString = newAnno.tags === undefined || !newAnno.tags.length ? 'Add a tag then hit Enter' : 'Add a tag';
 
     const CardEditor = (<React.Fragment>
         {ctx.editing ? (
             <React.Fragment>
                 <div className="TextareaContainer">
                     <RichEditor
-                        annotationContent={newAnno.contentBlock === undefined ? newAnno.content : newAnno.contentBlock}
+                        annotationContent={newAnno.contentBlock === undefined ? ctx.anno.content : newAnno.contentBlock}
                         annotationChangeHandler={(content, contentBlock) => setNewAnno({ ...newAnno, content, contentBlock })}
                     />
                 </div>
@@ -60,7 +61,7 @@ const CardWrapper = ({ isNew = false }) => {
                         <div className="TextareaContainer">
                             <TagsInput value={newAnno.tags !== undefined ? newAnno.tags : []}
                                 onChange={(newTags) => setNewAnno({ ...newAnno, tags: newTags })}
-                                onlyUnique={true}
+                                onlyUnique={true} inputProps={{ className: classNames({ 'react-tagsinput-input': true, empty: !newAnno.tags.length }), placeholder: placeHolderString }}
                                 addOnBlur
                             />
                         </div>

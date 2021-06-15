@@ -14,10 +14,8 @@ class GroupMultiSelect extends React.Component {
     }
 
     editModal = (gid) => {
-        // console.log("gid!", gid)
         let group = this.props.groups.find(e => e.gid === gid);
 
-        // console.log("gonna edit this modal!", group)
         chrome.runtime.sendMessage({
             msg: 'EDIT_EXISTING_GROUP',
             from: 'content',
@@ -44,7 +42,6 @@ class GroupMultiSelect extends React.Component {
         onClick,
         disabled,
     }) => {
-
         return (
             <React.Fragment>
                 <div className="item-wrapper">
@@ -112,20 +109,22 @@ class GroupMultiSelect extends React.Component {
             return { label: group.name, value: group.gid, owner: group.owner };
         }));
 
+        console.log("Selected", selected)
+
         return (
             <React.Fragment>
                 <div className="FilterSectionRow" id="GroupFilterSection">
                     <div className="FilterIconContainer2">
                         <BiGroup className="filterReactIcon" />
                     </div>
-                    <div className="FilterSection" id="GroupFilterSectionText">Groups</div>
+                    {/* <div className="FilterSection" id="GroupFilterSectionText">Groups</div> */}
                     <div className="multi-select-wrapper">
                         <div className="filterDropDown">
                             <MultiSelect
                                 options={options}
                                 value={selected}
                                 onChange={this.handleSelection}
-                                labelledBy={"Select"}
+                                labelledBy={"Groups"}
                                 ClearIcon={<AiOutlineCloseCircle />}
                                 ClearSelectedIcon={<AiOutlineCloseCircle />}
                                 ItemRenderer={this.DefaultItemRenderer}
