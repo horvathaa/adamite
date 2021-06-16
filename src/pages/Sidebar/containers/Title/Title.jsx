@@ -3,7 +3,7 @@ import { Dropdown } from 'react-bootstrap';
 import { APP_NAME_FULL } from '../../../../shared/constants';
 import '../../../../assets/img/Adamite.png';
 import { GiHamburgerMenu } from 'react-icons/gi';
-import { BiFileBlank, BiHorizontalCenter, BiBookBookmark, BiCog, BiExit, BiGroup } from 'react-icons/bi';
+import { BiFileBlank, BiHorizontalCenter, BiBookBookmark, BiCog, BiExit, BiGroup, BiUserPlus } from 'react-icons/bi';
 import { AiOutlineCheck, AiOutlineUser } from 'react-icons/ai';
 
 
@@ -174,6 +174,10 @@ export default class Title extends React.Component {
                             <Dropdown.Item onClick={this.props.handleShowAnnotatePage} className="DropdownItemOverwrite">
                               <div className="DropdownIconsWrapper"><BiFileBlank className="DropdownIcons" /></div>
                               Add Page Annotation
+                          </Dropdown.Item>
+                          <Dropdown.Item onClick={this.props.addNewGroup} className="DropdownItemOverwrite">
+                              <div className="DropdownIconsWrapper"><BiUserPlus className="DropdownIcons" /></div>
+                              Create New Group
                           </Dropdown.Item>
                             <Dropdown.Item onClick={this.props.closeSidebar} className="DropdownItemOverwrite">
                               <div className="DropdownIconsWrapper"><BiHorizontalCenter className="DropdownIcons" /></div>

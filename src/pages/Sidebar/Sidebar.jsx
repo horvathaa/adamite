@@ -930,7 +930,7 @@ class Sidebar extends React.Component {
           openDocumentation={this.openDocumentation}
           updateSidebarGroup={this.updateSidebarGroup}
           currentGroup={this.state.activeGroups}
-          // addNewGroup={this.addNewGroup}
+          addNewGroup={this.addNewGroup}
         />
         {currentUser === null && <Authentication />}
         {currentUser !== null && (
