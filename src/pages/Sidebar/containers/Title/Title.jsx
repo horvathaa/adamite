@@ -124,18 +124,18 @@ export default class Title extends React.Component {
       <div className="TitleContainer">
         <div className="container">
           <div className="row">
-            <div className="col">
+            <div className="col col-7 col-md-7">
               <div className="Header">
                 <div className="Title">{APP_NAME_FULL}</div>
               </div>
             </div>
             {currentUser !== null && (
               <React.Fragment>
-                <div className="col">
+                <div className="col col-5 col-sm-5">
                   <div className="TitleRight"> 
                   {this.createDropDown({
                             Icon: BiGroup,
-                            className: 'FilterDropDownSearch',
+                            className: 'FilterDropDownSearch NewAnnotationButtonContainer',
                             activeFilter: "Public",
                             header: "My Groups",
                             updateFunction: this.props.updateSidebarGroup,
@@ -143,7 +143,7 @@ export default class Title extends React.Component {
                         })}
                   {/* <div className="row2">
                     <div className="col2 "> */}
-                      <div className="NewAnnotationButtonContainer">
+                      <div className="SandwichTopBar NewAnnotationButtonContainer ">
                         <Dropdown onClick={this.onMouseEnterAdd} onBlur={this.onMouseLeaveAdd} show={this.state.dropdownOpenAdd} toggle={this.toggle.toString()} >
                           <Dropdown.Toggle id="dropdown-basic" className="vertical-center">
                             <GiHamburgerMenu alt="Hamburger menu" className="profile" />

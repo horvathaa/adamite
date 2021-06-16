@@ -566,14 +566,123 @@
   filter: brightness(.4);
 }
 
+.AnnotationOptionsTitle{
+  font-size: 13px;
+  font-weight: 300 !important;
+  padding: .2rem .5rem 0rem .5rem !important;
+  text-align: center !important;
+}
+
+.AnnotationOptionsTitle hr {
+  margin: .35rem;
+}
+
+@media (max-width:380px){
+  .AnnotationIconContainer {
+      display: none !important;
+  }
+}
+
+@media (max-width:380px){
+  .AnnotationsOptions {
+      display: flex !important;
+  }
+}
+
+.AnnotationsOptions{
+  display: none;
+  padding: .5em;
+  cursor: pointer;
+  outline-color: transparent !important;
+  padding-top: .2em !important;
+}
+
+.AnnotationsOptions .dropdown-toggle::after {
+  display: none !important; 
+}  
+
+.AnnotationsOptions .dropdown .btn-primary{
+  padding: .5em !important;
+}
+
+.AnnotationsOptions .dropdown .btn-primary:hover{
+  padding: .5em;
+  background: #e4e6eb;
+  border-radius: 2em;
+}
+
+.AnnotationsOptions .dropdown .btn {
+  padding: 0px;
+  border-color: transparent;
+  background-color: transparent;
+}
+
+.AnnotationsOptions .dropdown .nav-item:hover .dropdown-menu{
+  display:block!important
+}
+
+.AnnotationsOptions .dropdown .btn-primary:focus, .btn:active {
+  color:transparent;
+  background-color: transparent;
+  border-color: transparent;
+  box-shadow: 0 0 0 0 transparent;
+
+}
+
+.AnnotationsOptions .dropdown .btn-primary:focus, .btn-primary:active {
+  outline: none !important;
+  box-shadow: none;
+  outline-color: none;
+}
+
+.AnnotationsOptions .dropdown .dropdown-toggle:focus,.dropdown-toggle:active {
+  outline: none !important;
+  box-shadow: none;
+  outline-color: none;
+}
+
+.AnnotationsOptions .dropdown .btn-primary:not(:disabled):not(.disabled):active, .TitleContainer .container .row .btn-primary:not(:disabled):not(.disabled).active, .TitleContainer .container .row .show > .TitleContainer .container .row .btn-primary.dropdown-toggle {
+  color: transparent;
+  background-color: transparent;
+  border-color: transparent;
+  outline-color: none;
+} 
+/* button:focus {
+  box-shadow: none;
+  outline:0;
+} */
+
+.btn-primary:not(:disabled):not(.disabled):active:focus, .btn-primary:not(:disabled):not(.disabled).active:focus, .show > .btn-primary.dropdown-toggle:focus{
+  box-shadow: none !important;
+}
+.AnnotationsOptions .dropdown .btn-primary:not(:disabled):not(.disabled):active, .TitleContainer .container .row .btn-primary:not(:disabled):not(.disabled).active, .TitleContainer .container .row .show > .TitleContainer .container .row .btn-primary.dropdown-toggle {
+  color: transparent;
+  background-color: transparent;
+  border-color: transparent;
+  outline-color: none;
+} 
+
+.dropdown-item.active, .dropdown-item:active{
+  color: inherit !important;
+  background-color: transparent !important;
+}
+
+.btn-primary:not(:disabled):not(.disabled):active, .btn-primary:not(:disabled):not(.disabled).active, .show > .btn-primary.dropdown-toggle {
+  /* color: inherit !important; */
+  background-color: inherit !important;
+  border-color: inherit !important;
+}
+
 .AnnotationIconContainer {
   display: flex;
   align-items: center;
   align-self: baseline;
 }
 
+
+
 .TopIconContainer {
-  margin-right: 1em;
+  margin-right: .75em;
   position: relative;
   cursor: pointer;
   padding: .35em .35em .35em .35em;
