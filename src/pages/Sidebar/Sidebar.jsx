@@ -948,12 +948,6 @@ class Sidebar extends React.Component {
             </div>
             <div>
               <div className="FilterSummaryContainer">
-                {/* <GroupMultiSelect
-                  uid={currentUser.uid}
-                  groups={groups}
-                  handleNotifySidebar={this.updateSidebarGroup}
-                  addNewGroup={this.addNewGroup}
-                /> */}
                 {!this.state.showFilter && (renderedAnnotations.length || this.state.annotations.length) ?
                   (<FilterSummary
                     applyFilter={this.applyFilter}

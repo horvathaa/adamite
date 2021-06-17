@@ -1,4 +1,4 @@
-import React, { Component, useEffect, useContext, useState } from 'react';
+import React, { useEffect, useContext, useState } from 'react';
 import RichTextEditor from '../../../RichTextEditor/RichTextEditor';
 import TagsInput from 'react-tagsinput';
 import classNames from 'classnames';
@@ -10,7 +10,7 @@ import { SplitButton, Button, Dropdown as BootstrapDropdown } from 'react-bootst
 import AnnotationContext from "../AnnotationContext";
 import { v4 as uuidv4 } from 'uuid';
 import cleanReplyModel from './ReplyModel';
-import { formatTimestamp } from '../../../../utils';
+import Tooltip from '@material-ui/core/Tooltip';
 
 
 const ReplyEditor = ({ reply = null, finishReply = () => { } }) => {
@@ -155,9 +155,11 @@ const ReplyEditor = ({ reply = null, finishReply = () => { } }) => {
                 </div>
                 <div className="ReplyButtonRow">
                     <div className={classNames({ buttonCol: true })}>
-                        <div className="buttonRow">
-                            <img src={addAnchor} alt='add new anchor' onClick={requestNewAnchor} />
-                        </div>
+                        <Tooltip title={"Add Anchor"} aria-label='add anchor'>
+                            <div className="buttonRow">
+                                <img src={addAnchor} alt='add new anchor' onClick={requestNewAnchor} />
+                            </div>
+                        </Tooltip>
                         &nbsp; &nbsp;
                         <div className="cancelButtonContainer">
                             <button onClick={cancelReply} className="Cancel-Button">Cancel</button> &nbsp; &nbsp;

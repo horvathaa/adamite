@@ -147,7 +147,7 @@ export default class Title extends React.Component {
                             <GiHamburgerMenu alt="Hamburger menu" className="profile" />
                           </Dropdown.Toggle>
                           <Dropdown.Menu >
-                            <Dropdown.Item onClick={this.props.handleShowAnnotatePage} className="OptionLineBreak" >
+                            <Dropdown.Item className="OptionLineBreak" >
                               <div className="container">
                                 <div className="row">
                                   <div className="col OptionCol">
