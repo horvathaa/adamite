@@ -17,6 +17,10 @@
   padding: 4px 2px 1px 1px;
 }
 
+.col-5{
+  max-width: 50% !important;
+}
+
 .TitleContainer .container .row .col .Header {
   display: flex;
   padding: 5px;
@@ -186,6 +190,16 @@
   border-bottom-right-radius: 8px;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
+}
+
+.NewAnnotationButtonContainer {
+  padding: .5em;
+  cursor: pointer;
+  outline-color: transparent !important;
+}
+
+.SandwichTopBar {
+  padding-top: .2em !important;
 }
 
 .NewAnnotationButtonContainer {

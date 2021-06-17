@@ -3,22 +3,15 @@
 import React, { useContext } from 'react';
 import classNames from 'classnames';
 import '../Annotation.css';
-import profile from '../../../../../../assets/img/SVGs/Profile.svg';
-import reply from '../../../../../../assets/img/SVGs/Reply.svg';
-import outlinepin from '../../../../../../assets/img/SVGs/pin.svg';
-import fillpin from '../../../../../../assets/img/SVGs/pin_2.svg';
-import newAnchor from '../../../../../../assets/img/SVGs/NewAnchor2.svg';
-import edit from '../../../../../../assets/img/SVGs/edit.svg';
-import trash from '../../../../../../assets/img/SVGs/delet.svg';
+import { Dropdown } from 'react-bootstrap';
 import Tooltip from '@material-ui/core/Tooltip';
-import { CgProfile } from 'react-icons/cg';
-import { BsReply, BsTrash } from 'react-icons/bs';
+import { BsTrash } from 'react-icons/bs';
 import { AiOutlinePushpin, AiOutlineEdit, AiFillPushpin, AiOutlineComment, AiOutlineUser } from 'react-icons/ai';
-
 import { BiAnchor } from 'react-icons/bi';
-import { FaRegComment } from 'react-icons/fa';
 import AnnotationContext from "../AnnotationContext";
 import { formatTimestamp } from "../../../../utils"
+import { GiHamburgerMenu } from 'react-icons/gi';
+
 /*
 Context Used
 
@@ -49,7 +42,6 @@ const EditRowComponent = () => {
             })}>
                 <div className="profileContainer">
                     <AiOutlineUser alt="profile" className="userProfile" />
-                    {/* <img src={profile} alt="profile" className="profile" /> */}
                 </div>
                 <div className="userProfileContainer">
 
@@ -64,30 +56,25 @@ const EditRowComponent = () => {
                     </div>
                 </div>
 
-
                 <div className="row">
                     <div className="AnnotationIconContainer">
                         <Tooltip title={"Reply to annotation"} aria-label="reply icon tooltip">
                             <div className="TopIconContainer" onClick={() => ctx.setReplying(true)}>
                                 <AiOutlineComment className="profile" alt="reply" />
-                                {/* <img src={reply} alt="reply" className="profile" /> */}
                             </div>
                         </Tooltip>
                         <Tooltip title={"Pin or unpin annotation"} aria-label="pin icon tooltip">
                             <div className="TopIconContainer" onClick={ctx.handlePin}>
                                 {ctx.anno.pinned ? (
                                     <AiFillPushpin className="profile" id="pin" alt="pin" />
-                                    // <img src={fillpin} id="pin" alt="pin" className="profile" />
                                 ) : (
                                     <AiOutlinePushpin className="profile" id="pin" alt="pin" />
-                                    // <img src={outlinepin} id="pin" alt="pin" className="profile" />
                                 )}
                             </div>
                         </Tooltip>
                         <Tooltip title={"Add new anchor to annotation"} aria-label="add new anchor tooltip">
                             <div className="TopIconContainer" >
                                 <BiAnchor className="profile" alt="add new anchor" id="newAnchor" onClick={ctx.handleNewAnchor} />
-                                {/* <img src={newAnchor} alt="add new anchor" id="newAnchor" className="profile" onClick={ctx.handleNewAnchor} /> */}
                             </div>
                         </Tooltip>
                         {ctx.currentUser.uid === ctx.anno.authorId ? (
@@ -106,6 +93,65 @@ const EditRowComponent = () => {
                                 </Tooltip>
                             </React.Fragment>
                         ) : (null)}
+                    </div>
+
+                    <div className="AnnotationsOptions">
+                        <Dropdown>
+                            <Dropdown.Toggle id="dropdown-basic" className="vertical-center">
+                                <GiHamburgerMenu alt="Hamburger menu" className="profile" />
+                            </Dropdown.Toggle>
+                            <Dropdown.Menu style={{width: '220px'}}>
+                                <Dropdown.Item className="AnnotationOptionsTitle">
+                                    Annoation Options
+                                    <hr></hr>
+                                </Dropdown.Item>
+                                <Dropdown.Item onClick={() => ctx.setReplying(true)} className="DropdownItemOverwrite">
+                                    <div className="DropdownIconsWrapper">
+                                        <AiOutlineComment className="DropdownIcons" alt="reply" />
+                                    </div>
+                                    Reply
+                                </Dropdown.Item>
+                                <Dropdown.Item onClick={ctx.handlePin} className="DropdownItemOverwrite">
+                                    {ctx.anno.pinned ? (
+                                        <React.Fragment>
+                                            <div className="DropdownIconsWrapper">
+                                                <AiFillPushpin className="DropdownIcons" id="pin" alt="pin" />
+                                            </div>
+                                            Unpin
+                                        </React.Fragment>
+                                    ) : (
+                                        <React.Fragment>
+                                            <div className="DropdownIconsWrapper">
+                                                <AiOutlinePushpin className="DropdownIcons" id="pin" alt="pin" />
+                                            </div>
+                                            Pin
+                                        </React.Fragment>
+                                    )}
+                                </Dropdown.Item>
+                                <Dropdown.Item onClick={ctx.handleNewAnchor} className="DropdownItemOverwrite">
+                                    <div className="DropdownIconsWrapper">
+                                        <BiAnchor className="DropdownIcons" alt="add new anchor" id="newAnchor" />
+                                    </div>
+                                    Add Another Anchor
+                                </Dropdown.Item>
+                                {ctx.currentUser.uid === ctx.anno.authorId ? (
+                                    <React.Fragment>
+                                        <Dropdown.Item onClick={() => ctx.setEditing(!ctx.editing)} className="DropdownItemOverwrite">
+                                            <div className="DropdownIconsWrapper">
+                                                <AiOutlineEdit className="DropdownIcons" alt="edit annotation" className="profile" id="edit" />
+                                            </div>
+                                            Edit Annotation
+                                        </Dropdown.Item>
+                                        <Dropdown.Item onClick={ctx.handleTrashClick} className="DropdownItemOverwrite">
+                                            <div className="DropdownIconsWrapper">
+                                                <BsTrash alt="delete annotation" className="DropdownIcons" id="trash" />
+                                            </div>
+                                            Delete
+                                        </Dropdown.Item>
+                                    </React.Fragment>
+                                ) : (null)}
+                            </Dropdown.Menu>
+                        </Dropdown>
                     </div>
                 </div>
             </div>

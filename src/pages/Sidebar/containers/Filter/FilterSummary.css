@@ -26,7 +26,7 @@
 }
 
 .TagListContainer {
-    display: flex;
+    display: block;
 }
 
 #FilterSectionText {
@@ -97,6 +97,8 @@
  } */
 
 .filterDropDown{
+    font-family: 'Roboto';
+    font-weight: 300 !important;
     font-size: 0.9rem !important;
     color: #212529 !important;
     background-color: transparent !important;
@@ -269,6 +271,7 @@
 }
 
 .FilterByTag {
+    width: 100%;;
     padding: 8px;
     font-size: 0.9rem;
     color: #6B778C;
@@ -282,26 +285,37 @@
 }
 
 .TagButton {
-    position: relative;
-    background-color: #dcdcdc;
-    color: #6B778C;
+    box-shadow: 2px 2px 1px 0px #ebebebfa;
+    border-bottom-left-radius: 8px;
+    border: 1px solid #e5e5e5;
+    border-bottom-right-radius: 8px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    background: transparent;
+    font-weight: 300;
+    font-size: 14px;
+    line-height: 2;
     padding: 0.25rem 0.5rem;
-    font-size: 0.875rem;
-    font-weight: bold;
-    line-height: 1.5;
-    border-radius: 0.2rem;
-    border: none;
+}
+
+.TagButton:hover {
+    box-shadow: 0 1px 6px 0 rgb(32 33 36 / 25%);
 }
 
 .TagButton.selected {
-    position: relative;
-    background-color: #5aad45;
-    color: whitesmoke ;
-    padding: 0.25rem 0.5rem;
-    font-size: 0.875rem;
-    font-weight: bold;
-    line-height: 1.5;
-    border-radius: 0.2rem;
+    background: #dcf2bb;
+}
+
+.TagButtonsWrapper{
+    display: flex;  
+    width: 100%;
+    padding: 1rem;
+    overflow: overlay;
+}
+
+.TagControlWrapper{
+    display: flex;
+    float: right;
 }
 
 .TagButtonPad {
@@ -309,11 +323,10 @@
     justify-content: center;
     padding: 4px 8px 0px 0px;
     flex-direction: column;
-    /* width: 100%; */
 }
 
 .TagListContainer {
-    display: flex;
+    display: block;
     flex-wrap: wrap;
 }
 

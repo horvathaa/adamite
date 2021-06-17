@@ -173,6 +173,21 @@
   opacity: 75%;
 }
 
+@media (max-width:300px){
+  .ModifyFilter.userQuestions:before, .ModifyFilter.userQuestions:after {
+      max-width: 0px;
+  }
+
+}
+@media (min-width:1000px){
+.socialmedia {
+  margin-right:100px;
+}
+}
+
+
+
+
 .ModifyFilter.userQuestions:before {
   right: 0.8em;
   margin-left: -52%;
