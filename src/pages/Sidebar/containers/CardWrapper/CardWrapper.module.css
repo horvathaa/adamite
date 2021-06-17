@@ -363,11 +363,9 @@ code, pre {
 
   .Truncated {
     white-space: nowrap;
-    /*word-break: break-all;*/
     overflow-x: hidden;
     overflow-y: hidden;
     text-overflow: ellipsis;
-    /* display: none; */
   }
   
   .Cancel-Button{
@@ -375,11 +373,8 @@ code, pre {
     padding: 0.375rem 0.75rem;
     line-height: 1.5 ;
     margin-left: auto;
-    height: 3em;
     font-size: .95em ;
     border: 1px solid #e5e5e5;
-    /* background: #ff0000a6 !important; */
-    /* border: 0px ; */
     border-bottom-left-radius: 8px ;
     border-bottom-right-radius: 8px ;
     border-top-left-radius: 8px ;
@@ -387,10 +382,7 @@ code, pre {
   
   }
   
-  .Cancel-Button.hover, .Cancel-Button:hover {
-    /* opacity: 0.65; */
-    filter: brightness(.25);
-  }
+ 
   
   .dropdown-toggle:after {
     display: inline-block;

@@ -80,14 +80,11 @@ export default class Title extends React.Component {
   signOutClickedHandler = e => {
     e.preventDefault();
     chrome.runtime.sendMessage({ msg: 'USER_SIGNOUT' });
-    //this.currentUser = null;
   };
 
   createDropDown = (args) => {
-    console.log("ARGS!", args)
     const listItems = args.items.map((option, idx) => {
         let active = args.activeFilter.includes(option.label) ? true : false
-        console.log(option)
         return <Dropdown.Item key={idx} onSelect={(e) => args.updateFunction([option], e)} data-value={option.label}> {active ? <AiOutlineCheck /> : ""} {option.label} </Dropdown.Item>
     });
 
@@ -111,7 +108,6 @@ export default class Title extends React.Component {
 
   render() {
     const { currentUser, groups } = this.props;
-    console.log(currentUser)
     let userName;
     if (currentUser === null) {
       userName = ""

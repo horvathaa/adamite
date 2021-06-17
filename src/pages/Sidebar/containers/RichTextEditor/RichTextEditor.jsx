@@ -15,12 +15,12 @@ export default class RichEditor extends React.Component {
         this.state = {
             editorState: this.getContentFromProp(this.props.annotationContent)
         };
-        // console.log(this.state.editorState)
+        
         this.focus = () => this.refs.editor.focus();
         this.onChange = (editorState) => {
 
             var thissssss = stateToMarkdown(editorState.getCurrentContent());
-            console.log("unraw", thissssss,)
+            
             const blocks = convertToRaw(editorState.getCurrentContent()).blocks;
             const value = blocks.map(block => (!block.text.trim() && '\n') || block.text).join('\n');
             console.log(blocks, value, convertToRaw(editorState.getCurrentContent()))
@@ -38,7 +38,6 @@ export default class RichEditor extends React.Component {
     }
 
     getContentFromProp = (content) => {
-        console.log("CONTENT", content)
         if (content !== undefined) {
             return typeof content === 'object' && content !== null ?
                 EditorState.createWithContent(convertFromRaw(content)) :
@@ -65,7 +64,6 @@ export default class RichEditor extends React.Component {
 
     _mapKeyToEditorCommand(e) {
         if (e.keyCode === 9 /* TAB */) {
-            console.log("HERE")
             const newEditorState = RichUtils.onTab(
                 e,
                 this.state.editorState,

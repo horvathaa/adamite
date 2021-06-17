@@ -101,10 +101,10 @@ const EditRowComponent = () => {
                                 <GiHamburgerMenu alt="Hamburger menu" className="profile" />
                             </Dropdown.Toggle>
                             <Dropdown.Menu style={{width: '220px'}}>
-                                <Dropdown.Item className="AnnotationOptionsTitle">
+                                <Dropdown.Header className="AnnotationOptionsTitle">
                                     Annoation Options
                                     <hr></hr>
-                                </Dropdown.Item>
+                                </Dropdown.Header>
                                 <Dropdown.Item onClick={() => ctx.setReplying(true)} className="DropdownItemOverwrite">
                                     <div className="DropdownIconsWrapper">
                                         <AiOutlineComment className="DropdownIcons" alt="reply" />
