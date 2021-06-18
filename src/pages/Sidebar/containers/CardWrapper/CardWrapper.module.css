@@ -23,12 +23,11 @@ code, pre {
 .PostButton .btn{
   font-size: .95em !important;
   color: rgb(30 130 74);
-  background: rgb(34 195 105 / 52%);
-  border: 0px ;
+  background: rgb(34 195 105 / 17%);
+  border: 0px;
+  padding: .7rem;
   border-bottom-left-radius: 8px;
-  border-bottom-right-radius: 8px;
   border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
 }
 
 .PostButton .btn:hover, .PostButton .btn:focus {
