@@ -176,15 +176,20 @@
 }
 
 .badgeIconSvg {
-  color: #6B778C;
-  width: 24px;
-  height: 24px;
+  color: #1d1e24c4;
+  width: 18px;
+  height: 18px;
+  margin: .2rem;
 }
 
 .btn-openCloseQuestion {
   font-size: small;
   color: #6B778C;
   background-color: #bfbebe;
+}
+
+.annotationTypeBadge .col2:hover {
+  box-shadow: 0 1px 6px 0 rgb(32 33 36 / 28%);
 }
 
 .annotationTypeBadge .col2 {
