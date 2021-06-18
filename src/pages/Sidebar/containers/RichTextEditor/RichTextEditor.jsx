@@ -1,29 +1,42 @@
 import React from 'react';
 import "./RichTextEditor.css"
 import 'draft-js/dist/Draft.css'
-import { Editor, EditorState, RichUtils, convertToRaw, getDefaultKeyBinding, ContentState, convertFromRaw } from 'draft-js';
+import {  EditorState, RichUtils, convertToRaw, getDefaultKeyBinding, ContentState, convertFromRaw } from 'draft-js';
 import { stateToMarkdown } from 'draft-js-export-markdown';
 import { stateFromMarkdown } from 'draft-js-import-markdown';
 import { GrBlockQuote } from "react-icons/gr";
 import { MdFormatBold, MdFormatItalic, MdFormatUnderlined, MdCode, MdFormatListBulleted, MdFormatListNumbered } from 'react-icons/md';
+import Prism from 'prismjs';
+import createPrismPlugin from 'draft-js-prism-plugin';
+import 'prismjs/themes/prism.css';
+import Editor from 'draft-js-plugins-editor';
+import createCodeEditorPlugin from 'draft-js-code-editor-plugin';
+
 
 
 export default class RichEditor extends React.Component {
     constructor(props) {
         super(props);
 
+        const prismPlugin = createPrismPlugin({
+            prism: Prism
+        });
+
+        const codeEditorPlugin = createCodeEditorPlugin();
+
         this.state = {
-            editorState: this.getContentFromProp(this.props.annotationContent)
+            editorState: this.getContentFromProp(this.props.annotationContent),
+            plugins: [prismPlugin, codeEditorPlugin]
         };
         // console.log(this.state.editorState)
         this.focus = () => this.refs.editor.focus();
         this.onChange = (editorState) => {
 
             var thissssss = stateToMarkdown(editorState.getCurrentContent());
-            console.log("unraw", thissssss,)
+            // console.log("unraw", thissssss,)
             const blocks = convertToRaw(editorState.getCurrentContent()).blocks;
-            const value = blocks.map(block => (!block.text.trim() && '\n') || block.text).join('\n');
-            console.log(blocks, value, convertToRaw(editorState.getCurrentContent()))
+            // const value = blocks.map(block => (!block.text.trim() && '\n') || block.text).join('\n');
+            // console.log(blocks, value, convertToRaw(editorState.getCurrentContent()))
             // const blocks = convertToRaw(editorState.getCurrentContent()).blocks;
             // const value = blocks.map(block => (!block.text.trim() && '\n') || block.text).join('\n');
             this.props.annotationChangeHandler(stateToMarkdown(editorState.getCurrentContent()), convertToRaw(editorState.getCurrentContent()));
@@ -38,7 +51,7 @@ export default class RichEditor extends React.Component {
     }
 
     getContentFromProp = (content) => {
-        console.log("CONTENT", content)
+        // console.log("CONTENT", content)
         if (content !== undefined) {
             return typeof content === 'object' && content !== null ?
                 EditorState.createWithContent(convertFromRaw(content)) :
@@ -79,12 +92,6 @@ export default class RichEditor extends React.Component {
         return getDefaultKeyBinding(e);
     }
 
-    _onTab(e) {
-        const maxDepth = 4;
-        this.setState({ editorState: stateWithSpacesInserted });
-        this.onChange(RichUtils.onTab(e, this.state.editorState, maxDepth));
-    }
-
     _toggleBlockType(blockType) {
         this.onChange(
             RichUtils.toggleBlockType(
@@ -118,6 +125,7 @@ export default class RichEditor extends React.Component {
         EditorState.moveSelectionToEnd(this.state.editorState)
         var selectionState = this.state.editorState.getSelection();
         //EditorState.createWithContent('Hello');
+        console.log('hello?', this.state)
 
         return (
             <div className="RichEditor-root">
@@ -139,6 +147,7 @@ export default class RichEditor extends React.Component {
                         handleKeyCommand={this.handleKeyCommand}
                         onChange={this.onChange}
                         keyBindingFn={this.mapKeyToEditorCommand}
+                        plugins={this.state.plugins}
                         // onTab={this.onTab}
                         placeholder=""
                         ref="editor"

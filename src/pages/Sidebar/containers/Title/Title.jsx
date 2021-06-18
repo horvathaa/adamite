@@ -1,9 +1,9 @@
 import React from 'react';
 import { Dropdown } from 'react-bootstrap';
 import { APP_NAME_FULL } from '../../../../shared/constants';
-import '../../../../assets/img/Adamite.png';
+import ADAMITE from '../../../../assets/img/Adamite.png';
 import { GiHamburgerMenu } from 'react-icons/gi';
-import { BiFileBlank, BiHorizontalCenter, BiBookBookmark, BiCog, BiExit, BiGroup, BiUserPlus } from 'react-icons/bi';
+import { BiFileBlank, BiHorizontalCenter, BiBookBookmark, BiCog, BiExit, BiGroup, BiUserPlus, BiBug } from 'react-icons/bi';
 import { AiOutlineCheck, AiOutlineUser } from 'react-icons/ai';
 
 
@@ -124,6 +124,9 @@ export default class Title extends React.Component {
           <div className="row">
             <div className="col col-7 col-md-7">
               <div className="Header">
+                <div className="TitleIcon">
+                  <img className="TitleIcon" src={ADAMITE} alt='Adamite logo' />
+                </div>
                 <div className="Title">{APP_NAME_FULL}</div>
               </div>
             </div>
@@ -191,6 +194,10 @@ export default class Title extends React.Component {
                               <div className="DropdownIconsWrapper"><BiBookBookmark className="DropdownIcons" /></div>
                               View Adamite Documentation
                           </Dropdown.Item>
+                          <Dropdown.Item onClick={this.props.openBugForm} className="DropdownItemOverwrite">
+                              <div className="DropdownIconsWrapper"><BiBug className="DropdownIcons" /></div>
+                              Submit a Bug
+                          </Dropdown.Item>
                             <Dropdown.Item onClick={this.signOutClickedHandler} className="DropdownItemOverwrite">
                               <div className="DropdownIconsWrapper"><BiExit className="DropdownIcons" /></div>
                               Sign Out
@@ -198,7 +205,6 @@ export default class Title extends React.Component {
                           </Dropdown.Menu>
                         </Dropdown>
                       </div>
-                    {/* </div> */}
                   </div>
                 </div>
               </React.Fragment>

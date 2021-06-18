@@ -48,7 +48,7 @@ class Sidebar extends React.Component {
     dropdownOpen: false,
     searchBarInputText: '',
     searchState: false,
-    showFilter: false,
+    showFiltered: true,
     showPinned: false,
     pinnedAnnos: [],
     annotatingPage: false,
@@ -458,6 +458,10 @@ class Sidebar extends React.Component {
     chrome.tabs.create({ 'url': "https://www.adamite.net" })
   }
 
+  openBugForm = () => {
+    chrome.tabs.create({ 'url': "https://forms.gle/Syx2w9TNKtADeQkb8" })
+  }
+
   closeSidebar = () => {
     chrome.runtime.sendMessage({
       msg: 'REQUEST_TOGGLE_SIDEBAR',
@@ -624,11 +628,6 @@ class Sidebar extends React.Component {
     this.setState({ searchCount: count });
   };
 
-  handleShowFilter = () => {
-    this.setState({ showFilter: !this.state.showFilter });
-  };
-
-
   clearSearchBoxInputText = () => {
     this.setState({ searchBarInputText: '' });
   };
@@ -687,34 +686,35 @@ class Sidebar extends React.Component {
     if (!tags.length || annotation.pinned) {
       return true;
     }
-    return tags.some(tag => annotation.tags.includes(tag));
+    const annoTags = annotation.tags.concat(...annotation.replies.map(r => r.tags), ...annotation.childAnchor.map(r => r.tags))
+    return tags.some(tag => annoTags.includes(tag));
   }
 
   checkArchived = (annotation, includeArchived) => {
     return !annotation.archived || (includeArchived && annotation.archived)
   }
 
-  sendTagToBackground(tag) {
-    return new Promise((resolve, reject) => {
-      chrome.runtime.sendMessage({
-        from: 'content',
-        msg: 'SEARCH_BY_TAG',
-        payload: { tag: tag }
-      },
-        response => {
-          resolve(response.annotations);
-        });
-    });
-  }
+  // sendTagToBackground(tag) {
+  //   return new Promise((resolve, reject) => {
+  //     chrome.runtime.sendMessage({
+  //       from: 'content',
+  //       msg: 'SEARCH_BY_TAG',
+  //       payload: { tag: tag }
+  //     },
+  //       response => {
+  //         resolve(response.annotations);
+  //       });
+  //   });
+  // }
 
-  searchByTag = (tag) => {
-    this.sendTagToBackground(tag).then(annotations => {
-      //should these annos ignore the currently in place filter? not sure
-      // for now, ignoring because of sitewide filters
-      this.setState({ filteredAnnotations: annotations });
-      this.setState({ annotations: annotations });
-    });
-  }
+  // searchByTag = (tag) => {
+  //   this.sendTagToBackground(tag).then(annotations => {
+  //     //should these annos ignore the currently in place filter? not sure
+  //     // for now, ignoring because of sitewide filters
+  //     this.setState({ filteredAnnotations: annotations });
+  //     this.setState({ annotations: annotations });
+  //   });
+  // }
 
   getFilteredAnnotationListLength = () => {
     return this.state.filteredAnnotations.length;
@@ -724,9 +724,7 @@ class Sidebar extends React.Component {
     return this.state.filteredAnnotations;
   }
 
-  openFilter = () => {
-    this.setState({ showFilter: true });
-  }
+
   addNewGroup = () => {
     chrome.runtime.sendMessage({
       msg: 'SHOW_GROUP',
@@ -853,15 +851,38 @@ class Sidebar extends React.Component {
     }
 
     renderedAnnotations.forEach(annotation => {
-      annotation.tags.forEach(tag => {
+      if(annotation.tags !== undefined) {
+        annotation.tags.forEach(tag => {
+          if (tagSet.hasOwnProperty(tag)) {
+            tagSet[tag] += 1;
+          }
+          else {
+            tagSet[tag] = 1;
+          }
+        });
+      }
+      if(annotation.replies !== undefined && annotation.replies.length) {
+        const replyTags = annotation.replies.filter(r => r.tags !== undefined && r.tags.length).map(r => r.tags)
+        replyTags.forEach(tag => {
+          if (tagSet.hasOwnProperty(tag)) {
+            tagSet[tag] += 1;
+          }
+          else {
+            tagSet[tag] = 1;
+          }
+        })
+      }
+      const anchorTags = annotation.childAnchor.filter(c => c.tags !== undefined && c.tags.length).map(c => c.tags);
+      anchorTags.forEach(tag => {
         if (tagSet.hasOwnProperty(tag)) {
           tagSet[tag] += 1;
         }
         else {
           tagSet[tag] = 1;
         }
-      });
+      })
     })
+      
     return tagSet;
   }
 
@@ -928,6 +949,7 @@ class Sidebar extends React.Component {
           closeSidebar={this.closeSidebar}
           openOptions={this.openOptions}
           openDocumentation={this.openDocumentation}
+          openBugForm={this.openBugForm}
           updateSidebarGroup={this.updateSidebarGroup}
           currentGroup={this.state.activeGroups}
           addNewGroup={this.addNewGroup}
@@ -936,7 +958,7 @@ class Sidebar extends React.Component {
         {currentUser !== null && (
           <div className="SideBarCardContent">
           <div className="ControlPanel">
-            <div className={classNames({ TopRow: true, filterOpen: this.state.showFilter })}>
+            <div className="TopRow">
               <SearchBar
                 searchBarInputText={searchBarInputText}
                 handleSearchBarInputText={this.handleSearchBarInputText}
@@ -948,7 +970,7 @@ class Sidebar extends React.Component {
             </div>
             <div>
               <div className="FilterSummaryContainer">
-                {!this.state.showFilter && (renderedAnnotations.length || this.state.annotations.length) ?
+                {renderedAnnotations.length || this.state.annotations.length ?
                   (<FilterSummary
                     applyFilter={this.applyFilter}
                     groups={groups}
@@ -1045,7 +1067,7 @@ class Sidebar extends React.Component {
 
             </div>
             <div>
-              {!renderedAnnotations.length && this.state.newSelection === null && !this.state.annotatingPage && !this.state.showFilter ? (
+              {!renderedAnnotations.length && this.state.newSelection === null && !this.state.annotatingPage ? (
                 <div className="whoops">
                   There's nothing here! Try searching for an annotation, modifying your groups or filters, or creating a new annotation
                 </div>
@@ -1057,20 +1079,31 @@ class Sidebar extends React.Component {
                   requestFilterUpdate={this.requestChildAnchorFilterUpdate}
                   notifyParentOfPinning={this.handlePinnedAnnotation} />
               )}
+              {searchedAnnotations.length && filteredAnnotations.length ? (
+                  <div className="userQuestionButtonContainer">
+                    <div className="ModifyFilter userQuestions" onClick={_ => {
+                      this.setState({ showFiltered: !this.state.showFiltered })
+                    }}>
+                      {this.state.showFiltered ? ("Hide " + (filteredAnnotations.length) + " Annotations On Page") : ("Show " + (filteredAnnotations.length) + " Annotations On Page")}
+                    </div>
+                  </div>
+
+              ) : (null)}
+              {(this.state.showFiltered && searchedAnnotations.length) ?
+              <AnnotationList annotations={filteredAnnotations}
+                  currentUser={currentUser}
+                  url={this.state.url}
+                  requestFilterUpdate={this.requestChildAnchorFilterUpdate}
+                  notifyParentOfPinning={this.handlePinnedAnnotation} />
+              : (null)}
+
+
               {((this.state.url !== '') && (this.state.url.includes("facebook.com") || this.state.url.includes("google.com") || this.state.url.includes("twitter.com"))) && !this.state.url.includes("developer") ? (
                 <div className="whoops">
                   NOTE: Adamite does not work well on dynamic webpages such as Facebook, Google Docs, or Twitter where content is likely to change. Proceed with caution.
                 </div>
               ) : (null)}
             </div>
-
-            {this.state.showClearClickedAnnotation && (
-              <div className="userQuestionButtonContainer">
-                <div className="ModifyFilter userQuestions" onClick={_ => { this.setState({ showClearClickedAnnotation: false }); this.setState({ filteredAnnotations: this.state.annotations }) }}>
-                  Hide Selected Annotation(s)
-                </div>
-              </div>
-            )}
           
           </div>
         )

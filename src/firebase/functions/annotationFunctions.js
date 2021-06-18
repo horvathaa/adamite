@@ -172,6 +172,18 @@ export const updateAllAnnotations = () => {
     });
 }
 
+export const updateAllGroups = () => {
+  db.collection(DB_COLLECTIONS.GROUPS)
+    .where('uids', 'array-contains', 'hJyV36Xgy8gO67UJVmnQUrRgJih1')
+    .get()
+    .then(function (querySnapshot) {
+      querySnapshot.forEach(function (doc) {
+        console.log('doc', doc);
+        doc.ref.delete()
+      });
+    });
+}
+
 
 export const createAnnotation = async (newAnno) => {
   return db.collection(DB_COLLECTIONS.ANNOTATIONS).doc(newAnno.id).set(newAnno);

@@ -70,6 +70,7 @@ export async function getAnnotationsPageLoad(request, sender, sendResponse) {
     let uid = getCurrentUserId();
     let { email } = getCurrentUser();
     let groups;
+
     chrome.storage.local.get(['groups'], (result) => {
         if (result.groups !== undefined) {
             groups = result.groups.map(g => g.gid);
