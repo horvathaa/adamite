@@ -14,6 +14,8 @@ import './Anchor.module.css';
 import TagsInput from 'react-tagsinput';
 import Autosuggest from 'react-autosuggest'
 import AnnotationContext from "../AnnotationContext";
+import { BiHash } from 'react-icons/bi';
+
 
 
 // Using autocomplete example from react tags... still not working for some reason
@@ -159,7 +161,7 @@ const Anchor = ({ anchor, replyIdProp }) => {
                                     </div>
                                 </div>
                             </div>
-                        ) : (hovering && isCurrentUser && !collapsed) ? (
+                        ) : (isCurrentUser && !collapsed) ? (
                             <div className={textClass}>
                                 <div className={textClass}>
                                     {anchorContent}
@@ -175,7 +177,7 @@ const Anchor = ({ anchor, replyIdProp }) => {
                                         </div>
                                         <Tooltip title={"Edit Anchor Tags"} aria-label="edit tooltip">
                                             <div className="TopIconContainer" >
-                                                <img src={edit} alt="edit annotation" className="profile" id="edit" onClick={() => { setEditMode(true) }} />
+                                                <BiHash alt="edit annotation" className="profile" id="edit" onClick={() => { setEditMode(true) }} />
                                             </div>
                                         </Tooltip>
                                         {id && ctx.anno.childAnchor.length > 1 &&

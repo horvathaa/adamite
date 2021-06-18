@@ -10,6 +10,14 @@
   background: white;
 }
 
+
+@media (max-width:300px){
+  .TitleIcon {
+      display: none;
+  }
+
+}
+
 .TitleIcon {
   vertical-align: middle;
   border-style: none;
