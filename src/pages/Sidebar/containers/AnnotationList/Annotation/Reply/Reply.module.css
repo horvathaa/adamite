@@ -1,5 +1,16 @@
+
 .ReplyContent {
     list-style-type: none;
+    padding: .5rem .75rem;
+    background: white;
+    margin: .9rem .5rem;
+    box-shadow: 2px 2px 2px #88888869;
+    border-radius: 30px;
+    flex: 1;
+    border: 1px solid #88888824;
+    min-width: 0;
+    transition: all 0.1s ease-in;
+    position: relative;
 }
 
 .QuestionAnswerMarker {

@@ -2,15 +2,17 @@ import React, { Component, useContext, useEffect, useState } from 'react';
 import profile from '../../../../../../assets/img/SVGs/Profile.svg';
 import CustomTag from '../../../CustomTag/CustomTag';
 import Anchor from '../AnchorList/Anchor';
-import { FaStar, FaRegStar } from 'react-icons/fa';
 import '../Annotation.css';
 import './Reply.module.css';
 import ReplyEditor from './ReplyEditor';
-import edit from '../../../../../../assets/img/SVGs/edit.svg';
-import trash from '../../../../../../assets/img/SVGs/delet.svg';
 import AnnotationContext from "../AnnotationContext";
 import { formatTimestamp } from "../../../../utils"
 import cleanReplyModel from './ReplyModel';
+import { Dropdown } from 'react-bootstrap';
+import Tooltip from '@material-ui/core/Tooltip';
+import { BsTrash } from 'react-icons/bs';
+import { AiOutlineEdit} from 'react-icons/ai';
+import { GiHamburgerMenu } from 'react-icons/gi';
 
 const Reply = ({ idx, reply }) => {
 
@@ -40,9 +42,9 @@ const Reply = ({ idx, reply }) => {
         ctx.updateAnnotation({ ...ctx.anno, replies: remainingReplies });
     }
 
-    const star = adopted ?
-        <FaStar className="profile" onClick={ctx.transmitAdoptedToParent} /> :
-        <FaRegStar className="profile" onClick={ctx.transmitAdoptedToParent} />;
+    // const star = adopted ?
+    //     <AiFillStar className="profile" /> :
+    //     <AiOutlineStar className="profile" />;
 
     return (<React.Fragment>
         {editing ?
@@ -53,7 +55,7 @@ const Reply = ({ idx, reply }) => {
                 finishReply={finishReply}
             />) : (
                 <React.Fragment>
-                    {idx !== 0 && <hr className="divider" />}
+                    {idx !== 0 }
                     <li key={idx} className="ReplyContent">
                         <div className=" container Header">
                             <div className="profileContainer">
@@ -67,7 +69,69 @@ const Reply = ({ idx, reply }) => {
                                     {formatTimestamp(replyData.timestamp)}
                                 </div>
                             </div>
+
                             <div className="row">
+                                <div className="AnnotationIconContainer">
+                                    {ctx.currentUser.uid === ctx.anno.authorId ? (
+                                        <React.Fragment>
+                                            {/* <Tooltip title="Star Comment" aria-label="Star Comment" onClick={ctx.transmitAdoptedToParent}>
+                                                <div className="TopIconContainer" >
+                                                    {star}
+                                                </div>
+                                            </Tooltip> */}
+                                            <Tooltip title={"Edit annotation"} aria-label="edit tooltip" onClick={_ => setEditing(true)}>
+                                                <div className="TopIconContainer" >
+                                                    <AiOutlineEdit className="profile" alt="edit annotation" className="profile" id="edit" onClick={() => ctx.setEditing(!ctx.editing)} />
+                                                </div>
+                                            </Tooltip>
+                                            <Tooltip title={"Delete annotation"} aria-label="delete annotation tooltip" onClick={deleteReply}>
+                                                <div className="TopIconContainer" >
+                                                    <BsTrash alt="delete annotation" className="profile" id="trash" onClick={ctx.handleTrashClick} />
+                                                    {/* <img src={trash} alt="delete annotation" className="profile" id="trash" onClick={ctx.handleTrashClick} /> */}
+                                                </div>
+                                            </Tooltip>
+                                        </React.Fragment>
+                                    ) : (null)}
+                                </div>
+
+                                <div className="AnnotationsOptions">
+                                    <Dropdown>
+                                        <Dropdown.Toggle id="dropdown-basic" className="vertical-center">
+                                            <GiHamburgerMenu alt="Hamburger menu" className="profile" />
+                                        </Dropdown.Toggle>
+                                        <Dropdown.Menu style={{ width: '220px' }}>
+                                            <Dropdown.Header className="AnnotationOptionsTitle">
+                                                 Reply Options
+                                                <hr></hr>
+                                            </Dropdown.Header>
+                                            {/* <Dropdown.Item onClick={ctx.transmitAdoptedToParent} className="DropdownItemOverwrite">
+                                                <div className="DropdownIconsWrapper">
+                                                    {star}
+                                                </div>
+                                                Star Comment
+                                            </Dropdown.Item> */}
+                                            {ctx.currentUser.uid === ctx.anno.authorId ? (
+                                                <React.Fragment>
+                                                    <Dropdown.Item onClick={_ => setEditing(true)} className="DropdownItemOverwrite">
+                                                        <div className="DropdownIconsWrapper">
+                                                            <AiOutlineEdit className="DropdownIcons" alt="edit annotation" className="profile" id="edit" />
+                                                        </div>
+                                                        Edit Annotation
+                                                    </Dropdown.Item>
+                                                    <Dropdown.Item onClick={deleteReply} className="DropdownItemOverwrite">
+                                                        <div className="DropdownIconsWrapper">
+                                                            <BsTrash alt="delete annotation" className="DropdownIcons" id="trash" />
+                                                        </div>
+                                                        Delete
+                                                    </Dropdown.Item>
+                                                </React.Fragment>
+                                            ) : (null)}
+                                        </Dropdown.Menu>
+                                    </Dropdown>
+                                </div>
+                            </div>
+
+                            {/* <div className="row">
                                 <div className="AnnotationIconContainer">
                                     {star}
                                     {currentUser.uid === replyData.authorId ? (
@@ -81,7 +145,7 @@ const Reply = ({ idx, reply }) => {
                                         </React.Fragment>
                                     ) : (null)}
                                 </div>
-                            </div>
+                            </div> */}
                         </div>
                         {reply.anchor !== null ? (
                             <Anchor anchor={replyData.anchor} replyIdProp={replyData.replyId} />) : (null)}
@@ -110,307 +174,3 @@ const Reply = ({ idx, reply }) => {
 }
 
 export default Reply;
-
-
-   //authorId = ctx.authorId,
-        //tags = reply.tags,
-        // answer = ("answer" in reply) ? reply.answer : false,
-        // question = ("question" in reply) ? reply.question : false,
-        // showQuestionAnswerInterface = null,
-        // xpath = null,
-        // anchor = null,
-        // hostname = null,
-        // url = null,
-        // offsets = null,
-        // brokenAnchor = null;
-
-
-
-
-
-// class Reply extends Component {
-
-//     state = {
-//         editing: false,
-//         adopted: this.props.adopted !== undefined ? this.props.adopted : false
-//     }
-
-//     finishReply = () => {
-//         this.setState({ editing: false });
-//         this.props.finishReply();
-//     }
-
-//     deleteReply = () => {
-//         const repliesToTransmit = this.props.replies.filter(reply => reply.replyId !== this.props.replyId);
-//         chrome.runtime.sendMessage({
-//             msg: 'UPDATE_REPLIES',
-//             payload: {
-//                 id: this.props.annoId,
-//                 replies: repliesToTransmit
-//             }
-//         });
-//     }
-
-//     transmitAdoptedToParent = () => {
-//         this.handleAdopted().then(adoptedState => {
-//             this.props.answerIsAdopted(this.props.replyId, adoptedState);
-//         })
-//     }
-
-//     handleAdopted = () => {
-//         return new Promise((resolve, reject) => {
-//             const { adopted } = this.state;
-//             this.setState({ adopted: !adopted });
-//             resolve(!adopted);
-//         });
-//     }
-
-//     formatTimestamp = () => {
-//         let date = new Date(this.props.timeStamp);
-//         var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-//         var year = date.getFullYear();
-//         var month = months[date.getMonth()];
-//         var day = date.getDate();
-//         var hour = date.getHours();
-//         var min = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
-//         var time = hour + ':' + min + ' ' + day + ' ' + month + ' ' + year;
-//         return time;
-//     }
-
-//     render() {
-//         const { content, author, currentUser, authorId, idx, tags, answer, question,
-//             showQuestionAnswerInterface, xpath, anchor, hostname, url, offsets, brokenAnchor } = this.props;
-//         const adoptedStar = this.state.adopted ?
-//             <FaStar className="profile" onClick={this.transmitAdoptedToParent} /> :
-//             <FaRegStar className="profile" onClick={this.transmitAdoptedToParent} />;
-//         const reply = (<React.Fragment>
-//             {this.state.editing ?
-//                 (<ReplyEditor
-//                     edit={true}
-//                     replyId={this.props.replyId}
-//                     replies={this.props.replies}
-//                     author={author}
-//                     authorId={currentUser.uid}
-//                     replyContent={content}
-//                     id={this.props.annoId}
-//                     idx={idx}
-//                     finishReply={this.finishReply}
-//                     answer={answer}
-//                     question={question}
-//                     tags={tags}
-//                     xpath={xpath}
-//                     anchor={anchor}
-//                     hostname={hostname}
-//                     url={url}
-//                     offsets={offsets}
-//                     showQuestionAnswerInterface={showQuestionAnswerInterface}
-//                 />) : (
-//                     <React.Fragment>
-//                         {idx !== 0 && <hr className="divider" />}
-//                         <li key={idx} className="ReplyContent">
-//                             <div className=" container Header">
-//                                 <div className="profileContainer">
-//                                     <img src={profile} alt="profile" className="profile" />
-//                                 </div>
-//                                 <div className="userProfileContainer">
-//                                     <div className="author">
-//                                         {author}
-//                                     </div>
-//                                     <div className="timestamp">
-//                                         {this.formatTimestamp()}
-//                                     </div>
-//                                 </div>
-//                                 <div className="row">
-//                                     <div className="AnnotationIconContainer">
-//                                         {adoptedStar}
-//                                         {currentUser.uid === authorId ? (
-//                                             <React.Fragment>
-//                                                 <div className="TopIconContainer" >
-//                                                     <img src={edit} alt="edit reply" className="profile" id="edit" onClick={_ => this.setState({ editing: true })} />
-//                                                 </div>
-//                                                 <div className="TopIconContainer" >
-//                                                     <img src={trash} alt="delete reply" className="profile" id="delete" onClick={this.deleteReply} />
-//                                                 </div>
-//                                             </React.Fragment>
-//                                         ) : (null)}
-//                                     </div>
-//                                 </div>
-//                             </div>
-//                             {xpath !== null && xpath !== undefined ? (
-//                                 <Anchor anchor={anchor} replyId={replyId} />) : (null)}
-//                             <div className="annotationContent">
-//                                 <div className="contentBody">
-//                                     {content}
-//                                 </div>
-//                             </div>
-//                             {tags.length ? (
-//                                 <div className="TagRow">
-//                                     <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
-//                                         {tags.map((tagContent, idx) => {
-//                                             return (
-//                                                 <CustomTag idx={idx} content={tagContent} />
-//                                             )
-//                                         }
-//                                         )}
-//                                     </ul>
-//                                 </div>
-//                             ) : (null)}
-//                         </li>
-//                     </React.Fragment>)
-//             }
-//         </React.Fragment>);
-//         return (
-//             reply
-//         );
-//     }
-// }
-
-// export default Reply;
-
-
-// class Reply extends Component {
-
-//     state = {
-//         editing: false,
-//         adopted: this.props.adopted !== undefined ? this.props.adopted : false
-//     }
-
-//     finishReply = () => {
-//         this.setState({ editing: false });
-//         this.props.finishReply();
-//     }
-
-//     deleteReply = () => {
-//         const repliesToTransmit = this.props.replies.filter(reply => reply.replyId !== this.props.replyId);
-//         chrome.runtime.sendMessage({
-//             msg: 'UPDATE_REPLIES',
-//             payload: {
-//                 id: this.props.annoId,
-//                 replies: repliesToTransmit
-//             }
-//         });
-//     }
-
-//     transmitAdoptedToParent = () => {
-//         this.handleAdopted().then(adoptedState => {
-//             this.props.answerIsAdopted(this.props.replyId, adoptedState);
-//         })
-//     }
-
-//     handleAdopted = () => {
-//         return new Promise((resolve, reject) => {
-//             const { adopted } = this.state;
-//             this.setState({ adopted: !adopted });
-//             resolve(!adopted);
-//         });
-//     }
-
-//     formatTimestamp = () => {
-//         let date = new Date(this.props.timeStamp);
-//         var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-//         var year = date.getFullYear();
-//         var month = months[date.getMonth()];
-//         var day = date.getDate();
-//         var hour = date.getHours();
-//         var min = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
-//         var time = hour + ':' + min + ' ' + day + ' ' + month + ' ' + year;
-//         return time;
-//     }
-
-//     render() {
-//         const { content, author, currentUser, authorId, idx, tags, answer, question,
-//             showQuestionAnswerInterface, xpath, anchor, hostname, url, offsets, brokenAnchor } = this.props;
-//         const adoptedStar = this.state.adopted ?
-//             <FaStar className="profile" onClick={this.transmitAdoptedToParent} /> :
-//             <FaRegStar className="profile" onClick={this.transmitAdoptedToParent} />;
-//         const reply = (<React.Fragment>
-//             {this.state.editing ?
-//                 (<ReplyEditor
-//                     edit={true}
-//                     replyId={this.props.replyId}
-//                     replies={this.props.replies}
-//                     author={author}
-//                     authorId={currentUser.uid}
-//                     replyContent={content}
-//                     id={this.props.annoId}
-//                     idx={idx}
-//                     finishReply={this.finishReply}
-//                     answer={answer}
-//                     question={question}
-//                     tags={tags}
-//                     xpath={xpath}
-//                     anchor={anchor}
-//                     hostname={hostname}
-//                     url={url}
-//                     offsets={offsets}
-//                     showQuestionAnswerInterface={showQuestionAnswerInterface}
-//                 />) : (
-//                     <React.Fragment>
-//                         {idx !== 0 && <hr className="divider" />}
-//                         <li key={idx} className="ReplyContent">
-//                             <div className=" container Header">
-//                                 <div className="profileContainer">
-//                                     <img src={profile} alt="profile" className="profile" />
-//                                 </div>
-//                                 <div className="userProfileContainer">
-//                                     <div className="author">
-//                                         {author}
-//                                     </div>
-//                                     <div className="timestamp">
-//                                         {this.formatTimestamp()}
-//                                     </div>
-//                                 </div>
-//                                 <div className="row">
-//                                     <div className="AnnotationIconContainer">
-//                                         {adoptedStar}
-//                                         {currentUser.uid === authorId ? (
-//                                             <React.Fragment>
-//                                                 <div className="TopIconContainer" >
-//                                                     <img src={edit} alt="edit reply" className="profile" id="edit" onClick={_ => this.setState({ editing: true })} />
-//                                                 </div>
-//                                                 <div className="TopIconContainer" >
-//                                                     <img src={trash} alt="delete reply" className="profile" id="delete" onClick={this.deleteReply} />
-//                                                 </div>
-//                                             </React.Fragment>
-//                                         ) : (null)}
-//                                     </div>
-//                                 </div>
-//                             </div>
-//                             {xpath !== null && xpath !== undefined ? (
-//                                 <Anchor
-//                                     id={this.props.annoId}
-//                                     replyId={this.props.replyId}
-//                                     currentUrl={this.props.currentUrl}
-//                                     url={url}
-//                                     anchorContent={anchor}
-//                                     pageAnchor={xpath === null}
-//                                     brokenAnchor={brokenAnchor}
-//                                 />) : (null)}
-//                             <div className="annotationContent">
-//                                 <div className="contentBody">
-//                                     {content}
-//                                 </div>
-//                             </div>
-//                             {tags.length ? (
-//                                 <div className="TagRow">
-//                                     <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
-//                                         {tags.map((tagContent, idx) => {
-//                                             return (
-//                                                 <CustomTag idx={idx} content={tagContent} />
-//                                             )
-//                                         }
-//                                         )}
-//                                     </ul>
-//                                 </div>
-//                             ) : (null)}
-//                         </li>
-//                     </React.Fragment>)
-//             }
-//         </React.Fragment>);
-//         return (
-//             reply
-//         );
-//     }
-// }
-
-// export default Reply;

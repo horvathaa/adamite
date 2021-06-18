@@ -21,13 +21,13 @@ class CustomTag extends Component {
     render() {
         const { idx, content, editing } = this.props;
         return (
-            <div className="TagContainer">
-                <li key={idx} className="Tag" value={content} onClick={_ => this.handleTagClick()}>
-                    {content} {editing && (
-                        <button onClick={_ => this.handleDelete(content)}>x</button>
-                    )}
-                </li>
-            </div>
+                <div className="TagContainer">
+                    <li key={idx} className="Tag" value={content} onClick={_ => this.handleTagClick()}>
+                        #{content} {editing && (
+                            <button onClick={_ => this.handleDelete(content)}>x</button>
+                        )}
+                    </li>
+                </div>
         )
     }
 }

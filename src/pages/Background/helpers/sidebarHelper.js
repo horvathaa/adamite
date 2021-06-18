@@ -140,7 +140,7 @@ const updateShouldShrinkBodyStatus = (toStatus) => {
 
 export async function requestSidebarStatus(request, sender, sendResponse) {
   chrome.tabs.query(({ active: true, currentWindow: true }), tab => {
-    chrome.storage.sync.get(['sidebarStatus'], sidebarStatus => {
+    chrome.storage.local.get(['sidebarStatus'], sidebarStatus => {
       let status;
       sidebarStatus = sidebarStatus.sidebarStatus;
       if (sidebarStatus !== undefined && sidebarStatus.length && tab.length && tab !== undefined) {
@@ -158,12 +158,16 @@ export async function requestSidebarStatus(request, sender, sendResponse) {
 
 export async function requestToggleSidebar(request, sender, sendResponse) {
   toggleSidebar(request.toStatus);
-  chrome.storage.sync.get(['sidebarStatus'], sidebarStatus => {
+  chrome.storage.local.get(['sidebarStatus'], sidebarStatus => {
     sidebarStatus = sidebarStatus.sidebarStatus;
     if (sidebarStatus !== undefined && sidebarStatus.length && request.tabId !== undefined) {
       const i = sidebarStatus.findIndex(t => t.id === request.tabId);
       if (i !== -1) sidebarStatus[i].open = request.toStatus;
-      chrome.storage.sync.set({ sidebarStatus });
+      chrome.storage.local.set({ sidebarStatus }, function () {
+        if (chrome.runtime.lastError) {
+          chrome.storage.local.clear();
+        }
+      })
     }
   })
 }

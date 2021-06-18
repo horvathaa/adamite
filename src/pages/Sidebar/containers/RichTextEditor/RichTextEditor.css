@@ -1,9 +1,16 @@
 .RichEditor-root {
-    background: #dad9d926;
-    border: 1px solid #9f9e9e;
-    font-family: sans-serif;
+    box-shadow: 2px 2px 1px 0px #ebebebfa;
+    border-bottom-left-radius: 8px;
+    border: 1px solid #e5e5e5;
+    border-bottom-right-radius: 8px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
     font-size: 14px;
     padding: 10px 15px 15px 15px;
+  }
+
+  .RichEditor-root:hover {
+    box-shadow: 0 1px 6px 0 rgb(32 33 36 / 25%);
   }
 
   .RichEditor-root--focused {

@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto:400,100,100italic,300,300italic,400italic,500,500italic,700,700italic,900italic,900');
+
 .WholeSidebar {
   display: flex;
   background-color: white;
@@ -6,10 +8,19 @@
 }
 
 .SidebarContainer {
-  background-color: white;
+  /*  ground: linear-gradient(30deg, rgba(34,195,105,0.34075637090773814) 0%, rgba(219,253,45,0.4275911048012955) 100%);  */
   height: 100vh;
   background-repeat: repeat;
-  /* display: inline-flex */
+
+}
+
+.SideBarCardContent{
+  padding-bottom: 5em;
+}
+
+.ControlPanel{
+  padding: 0px 20px 5px 11px;
+  margin-bottom: 2%;
 }
 
 #QuestionList {
@@ -40,7 +51,7 @@
 }
 
 .FilterSummaryContainer{
-  padding: 5px;
+  padding: 10px;
   background: white;
   box-shadow: 2px 2px 2px #88888887;
   border-bottom-left-radius: 8px;
@@ -88,6 +99,10 @@
 .TopRow {
   display: flex;
   background-color: white;
+  padding-top: 5px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  box-shadow: 3px 5px 2px #88888866;
 }
 
 .TopRow.filterOpen {
@@ -102,11 +117,6 @@
 
 .AnnotationListPadding {
   padding: 8px 8px 8px 8px;
-}
-
-.userQuestions {
-  /* text-align: center; */
-  font-family: Arial, Helvetica, sans-serif;
 }
 
 .whoops {
@@ -141,11 +151,15 @@
   font-size: 0.875rem;
   font-weight: bold;
   line-height: 1.5;
-  border-radius: 0.2rem;
+  border-radius: 8px;
   border: none;
   cursor: pointer;
   display: inline-block;
   box-shadow: 2px 2px 2px #8888;
+}
+
+.ModifyFilter.userQuestions:hover{
+  box-shadow: 0 1px 6px 0 rgb(32 33 36 / 55%);
 }
 
 .ModifyFilter.userQuestions:before, .ModifyFilter.userQuestions:after {
@@ -158,6 +172,21 @@
   width: 50%;
   opacity: 75%;
 }
+
+@media (max-width:300px){
+  .ModifyFilter.userQuestions:before, .ModifyFilter.userQuestions:after {
+      max-width: 0px;
+  }
+
+}
+@media (min-width:1000px){
+.socialmedia {
+  margin-right:100px;
+}
+}
+
+
+
 
 .ModifyFilter.userQuestions:before {
   right: 0.8em;
@@ -194,12 +223,15 @@
 .FilterSummary {
   padding: 5px;
   background: white;
-  box-shadow: 2px 2px 2px #88888887;
+  box-shadow: 3px 5px 2px #88888866;
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
-
   flex: 1;
   min-width: 0;
   transition: all 0.1s ease-in;
   position: relative;
+}
+
+input, button, select, optgroup, textarea{
+  font-family: 'Roboto', Arial, Helvetica, sans-serif;
 }

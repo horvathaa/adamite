@@ -8,8 +8,7 @@ import FilterSummary from './containers/Filter/FilterSummary';
 import SearchBar from './containers/SearchBar/SearchBar';
 import { v4 as uuidv4 } from 'uuid';
 import Annotation from './containers/AnnotationList/Annotation/Annotation';
-
-
+import { BiGroup } from 'react-icons/bi';
 import {
   getPathFromUrl,
   containsObject,
@@ -53,6 +52,7 @@ class Sidebar extends React.Component {
     showPinned: false,
     pinnedAnnos: [],
     annotatingPage: false,
+    newAnnotationId: -1,
     showClearClickedAnnotation: false,
     askAboutRelatedAnnos: false,
     relatedQuestions: [],
@@ -149,6 +149,7 @@ class Sidebar extends React.Component {
           );
           this.setUpPinnedListener();
         }
+        else if (chrome.runtime.lastError) { console.error(chrome.runtime.lastError); return }
         chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
           let tab = tabs[0];
           this.setState({ url: getPathFromUrl(tab.url), tabId: tab.id });
@@ -171,6 +172,7 @@ class Sidebar extends React.Component {
       from: 'content',
       msg: 'GET_PINNED_ANNOTATIONS'
     }, response => {
+      if (chrome.runtime.lastError) { console.error(chrome.runtime.lastError); return }
       this.setState({ pinnedAnnos: response.annotations });
     })
 
@@ -180,6 +182,7 @@ class Sidebar extends React.Component {
         request.from === 'background' &&
         request.msg === 'USER_AUTH_STATUS_CHANGED'
       ) {
+        if (chrome.runtime.lastError) { console.error(chrome.runtime.lastError); return }
         this.setState({ currentUser: request.payload.currentUser });
         if (request.payload.currentUser) {
           this.setUpAnnotationsListener(
@@ -196,30 +199,22 @@ class Sidebar extends React.Component {
         request.msg === 'CONTENT_SELECTED'
       ) {
         const { selection, offsets, xpath, type, annoContent } = request.payload;
+        const newAnnoId = uuidv4();
         this.setState({
           newSelection: selection,
           offsets: offsets,
           xpath: xpath,
           newAnnotationType: type,
-          newAnnotationContent: annoContent
+          newAnnotationContent: annoContent,
+          newAnnotationId: newAnnoId
         });
+        this.scrollToNewAnnotationEditor();
       }
-      //  else if (
-      //   request.from === 'background' &&
-      //   request.msg === 'CONTENT_NOT_SELECTED'
-      // ) {
-      //   // should check whether annotation has user-added content or not - will need to request
-      //   // child annotation's state
-      //   this.resetNewSelection();
-      // } 
       else if (request.from === 'background' && request.msg === 'PINNED_CHANGED') {
         this.setState({
           pinnedAnnos: request.payload
         });
       }
-      // else if (request.from === 'content' && request.msg === 'ANCHOR_BROKEN') {
-      //   console.log('this worked', request.payload);
-      // }
       else if (request.from === 'background' && request.msg === 'SCROLL_INTO_VIEW') {
         this.scrollToNewAnnotation(request.payload.id);
       }
@@ -322,7 +317,8 @@ class Sidebar extends React.Component {
         request.from === 'background' &&
         request.msg === 'CONTENT_UPDATED'
       ) {
-        if (request === undefined) {
+        if (request === undefined || chrome.runtime.lastError) {
+          console.error(chrome.runtime.lastError)
           return;
         }
         let annotations = request.payload;
@@ -440,8 +436,6 @@ class Sidebar extends React.Component {
           })
         });
       }
-
-      // return true;
     });
   }
   containsReplyWithAnchor(list) {
@@ -450,7 +444,7 @@ class Sidebar extends React.Component {
   }
 
   handleShowAnnotatePage = () => {
-    this.setState({ annotatingPage: true });
+    this.setState({ annotatingPage: true, newAnnotationId: uuidv4() });
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
       this.setState({ pageName: tabs[0].title });
     });
@@ -474,7 +468,8 @@ class Sidebar extends React.Component {
   };
 
 
-  updateSidebarGroup = (options) => {
+  updateSidebarGroup = (options, e) => {
+    console.log("hell", options)
     let groupKV = [];
     let groupNames = [];
     const { uid } = this.state.currentUser;
@@ -523,7 +518,6 @@ class Sidebar extends React.Component {
       }
 
       groupNames.push(group.label);
-      // this.setState({ groupAnnotations: groupKV, activeGroups: groupNames, filteredGroupAnnotations: [] });
     });
   }
 
@@ -850,8 +844,34 @@ class Sidebar extends React.Component {
 
   }
 
+  filterTags = () => {
+    let tagSet = {};
+    let renderedAnnotations = [];
+    if (this.state.searchedAnnotations.length) {
+      renderedAnnotations = this.state.searchedAnnotations;
+    }
+    else if (this.state.activeGroups.length) {
+      renderedAnnotations = renderedAnnotations.concat(this.state.groupAnnotations);
+    }
+    else {
+      renderedAnnotations = this.state.filteredAnnotations;
+    }
+
+    renderedAnnotations.forEach(annotation => {
+      annotation.tags.forEach(tag => {
+        if (tagSet.hasOwnProperty(tag)) {
+          tagSet[tag] += 1;
+        }
+        else {
+          tagSet[tag] = 1;
+        }
+      });
+    })
+    return tagSet;
+  }
+
   scrollToNewAnnotationEditor = () => {
-    let editorDiv = document.getElementById("NewAnnoEditor");
+    let editorDiv = document.getElementById(this.state.newAnnotationId);
     if (editorDiv !== null) {
       editorDiv.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
     }
@@ -901,19 +921,25 @@ class Sidebar extends React.Component {
     else {
       tempSearchCount = renderedAnnotations.length;
     }
-
-    const newAnnoId = uuidv4();
+    // const newAnnoId = uuidv4();
     return (
+
       <div className="SidebarContainer" >
-        <Title currentUser={currentUser}
+
+        <Title 
+          currentUser={currentUser}
+          groups={groups}
           handleShowAnnotatePage={this.handleShowAnnotatePage}
           closeSidebar={this.closeSidebar}
           openOptions={this.openOptions}
           openDocumentation={this.openDocumentation}
+          updateSidebarGroup={this.updateSidebarGroup}
+          // addNewGroup={this.addNewGroup}
         />
         {currentUser === null && <Authentication />}
         {currentUser !== null && (
-          <div>
+          <div className="SideBarCardContent">
+          <div className="ControlPanel">
             <div className={classNames({ TopRow: true, filterOpen: this.state.showFilter })}>
               <SearchBar
                 searchBarInputText={searchBarInputText}
@@ -926,18 +952,19 @@ class Sidebar extends React.Component {
             </div>
             <div>
               <div className="FilterSummaryContainer">
-                <GroupMultiSelect
+                {/* <GroupMultiSelect
                   uid={currentUser.uid}
                   groups={groups}
                   handleNotifySidebar={this.updateSidebarGroup}
                   addNewGroup={this.addNewGroup}
-                />
+                /> */}
                 {!this.state.showFilter && (renderedAnnotations.length || this.state.annotations.length) ?
                   (<FilterSummary
                     applyFilter={this.applyFilter}
                     groups={groups}
                     filter={this.state.filterSelection}
                     openFilter={this.openFilter}
+                    filterTags={this.filterTags}
                     uid={currentUser.uid}
                     tempSearchCount={tempSearchCount}
                     showingSelectedAnno={this.state.showClearClickedAnnotation}
@@ -957,7 +984,7 @@ class Sidebar extends React.Component {
                     idx={-1}
                     isNew={true}
                     annotation={{
-                      id: newAnnoId,
+                      id: this.state.newAnnotationId,
                       type: this.state.newAnnotationType,
                       content: this.state.newAnnotationContent ?? '',
                       tags: [],
@@ -967,7 +994,7 @@ class Sidebar extends React.Component {
                         {
                           id: uuidv4(),
                           anchor: this.state.pageName,
-                          parentId: newAnnoId,
+                          parentId: this.state.newAnnotationId,
                           xpath: null,
                           offsets: null,
                           url: this.state.url,
@@ -977,7 +1004,7 @@ class Sidebar extends React.Component {
                         {
                           id: uuidv4(),
                           anchor: this.state.newSelection,
-                          parentId: newAnnoId,
+                          parentId: this.state.newAnnotationId,
                           xpath: this.state.xpath,
                           offsets: this.state.offsets,
                           url: this.state.url,
@@ -992,6 +1019,7 @@ class Sidebar extends React.Component {
                     resetNewSelection={this.resetNewSelection}
                   />
                 )}
+            </div>
             </div>
             <div className="userQuestions">
               {pinnedAnnosCopy.length ? (
@@ -1053,6 +1081,7 @@ class Sidebar extends React.Component {
                 </div>
               </div>
             )}
+          
           </div>
         )
         }
@@ -1062,4 +1091,3 @@ class Sidebar extends React.Component {
 }
 
 export default Sidebar;
-

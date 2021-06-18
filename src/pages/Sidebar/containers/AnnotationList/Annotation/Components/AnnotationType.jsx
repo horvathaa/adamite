@@ -24,6 +24,7 @@ const AnnotationType = () => {
             <SplitButton
                 key="openCloseQuestion"
                 id="openCloseQuestion"
+                className="PostButton"
                 variant="secondary"
                 size="sm"
                 title={'howClosed' in ctx.anno ? ctx.anno.howClosed : "Unanswered Question"}
@@ -32,9 +33,10 @@ const AnnotationType = () => {
                     if (ctx.anno.howClosed === undefined || ctx.anno.howClosed === "Unanswered Question") ctx.setReplying(true)
                 }}
             >
-                <BootstrapDropdown.Item className="dropdown-link" onSelect={eventKey => { console.log('click'); ctx.closeOut(eventKey) }} eventKey={"Unanswered Question"}>{"Unanswered Question"}</BootstrapDropdown.Item>
-                <BootstrapDropdown.Item className="dropdown-link" onSelect={eventKey => ctx.closeOut(eventKey)} eventKey={"No Longer Relevant"}>{"No Longer Relevant"}</BootstrapDropdown.Item>
-                <BootstrapDropdown.Item className="dropdown-link" onSelect={eventKey => ctx.closeOut(eventKey)} eventKey={"Answered"}>{"Answered"}</BootstrapDropdown.Item>
+                <BootstrapDropdown.Header className="AnnotationOptionsTitle">Question Status<hr/></BootstrapDropdown.Header>
+                <BootstrapDropdown.Item className="DropdownItemOverwrite" onSelect={eventKey => { console.log('click'); ctx.closeOut(eventKey) }} eventKey={"Unanswered Question"}>{"Unanswered Question"}</BootstrapDropdown.Item>
+                <BootstrapDropdown.Item className="DropdownItemOverwrite" onSelect={eventKey => ctx.closeOut(eventKey)} eventKey={"No Longer Relevant"}>{"No Longer Relevant"}</BootstrapDropdown.Item>
+                <BootstrapDropdown.Item className="DropdownItemOverwrite" onSelect={eventKey => ctx.closeOut(eventKey)} eventKey={"Answered"}>{"Answered"}</BootstrapDropdown.Item>
             </SplitButton>
         </div>
 

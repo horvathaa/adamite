@@ -1,7 +1,9 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import "./RichTextEditor.css"
-import { Editor, EditorState, RichUtils, convertToRaw, ContentState } from 'draft-js';
+import 'draft-js/dist/Draft.css'
+import { Editor, EditorState, RichUtils, convertToRaw, getDefaultKeyBinding, ContentState, convertFromRaw } from 'draft-js';
+import { stateToMarkdown } from 'draft-js-export-markdown';
+import { stateFromMarkdown } from 'draft-js-import-markdown';
 import { GrBlockQuote } from "react-icons/gr";
 import { MdFormatBold, MdFormatItalic, MdFormatUnderlined, MdCode, MdFormatListBulleted, MdFormatListNumbered } from 'react-icons/md';
 
@@ -9,25 +11,41 @@ import { MdFormatBold, MdFormatItalic, MdFormatUnderlined, MdCode, MdFormatListB
 export default class RichEditor extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {
-            editorState: this.props.annotationContent !== undefined ? EditorState.createWithContent(ContentState.createFromText(this.props.annotationContent)) : EditorState.createEmpty(),
-        };
 
+        this.state = {
+            editorState: this.getContentFromProp(this.props.annotationContent)
+        };
+        
         this.focus = () => this.refs.editor.focus();
         this.onChange = (editorState) => {
+
+            var thissssss = stateToMarkdown(editorState.getCurrentContent());
+            
             const blocks = convertToRaw(editorState.getCurrentContent()).blocks;
             const value = blocks.map(block => (!block.text.trim() && '\n') || block.text).join('\n');
-            this.props.annotationChangeHandler(value);
-            this.setState({ editorState: editorState });
-
-        }  //this.setState({ editorState, annotationContent: editorState });
-        this.handleKeyCommand = (command) => this._handleKeyCommand(command);
-        this.onTab = (e) => this._onTab(e);
+            console.log(blocks, value, convertToRaw(editorState.getCurrentContent()))
+            // const blocks = convertToRaw(editorState.getCurrentContent()).blocks;
+            // const value = blocks.map(block => (!block.text.trim() && '\n') || block.text).join('\n');
+            this.props.annotationChangeHandler(stateToMarkdown(editorState.getCurrentContent()), convertToRaw(editorState.getCurrentContent()));
+            this.setState({ editorState });
+        }
+        this.handleKeyCommand = this._handleKeyCommand.bind(this);
+        this.mapKeyToEditorCommand = this._mapKeyToEditorCommand.bind(this);
         this.toggleBlockType = (type) => this._toggleBlockType(type);
         this.toggleInlineStyle = (style) => {
             this._toggleInlineStyle(style);
         }
+    }
 
+    getContentFromProp = (content) => {
+        if (content !== undefined) {
+            return typeof content === 'object' && content !== null ?
+                EditorState.createWithContent(convertFromRaw(content)) :
+                EditorState.createWithContent(stateFromMarkdown(content))
+        }
+        else {
+            return EditorState.createEmpty()
+        }
     }
 
     componentDidMount = () => {
@@ -44,8 +62,24 @@ export default class RichEditor extends React.Component {
         return false;
     }
 
+    _mapKeyToEditorCommand(e) {
+        if (e.keyCode === 9 /* TAB */) {
+            const newEditorState = RichUtils.onTab(
+                e,
+                this.state.editorState,
+                4, /* maxDepth */
+            );
+            if (newEditorState !== this.state.editorState) {
+                this.onChange(newEditorState);
+            }
+            return;
+        }
+        return getDefaultKeyBinding(e);
+    }
+
     _onTab(e) {
         const maxDepth = 4;
+        this.setState({ editorState: stateWithSpacesInserted });
         this.onChange(RichUtils.onTab(e, this.state.editorState, maxDepth));
     }
 
@@ -102,7 +136,8 @@ export default class RichEditor extends React.Component {
                         editorState={editorState}
                         handleKeyCommand={this.handleKeyCommand}
                         onChange={this.onChange}
-                        onTab={this.onTab}
+                        keyBindingFn={this.mapKeyToEditorCommand}
+                        // onTab={this.onTab}
                         placeholder=""
                         ref="editor"
                         spellCheck={true}
@@ -192,7 +227,6 @@ const BlockStyleControls = (props) => {
 var INLINE_STYLES = [
     { label: 'Bold', style: 'BOLD', icon: <MdFormatBold className="RichEditor-styleSvg" />, styleClass: "RichEditor-styleSvg" },
     { label: 'Italic', style: 'ITALIC', icon: <MdFormatItalic className="RichEditor-styleSvg" /> },
-    { label: 'Underline', style: 'UNDERLINE', icon: <MdFormatUnderlined className="RichEditor-styleSvg" /> },
     { label: 'Monospace', style: 'CODE', icon: <MdCode className="RichEditor-styleSvg" /> },
 ];
 

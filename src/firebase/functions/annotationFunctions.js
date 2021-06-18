@@ -161,11 +161,12 @@ export const updateAnnotationById = async (id, newAnnotationFields = {}) => {
 
 export const updateAllAnnotations = () => {
   db.collection(DB_COLLECTIONS.ANNOTATIONS)
+    // .where('createdTimestamp', '<', 1621877953467)
     .get()
     .then(function (querySnapshot) {
       querySnapshot.forEach(function (doc) {
         doc.ref.update({
-          // add update here
+          // deleted: true
         });
       });
     });
@@ -175,61 +176,4 @@ export const updateAllAnnotations = () => {
 export const createAnnotation = async (newAnno) => {
   return db.collection(DB_COLLECTIONS.ANNOTATIONS).doc(newAnno.id).set(newAnno);
 };
-
-
-
-// export const createAnnotation = async ({
-//   authorId,
-//   taskId,
-//   SharedId,
-//   AnnotationContent,
-//   AnnotationAnchorContent,
-//   AnnotationType,
-//   url,
-//   hostname,
-//   AnnotationTags,
-//   offsets,
-//   xpath,
-//   childAnchor,
-//   pinned,
-//   isPrivate,
-//   author,
-//   groups,
-//   readCount,
-//   events
-// }) => {
-//   authorId = authorId ? authorId : getCurrentUserId();
-//   if (!authorId) {
-//     return;
-//   }
-//   // SharedId = SharedId ? SharedId : undefined;
-
-//   let newAnnotation = {
-//     authorId,
-//     taskId,
-//     SharedId,
-//     trashed: false,
-//     createdTimestamp: new Date().getTime(),
-//     content: AnnotationContent,
-//     //anchorContent: "",
-//     anchorPath: null,
-//     type: AnnotationType,
-//     url,
-//     hostname,
-//     tags: AnnotationTags,
-//     offsets,
-//     xpath,
-//     childAnchor,
-//     pinned: AnnotationType === 'question' || AnnotationType === 'to-do',
-//     replies: [],
-//     private: isPrivate,
-//     adopted: false,
-//     author,
-//     groups,
-//     readCount,
-//     deleted: false,
-//     events
-//   };
-//   return db.collection(DB_COLLECTIONS.ANNOTATIONS).add(newAnnotation);
-// };
 

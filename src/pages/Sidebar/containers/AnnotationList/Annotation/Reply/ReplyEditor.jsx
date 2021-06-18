@@ -10,6 +10,7 @@ import { SplitButton, Button, Dropdown as BootstrapDropdown } from 'react-bootst
 import AnnotationContext from "../AnnotationContext";
 import { v4 as uuidv4 } from 'uuid';
 import cleanReplyModel from './ReplyModel';
+import Tooltip from '@material-ui/core/Tooltip';
 import { formatTimestamp } from '../../../../utils';
 
 
@@ -126,6 +127,7 @@ const ReplyEditor = ({ reply = null, finishReply = () => { } }) => {
                 onClick={_ => submitReply(false)} eventKey="2">Reply</BootstrapDropdown.Item>
         </SplitButton>) : (
         <Button
+            className= "TagButton"
             key="replySubmit"
             id="dropdown-split-variants-secondary"
             variant="secondary"
@@ -155,12 +157,14 @@ const ReplyEditor = ({ reply = null, finishReply = () => { } }) => {
                 </div>
                 <div className="ReplyButtonRow">
                     <div className={classNames({ buttonCol: true })}>
-                        <div className="buttonRow">
-                            <img src={addAnchor} alt='add new anchor' onClick={requestNewAnchor} />
+                        <div className="buttonRow btn btn-cancel TagButton">
+                        <Tooltip title={"Add new anchor to annotation"} aria-label="add new anchor tooltip">
+                                <img src={addAnchor} alt='add new anchor' onClick={requestNewAnchor} className="ReplyAnchor"/>
+                        </Tooltip>          
                         </div>
                         &nbsp; &nbsp;
                         <div className="cancelButtonContainer">
-                            <button onClick={cancelReply} className="Cancel-Button">Cancel</button> &nbsp; &nbsp;
+                            <button onClick={cancelReply} className="btn Cancel-Button TagButton">Cancel</button> &nbsp; &nbsp;
                         </div>
                         {submission}
                     </div>
