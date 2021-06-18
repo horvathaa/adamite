@@ -11,10 +11,14 @@ import AnchorList from './AnchorList/AnchorList';
 import ReplyEditor from './Reply/ReplyEditor';
 import RepliesList from './Reply/RepliesList';
 import { FaHighlighter } from 'react-icons/fa';
+import Tooltip from '@material-ui/core/Tooltip';
 import Issue from '../../../../../assets/img/SVGs/Issue.svg';
 import Question from '../../../../../assets/img/SVGs/Question.svg';
 import Default from '../../../../../assets/img/SVGs/Default.svg';
 import Todo from '../../../../../assets/img/SVGs/Todo.svg';
+
+import { BiComment, BiTask } from 'react-icons/bi';
+import { AiOutlineQuestionCircle, AiOutlineExclamationCircle } from 'react-icons/ai';
 
 /*
 Initiated in Annotation List
@@ -25,7 +29,7 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, res
 
   const [editing, setEditing] = useState(isNew);
   const [replying, setReplying] = useState(false);
-  const [collapsed, setCollapsed] = useState(!isNew);
+  const [collapsed, setCollapsed] = useState(isNew);
   const [showReplies, setShowReplies] = useState(false);
   const [anno, setAnno] = useState(annotation);
 
@@ -46,19 +50,55 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, res
     }
   }, [annotation, anno, isNew]);
 
+  const renderBadgeInner = (type, icon) => {
 
-  const AnnotationBadgeContainer = () => {
-    let badge = anno.type === 'issue' ? Issue : anno.type === 'todo' ? Todo : anno.type === 'question' ? Question : Default;
-    return (<div className="annotationTypeBadgeContainer" onClick={() => setCollapsed(!collapsed)}>
-      <div className="annotationTypeBadge row2">
-        <div className="annotationTypeBadge col2">
-          <div className="badgeContainer">
-            {anno.type !== 'highlight' ? <img src={badge} alt={`${anno.type} type badge`} /> : <FaHighlighter className="badgeIconSvg" />}
-          </div>
+    return (
+      <div className="annotationTypeBadgeContainer" onClick={() => setCollapsed(!collapsed)}>
+        <div className="annotationTypeBadge row2">
+          <Tooltip title={type} aria-label={type}>
+            <div className="annotationTypeBadge col2">
+              <div className="badgeContainer">
+                {icon}
+              </div>
+            </div>
+          </Tooltip>
         </div>
       </div>
-    </div>);
+    );
+
   }
+
+  const AnnotationBadgeContainer = () => {
+    console.log("THIS IS ANNOT TYPE", anno.type)
+    if (anno.type === 'issue') {
+      return renderBadgeInner(
+        "issue",
+        <AiOutlineExclamationCircle alt={`${anno.type} type badge`} className="badgeIconSvg" />);
+    }
+    else if (anno.type === 'todo') {
+      return renderBadgeInner(
+        "todo",
+        <BiTask alt={`${anno.type} type badge`} className="badgeIconSvg" />);
+    }
+    else if (anno.type === 'question') {
+      return renderBadgeInner(
+        "question",
+        <AiOutlineQuestionCircle alt={`${anno.type} type badge`} className="badgeIconSvg" />);
+    }
+    else if (anno.type === 'default') {
+      return renderBadgeInner(
+        "default",
+        <BiComment alt={`${anno.type} type badge`} className="badgeIconSvg" />);
+    }
+    else {
+      return renderBadgeInner(
+        "highlight",
+        <FaHighlighter alt={`${anno.type} type badge`} className="badgeIconSvg" />);
+    }
+  }
+
+
+
 
 
   return (<div>

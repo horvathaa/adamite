@@ -76,13 +76,16 @@ const CardWrapper = ({ isNew = false }) => {
                                     value={annoTypeDropDownValue} />
                             </div>
                             &nbsp; &nbsp;
+                            <div className="Dropdown-Col col ml-auto mr-auto" style={{display: "flex", backgroundColor: 'transparent', margin: '.25rem'}}>
                             <Tooltip title={"Cancel"} aria-label="Cancel Submission">
-                                <button className="Cancel-Button" placeholder="Cancel" onClick={
-                                    isNew ? () => ctx.cancelButtonHandler() :
-                                        () => ctx.updateAnnotation(ctx.anno)
-                                }>
-                                    <GiCancel />
-                                </button>
+                                
+                                    <button className="btn Cancel-Button TagButton" placeholder="Cancel" onClick={
+                                        isNew ? () => ctx.cancelButtonHandler() :
+                                            () => ctx.updateAnnotation(ctx.anno)
+                                    }>
+                                        <GiCancel />
+                                    </button>
+                                
                             </Tooltip>
                             &nbsp; &nbsp;
                             <SplitButton
@@ -96,12 +99,14 @@ const CardWrapper = ({ isNew = false }) => {
                                     () => ctx.updateAnnotationFields({ type: newAnno.type, content: newAnno.content, contentBlock: newAnno.contentBlock, isPrivate: newAnno.isPrivate, tags: newAnno.tags, groups })
                                 }
                             >
-                                <BootstrapDropdown.Item onClick={_ => setNewAnno({ ...newAnno, isPrivate: true })} eventKey="1">Private</BootstrapDropdown.Item>
-                                <BootstrapDropdown.Item onClick={_ => setNewAnno({ ...newAnno, isPrivate: false })} eventKey="2">Public</BootstrapDropdown.Item>
+                                <BootstrapDropdown.Header className="AnnotationOptionsTitle">Groups<hr/></BootstrapDropdown.Header>
+                                <BootstrapDropdown.Item className="DropdownItemOverwrite" onClick={_ => setNewAnno({ ...newAnno, isPrivate: true })} eventKey="1">Private</BootstrapDropdown.Item>
+                                <BootstrapDropdown.Item className="DropdownItemOverwrite" onClick={_ => setNewAnno({ ...newAnno, isPrivate: false })} eventKey="2">Public</BootstrapDropdown.Item>
                                 {userGroups.map((group, i) => {
-                                    return <BootstrapDropdown.Item onClick={_ => { setGroups([group.gid]); setNewAnno({ ...newAnno, groups: [group.gid] }) }} eventKey={i + 2}>{group.name}</BootstrapDropdown.Item>
+                                    return <BootstrapDropdown.Item className="DropdownItemOverwrite" onClick={_ => { setGroups([group.gid]); setNewAnno({ ...newAnno, groups: [group.gid] }) }} eventKey={i + 2}>{group.name}</BootstrapDropdown.Item>
                                 })}
                             </SplitButton>
+                            </div>
                         </div>
                     </div>
                 </div>

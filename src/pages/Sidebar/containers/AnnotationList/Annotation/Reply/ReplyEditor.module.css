@@ -20,3 +20,8 @@
     filter: brightness(.8);
     color: lightblue;
   }
+
+  .ReplyAnchor{
+    width: 20px;
+    height: 20px;
+  }

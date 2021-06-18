@@ -49,27 +49,25 @@
 }
 
 .FilterSection {
+    border: 1px solid #dbdbdb;
+    margin: .15rem;
+    border-radius: 24px;
+    padding: .15rem .25rem 0 .15rem;
     position: relative;
     display: flex;
     font-size: 0.9rem;
-    color: #6B778C;
-    padding: 0px 8px 0px 8px;
+    color: #e4e6eba8;
     flex-wrap: wrap;
     line-height: 2em;
     height: 2em;
-
-
-    margin-right: 1em;
+    /* margin-right: 1em; */
     position: relative;
     cursor: pointer;
-    padding: .35em .35em .35em .35em;
-    background: #e4e6eb;
-    border-radius: 1em;
 }
 
 .FilterSection:hover {
     cursor: pointer;
-    color: #6b778ca1 !important;
+    box-shadow: 0 1px 6px 0 rgb(32 33 36 / 28%);
 }
 
 
@@ -100,7 +98,7 @@
     font-family: 'Roboto';
     font-weight: 300 !important;
     font-size: 0.9rem !important;
-    color: #212529 !important;
+    color: #505662 !important;
     background-color: transparent !important;
     padding: 0px !important;
     border: none !important;
@@ -109,9 +107,9 @@
 .filterDropDown::after{
     display: none !important; 
 }
-.filterDropDown:hover{
+/* .filterDropDown:hover{
     color: #6b778ca1 !important;
-}
+} */
 .filterDropDown:focus{
     box-shadow: none !important;
 }
@@ -120,6 +118,8 @@
     height: 20px;
     cursor: pointer;
 }
+
+DropdownItemOverwrite dropdown-item
 
 .FilterSection .tagFilterNotEnabled {
     cursor: default
@@ -275,7 +275,11 @@
     padding: 8px;
     font-size: 0.9rem;
     color: #6B778C;
-    cursor: pointer;
+    cursor: default;
+}
+
+.FilterByTag hr { 
+    margin: .5rem 0 ;
 }
 
 .SearchByTag {
@@ -287,15 +291,15 @@
 .TagButton {
     box-shadow: 2px 2px 1px 0px #ebebebfa;
     border-bottom-left-radius: 8px;
-    border: 1px solid #e5e5e5;
+    border: 1px solid #e5e5e5 !important;
     border-bottom-right-radius: 8px;
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
     background: transparent;
-    font-weight: 300;
-    font-size: 14px;
+    font-weight: 300 !important;
+    font-size: 14px !important;
     line-height: 2;
-    padding: 0.25rem 0.5rem;
+    padding: 0.15rem 0.5rem;
 }
 
 .TagButton:hover {
@@ -304,12 +308,14 @@
 
 .TagButton.selected {
     background: #dcf2bb;
+    border-bottom-left-radius: 8px !important;
+    border-top-left-radius: 8px !important;
 }
 
 .TagButtonsWrapper{
     display: flex;  
     width: 100%;
-    padding: 1rem;
+    padding: .1rem .2rem;
     overflow: overlay;
 }
 
@@ -328,6 +334,29 @@
 .TagListContainer {
     display: block;
     flex-wrap: wrap;
+}
+
+.TagNames{
+    margin: 0;
+    padding: 0px 0px 0px 0px;
+    max-width: 400px;
+    overflow: scroll;
+}
+
+@media (max-width:350px){
+    .TagNames {
+        max-width: 100px;
+    } 
+}
+
+.ClearTags{
+    width: 15px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.ClearTags:hover{
+    filter: brightness(1.5);
 }
 
 #collapseTagList {

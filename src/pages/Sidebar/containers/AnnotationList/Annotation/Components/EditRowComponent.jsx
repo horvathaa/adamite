@@ -72,9 +72,9 @@ const EditRowComponent = () => {
                                 )}
                             </div>
                         </Tooltip>
-                        <Tooltip title={"Add new anchor to annotation"} aria-label="add new anchor tooltip">
+                        <Tooltip title={"Add new anchor to annotation"} aria-label="add new anchor tooltip" onClick={ctx.handleNewAnchor}>
                             <div className="TopIconContainer" >
-                                <BiAnchor className="profile" alt="add new anchor" id="newAnchor" onClick={ctx.handleNewAnchor} />
+                                <BiAnchor className="profile" alt="add new anchor" id="newAnchor"  />
                             </div>
                         </Tooltip>
                         {ctx.currentUser.uid === ctx.anno.authorId ? (
@@ -101,10 +101,10 @@ const EditRowComponent = () => {
                                 <GiHamburgerMenu alt="Hamburger menu" className="profile" />
                             </Dropdown.Toggle>
                             <Dropdown.Menu style={{width: '220px'}}>
-                                <Dropdown.Item className="AnnotationOptionsTitle">
+                                <Dropdown.Header className="AnnotationOptionsTitle">
                                     Annoation Options
                                     <hr></hr>
-                                </Dropdown.Item>
+                                </Dropdown.Header>
                                 <Dropdown.Item onClick={() => ctx.setReplying(true)} className="DropdownItemOverwrite">
                                     <div className="DropdownIconsWrapper">
                                         <AiOutlineComment className="DropdownIcons" alt="reply" />

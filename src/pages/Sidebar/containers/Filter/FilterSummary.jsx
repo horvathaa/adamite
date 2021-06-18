@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './FilterSummary.css';
 import { AiFillClockCircle, AiOutlineCheck, AiOutlineCloseCircle, AiOutlineUsergroupAdd } from 'react-icons/ai';
-import { BiTimeFive } from 'react-icons/bi';
+import { BiTimeFive, BiHash } from 'react-icons/bi';
 import { BsChatSquareDots, BsXCircle } from 'react-icons/bs';
 import { BiSort } from 'react-icons/bi';
 import { GiCancel } from 'react-icons/gi';
@@ -10,6 +10,8 @@ import tag from '../../../../assets/img/SVGs/tag.svg';
 import { Dropdown } from 'react-bootstrap';
 import { Tooltip, Checkbox } from '@material-ui/core';
 import expand from '../../../../assets/img/SVGs/expand.svg';
+
+import TagFilter from "./TagFilter";
 
 
 /** assumes array elements are primitive types
@@ -59,20 +61,12 @@ class FilterSummary extends React.Component {
         tags: []
     }
 
-    componentDidMount(prevProps) {
-        this.setState({ tagSet: this.props.filterTags() });
+    getTagFilter = () => {
+
     }
 
-
-    handleTagClick(event) {
-        let tagName = event.target.value;
-        if (this.selection.tags.includes(tagName)) {
-            this.selection.tags = this.selection.tags.filter(e => e !== tagName);
-        }
-        else {
-            this.selection.tags.push(tagName);
-        }
-        this.props.applyFilter(this.selection);
+    componentDidMount(prevProps) {
+        this.setState({ tagSet: this.props.filterTags() });
     }
 
     updateTimeRange = (eventKey, event) => {
@@ -117,7 +111,7 @@ class FilterSummary extends React.Component {
     createDropDown = (args) => {
         const listItems = args.items.map((option, idx) => {
             let active = args.activeFilter.includes(option.visible) ? true : false
-            return <Dropdown.Item key={idx} onSelect={args.updateFunction} data-value={option.value}> {active ? <AiOutlineCheck /> : ""} {option.visible} </Dropdown.Item>
+            return <Dropdown.Item key={idx} onSelect={args.updateFunction} data-value={option.value} className="DropdownItemOverwrite"> {active ? <AiOutlineCheck /> : ""} {option.visible} </Dropdown.Item>
         });
 
         return (
@@ -130,7 +124,7 @@ class FilterSummary extends React.Component {
                         &nbsp; {args.activeFilter}
                     </Dropdown.Toggle>
                     <Dropdown.Menu >
-                        <Dropdown.Header>{args.header}</Dropdown.Header>
+                        <Dropdown.Header className="AnnotationOptionsTitle dropdown-header">{args.header}<hr></hr></Dropdown.Header>
                         {listItems}
                     </Dropdown.Menu>
                 </Dropdown>
@@ -236,7 +230,7 @@ class FilterSummary extends React.Component {
                             activeFilter: annoType,
                             header: "Annotation Type",
                             updateFunction: this.updateAnnoType,
-                            items: [{ visible: "All Types", value: 'all' },
+                            items: [{ visible: "All Types", value: 'all'},
                             { visible: "Normal", value: 'default' },
                             { visible: "Highlight", value: 'highlight' },
                             { visible: "To-do", value: 'to-do' },
@@ -255,123 +249,18 @@ class FilterSummary extends React.Component {
                             { visible: "Time", value: 'time' }]
                         })}
                     </div>
-                    {this.state.showTagFilter ? (
-                        <div className="FilterByTag" >
-                            <hr />
-                            <div onClick={() => this.setState({ showTagFilter: false })}>
-                                Tags
-                                </div>
-                            <div className="TagListContainer">
-                            <div className="TagButtonsWrapper">
-                                {this.selection.tags.length ? (
-                                    this.selection.tags.map(tag => {
-                                        return (<div className="TagButtonPad">
-                                            <button value={tag}
-                                                className={
-                                                    classNames({ TagButton: true, selected: this.selection.tags.includes(tag) })}
-                                                onClick={e => { e.stopPropagation(); this.handleTagClick(e); }}>
-                                                {tag} &nbsp; {this.state.tagSet[tag]}
-                                            </button>
-                                        </div>);
-                                    })
-                                ) : (null)}
-                                </div>
-
-                                <React.Fragment>
-                                    <div className="TagButtonsWrapper">
-                                        {Object.entries(this.state.tagSet).map(tagCountPair => {
-                                            if (!this.selection.tags.includes(tagCountPair[0]))
-                                                return (<div className="TagButtonPad">
-                                                    <button value={tagCountPair[0]} className={
-                                                        classNames({ TagButton: true, selected: this.selection.tags.includes(tagCountPair[0]) })}
-                                                        onClick={e => { e.stopPropagation(); this.handleTagClick(e) }}>
-                                                        {tagCountPair[0]} &nbsp; {tagCountPair[1]}
-                                                    </button>
-                                                </div>);
-                                        })}
-                                    </div>
-                                    <div className="TagControlWrapper">
-                                        <div className="TagButtonPad">
-                                            <button className="TagButton" style={{ border: 'none', 'margin-right': '4px' }} >
-                                                Apply<img src={expand} id="collapseTagList" alt="collapse tag list" onClick={() => { this.setState({ showTagFilter: false }) }} />
-                                            </button>
-
-                                        </div>
-                                        <div className="TagButtonPad">
-                                            <button className="btn Cancel-Button TagButton" style={{ padding: '0px 10px' }} onClick={(e) => { e.stopPropagation(); this.selection.tags = []; this.props.applyFilter(this.selection); this.setState({ showTagFilter: false }) }}>
-                                                Clear<GiCancel />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </React.Fragment>
-
-                            </div>
-                        </div>
-                    ) : (null)}
-
-                    {filter.tags.length && !this.state.showTagFilter ? (
-                        <div className={classNames({
-                            FilterSection: true,
-                            tagFilterNotEnabled: !filter.tags.length
-                        })} >
-                            <div className="FilterIconContainer">
-                                <img src={tag} alt="tag icon" />
-                            </div>
-                        &nbsp; &nbsp;
-                            <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }} >
-                                {filter.tags.length ? (filter.tags.map((tag, idx) => {
-                                    if (idx !== (filter.tags.length - 1)) {
-                                        return (<li key={idx} style={{ display: "inline" }}>
-                                            {tag},&nbsp;
-                                        </li>);
-                                    }
-                                    else {
-                                        return (<li key={idx} style={{ display: "inline" }}>
-                                            {tag}
-                                            <div style={{ display: "inline" }} className="FilterIconContainer" onClick={(e) => { e.stopPropagation(); this.selection.tags = []; this.props.applyFilter(this.selection) }}>
-                                                <GiCancel />
-                                            </div>
-                                        </li>);
-                                    }
-                                })) : (
-                                    "Select Tag"
-                                )}
-
-                            </ul>
-                        </div>
-
-                    ) : (null)} {
-                        !filter.tags.length && !this.state.showTagFilter ? (
-                            <div className={classNames({
-                                FilterSection: true,
-                                tagFilterNotEnabled: !filter.tags.length
-                            })} onClick={() => { this.setState({ showTagFilter: !this.state.showTagFilter, tagSet: this.props.filterTags() }) }} >
-                                <div className="FilterIconContainer">
-                                    <img src={tag} alt="tag icon" />
-                                </div> &nbsp; &nbsp; Select Tag
-                            </div>
-                        ) : (null)
-                    }
-                    {numArchivedAnnotations ? <div className="FilterSection">
+                    <TagFilter 
+                        selection = {this.selection} 
+                        filter = {filter}
+                        applyFilter={this.props.applyFilter}
+                        filterTags={this.props.filterTags}
+                        tempSearchCount={this.props.tempSearchCount}
+                    />
+                    {/* {numArchivedAnnotations ? <div className="FilterSection">
                         {this.selection.showArchived ? `Hide ${numArchivedAnnotations} archived annotations` : `Show ${numArchivedAnnotations} archived annotations`}
                         <Checkbox onChange={this.handleArchived} value={this.selection.showArchived} size={'small'} color={'primary'} classes={{ colorPrimary: '#6B778C' }} />
-                    </div> : (null)}
-                    <Tooltip title={this.props.tempSearchCount + " annotations"} aria-label="annotation count">
-                        <div className="outerSearchBar">
-                            <div className="SearchResultsCountContainer">
-                                <div
-                                    className={classNames({
-                                        SearchResultsCount: true,
-                                        NoResults: this.props.tempSearchCount === 0,
-                                        Success: this.props.tempSearchCount >= 1,
-                                        //Searching: suggestions.length > 0 && searchCount > 1,
-                                    })}
-                                >
-                                    {this.props.tempSearchCount}
-                                </div>
-                            </div>
-                        </div>
-                    </Tooltip>
+                    </div> : (null)} */}
+
 
                 </div>
             );

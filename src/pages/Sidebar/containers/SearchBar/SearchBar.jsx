@@ -156,15 +156,12 @@ class SearchBar extends React.Component {
         return new Promise((resolve, reject) => {
             chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
                 let url = tabs[0].url;
-                //     // use `url` here inside the callback because it's asynchronous!
-                //     console.log("THIS IS THE WINDOW", new URL(tabs[0].url), tabs[0])
                 chrome.runtime.sendMessage({
                     msg: 'SEARCH_ELASTIC_BY_ID',
                     id: id,
                     url: url
                 },
                     response => {
-                        // console.log('response is probs messed up', response)
                         resolve(response.response);
                     });
             });

@@ -1,6 +1,8 @@
+code {
+  padding-top: 1rem !important;
+}
+
 .outerSearchBar {
-    width: 8%;
-    /* margin-right: 10px; */
     align-items: center;
     display: flex;
     margin-left: auto;

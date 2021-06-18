@@ -109,8 +109,6 @@ class GroupMultiSelect extends React.Component {
             return { label: group.name, value: group.gid, owner: group.owner };
         }));
 
-        console.log("Selected", selected)
-
         return (
             <React.Fragment>
                 <div className="FilterSectionRow" id="GroupFilterSection">

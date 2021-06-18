@@ -80,7 +80,6 @@ export default class Title extends React.Component {
   signOutClickedHandler = e => {
     e.preventDefault();
     chrome.runtime.sendMessage({ msg: 'USER_SIGNOUT' });
-    //this.currentUser = null;
   };
 
   createDropDown = (args) => {

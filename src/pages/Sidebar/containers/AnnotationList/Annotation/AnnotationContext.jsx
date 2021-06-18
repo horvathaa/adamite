@@ -16,7 +16,7 @@ const AnnotationContext = createContext({
     brokenChild: [],
     formatTimestamp: null,
     isCurrentUser: null,
-    collapsed: true,
+    collapsed: false,
     setCollapsed: () => { },
     handleExpandCollapse: () => { },
 
