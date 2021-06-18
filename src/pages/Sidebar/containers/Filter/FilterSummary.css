@@ -97,7 +97,7 @@
 .filterDropDown{
     font-family: 'Roboto';
     font-weight: 300 !important;
-    font-size: 0.9rem !important;
+    font-size: 0.8rem !important;
     color: #505662 !important;
     background-color: transparent !important;
     padding: 0px !important;
@@ -107,15 +107,13 @@
 .filterDropDown::after{
     display: none !important; 
 }
-/* .filterDropDown:hover{
-    color: #6b778ca1 !important;
-} */
+
 .filterDropDown:focus{
     box-shadow: none !important;
 }
 .filterReactIcon{
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
     cursor: pointer;
 }
 
@@ -339,7 +337,8 @@ DropdownItemOverwrite dropdown-item
 .TagNames{
     margin: 0;
     padding: 0px 0px 0px 0px;
-    max-width: 400px;
+    max-width: 200px;
+    text-overflow: ellipsis;
     overflow: scroll;
 }
 

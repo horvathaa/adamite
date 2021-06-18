@@ -111,8 +111,79 @@ const Anchor = ({ anchor, replyIdProp }) => {
         setEditMode(false);
     }
 
+    const closeTagEdit = () => {
+        setEditMode(false);
+    }
+
     const handleExternalAnchor = async () => {
         await chrome.runtime.sendMessage({ msg: "LOAD_EXTERNAL_ANCHOR", from: 'content', payload: url });
+    }
+
+    const Anchortags = ({ textClass, tags }) => {
+
+        return (
+            <React.Fragment>
+                <div className={textClass + " col"}>
+                    <div className={textClass}>
+                        {anchorContent}
+                    </div>
+                </div>
+                <div className={textClass + " AnchorTagsWrapper"}>
+                    {tags &&
+                        <div className="AnchorTagMenu">
+                            <div className="AnchorTagsList">
+                                {tags.map((t) =>
+                                    <div className="Tag">
+                                        #{t}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    }
+                </div>
+            </React.Fragment>
+        );
+
+    }
+
+    const AnchortagsButtons = ({ textClass, anchorContent, tags, id, ctx, anchorId }) => {
+
+        return (
+            <React.Fragment>
+                <div className={textClass + " col"}>
+                    <div className={textClass}>
+                        {anchorContent}
+                    </div>
+                    {tags &&
+                        <React.Fragment>
+                            <Tooltip title={"Edit Anchor Tags"} aria-label="edit tooltip">
+                                <div className="AnchorTagButton TopIconContainer" >
+                                    <BiHash alt="edit annotation" className="profile" id="edit" onClick={() => { setEditMode(true) }} />
+                                </div>
+                            </Tooltip>
+                            {id && ctx.anno.childAnchor.length > 1 &&
+                                <Tooltip title={"Delete Anchor"} aria-label="delete annotation tooltip">
+                                    <div className="TopIconContainer" >
+                                        <img src={trash} alt="delete annotation" className="profile" id="trash" onClick={() => deleteAnchor({ anchorId: anchorId })} />
+                                    </div>
+                                </Tooltip>}
+                        </React.Fragment>
+                    }
+                </div>
+                <div className={textClass + " AnchorTagsWrapper"}>
+                    {tags &&
+                        <div className="AnchorTagMenu">
+                            <div className="AnchorTagsList">
+                                {tags.map((t) =>
+                                    <div className="Tag">
+                                        #{t}
+                                    </div>
+                                )}
+                            </div>
+                        </div>}
+                </div>
+            </React.Fragment>);
+
     }
 
     function getAnchorIcon() {
@@ -132,80 +203,62 @@ const Anchor = ({ anchor, replyIdProp }) => {
         (<BrokenAnchorComponent anchorContent={anchorContent} anchorIcon={anchorIcon} collapsed={collapsed} />)
         : (
             <div
-                className={classNames({ AnchorContainer: true, Truncated: collapsed })}
+                className={classNames({ AnchorContainer: true, Truncated: collapsed }) + " row"}
                 onMouseEnter={() => handleEvent({ isClick: false, isHover: true })}
                 onMouseLeave={() => handleEvent({ isClick: false, isHover: false })}
                 onClick={() => {
                     (pageAnchor || url !== currentUrl) ? handleExternalAnchor() : handleEvent({ isClick: true, isHover: false })
                 }}
             >
-                <div className="AnchorIconContainer">
+                <div className="AnchorIconContainer col-1">
                     {anchorIcon}
                 </div>
 
                 {url === currentUrl && !pageAnchor ?
                     editMode ?
                         (
-                            <div className={textClass}>
-                                <div className={textClass}>
-                                    {anchorContent}
-                                </div>
-                                <div className="AnchorTagMenu">
-                                    <div className="AnchorTagsList">
-                                        <TagsInput value={tags ?? []} onChange={(newTags) => setTags(newTags)} addOnBlur />
-                                    </div>
-                                    <div className="AnchorTagEdit"
-                                        onClick={() => handleOnEditDone()}
-                                    >
-                                        save
+                            <React.Fragment>
+                                <div className={textClass + " col"}>
+                                    <div className={textClass}>
+                                        {anchorContent}
                                     </div>
                                 </div>
-                            </div>
-                        ) : (isCurrentUser && !collapsed) ? (
-                            <div className={textClass}>
-                                <div className={textClass}>
-                                    {anchorContent}
-                                </div>
-                                {tags &&
-                                    <div className="AnchorTagMenu">
-                                        <div className="AnchorTagsList">
-                                            {tags.map((t) =>
-                                                <div className="AnchorTag">
-                                                    {t}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <Tooltip title={"Edit Anchor Tags"} aria-label="edit tooltip">
-                                            <div className="TopIconContainer" >
-                                                <BiHash alt="edit annotation" className="profile" id="edit" onClick={() => { setEditMode(true) }} />
+
+                                <div className={textClass + " row"}>
+                                    <div className="AnchorTagInput">
+                                        <div className="Tag-Container">
+                                            <div className="TextareaContainer">
+                                                <TagsInput value={tags ?? []} onChange={(newTags) => setTags(newTags)} addOnBlur />
                                             </div>
-                                        </Tooltip>
-                                        {id && ctx.anno.childAnchor.length > 1 &&
-                                            <Tooltip title={"Delete Anchor"} aria-label="delete annotation tooltip">
-                                                <div className="TopIconContainer" >
-                                                    <img src={trash} alt="delete annotation" className="profile" id="trash" onClick={() => deleteAnchor({ anchorId: anchorId })} />
-                                                </div>
-                                            </Tooltip>}
-                                    </div>
-                                }
-                            </div>
-                        ) : (
-                            <div className={textClass}>
-                                <div className={textClass}>
-                                    {anchorContent}
-                                </div>
-                                {tags &&
-                                    <div className="AnchorTagMenu">
-                                        <div className="AnchorTagsList">
-                                            {tags.map((t) =>
-                                                <div className="AnchorTag">
-                                                    {t}
-                                                </div>
-                                            )}
                                         </div>
+
                                     </div>
-                                }
-                            </div>
+                                </div>
+                                <div className="row">
+                                    <div className="col-4">
+                                        <button className="btn AnchorTagButtons AnchorTagButtonCancel" placeholder="Cancel" onClick={() => closeTagEdit()}>
+                                            cancel
+                                        </button>
+                                    </div>
+                                    <div className="col-4">
+                                        <button className="btn AnchorTagButtons AnchorTagButtonSubmit" placeholder="Cancel" onClick={() => handleOnEditDone()}>
+                                            save
+                                        </button>
+                                    </div>
+                                </div>
+                            </React.Fragment>
+                        ) : (hovering && isCurrentUser && !collapsed) ? (
+                            <AnchortagsButtons
+                                textClass={textClass}
+                                anchorContent={anchorContent}
+                                tags={tags}
+                                id={id}
+                                ctx={ctx}
+                                anchorId={anchorId} />
+                        ) : (
+                            <Anchortags
+                                textClass={textClass}
+                                tags={tags} />
                         ) : (
                         <div className={textClass}>
                             {anchorContent}
