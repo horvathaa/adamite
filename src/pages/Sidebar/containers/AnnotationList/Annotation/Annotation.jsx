@@ -25,7 +25,7 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, res
 
   const [editing, setEditing] = useState(isNew);
   const [replying, setReplying] = useState(false);
-  const [collapsed, setCollapsed] = useState(!isNew);
+  const [collapsed, setCollapsed] = useState(isNew);
   const [showReplies, setShowReplies] = useState(false);
   const [anno, setAnno] = useState(annotation);
 

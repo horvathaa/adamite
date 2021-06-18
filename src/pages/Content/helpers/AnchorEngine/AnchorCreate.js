@@ -8,6 +8,9 @@ import '../../../../assets/img/SVGs/Highlight.svg';
 import '../../../../assets/img/SVGs/Todo.svg';
 import '../../../../assets/img/SVGs/Question.svg';
 import '../../../../assets/img/SVGs/Issue.svg';
+import { BiComment, BiTask } from 'react-icons/bi';
+import { AiOutlineQuestionCircle, AiOutlineExclamationCircle } from 'react-icons/ai';
+
 import { ToastContainer, toast } from 'react-toastify';
 import { FaHighlighter } from 'react-icons/fa';
 import 'react-toastify/dist/ReactToastify.css';
@@ -42,10 +45,10 @@ const Popover = ({ selection, xpathToNode, offsets, rectPopover, removePopover }
 
 
     return (
-        <div className="buttonRow">
+        <div className="CreatAnnotationRow">
             <div className="onHoverCreateAnnotation" onClick={(e) => buttonClickedHandler(e, "default")} >
                 <div className="buttonIconContainer">
-                    <img src={chrome.extension.getURL('Default.svg')} alt="default annotation" className="svg-button" />
+                    <BiComment alt="default annotation" className="svg-button" />
                 </div>
                 Normal
             </div>
@@ -57,7 +60,7 @@ const Popover = ({ selection, xpathToNode, offsets, rectPopover, removePopover }
             </div>
             <div className="onHoverCreateAnnotation" onClick={(e) => buttonClickedHandler(e, "to-do")} >
                 <div className="buttonIconContainer">
-                    <img src={chrome.extension.getURL('Todo.svg')} alt="to-do annnotation" className="svg-button" />
+                    <BiTask alt="to-do annnotation" className="svg-button" />
                 </div>
                 <div onClick={(e) => buttonClickedHandler(e, "to-do")}>
                     To-do
@@ -67,12 +70,12 @@ const Popover = ({ selection, xpathToNode, offsets, rectPopover, removePopover }
                 onMouseEnter={() => setShowQuestionMenu(true)}
                 onMouseLeave={() => setShowQuestionMenu(false)}>
                 <div className="buttonIconContainer">
-                    <img src={chrome.extension.getURL('Question.svg')} alt="question annnotation" className="svg-button" />
+                    <AiOutlineQuestionCircle alt="question annnotation" className="svg-button" />
                 </div>
                 Question
                 {showQuestionMenu && (
                     <div className="buttonColumn">
-                        <div className="onHoverCreateQuestionAnnotation" onClick={(e) => buttonClickedHandler(e, "question", "What is this?")} >
+                        <div className="onHoverCreateAnnotation" onClick={(e) => buttonClickedHandler(e, "question", "What is this?")} >
                             What is this?
                         </div>
                         <div className="onHoverCreateAnnotation" onClick={(e) => buttonClickedHandler(e, "question", "How do I use this?")} >
@@ -83,7 +86,7 @@ const Popover = ({ selection, xpathToNode, offsets, rectPopover, removePopover }
             </div>
             <div className="onHoverCreateAnnotation" onClick={(e) => buttonClickedHandler(e, "issue")} >
                 <div className="buttonIconContainer">
-                    <img src={chrome.extension.getURL('Issue.svg')} alt="issue annnotation" className="svg-button" />
+                    <AiOutlineExclamationCircle alt="issue annnotation" className="svg-button" />
                 </div>
                 Issue
             </div>

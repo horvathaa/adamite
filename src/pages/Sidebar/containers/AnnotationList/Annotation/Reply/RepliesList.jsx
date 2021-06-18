@@ -3,6 +3,7 @@ import React, { useContext } from 'react';
 import '../Annotation.css';
 import expand from '../../../../../../assets/img/SVGs/expand.svg';
 import Reply from './Reply';
+import { BiExpand} from 'react-icons/bi';
 
 import AnnotationContext from "../AnnotationContext";
 
@@ -26,13 +27,15 @@ const RepliesList = () => {
     return (
         <div className="Replies">
             <div className="SeparationRow">
-                <div className="ShowHideReplies">
+            {ctx.showReplies && <hr className="divider" />   }
+                <div className="ShowHideReplies" onClick={() => ctx.handleShowReplies(!ctx.showReplies)}>
                     <div className={classNames({ ExpandCollapse: true, hidden: !ctx.showReplies })}>
-                        <img src={expand} className={classNames({ Icon: true })} alt="Show replies" onClick={() => ctx.handleShowReplies(!ctx.showReplies)} />
+                        {/* <BiExpand className={classNames({ Icon: true })} alt="Show replies"  /> */}
+                        {/* <img src={expand} className={classNames({ Icon: true })} alt="Show replies" onClick={() => ctx.handleShowReplies(!ctx.showReplies)} /> */}
                     </div>
                     {ctx.anno.replies.length} {ctx.replyCountString}
                 </div>
-                {ctx.showReplies && <hr className="divider" />}
+                
             </div>
             {ctx.showReplies && <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
                 {ctx.anno.replies.map((reply, idx) => {

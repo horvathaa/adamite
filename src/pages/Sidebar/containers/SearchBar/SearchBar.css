@@ -1,3 +1,7 @@
+code {
+  padding-top: 1rem !important;
+}
+
 .outerSearchBar {
     align-items: center;
     display: flex;

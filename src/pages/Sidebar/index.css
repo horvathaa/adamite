@@ -9,6 +9,14 @@ body {
   background: linear-gradient(0deg, rgba(34,195,105,0.35) 0%, rgba(219,253,45,0.35) 47%, rgba(34,195,105,0.35) 100%); 
 }
 
+p {
+  margin-bottom: 0px !important;
+}
+
+pre {
+  margin-bottom: 0px !important;
+}
+
 .highlight-adamite-search-suggest {
   background-color: #ffff0099;
 }

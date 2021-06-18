@@ -108,30 +108,15 @@
 .AnnotationContainer {
   padding: 5px;
   background: white;
-  /* border: 1px solid #a6a6a694; */
   box-shadow: 5px 5px 2px #88888866;
-  /* border: 1px solid #bfbebe;
-  box-shadow: 2px 2px 2px #88888887; */
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
-
   flex: 1;
   min-width: 0;
-  /* padding: 4px 4px 4px 4px;
-  cursor: default;
-  outline-style: solid;
-  color: rgb(44, 44, 44); */
-  /* border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-  border-bottom-left-radius: 8px;
-  border-bottom-right-radius: 8px; */
-  /* background-color: rgba(255, 255, 255, 0.5); */
   transition: all 0.1s ease-in;
   position: relative;
-  /* cursor: pointer; */
-  /* box-shadow: gray; */
 }
 
 .AnnotationContainer.SelectedAnnotationContainer {
@@ -286,6 +271,7 @@
 }
 
 .AnchorContainer {
+  font-family: monospace;
   flex: 1;
   min-width: 0;
   border-bottom-left-radius: 8px;
@@ -297,7 +283,7 @@
   background: rgb(34 195 105 / 12%);
   padding: 11px 5px 11px 5px;
   font-weight: lighter;
-  font-size: .9rem;
+  font-size: .8rem;
   margin-top: 5px;
   margin-bottom: 5px;
   line-height: 1rem;
@@ -532,10 +518,12 @@
 
 .ReplyButtonRow {
   padding: 8px;
+  display: flow-root;
 }
 
 .buttonCol {
   display: flex;
+  float: right;
 }
 
 .buttonCol.question {
@@ -691,7 +679,7 @@
   position: relative;
   cursor: pointer;
   padding: .35em .35em .35em .35em;
-  background: #e4e6eb;
+  background: #e4e6eb70;
   border-radius: 1em;
 }
 
@@ -707,7 +695,7 @@
 
 
 .divider {
-  background-color: #6B778C;
+  background-color: #44573c5e;
   padding: 0px;
   margin-bottom: .4rem;
   margin-left: .4rem;
@@ -776,6 +764,14 @@
 .ShowHideReplies {
   display: inline-flex;
   color: #6B778C;
+  font-weight: 600;
+  float: right;
+  margin-right: 1rem;
+}
+
+.ShowHideReplies:hover {
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 #ShowReplies {
@@ -783,5 +779,5 @@
 }
 
 .SeparationRow {
-  display: flex;
+  display: flow-root;
 }

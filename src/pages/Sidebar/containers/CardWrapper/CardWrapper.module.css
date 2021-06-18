@@ -122,28 +122,7 @@ code, pre {
   .react-tagsinput--focused {
     border-color: #e5e5e5dc;;
   }
-  
-  .react-tagsinput-tag {
-    background-color: #dad9d9;
-    border-radius: 2px;
-    color: #666;
-    display: inline-block;
-    font-family: sans-serif;
-    font-size: 13px;
-    font-weight: 400;
-    margin-bottom: 5px;
-    margin-right: 5px;
-    padding: 5px;
-  }
-  
-  .react-tagsinput-remove {
-    cursor: pointer;
-    font-weight: bold;
-  }
-  
-  .react-tagsinput-tag a::before {
-    content: " ×";
-  }
+
   
   .react-tagsinput-input {
     background: transparent;
@@ -305,9 +284,9 @@ code, pre {
      min-width: fit-content;
   }
 
-  .Dropdown-Col:hover {
+  /* .Dropdown-Col:hover {
     box-shadow: 0 1px 6px 0 rgb(32 33 36 / 25%);
-  }
+  } */
 
   
   .Publish-Button{
@@ -342,6 +321,7 @@ code, pre {
     cursor: default;
     color: #6B778C;
     font-size: .9rem;
+    font-weight: 300;
     transition: all 0.1s ease-in;
     margin: 5px 0px;
      /* These are technically the same, but use both */
@@ -379,7 +359,6 @@ code, pre {
     border-bottom-right-radius: 8px ;
     border-top-left-radius: 8px ;
     border-top-right-radius: 8px ;
-  
   }
   
  
