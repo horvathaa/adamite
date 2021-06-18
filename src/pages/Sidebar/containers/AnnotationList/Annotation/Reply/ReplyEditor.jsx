@@ -1,4 +1,4 @@
-import React, { Component, useEffect, useContext, useState } from 'react';
+import React, { useEffect, useContext, useState } from 'react';
 import RichTextEditor from '../../../RichTextEditor/RichTextEditor';
 import TagsInput from 'react-tagsinput';
 import classNames from 'classnames';

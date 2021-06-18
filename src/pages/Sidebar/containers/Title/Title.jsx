@@ -1,9 +1,9 @@
 import React from 'react';
 import { Dropdown } from 'react-bootstrap';
 import { APP_NAME_FULL } from '../../../../shared/constants';
-import '../../../../assets/img/Adamite.png';
+import ADAMITE from '../../../../assets/img/Adamite.png';
 import { GiHamburgerMenu } from 'react-icons/gi';
-import { BiFileBlank, BiHorizontalCenter, BiBookBookmark, BiCog, BiExit, BiGroup } from 'react-icons/bi';
+import { BiFileBlank, BiHorizontalCenter, BiBookBookmark, BiCog, BiExit, BiGroup, BiUserPlus, BiBug } from 'react-icons/bi';
 import { AiOutlineCheck, AiOutlineUser } from 'react-icons/ai';
 
 
@@ -84,13 +84,14 @@ export default class Title extends React.Component {
 
   createDropDown = (args) => {
     const listItems = args.items.map((option, idx) => {
-        let active = args.activeFilter.includes(option.label) ? true : false
+      const currentGroup = Array.isArray(args.activeFilter) ? args.activeFilter[0] : args.activeFilter;
+        let active = currentGroup === option.label ? true : false
         return <Dropdown.Item key={idx} onSelect={(e) => args.updateFunction([option], e)} data-value={option.label}> {active ? <AiOutlineCheck /> : ""} {option.label} </Dropdown.Item>
     });
 
     return (
         <React.Fragment>
-            <Dropdown className={args.className}>
+            <Dropdown className={args.className} style={{margin: 'auto'}}>
                 <Dropdown.Toggle title={args.header} className="filterDropDown">
                     <div className="FilterIconContainer">
                         <args.Icon className="filterReactIcon" />
@@ -122,6 +123,9 @@ export default class Title extends React.Component {
           <div className="row">
             <div className="col col-7 col-md-7">
               <div className="Header">
+                <div className="TitleIcon">
+                  <img className="TitleIcon" src={ADAMITE} alt='Adamite logo' />
+                </div>
                 <div className="Title">{APP_NAME_FULL}</div>
               </div>
             </div>
@@ -132,7 +136,7 @@ export default class Title extends React.Component {
                   {this.createDropDown({
                             Icon: BiGroup,
                             className: 'FilterDropDownSearch NewAnnotationButtonContainer',
-                            activeFilter: "Public",
+                            activeFilter: this.props.currentGroup.length ? this.props.currentGroup : 'Public',
                             header: "My Groups",
                             updateFunction: this.props.updateSidebarGroup,
                             items: this.__generateGroups(groups)
@@ -145,7 +149,7 @@ export default class Title extends React.Component {
                             <GiHamburgerMenu alt="Hamburger menu" className="profile" />
                           </Dropdown.Toggle>
                           <Dropdown.Menu >
-                            <Dropdown.Item onClick={this.props.handleShowAnnotatePage} className="OptionLineBreak" >
+                            <Dropdown.Item className="OptionLineBreak" >
                               <div className="container">
                                 <div className="row">
                                   <div className="col OptionCol">
@@ -173,6 +177,10 @@ export default class Title extends React.Component {
                               <div className="DropdownIconsWrapper"><BiFileBlank className="DropdownIcons" /></div>
                               Add Page Annotation
                           </Dropdown.Item>
+                          <Dropdown.Item onClick={this.props.addNewGroup} className="DropdownItemOverwrite">
+                              <div className="DropdownIconsWrapper"><BiUserPlus className="DropdownIcons" /></div>
+                              Create New Group
+                          </Dropdown.Item>
                             <Dropdown.Item onClick={this.props.closeSidebar} className="DropdownItemOverwrite">
                               <div className="DropdownIconsWrapper"><BiHorizontalCenter className="DropdownIcons" /></div>
                               Close Sidebar
@@ -185,6 +193,10 @@ export default class Title extends React.Component {
                               <div className="DropdownIconsWrapper"><BiBookBookmark className="DropdownIcons" /></div>
                               View Adamite Documentation
                           </Dropdown.Item>
+                          <Dropdown.Item onClick={this.props.openBugForm} className="DropdownItemOverwrite">
+                              <div className="DropdownIconsWrapper"><BiBug className="DropdownIcons" /></div>
+                              Submit a Bug
+                          </Dropdown.Item>
                             <Dropdown.Item onClick={this.signOutClickedHandler} className="DropdownItemOverwrite">
                               <div className="DropdownIconsWrapper"><BiExit className="DropdownIcons" /></div>
                               Sign Out
@@ -192,7 +204,6 @@ export default class Title extends React.Component {
                           </Dropdown.Menu>
                         </Dropdown>
                       </div>
-                    {/* </div> */}
                   </div>
                 </div>
               </React.Fragment>

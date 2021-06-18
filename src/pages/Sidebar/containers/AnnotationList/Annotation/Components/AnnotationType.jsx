@@ -34,22 +34,23 @@ const AnnotationType = () => {
                 }}
             >
                 <BootstrapDropdown.Header className="AnnotationOptionsTitle">Question Status<hr/></BootstrapDropdown.Header>
-                <BootstrapDropdown.Item className="DropdownItemOverwrite" onSelect={eventKey => { console.log('click'); ctx.closeOut(eventKey) }} eventKey={"Unanswered Question"}>{"Unanswered Question"}</BootstrapDropdown.Item>
+                <BootstrapDropdown.Item className="DropdownItemOverwrite" onSelect={eventKey => { ctx.closeOut(eventKey) }} eventKey={"Unanswered Question"}>{"Unanswered Question"}</BootstrapDropdown.Item>
                 <BootstrapDropdown.Item className="DropdownItemOverwrite" onSelect={eventKey => ctx.closeOut(eventKey)} eventKey={"No Longer Relevant"}>{"No Longer Relevant"}</BootstrapDropdown.Item>
                 <BootstrapDropdown.Item className="DropdownItemOverwrite" onSelect={eventKey => ctx.closeOut(eventKey)} eventKey={"Answered"}>{"Answered"}</BootstrapDropdown.Item>
             </SplitButton>
         </div>
 
 
-    const AnswerContent = answeredQuestionWithReply && <React.Fragment>
+    const AnswerContent = answeredQuestionWithReply ? <React.Fragment>
         <div className="SeparationRow">
+        <hr className="divider" />
             <div className="ShowHideReplies" >
-                <div className="ExpandCollapse">
+                {/* <div className="ExpandCollapse">
                     <img src={expand} id="ShowReplies" className="Icon" alt="Answer" />
-                </div>
+                </div> */}
                 Answer
             </div>
-            <hr className="divider" />
+            
         </div>
         {replyAnswer.anchor !== null && <Anchor
             anchor={replyAnswer.anchor}
@@ -57,7 +58,7 @@ const AnnotationType = () => {
         <div className="annotationContent">
             {replyAnswer.replyContent}
         </div>
-    </React.Fragment>
+    </React.Fragment> : (null)
 
     switch (ctx.anno.type) {
         case 'issue':

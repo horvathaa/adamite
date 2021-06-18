@@ -153,7 +153,7 @@ let commands = {
                 if (index === -1 && getPathFromUrl(changeInfo.url) !== "" && !getPathFromUrl(changeInfo.url).includes("chrome://")) {
                     sidebarStatus.push({ id: tabId, open: false, url: getPathFromUrl(changeInfo.url) })
                 }
-                else if (index > -1 && sidebarStatus[index].url !== getPathFromUrl(changeInfo.url) && getPathFromUrl(changeInfo.url) !== "chrome://newtab/") {
+                else if (index > -1 && sidebarStatus[index].url !== getPathFromUrl(changeInfo.url) && !getPathFromUrl(changeInfo.url).includes("chrome://")) {
                     sidebarStatus[index].open = false;
                     toggleSidebar(false);
                 }

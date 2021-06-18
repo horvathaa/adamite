@@ -70,6 +70,7 @@ export async function getAnnotationsPageLoad(request, sender, sendResponse) {
     let uid = getCurrentUserId();
     let { email } = getCurrentUser();
     let groups;
+
     chrome.storage.local.get(['groups'], (result) => {
         if (result.groups !== undefined) {
             groups = result.groups.map(g => g.gid);
@@ -104,20 +105,12 @@ export async function getAnnotationsPageLoad(request, sender, sendResponse) {
 
 export function getGroupAnnotations(request, sender, sendResponse) {
     const { gid } = request.payload;
-    // const gids = request.payload.groups.map(g => g.gid);
-    // console.log('gids', gids)
     fb.getGroupAnnotationsByGroupId(gid).get().then(function (querySnapshot) {
-        groupAnnotations = querySnapshot.empty ? [] : getListFromSnapshots(querySnapshot) // .filter(anno => anno.url.includes(request.payload.url));
-        if (groupAnnotations.length) {
-            // const annos = publicAnnotations.concat(privateAnnotations, groupAnnotations);
-            // console.log('annos', annos, 'request', request)
-            // chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-            //     broadcastAnnotationsToTab("CONTENT_UPDATED", removeDuplicates(groupAnnotations), request.payload.url, tabs[0].id);
-            // })
-            sendResponse(groupAnnotations)
-
-        }
-
+        let groupAnnotations = querySnapshot.empty ? [] : getListFromSnapshots(querySnapshot) // .filter(anno => anno.url.includes(request.payload.url));
+        groupAnnotations = groupAnnotations.filter(anno => !anno.deleted)
+        sendResponse(groupAnnotations)
+    }).catch(function (error) {
+        console.error('Get group annotation error', error)
     })
 }
 
@@ -154,8 +147,13 @@ export async function createAnnotation(request, sender, sendResponse) {
         archived: false,
         createdTimestamp: new Date().getTime(),
     }).then(value => {
-        console.log("background", value);
-        console.log('sendResponse', sendResponse);
+        // chrome.runtime.sendMessage({
+        //     from: 'background',
+        //     msg: 'SCROLL_INTO_VIEW',
+        //     payload: {
+        //         id: value
+        //     }
+        // })
     });
     sendResponse({ "msg": 'DONE' });
 }

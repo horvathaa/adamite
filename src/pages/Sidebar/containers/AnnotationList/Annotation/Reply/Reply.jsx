@@ -72,22 +72,16 @@ const Reply = ({ idx, reply }) => {
 
                             <div className="row">
                                 <div className="AnnotationIconContainer">
-                                    {ctx.currentUser.uid === ctx.anno.authorId ? (
+                                    {ctx.currentUser.uid === replyData.authorId ? (
                                         <React.Fragment>
-                                            {/* <Tooltip title="Star Comment" aria-label="Star Comment" onClick={ctx.transmitAdoptedToParent}>
+                                            <Tooltip title={"Edit reply"} aria-label="edit tooltip" onClick={_ => setEditing(true)}>
                                                 <div className="TopIconContainer" >
-                                                    {star}
-                                                </div>
-                                            </Tooltip> */}
-                                            <Tooltip title={"Edit annotation"} aria-label="edit tooltip" onClick={_ => setEditing(true)}>
-                                                <div className="TopIconContainer" >
-                                                    <AiOutlineEdit className="profile" alt="edit annotation" className="profile" id="edit" onClick={() => ctx.setEditing(!ctx.editing)} />
+                                                    <AiOutlineEdit className="profile" alt="edit reply" id="edit" onClick={() => setEditing(!ctx.editing)} />
                                                 </div>
                                             </Tooltip>
-                                            <Tooltip title={"Delete annotation"} aria-label="delete annotation tooltip" onClick={deleteReply}>
+                                            <Tooltip title={"Delete reply"} aria-label="delete reply tooltip" onClick={deleteReply}>
                                                 <div className="TopIconContainer" >
-                                                    <BsTrash alt="delete annotation" className="profile" id="trash" onClick={ctx.handleTrashClick} />
-                                                    {/* <img src={trash} alt="delete annotation" className="profile" id="trash" onClick={ctx.handleTrashClick} /> */}
+                                                    <BsTrash alt="delete reply" className="profile" id="trash" onClick={deleteReply} />
                                                 </div>
                                             </Tooltip>
                                         </React.Fragment>
@@ -148,7 +142,7 @@ const Reply = ({ idx, reply }) => {
                             </div> */}
                         </div>
                         {reply.anchor !== null ? (
-                            <Anchor anchor={replyData.anchor} replyIdProp={replyData.replyId} />) : (null)}
+                            <Anchor anchor={reply.anchor} replyIdProp={replyData.replyId} />) : (null)}
                         <div className="annotationContent">
                             <div className="contentBody">
                                 {replyData.replyContent}

@@ -16,7 +16,7 @@ function _addHighlightSpan({ match, node, spanId, className }) {
     var span = document.createElement("span");
     span.setAttribute("name", spanId);
     span.textContent = match;
-    span.onmouseover = anchorClick;
+    span.onclick = anchorClick;
     span.className = className;
     node.parentNode.insertBefore(span, node.nextSibling);
     node.parentNode.normalize();
