@@ -216,7 +216,8 @@ class Sidebar extends React.Component {
         });
       }
       else if (request.from === 'background' && request.msg === 'SCROLL_INTO_VIEW') {
-        this.scrollToNewAnnotation(request.payload.id);
+        console.log('is this even happening', request.payload.id)
+        this.scrollToNewAnnotation();
       }
       else if (
         request.from === 'content' &&
@@ -819,7 +820,7 @@ class Sidebar extends React.Component {
   }
 
 
-  resetNewSelection = () => {
+  resetNewSelection = ({id = -1} ) => {
     this.setState({ newSelection: null });
     if (this.state.annotatingPage) {
       this.setState({ annotatingPage: false });
@@ -830,7 +831,8 @@ class Sidebar extends React.Component {
   };
 
   scrollToNewAnnotation = (id) => {
-    let annoDiv = document.getElementById(id);
+    let annoDiv = null;
+    annoDiv = document.getElementById(this.state.newAnnotationId);
     if (annoDiv !== null) {
       annoDiv.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
     }
@@ -841,7 +843,7 @@ class Sidebar extends React.Component {
     let tagSet = {};
     let renderedAnnotations = [];
     if (this.state.searchedAnnotations.length) {
-      renderedAnnotations = this.state.searchedAnnotations;
+      renderedAnnotations = this.state.searchedAnnotations.concat(this.state.filteredAnnotations);
     }
     else if (this.state.groupAnnotations.length) {
       renderedAnnotations = renderedAnnotations.concat(this.state.groupAnnotations);
@@ -1029,6 +1031,7 @@ class Sidebar extends React.Component {
                     currentUrl={this.state.url}
                     currentUser={currentUser}
                     resetNewSelection={this.resetNewSelection}
+                    scrollToNewAnnotation={this.scrollToNewAnnotation}
                   />
                 )}
             </div>

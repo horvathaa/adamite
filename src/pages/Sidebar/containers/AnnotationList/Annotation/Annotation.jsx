@@ -25,7 +25,7 @@ Initiated in Annotation List
 */
 
 
-const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, resetNewSelection = () => { }, currentUrl, userGroups, currentUser }) => {
+const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, scrollToNewAnnotation = () => { }, resetNewSelection = () => { }, currentUrl, userGroups, currentUser }) => {
 
   const [editing, setEditing] = useState(isNew);
   const [replying, setReplying] = useState(false);
@@ -69,30 +69,29 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, res
   }
 
   const AnnotationBadgeContainer = () => {
-    console.log("THIS IS ANNOT TYPE", anno.type)
     if (anno.type === 'issue') {
       return renderBadgeInner(
-        "issue",
+        "Issue",
         <AiOutlineExclamationCircle alt={`${anno.type} type badge`} className="badgeIconSvg" />);
     }
     else if (anno.type === 'todo') {
       return renderBadgeInner(
-        "todo",
+        "To-do",
         <BiTask alt={`${anno.type} type badge`} className="badgeIconSvg" />);
     }
     else if (anno.type === 'question') {
       return renderBadgeInner(
-        "question",
+        "Question",
         <AiOutlineQuestionCircle alt={`${anno.type} type badge`} className="badgeIconSvg" />);
     }
     else if (anno.type === 'default') {
       return renderBadgeInner(
-        "default",
+        "Normal",
         <BiComment alt={`${anno.type} type badge`} className="badgeIconSvg" />);
     }
     else {
       return renderBadgeInner(
-        "highlight",
+        "Highlight",
         <FaHighlighter alt={`${anno.type} type badge`} className="badgeIconSvg" />);
     }
   }
@@ -254,7 +253,7 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, res
 
           }
         },
-        submitButtonHandler: (newAnno) => {
+        submitButtonHandler: async (newAnno) => {
           chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
             chrome.tabs.sendMessage(tabs[0].id, { msg: 'REMOVE_TEMP_ANNOTATION', },
               response => {
@@ -269,7 +268,8 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, res
                     },
                     response => {
                       if (response.msg === 'DONE') {
-                        resetNewSelection();
+                        resetNewSelection({id: anno.id});
+                        scrollToNewAnnotation();
                       }
                     }
                   );

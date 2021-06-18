@@ -123,7 +123,6 @@ export default class RichEditor extends React.Component {
         EditorState.moveSelectionToEnd(this.state.editorState)
         var selectionState = this.state.editorState.getSelection();
         //EditorState.createWithContent('Hello');
-        console.log('hello?', this.state)
 
         return (
             <div className="RichEditor-root">

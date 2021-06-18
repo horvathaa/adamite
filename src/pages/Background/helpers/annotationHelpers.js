@@ -147,8 +147,13 @@ export async function createAnnotation(request, sender, sendResponse) {
         archived: false,
         createdTimestamp: new Date().getTime(),
     }).then(value => {
-        console.log("background", value);
-        console.log('sendResponse', sendResponse);
+        // chrome.runtime.sendMessage({
+        //     from: 'background',
+        //     msg: 'SCROLL_INTO_VIEW',
+        //     payload: {
+        //         id: value
+        //     }
+        // })
     });
     sendResponse({ "msg": 'DONE' });
 }
