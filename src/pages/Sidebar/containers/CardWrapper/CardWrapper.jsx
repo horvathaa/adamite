@@ -75,7 +75,6 @@ const CardWrapper = ({ isNew = false }) => {
                                     onChange={dropDownSelection}
                                     value={annoTypeDropDownValue} />
                             </div>
-                            &nbsp; &nbsp;
                             <div className="Dropdown-Col col ml-auto mr-auto" style={{display: "flex", backgroundColor: 'transparent', margin: '.25rem'}}>
                             <Tooltip title={"Cancel"} aria-label="Cancel Submission">
                                 
@@ -100,8 +99,8 @@ const CardWrapper = ({ isNew = false }) => {
                                 }
                             >
                                 <BootstrapDropdown.Header className="AnnotationOptionsTitle">Groups<hr/></BootstrapDropdown.Header>
-                                <BootstrapDropdown.Item className="DropdownItemOverwrite" onClick={_ => setNewAnno({ ...newAnno, isPrivate: true })} eventKey="1">Private</BootstrapDropdown.Item>
-                                <BootstrapDropdown.Item className="DropdownItemOverwrite" onClick={_ => setNewAnno({ ...newAnno, isPrivate: false })} eventKey="2">Public</BootstrapDropdown.Item>
+                                <BootstrapDropdown.Item className="DropdownItemOverwrite" onClick={_ => { setGroups([]); setNewAnno({ ...newAnno, isPrivate: true, groups: [] })}} eventKey="1">Private</BootstrapDropdown.Item>
+                                <BootstrapDropdown.Item className="DropdownItemOverwrite" onClick={_ => { setGroups([]); setNewAnno({ ...newAnno, isPrivate: false, groups: [] })}} eventKey="2">Public</BootstrapDropdown.Item>
                                 {userGroups.map((group, i) => {
                                     return <BootstrapDropdown.Item className="DropdownItemOverwrite" onClick={_ => { setGroups([group.gid]); setNewAnno({ ...newAnno, groups: [group.gid] }) }} eventKey={i + 2}>{group.name}</BootstrapDropdown.Item>
                                 })}

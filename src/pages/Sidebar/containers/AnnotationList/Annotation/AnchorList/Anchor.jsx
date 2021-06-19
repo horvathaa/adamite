@@ -123,8 +123,25 @@ const Anchor = ({ anchor, replyIdProp }) => {
                     <img src={anchorOnOtherPage} className="AnchorIcon" alt='anchor on other page' />;
     }
 
+    
+
     let anchorIcon = getAnchorIcon();
     let textClass = collapsed ? "AnchorTextContainer" : "AnchorTextContainerExpanded";
+
+    const anchorObject = currentUrl === url ? (
+        <div className={textClass}>
+            <div className={textClass}>
+                 {anchorContent}
+            </div>
+        </div>
+    ) : (
+        <div className={textClass}>
+            {anchorContent} 
+            <div className="AnchorUrlContainer" onClick={() => handleExternalAnchor()}>
+                {url}
+            </div>
+        </div>
+)
 
     return (brokenAnchor && url === currentUrl && !pageAnchor) ?
         (<BrokenAnchorComponent anchorContent={anchorContent} anchorIcon={anchorIcon} collapsed={collapsed} />)
@@ -141,13 +158,10 @@ const Anchor = ({ anchor, replyIdProp }) => {
                     {anchorIcon}
                 </div>
 
-                {url === currentUrl && !pageAnchor ?
-                    editMode ?
+                {editMode ?
                         (
-                            <div className={textClass}>
-                                <div className={textClass}>
-                                    {anchorContent}
-                                </div>
+                            <React.Fragment>
+                            {anchorObject}
                                 <div className="AnchorTagMenu">
                                     <div className="AnchorTagsList">
                                         <TagsInput value={tags ?? []} onChange={(newTags) => setTags(newTags)} addOnBlur />
@@ -158,12 +172,10 @@ const Anchor = ({ anchor, replyIdProp }) => {
                                         save
                                     </div>
                                 </div>
-                            </div>
+                                </React.Fragment>
                         ) : (hovering && isCurrentUser && !collapsed) ? (
-                            <div className={textClass}>
-                                <div className={textClass}>
-                                    {anchorContent}
-                                </div>
+                            <React.Fragment>
+                                {anchorObject}
                                 {tags &&
                                     <div className="AnchorTagMenu">
                                         <div className="AnchorTagsList">
@@ -186,12 +198,10 @@ const Anchor = ({ anchor, replyIdProp }) => {
                                             </Tooltip>}
                                     </div>
                                 }
-                            </div>
+                            </React.Fragment>
                         ) : (
-                            <div className={textClass}>
-                                <div className={textClass}>
-                                    {anchorContent}
-                                </div>
+                            <React.Fragment>
+                                {anchorObject}
                                 {tags &&
                                     <div className="AnchorTagMenu">
                                         <div className="AnchorTagsList">
@@ -203,15 +213,11 @@ const Anchor = ({ anchor, replyIdProp }) => {
                                         </div>
                                     </div>
                                 }
-                            </div>
-                        ) : (
-                        <div className={textClass}>
-                            {anchorContent}
-                            <div className="AnchorUrlContainer" onClick={() => handleExternalAnchor()}>
-                                {url}
-                            </div>
-                        </div>
-                    )}
+                            </React.Fragment>
+                        )}
+                    {/* {(url !== currentUrl || pageAnchor) && (
+                        
+                    )} */}
             </div>
         );
 }

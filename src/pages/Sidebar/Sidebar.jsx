@@ -20,6 +20,7 @@ import {
 } from "./utils"
 import GroupMultiSelect from './containers/Filter/MultiSelect/MultiSelect';
 
+let pjson = require('../../../package.json');
 
 
 class Sidebar extends React.Component {
@@ -460,7 +461,9 @@ class Sidebar extends React.Component {
   }
 
   openBugForm = () => {
-    chrome.tabs.create({ 'url': "https://forms.gle/Syx2w9TNKtADeQkb8" })
+    const userName = this.state.currentUser.email.substring(0, this.state.currentUser.email.indexOf('@')); 
+    console.log('pjson', pjson)
+    chrome.tabs.create({ 'url': 'https://docs.google.com/forms/d/e/1FAIpQLScA3vI8-q5CSJpxDbmuM8tjQuvoCdu9XM6KTTieUrJeHHcGOw/viewform?usp=pp_url&entry.1555642790=' + userName + '&entry.1692277697=' + pjson.version + '&entry.872204213=I+think+I\'m+experiencing+a+bug+with+Adamite&entry.896576682=Your+question+here&entry.1167786342=Your+bug+here' })
   }
 
   closeSidebar = () => {
@@ -820,7 +823,7 @@ class Sidebar extends React.Component {
   }
 
 
-  resetNewSelection = ({id = -1} ) => {
+  resetNewSelection = () => {
     this.setState({ newSelection: null });
     if (this.state.annotatingPage) {
       this.setState({ annotatingPage: false });

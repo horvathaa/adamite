@@ -20,6 +20,12 @@ code, pre {
   border: 1px solid #e5e5e5;
 }
 
+@media (max-width:420px){
+  .Dropdown-Col.col.ml-auto.mr-auto {
+      padding: 0px !important;
+  }
+}
+
 .PostButton .btn{
   font-size: .95em !important;
   color: rgb(30 130 74);
@@ -281,6 +287,7 @@ code, pre {
   .Dropdown-Col{
     position: relative;
      min-width: fit-content;
+     margin:auto;
   }
 
   /* .Dropdown-Col:hover {

@@ -5,9 +5,9 @@ import ADAMITE from '../../../../assets/img/Adamite.png';
 import { GiHamburgerMenu } from 'react-icons/gi';
 import { BiFileBlank, BiHorizontalCenter, BiBookBookmark, BiCog, BiExit, BiGroup, BiUserPlus, BiBug } from 'react-icons/bi';
 import { AiOutlineCheck, AiOutlineUser } from 'react-icons/ai';
-
-
 import './Title.css';
+
+let pjson = require('../../../../../package.json');
 
 export default class Title extends React.Component {
   constructor(props) {
@@ -200,6 +200,11 @@ export default class Title extends React.Component {
                             <Dropdown.Item onClick={this.signOutClickedHandler} className="DropdownItemOverwrite">
                               <div className="DropdownIconsWrapper"><BiExit className="DropdownIcons" /></div>
                               Sign Out
+                            </Dropdown.Item>
+                            <Dropdown.Item className="OptionLineBreak">
+                              <div className='dropdownItemOverwrite small'>
+                                Adamite version {pjson.version}
+                              </div>
                             </Dropdown.Item>
                           </Dropdown.Menu>
                         </Dropdown>
