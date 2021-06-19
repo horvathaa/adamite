@@ -290,7 +290,7 @@ DropdownItemOverwrite dropdown-item
     color: #6B778C;
 }
 
-.TagButton {
+/* .TagButton {
     box-shadow: 2px 2px 1px 0px #ebebebfa;
     border-bottom-left-radius: 8px;
     border: 1px solid #e5e5e5 !important;
@@ -302,7 +302,7 @@ DropdownItemOverwrite dropdown-item
     font-size: 14px !important;
     line-height: 2;
     padding: 0.15rem 0.5rem;
-}
+} */
 
 .TagButton:hover {
     box-shadow: 0 1px 6px 0 rgb(32 33 36 / 25%);
@@ -310,15 +310,29 @@ DropdownItemOverwrite dropdown-item
 
 .TagButton.selected {
     background: #dcf2bb;
-    border-bottom-left-radius: 8px !important;
-    border-top-left-radius: 8px !important;
 }
 
 .TagButtonsWrapper{
-    display: flex;  
+    /* display: flex;   */
     width: 100%;
     padding: .1rem .2rem;
     overflow: overlay;
+}
+
+
+.InnerTag{
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0rem .5rem;
+    position: relative;
+    display: flex;
+    font-size: 0.9rem;
+    flex-wrap: nowrap;
+    cursor: pointer;
+    color: #666;
+    display: block;
+    font-size: .8rem;
 }
 
 .TagControlWrapper{
@@ -327,7 +341,7 @@ DropdownItemOverwrite dropdown-item
 }
 
 .TagButtonPad {
-    display: flex;
+    display: inline-block;
     justify-content: center;
     padding: 4px 8px 0px 0px;
     flex-direction: column;
