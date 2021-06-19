@@ -242,9 +242,13 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, scr
         },
         cancelButtonHandler: () => {
           if (isNew) {
+            
             chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+              console.log("TABS", tabs)
               chrome.tabs.sendMessage(tabs[0].id, { msg: 'REMOVE_TEMP_ANNOTATION', });
+              
             });
+            
             resetNewSelection();
 
           }

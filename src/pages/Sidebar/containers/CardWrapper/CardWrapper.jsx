@@ -25,10 +25,23 @@ const CardWrapper = ({ isNew = false }) => {
     useEffect(() => {
         if (newAnno !== ctx.anno) { setNewAnno(newAnno); }
     });
+
     const dropDownSelection = (option) => {
         let newVal = (option.value === 'Normal') ? "default" : (option.value === 'highlight') ? "highlight" : option.value;
         setNewAnno({ ...newAnno, type: newVal });
     }
+
+    const defaultRenderTag = (props) => {
+        let {tag, key, disabled, onRemove, classNameRemove, getTagDisplayValue, ...other} = props
+        return (
+          <span key={key} {...other}>
+            {getTagDisplayValue(tag.length > 12 ? tag.slice(0,12) + "..." : tag)}
+            {!disabled &&
+              <a className={classNameRemove} onClick={(e) => onRemove(key)} />
+            }
+          </span>
+        )
+      }
 
     const options = ['Normal', 'To-do', 'Question', 'Highlight', 'Issue'];
     const defaultOption = options[0];
@@ -61,7 +74,9 @@ const CardWrapper = ({ isNew = false }) => {
                         <div className="TextareaContainer">
                             <TagsInput value={newAnno.tags !== undefined ? newAnno.tags : []}
                                 onChange={(newTags) => setNewAnno({ ...newAnno, tags: newTags })}
-                                onlyUnique={true} inputProps={{ className: classNames({ 'react-tagsinput-input': true, empty: !newAnno.tags.length }), placeholder: placeHolderString }}
+                                renderTag={defaultRenderTag} 
+                                onlyUnique={true} 
+                                inputProps={{ className: classNames({ 'react-tagsinput-input': true, empty: !newAnno.tags.length }), placeholder: placeHolderString }}
                                 addOnBlur
                             />
                         </div>
@@ -78,7 +93,6 @@ const CardWrapper = ({ isNew = false }) => {
                             &nbsp; &nbsp;
                             <div className="Dropdown-Col col ml-auto mr-auto" style={{display: "flex", backgroundColor: 'transparent', margin: '.25rem'}}>
                             <Tooltip title={"Cancel"} aria-label="Cancel Submission">
-                                
                                     <button className="btn Cancel-Button TagButton" placeholder="Cancel" onClick={
                                         isNew ? () => ctx.cancelButtonHandler() :
                                             () => ctx.updateAnnotation(ctx.anno)

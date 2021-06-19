@@ -262,7 +262,7 @@ const Anchor = ({ anchor, replyIdProp }) => {
                                     </div>
                                 </div>
                             </React.Fragment>
-                        ) : (isCurrentUser && !collapsed) ? (
+                        ) : (hovering && isCurrentUser && !collapsed) ? (
                             <AnchortagsButtons
                                 textClass={textClass}
                                 anchorContent={anchorContent}

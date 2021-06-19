@@ -29,14 +29,13 @@
 }
 .AnchorTagMenu{
     display: flow-root;
-    /*justify-content: space-between;*/
-    /* margin: 8px 5px 0px 8px; */
 }
+
 .AnchorTagsList{
   display: flow-root;
   flex-grow: 5;
-  overflow: hidden;
 }
+
 .AnchorTag{
     border: 1px solid gray;
     border-radius: 5px;
