@@ -12,10 +12,6 @@ import ReplyEditor from './Reply/ReplyEditor';
 import RepliesList from './Reply/RepliesList';
 import { FaHighlighter } from 'react-icons/fa';
 import Tooltip from '@material-ui/core/Tooltip';
-import Issue from '../../../../../assets/img/SVGs/Issue.svg';
-import Question from '../../../../../assets/img/SVGs/Question.svg';
-import Default from '../../../../../assets/img/SVGs/Default.svg';
-import Todo from '../../../../../assets/img/SVGs/Todo.svg';
 
 import { BiComment, BiTask } from 'react-icons/bi';
 import { AiOutlineQuestionCircle, AiOutlineExclamationCircle } from 'react-icons/ai';
@@ -246,9 +242,13 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, scr
         },
         cancelButtonHandler: () => {
           if (isNew) {
+            
             chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+              console.log("TABS", tabs)
               chrome.tabs.sendMessage(tabs[0].id, { msg: 'REMOVE_TEMP_ANNOTATION', });
+              
             });
+            
             resetNewSelection();
 
           }

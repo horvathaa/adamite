@@ -14,6 +14,8 @@ import './Anchor.module.css';
 import TagsInput from 'react-tagsinput';
 import Autosuggest from 'react-autosuggest'
 import AnnotationContext from "../AnnotationContext";
+import { BiHash } from 'react-icons/bi';
+
 
 
 // Using autocomplete example from react tags... still not working for some reason
@@ -74,6 +76,18 @@ const Anchor = ({ anchor, replyIdProp }) => {
         const childAnch = ctx.anno.childAnchor.filter((c) => c.id !== anchorId)
         ctx.updateAnchors(childAnch);
     }
+
+    const defaultRenderTag = (props) => {
+        let {tag, key, disabled, onRemove, classNameRemove, getTagDisplayValue, ...other} = props
+        return (
+          <span key={key} {...other}>
+            {getTagDisplayValue(tag.length > 12 ? tag.slice(0,12) + "..." : tag)}
+            {!disabled &&
+              <a className={classNameRemove} onClick={(e) => onRemove(key)} />
+            }
+          </span>
+        )
+      }
     // useEffect(() => {
     // document.addEventListener('keydown', this.keydown, false);
     // if (tags !== tagsIn) setTags(tagsIn);
@@ -109,8 +123,72 @@ const Anchor = ({ anchor, replyIdProp }) => {
         setEditMode(false);
     }
 
+    const closeTagEdit = () => {
+        setTags(anchor.tags);
+        setEditMode(false);
+    }
+
     const handleExternalAnchor = async () => {
         await chrome.runtime.sendMessage({ msg: "LOAD_EXTERNAL_ANCHOR", from: 'content', payload: url });
+    }
+
+    const Anchortags = ({ textClass, tags }) => {
+
+        return (
+            <React.Fragment>
+                <div className={textClass + " AnchorTagsWrapper"}>
+                    {tags &&
+                        <div className="AnchorTagMenu">
+                            <div className="AnchorTagsList">
+                                {tags.map((t) =>
+                                    <div className="Tag">
+                                        #{t}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    }
+                </div>
+            </React.Fragment>
+        );
+
+    }
+
+    const AnchortagsButtons = ({ textClass, anchorContent, tags, id, ctx, anchorId }) => {
+
+        return (
+            <React.Fragment>
+                    {tags &&
+                        <React.Fragment>
+                            <Tooltip title={"Edit Anchor Tags"} aria-label="edit tooltip">
+                                <div className="AnchorTagsList" onClick={() => { setEditMode(true) }}>
+                                    <div className="AnchorHashTagbutton Tag">
+                                        <BiHash alt="edit annotation" className="profile" id="edit"  />
+                                    </div>
+                                </div>
+                            </Tooltip>
+                            {id && ctx.anno.childAnchor.length > 1 &&
+                                <Tooltip title={"Delete Anchor"} aria-label="delete annotation tooltip">
+                                    <div className="TopIconContainer" >
+                                        <img src={trash} alt="delete annotation" className="profile" id="trash" onClick={() => deleteAnchor({ anchorId: anchorId })} />
+                                    </div>
+                                </Tooltip>}
+                        </React.Fragment>
+                    }
+                <div className={textClass + " AnchorTagsWrapper"}>
+                    {tags &&
+                        <div className="AnchorTagMenu">
+                            <div className="AnchorTagsList">
+                                {tags.map((t) =>
+                                    <div className="Tag">
+                                        #{t}
+                                    </div>
+                                )}
+                            </div>
+                        </div>}
+                </div>
+            </React.Fragment>);
+
     }
 
     function getAnchorIcon() {
@@ -129,7 +207,7 @@ const Anchor = ({ anchor, replyIdProp }) => {
     let textClass = collapsed ? "AnchorTextContainer" : "AnchorTextContainerExpanded";
 
     const anchorObject = currentUrl === url ? (
-        <div className={textClass}>
+        <div className={textClass + " col"}>
             <div className={textClass}>
                  {anchorContent}
             </div>
@@ -141,20 +219,20 @@ const Anchor = ({ anchor, replyIdProp }) => {
                 {url}
             </div>
         </div>
-)
+    )
 
     return (brokenAnchor && url === currentUrl && !pageAnchor) ?
         (<BrokenAnchorComponent anchorContent={anchorContent} anchorIcon={anchorIcon} collapsed={collapsed} />)
         : (
             <div
-                className={classNames({ AnchorContainer: true, Truncated: collapsed })}
+                className={classNames({ AnchorContainer: true, Truncated: collapsed }) + " row"}
                 onMouseEnter={() => handleEvent({ isClick: false, isHover: true })}
                 onMouseLeave={() => handleEvent({ isClick: false, isHover: false })}
                 onClick={() => {
                     (pageAnchor || url !== currentUrl) ? handleExternalAnchor() : handleEvent({ isClick: true, isHover: false })
                 }}
             >
-                <div className="AnchorIconContainer">
+                <div className="AnchorIconContainer col-1">
                     {anchorIcon}
                 </div>
 
@@ -176,48 +254,23 @@ const Anchor = ({ anchor, replyIdProp }) => {
                         ) : (hovering && isCurrentUser && !collapsed) ? (
                             <React.Fragment>
                                 {anchorObject}
-                                {tags &&
-                                    <div className="AnchorTagMenu">
-                                        <div className="AnchorTagsList">
-                                            {tags.map((t) =>
-                                                <div className="AnchorTag">
-                                                    {t}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <Tooltip title={"Edit Anchor Tags"} aria-label="edit tooltip">
-                                            <div className="TopIconContainer" >
-                                                <img src={edit} alt="edit annotation" className="profile" id="edit" onClick={() => { setEditMode(true) }} />
-                                            </div>
-                                        </Tooltip>
-                                        {id && ctx.anno.childAnchor.length > 1 &&
-                                            <Tooltip title={"Delete Anchor"} aria-label="delete annotation tooltip">
-                                                <div className="TopIconContainer" >
-                                                    <img src={trash} alt="delete annotation" className="profile" id="trash" onClick={() => deleteAnchor({ anchorId: anchorId })} />
-                                                </div>
-                                            </Tooltip>}
-                                    </div>
-                                }
+                                <AnchortagsButtons
+                                    textClass={textClass}
+                                    anchorContent={anchorContent}
+                                    tags={tags}
+                                    id={id}
+                                    ctx={ctx}
+                                    anchorId={anchorId} />
                             </React.Fragment>
                         ) : (
                             <React.Fragment>
                                 {anchorObject}
-                                {tags &&
-                                    <div className="AnchorTagMenu">
-                                        <div className="AnchorTagsList">
-                                            {tags.map((t) =>
-                                                <div className="AnchorTag">
-                                                    {t}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                }
+                                <Anchortags
+                                    textClass={textClass}
+                                    tags={tags} 
+                                />
                             </React.Fragment>
                         )}
-                    {/* {(url !== currentUrl || pageAnchor) && (
-                        
-                    )} */}
             </div>
         );
 }

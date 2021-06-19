@@ -1,4 +1,7 @@
 .Tag {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
     border: 1px solid #dbdbdb;
     margin: .15rem;
     border-radius: 24px;

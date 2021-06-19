@@ -54,8 +54,8 @@ const TagFilter = ({ selection, filter, applyFilter, filterTags, tempSearchCount
         setshowTagFilter(false);
     }
 
-    const handleTagClick = (event) => {
-        let tagName = event.target.value;
+    const handleTagClick = (tagName) => {
+        console.log("TARGET VALUE", event)
         if (selection.tags.includes(tagName)) {
             selection.tags = selection.tags.filter(e => e !== tagName);
         }
@@ -67,7 +67,7 @@ const TagFilter = ({ selection, filter, applyFilter, filterTags, tempSearchCount
     return (
         <React.Fragment>
             <div className="FilterSection" onClick={() => { tagFilterHandler(); changeTagSet(filterTags()) }}>
-                <div className="FilterDropDownSearch dropdown">
+                <div className="FilterDropDownSearch FilterBoxes dropdown">
                     <button className="filterDropDown dropdown-toggle btn btn-primary">
                         <div className="FilterIconContainer">
                             <BiHash className="filterReactIcon" />
@@ -112,12 +112,12 @@ const TagFilter = ({ selection, filter, applyFilter, filterTags, tempSearchCount
                                             <div className="TagButtonPad" key={idx}>
                                                 <button value={tag}
                                                     className={
-                                                        classNames({ TagButton: true, selected: selection.tags.includes(tag) })}
-                                                    onClick={e => { e.stopPropagation(); handleTagClick(e); }}>
+                                                        "Tag TagButton " + 
+                                                        classNames({ selected: selection.tags.includes(tag) })}
+                                                    onClick={e => { e.stopPropagation(); handleTagClick(tag); }}>
 
                                                     <React.Fragment>
-                                                        {tag} &nbsp;
-                                                        {tagSet[tag]}
+                                                        {tag} {tagSet[tag]}
                                                     </React.Fragment>
 
                                                 </button>
@@ -133,13 +133,15 @@ const TagFilter = ({ selection, filter, applyFilter, filterTags, tempSearchCount
                                 {Object.entries(tagSet).map((tagCountPair, idx) => {
                                     if (!selection.tags.includes(tagCountPair[0]))
                                         return (
-                                            <div key={idx} className="TagButtonPad">
+                                            <div key={idx} className="TagButtonPad AnchorTagsList">
                                                 <button value={tagCountPair[0]}
                                                     className={
-                                                        classNames({ TagButton: true, selected: selection.tags.includes(tagCountPair[0]) })
+                                                        "Tag " + 
+                                                        classNames({ selected: selection.tags.includes(tagCountPair[0]) })
                                                     }
-                                                    onClick={e => { e.stopPropagation(); handleTagClick(e) }}>
-                                                    {tagCountPair[0]} &nbsp; {tagCountPair[1]}
+                                                    onClick={e => { e.stopPropagation(); handleTagClick(tagCountPair[0]) }}>
+                                                        <div className="InnerTag">#{tagCountPair[0]}</div>
+                                                        <div>count: {tagCountPair[1]}</div>
                                                 </button>
                                             </div>);
                                 })}
