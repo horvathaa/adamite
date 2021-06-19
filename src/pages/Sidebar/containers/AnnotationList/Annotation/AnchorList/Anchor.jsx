@@ -76,6 +76,18 @@ const Anchor = ({ anchor, replyIdProp }) => {
         const childAnch = ctx.anno.childAnchor.filter((c) => c.id !== anchorId)
         ctx.updateAnchors(childAnch);
     }
+
+    const defaultRenderTag = (props) => {
+        let {tag, key, disabled, onRemove, classNameRemove, getTagDisplayValue, ...other} = props
+        return (
+          <span key={key} {...other}>
+            {getTagDisplayValue(tag.length > 12 ? tag.slice(0,12) + "..." : tag)}
+            {!disabled &&
+              <a className={classNameRemove} onClick={(e) => onRemove(key)} />
+            }
+          </span>
+        )
+      }
     // useEffect(() => {
     // document.addEventListener('keydown', this.keydown, false);
     // if (tags !== tagsIn) setTags(tagsIn);
@@ -112,6 +124,7 @@ const Anchor = ({ anchor, replyIdProp }) => {
     }
 
     const closeTagEdit = () => {
+        setTags(anchor.tags);
         setEditMode(false);
     }
 
@@ -157,8 +170,10 @@ const Anchor = ({ anchor, replyIdProp }) => {
                     {tags &&
                         <React.Fragment>
                             <Tooltip title={"Edit Anchor Tags"} aria-label="edit tooltip">
-                                <div className="AnchorTagButton TopIconContainer" >
-                                    <BiHash alt="edit annotation" className="profile" id="edit" onClick={() => { setEditMode(true) }} />
+                                <div className="AnchorTagsList" onClick={() => { setEditMode(true) }}>
+                                    <div className="AnchorHashTagbutton Tag">
+                                        <BiHash alt="edit annotation" className="profile" id="edit"  />
+                                    </div>
                                 </div>
                             </Tooltip>
                             {id && ctx.anno.childAnchor.length > 1 &&
@@ -228,7 +243,7 @@ const Anchor = ({ anchor, replyIdProp }) => {
                                     <div className="AnchorTagInput">
                                         <div className="Tag-Container">
                                             <div className="TextareaContainer">
-                                                <TagsInput value={tags ?? []} onChange={(newTags) => setTags(newTags)} addOnBlur />
+                                                <TagsInput value={tags ?? []} onChange={(newTags) => setTags(newTags)} renderTag={defaultRenderTag} onlyUnique={true} addOnBlur />
                                             </div>
                                         </div>
 
@@ -247,7 +262,7 @@ const Anchor = ({ anchor, replyIdProp }) => {
                                     </div>
                                 </div>
                             </React.Fragment>
-                        ) : (hovering && isCurrentUser && !collapsed) ? (
+                        ) : (isCurrentUser && !collapsed) ? (
                             <AnchortagsButtons
                                 textClass={textClass}
                                 anchorContent={anchorContent}

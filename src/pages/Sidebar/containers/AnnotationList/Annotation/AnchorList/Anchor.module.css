@@ -33,7 +33,7 @@
     /* margin: 8px 5px 0px 8px; */
 }
 .AnchorTagsList{
-  display: flex;
+  display: flow-root;
   flex-grow: 5;
   overflow: hidden;
 }

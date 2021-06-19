@@ -286,6 +286,13 @@
   background: rgb(195 34 38 / 20%) !important
 }
 
+.AnchorHashTagbutton {
+  background-color: white;
+  text-overflow: unset !important;
+  padding: .15rem .15rem !important;
+  padding-left: .1rem !important;
+}
+
 .AnchorTagButtons{
   margin-left: 1.4rem;
   margin-top: .5rem;
