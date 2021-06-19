@@ -112,12 +112,13 @@ const TagFilter = ({ selection, filter, applyFilter, filterTags, tempSearchCount
                                             <div className="TagButtonPad" key={idx}>
                                                 <button value={tag}
                                                     className={
-                                                        "Tag TagButton " + 
+                                                        "Tag TagSelect " + 
                                                         classNames({ selected: selection.tags.includes(tag) })}
                                                     onClick={e => { e.stopPropagation(); handleTagClick(tag); }}>
 
                                                     <React.Fragment>
-                                                        {tag} {tagSet[tag]}
+                                                        <div className="InnerTag">#{tag}</div>
+                                                        <div>count: {tagSet[tag]}</div>
                                                     </React.Fragment>
 
                                                 </button>
