@@ -32,9 +32,13 @@
   overflow-x: hidden;
   overflow-y: hidden;
   text-overflow: ellipsis;
-  /* width: min-content; */
-  max-width: 250px;
-  overflow-wrap: break-word;
+  max-width: 150px;
+}
+
+@media (max-width:500px){
+  .groupName {
+      max-width: 80px;
+  }
 }
 
 .AnnotationContainerPadActive {

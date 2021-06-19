@@ -44,6 +44,10 @@
     border: none;
 }
 
+.FilterDropDownSearch.FilterBoxes {
+    padding-top: .1rem;
+}
+
 .FilterDropDownSearch{
     margin: 0rem .35rem;
 }

@@ -252,12 +252,12 @@ const Anchor = ({ anchor, replyIdProp }) => {
                                 <div className="row">
                                     <div className="col-4">
                                         <button className="btn AnchorTagButtons AnchorTagButtonCancel" placeholder="Cancel" onClick={() => closeTagEdit()}>
-                                            cancel
+                                            Cancel
                                         </button>
                                     </div>
                                     <div className="col-4">
-                                        <button className="btn AnchorTagButtons AnchorTagButtonSubmit" placeholder="Cancel" onClick={() => handleOnEditDone()}>
-                                            save
+                                        <button className="btn AnchorTagButtons AnchorTagButtonSubmit" placeholder="save" onClick={() => handleOnEditDone()}>
+                                            Add
                                         </button>
                                     </div>
                                 </div>

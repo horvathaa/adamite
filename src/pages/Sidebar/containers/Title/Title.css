@@ -10,6 +10,24 @@
   background: white;
 }
 
+.GroupLimitTitle {
+  max-width: 150px;
+  overflow: scroll;
+  text-overflow: ellipsis;
+}
+
+@media (max-width:350px){
+  .GroupLimitTitle {
+    max-width: 75px;
+  }
+}
+
+.GroupLimitDropDown {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 
 @media (max-width:300px){
   .TitleIcon {

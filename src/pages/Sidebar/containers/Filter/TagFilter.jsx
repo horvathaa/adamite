@@ -67,7 +67,7 @@ const TagFilter = ({ selection, filter, applyFilter, filterTags, tempSearchCount
     return (
         <React.Fragment>
             <div className="FilterSection" onClick={() => { tagFilterHandler(); changeTagSet(filterTags()) }}>
-                <div className="FilterDropDownSearch dropdown">
+                <div className="FilterDropDownSearch FilterBoxes dropdown">
                     <button className="filterDropDown dropdown-toggle btn btn-primary">
                         <div className="FilterIconContainer">
                             <BiHash className="filterReactIcon" />
@@ -112,7 +112,7 @@ const TagFilter = ({ selection, filter, applyFilter, filterTags, tempSearchCount
                                             <div className="TagButtonPad" key={idx}>
                                                 <button value={tag}
                                                     className={
-                                                        classNames({ TagButton: true, selected: selection.tags.includes(tag) })}
+                                                        classNames("Tag " + { selected: selection.tags.includes(tag) })}
                                                     onClick={e => { e.stopPropagation(); handleTagClick(e); }}>
 
                                                     <React.Fragment>
@@ -136,7 +136,7 @@ const TagFilter = ({ selection, filter, applyFilter, filterTags, tempSearchCount
                                             <div key={idx} className="TagButtonPad">
                                                 <button value={tagCountPair[0]}
                                                     className={
-                                                        classNames({ TagButton: true, selected: selection.tags.includes(tagCountPair[0]) })
+                                                        classNames("Tag " + { selected: selection.tags.includes(tagCountPair[0]) })
                                                     }
                                                     onClick={e => { e.stopPropagation(); handleTagClick(e) }}>
                                                     {tagCountPair[0]} &nbsp; {tagCountPair[1]}

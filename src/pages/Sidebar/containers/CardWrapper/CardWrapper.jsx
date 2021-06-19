@@ -103,7 +103,7 @@ const CardWrapper = ({ isNew = false }) => {
                                 <BootstrapDropdown.Item className="DropdownItemOverwrite" onClick={_ => setNewAnno({ ...newAnno, isPrivate: true })} eventKey="1">Private</BootstrapDropdown.Item>
                                 <BootstrapDropdown.Item className="DropdownItemOverwrite" onClick={_ => setNewAnno({ ...newAnno, isPrivate: false })} eventKey="2">Public</BootstrapDropdown.Item>
                                 {userGroups.map((group, i) => {
-                                    return <BootstrapDropdown.Item className="DropdownItemOverwrite" onClick={_ => { setGroups([group.gid]); setNewAnno({ ...newAnno, groups: [group.gid] }) }} eventKey={i + 2}>{group.name}</BootstrapDropdown.Item>
+                                    return <BootstrapDropdown.Item className="DropdownItemOverwrite GroupLimitDropDown" onClick={_ => { setGroups([group.gid]); setNewAnno({ ...newAnno, groups: [group.gid] }) }} eventKey={i + 2}>{group.name}</BootstrapDropdown.Item>
                                 })}
                             </SplitButton>
                             </div>
