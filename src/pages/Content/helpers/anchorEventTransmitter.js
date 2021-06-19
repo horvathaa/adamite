@@ -26,6 +26,8 @@ function sendMsg(msg, data, responseCallback) {
 let messagesOut = {
     'ANCHOR_BROKEN': (data, responseCallback) => sendMsg('ANCHOR_BROKEN', data, responseCallback),
     'ANCHOR_CLICKED': (data, responseCallback) => sendMsg('ANCHOR_CLICKED', data, responseCallback),
+    'ANCHOR_HOVERED': (data, responseCallback) => sendMsg('ANCHOR_HOVERED', data, responseCallback),
+    'ANCHOR_UNHOVERED': (data, responseCallback) => sendMsg('ANCHOR_UNHOVERED', data, responseCallback),
     //Create
     'CONTENT_SELECTED': (data, responseCallback) => sendMsg('CONTENT_SELECTED', data, responseCallback),
     'CONTENT_NOT_SELECTED': (data, responseCallback) => sendMsg('CONTENT_NOT_SELECTED', data, responseCallback),

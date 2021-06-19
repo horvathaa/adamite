@@ -222,85 +222,65 @@ class Sidebar extends React.Component {
       }
       else if (
         request.from === 'content' &&
+        request.msg === 'ANCHOR_UNHOVERED'
+      ) {
+        const { target } = request.payload;
+        const anchorIds = target.map(id => id.slice(37,73))
+        anchorIds.forEach((anch, idx) => {
+          const anchor = document.getElementById(anch);
+          anchor.classList.remove("Clicked")
+        })
+      }
+      else if (
+        request.from === 'content' &&
+        request.msg === 'ANCHOR_HOVERED'
+      ) {
+        const { target } = request.payload;
+        const annoIds = target.map(id => id.slice(0,36))
+        const anchorIds = target.map(id => id.slice(37,73))
+        const clickedAnnos = this.state.filteredAnnotations.filter(anno => annoIds.includes(anno.id));
+        clickedAnnos.forEach((anno, idx) => {
+            const anchor = document.getElementById(anchorIds[idx]);
+            anchor.classList.add("Clicked")
+          })
+      }
+      else if (
+        request.from === 'content' &&
         request.msg === 'ANCHOR_CLICKED'
       ) {
         const { target } = request.payload;
-        if (request.payload.url === this.state.url) {
-          // this.setState({
-          let clickedAnnos = this.state.annotations.filter(element => {
-            let repliesWithAnchors = element.replies !== undefined && element.replies !== null && element.replies.length ? this.containsReplyWithAnchor(element.replies) : [];
-            let doesContain = false;
-            if (repliesWithAnchors.length) {
-              repliesWithAnchors.forEach(r => {
-                if (r.anchor.url === this.state.url) {
-                  target.forEach(id => {
-                    if ((String(element.id) + '-' + String(r.replyId)) === id) {
-                      doesContain = true;
-                    }
-                  })
-                }
-              })
-              if (!doesContain) {
-                doesContain = target.includes(element.id);
-              }
-              else {
-                return doesContain;
-              }
-            }
-            if (element.childAnchor !== undefined && element.childAnchor !== null && element.childAnchor.length) {
-
-              element.childAnchor.forEach(c => {
-                if (c.url === this.state.url) {
-                  target.forEach(id => {
-                    if ((String(element.id) + '-' + String(c.id)) === id) {
-                      doesContain = true;
-                    }
-                  })
-                }
-              })
-            }
-            return doesContain;
-          })
-          clickedAnnos.forEach(anno => {
-            // setTimeout(() => {
+        const annoIds = target.map(id => id.slice(0,36))
+        const anchorIds = target.map(id => id.slice(37,73))
+        const clickedAnnos = this.state.filteredAnnotations.filter(anno => annoIds.includes(anno.id));
+        clickedAnnos.forEach((anno, idx) => {
             let annoDiv = document.getElementById(anno.id);
             annoDiv.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
-            // annoDiv.style.backgroundColor = "purple";
-            let anchors = annoDiv.querySelectorAll(".AnchorContainer");
-            // console.log('anchors', anchors);
-            anchors.forEach(anch => {
-              anch.classList.add("Clicked")
-            })
+            const anchor = document.getElementById(anchorIds[idx]);
+            anchor.classList.add("Clicked")
             chrome.tabs.sendMessage(
               this.state.tabId,
               {
                 msg: 'ANNOTATION_FOCUS',
                 id: anno.id,
-                // replyId: this.props.replyId
               }
             );
-            // }, 500);
-
           })
-          setTimeout(() => {
-            clickedAnnos.forEach(anno => {
-              let annoDiv = document.getElementById(anno.id);
-              let anchors = annoDiv.querySelectorAll(".AnchorContainer");
-              anchors.forEach(anch => {
-                anch.classList.remove("Clicked")
-              })
-              chrome.tabs.sendMessage(
-                this.state.tabId,
-                {
-                  msg: 'ANNOTATION_DEFOCUS',
-                  id: anno.id,
-                  // replyId: this.props.replyId
-                }
-              );
-            })
-          }, 2500)
-
-        }
+          // setTimeout(() => {
+          //   anchorIds.forEach((anch, idx) => {
+          //     const anchor = document.getElementById(anch);
+          //     anchor.classList.remove("Clicked")
+              
+          //       chrome.tabs.sendMessage(
+          //         this.state.tabId,
+          //         {
+          //           msg: 'ANNOTATION_DEFOCUS',
+          //           id: annoIds[idx],
+          //           // replyId: this.props.replyId
+          //         }
+          //       );
+          //   })
+            
+          // }, 2500)
       } else if (
         request.from === 'background' &&
         request.msg === 'TOGGLE_SIDEBAR'

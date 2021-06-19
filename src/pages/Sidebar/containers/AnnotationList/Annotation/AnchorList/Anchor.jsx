@@ -109,7 +109,7 @@ const Anchor = ({ anchor, replyIdProp }) => {
                     {
                         msg: message,
                         id: id,
-                        replyId: replyId ? replyId : anchorId,
+                        replyId: anchorId,
                     }
                 );
             }
@@ -119,7 +119,7 @@ const Anchor = ({ anchor, replyIdProp }) => {
     }
 
     const handleOnEditDone = () => {
-        if (tags !== anchor.tags) { console.log('tags', tags, 'anchor.tags', anchor.tags); updateAnchorTags({ newTags: tags, anchorId: anchorId }); }
+        if (tags !== anchor.tags) { updateAnchorTags({ newTags: tags, anchorId: anchorId }); }
         setEditMode(false);
     }
 
@@ -219,6 +219,7 @@ const Anchor = ({ anchor, replyIdProp }) => {
         : (
             <div
                 className={classNames({ AnchorContainer: true, Truncated: collapsed }) + " row"}
+                id={anchorId}
                 onMouseEnter={() => handleEvent({ isClick: false, isHover: true })}
                 onMouseLeave={() => handleEvent({ isClick: false, isHover: false })}
                 onClick={() => {
