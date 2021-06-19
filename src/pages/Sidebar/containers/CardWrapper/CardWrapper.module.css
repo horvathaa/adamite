@@ -20,6 +20,12 @@ code, pre {
   border: 1px solid #e5e5e5;
 }
 
+@media (max-width:420px){
+  .Dropdown-Col.col.ml-auto.mr-auto {
+      padding: 0px !important;
+  }
+}
+
 .PostButton .btn{
   max-width: 100px;
   overflow: hidden;
@@ -284,6 +290,7 @@ code, pre {
   .Dropdown-Col{
     position: relative;
      min-width: fit-content;
+     margin:auto;
   }
 
   /* .Dropdown-Col:hover {

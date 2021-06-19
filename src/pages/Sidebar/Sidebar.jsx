@@ -20,6 +20,7 @@ import {
 } from "./utils"
 import GroupMultiSelect from './containers/Filter/MultiSelect/MultiSelect';
 
+let pjson = require('../../../package.json');
 
 
 class Sidebar extends React.Component {
@@ -221,85 +222,65 @@ class Sidebar extends React.Component {
       }
       else if (
         request.from === 'content' &&
+        request.msg === 'ANCHOR_UNHOVERED'
+      ) {
+        const { target } = request.payload;
+        const anchorIds = target.map(id => id.slice(37,73))
+        anchorIds.forEach((anch, idx) => {
+          const anchor = document.getElementById(anch);
+          anchor.classList.remove("Clicked")
+        })
+      }
+      else if (
+        request.from === 'content' &&
+        request.msg === 'ANCHOR_HOVERED'
+      ) {
+        const { target } = request.payload;
+        const annoIds = target.map(id => id.slice(0,36))
+        const anchorIds = target.map(id => id.slice(37,73))
+        const clickedAnnos = this.state.filteredAnnotations.filter(anno => annoIds.includes(anno.id));
+        clickedAnnos.forEach((anno, idx) => {
+            const anchor = document.getElementById(anchorIds[idx]);
+            anchor.classList.add("Clicked")
+          })
+      }
+      else if (
+        request.from === 'content' &&
         request.msg === 'ANCHOR_CLICKED'
       ) {
         const { target } = request.payload;
-        if (request.payload.url === this.state.url) {
-          // this.setState({
-          let clickedAnnos = this.state.annotations.filter(element => {
-            let repliesWithAnchors = element.replies !== undefined && element.replies !== null && element.replies.length ? this.containsReplyWithAnchor(element.replies) : [];
-            let doesContain = false;
-            if (repliesWithAnchors.length) {
-              repliesWithAnchors.forEach(r => {
-                if (r.anchor.url === this.state.url) {
-                  target.forEach(id => {
-                    if ((String(element.id) + '-' + String(r.replyId)) === id) {
-                      doesContain = true;
-                    }
-                  })
-                }
-              })
-              if (!doesContain) {
-                doesContain = target.includes(element.id);
-              }
-              else {
-                return doesContain;
-              }
-            }
-            if (element.childAnchor !== undefined && element.childAnchor !== null && element.childAnchor.length) {
-
-              element.childAnchor.forEach(c => {
-                if (c.url === this.state.url) {
-                  target.forEach(id => {
-                    if ((String(element.id) + '-' + String(c.id)) === id) {
-                      doesContain = true;
-                    }
-                  })
-                }
-              })
-            }
-            return doesContain;
-          })
-          clickedAnnos.forEach(anno => {
-            // setTimeout(() => {
+        const annoIds = target.map(id => id.slice(0,36))
+        const anchorIds = target.map(id => id.slice(37,73))
+        const clickedAnnos = this.state.filteredAnnotations.filter(anno => annoIds.includes(anno.id));
+        clickedAnnos.forEach((anno, idx) => {
             let annoDiv = document.getElementById(anno.id);
             annoDiv.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
-            // annoDiv.style.backgroundColor = "purple";
-            let anchors = annoDiv.querySelectorAll(".AnchorContainer");
-            // console.log('anchors', anchors);
-            anchors.forEach(anch => {
-              anch.classList.add("Clicked")
-            })
+            const anchor = document.getElementById(anchorIds[idx]);
+            anchor.classList.add("Clicked")
             chrome.tabs.sendMessage(
               this.state.tabId,
               {
                 msg: 'ANNOTATION_FOCUS',
                 id: anno.id,
-                // replyId: this.props.replyId
               }
             );
-            // }, 500);
-
           })
-          setTimeout(() => {
-            clickedAnnos.forEach(anno => {
-              let annoDiv = document.getElementById(anno.id);
-              let anchors = annoDiv.querySelectorAll(".AnchorContainer");
-              anchors.forEach(anch => {
-                anch.classList.remove("Clicked")
-              })
-              chrome.tabs.sendMessage(
-                this.state.tabId,
-                {
-                  msg: 'ANNOTATION_DEFOCUS',
-                  id: anno.id,
-                  // replyId: this.props.replyId
-                }
-              );
-            })
-          }, 2500)
-
-        }
+          // setTimeout(() => {
+          //   anchorIds.forEach((anch, idx) => {
+          //     const anchor = document.getElementById(anch);
+          //     anchor.classList.remove("Clicked")
+              
+          //       chrome.tabs.sendMessage(
+          //         this.state.tabId,
+          //         {
+          //           msg: 'ANNOTATION_DEFOCUS',
+          //           id: annoIds[idx],
+          //           // replyId: this.props.replyId
+          //         }
+          //       );
+          //   })
+            
+          // }, 2500)
       } else if (
         request.from === 'background' &&
         request.msg === 'TOGGLE_SIDEBAR'
@@ -460,7 +441,9 @@ class Sidebar extends React.Component {
   }
 
   openBugForm = () => {
-    chrome.tabs.create({ 'url': "https://forms.gle/Syx2w9TNKtADeQkb8" })
+    const userName = this.state.currentUser.email.substring(0, this.state.currentUser.email.indexOf('@')); 
+    console.log('pjson', pjson)
+    chrome.tabs.create({ 'url': 'https://docs.google.com/forms/d/e/1FAIpQLScA3vI8-q5CSJpxDbmuM8tjQuvoCdu9XM6KTTieUrJeHHcGOw/viewform?usp=pp_url&entry.1555642790=' + userName + '&entry.1692277697=' + pjson.version + '&entry.872204213=I+think+I\'m+experiencing+a+bug+with+Adamite&entry.896576682=Your+question+here&entry.1167786342=Your+bug+here' })
   }
 
   closeSidebar = () => {
@@ -874,7 +857,7 @@ class Sidebar extends React.Component {
           }
         })
       }
-      const anchorTags = annotation.childAnchor.filter(c => c.tags !== undefined && c.tags.length).map(c => c.tags);
+      const anchorTags = annotation.childAnchor.filter(c => c.tags !== undefined && c.tags.length).map(c => c.tags).flat();
       anchorTags.forEach(tag => {
         if (tagSet.hasOwnProperty(tag)) {
           tagSet[tag] += 1;

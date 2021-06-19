@@ -38,7 +38,8 @@ const ReplyEditor = ({ reply = null, finishReply = () => { } }) => {
                         url: url,
                         anchor: anchor,
                         offsets: offsets,
-                        hostname: hostname
+                        hostname: hostname,
+                        id: uuidv4()
                     }
                 });
                 const highlightInfo = {

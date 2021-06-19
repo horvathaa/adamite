@@ -15,19 +15,7 @@ import { BiHash, BiTrash } from 'react-icons/bi';
 // https://stackoverflow.com/questions/2540969/remove-querystring-from-url
 function getPathFromUrl(url) { return url.split(/[?#]/)[0]; }
 
-const BrokenAnchorComponent = ({ anchorContent, anchorIcon, collapsed }) => {
-    return (
-        <div
-            className={classNames({ AnchorContainer: true, Truncated: collapsed })}>
-            <Tooltip title={"broken anchor"} aria-label="annotation count">
-                <div className="AnchorIconContainer">
-                    {anchorIcon}
-                </div>
-            </Tooltip>
-            <AnchorObject textClass={textClass} />
-        </div>
-    )
-}
+
 
 
 const Anchor = ({ anchor, replyIdProp }) => {
@@ -87,7 +75,7 @@ const Anchor = ({ anchor, replyIdProp }) => {
                     {
                         msg: message,
                         id: id,
-                        replyId: replyId ? replyId : anchorId,
+                        replyId: anchorId,
                     }
                 );
             }
@@ -97,7 +85,7 @@ const Anchor = ({ anchor, replyIdProp }) => {
     }
 
     const handleOnEditDone = () => {
-        if (tags !== anchor.tags) { console.log('tags', tags, 'anchor.tags', anchor.tags); updateAnchorTags({ newTags: tags, anchorId: anchorId }); }
+        if (tags !== anchor.tags) { updateAnchorTags({ newTags: tags, anchorId: anchorId }); }
         setEditMode(false);
     }
 
@@ -233,6 +221,20 @@ const Anchor = ({ anchor, replyIdProp }) => {
         }
     }
 
+    const BrokenAnchorComponent = ({ anchorContent, anchorIcon, collapsed }) => {
+        return (
+            <div
+                className={classNames({ AnchorContainer: true, Truncated: collapsed })}>
+                <Tooltip title={"broken anchor"} aria-label="annotation count">
+                    <div className="AnchorIconContainer">
+                        {anchorIcon}
+                    </div>
+                </Tooltip>
+                <AnchorObject textClass={textClass} />
+            </div>
+        )
+    }
+
     function getAnchorIcon() {
         return (pageAnchor) ?
             <BsFileEarmarkText className="AnchorIcon" />
@@ -251,6 +253,7 @@ const Anchor = ({ anchor, replyIdProp }) => {
         : (
             <div
                 className={classNames({ AnchorContainer: true, Truncated: collapsed }) + " row"}
+                id={anchorId}
                 onMouseEnter={() => handleEvent({ isClick: false, isHover: true })}
                 onMouseLeave={() => handleEvent({ isClick: false, isHover: false })}
                 onClick={() => {

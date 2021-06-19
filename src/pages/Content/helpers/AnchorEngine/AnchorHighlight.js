@@ -22,7 +22,7 @@ export const highlightAnnotationDeep = (anno) => {
     if (anno.replies !== undefined && anno.replies !== null && anno.replies.length) {
         anno.replies.forEach(reply => {
             if (reply.anchor !== undefined && reply.anchor !== null) {
-                let domId = anno.id.toString() + "-" + reply.replyId.toString();
+                let domId = anno.id.toString() + "-" +  reply.anchor.id;
                 highlightAnnotation(reply.anchor, domId, "reply")
             }
         })
@@ -47,7 +47,7 @@ export const checkForBrokenAnnotationDeep = (anno, ids) => {
     if (anno.replies !== undefined && anno.replies !== null && anno.replies.length) {
         anno.replies.forEach(reply => {
             if (reply.xpath !== undefined && reply.xpath !== null) {
-                let domId = anno.id.toString() + "-" + reply.replyId.toString();
+                let domId = anno.id.toString() + "-"  + reply.anchor.id;
                 if (!highlightAnnotation(reply, domId, "reply")) {
                     // console.log("highlightAnnotation Reply ERROR"); console.log(anno);
                     //checkIfBrokenAnchor(domId, { "id": anno.id, "replyId": reply.replyId });

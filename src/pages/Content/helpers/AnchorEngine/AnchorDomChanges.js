@@ -17,6 +17,8 @@ function _addHighlightSpan({ match, node, spanId, className }) {
     span.setAttribute("name", spanId);
     span.textContent = match;
     span.onclick = anchorClick;
+    span.onmouseover = highlightAnchorSidebar;
+    span.onmouseout = unhighlightAnchor;
     span.className = className;
     node.parentNode.insertBefore(span, node.nextSibling);
     node.parentNode.normalize();
@@ -112,6 +114,92 @@ var splitReinsertText = function (node, substring, startOffset, endOffset, callb
             return false;
         }
     }
+}
+
+export function unhighlightAnchor(e) {
+    var ids = [e.target.attributes.getNamedItem("name").value];
+
+    var spans = document.getElementsByName(ids[0])
+    spans.forEach(e => e.style.backgroundColor = null);
+
+    for (var i = 0; i < spans.length; i++) {
+        //children
+        var arr = [].slice.call(spans[i].children);
+        var arr = arr.filter((function (element) {
+            return element.className === 'highlight-adamite-annotation';
+        }));
+        arr.forEach(element => {
+            ids.push(element.attributes.getNamedItem("name").value)
+        });
+        //parents
+        var parentNode = spans[i].parentNode
+        while (parentNode.className === 'highlight-adamite-annotation') {
+            ids.push(parentNode.attributes.getNamedItem("name").value)
+            parentNode = parentNode.parentNode;
+        }
+    }
+    // ids = ids.filter(function (item, pos) {
+    //     return ids.indexOf(item) == pos;
+    // });
+
+    var ids = [...new Set(ids)]
+    // console.log(ids);
+    // console.log("here is the ids", ids)
+    //);
+    const target = ids;
+
+    transmitMessage({
+        msg: 'ANCHOR_UNHOVERED', sentFrom: "AnchorDomChanges", data: {
+            payload: {
+                url: getPathFromUrl(window.location.href),
+                target: target,
+            }
+        }
+    });
+
+}
+
+export function highlightAnchorSidebar(e) {
+    var ids = [e.target.attributes.getNamedItem("name").value];
+
+    var spans = document.getElementsByName(ids[0])
+    spans.forEach(e => e.style.backgroundColor = 'rgb(45, 350, 180, 0.4)');
+
+
+    for (var i = 0; i < spans.length; i++) {
+        //children
+        var arr = [].slice.call(spans[i].children);
+        var arr = arr.filter((function (element) {
+            return element.className === 'highlight-adamite-annotation';
+        }));
+        arr.forEach(element => {
+            ids.push(element.attributes.getNamedItem("name").value)
+        });
+        //parents
+        var parentNode = spans[i].parentNode
+        while (parentNode.className === 'highlight-adamite-annotation') {
+            ids.push(parentNode.attributes.getNamedItem("name").value)
+            parentNode = parentNode.parentNode;
+        }
+    }
+    // ids = ids.filter(function (item, pos) {
+    //     return ids.indexOf(item) == pos;
+    // });
+
+    var ids = [...new Set(ids)]
+    // console.log(ids);
+    // console.log("here is the ids", ids)
+    //);
+    const target = ids;
+    // const target = e.target.attributes.getNamedItem("name").value;
+    transmitMessage({
+        msg: 'ANCHOR_HOVERED', sentFrom: "AnchorDomChanges", data: {
+            payload: {
+                url: getPathFromUrl(window.location.href),
+                target: target,
+            }
+        }
+    });
 }
 
 export function anchorClick(e) {
