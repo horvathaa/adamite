@@ -877,7 +877,7 @@ class Sidebar extends React.Component {
           }
         })
       }
-      const anchorTags = annotation.childAnchor.filter(c => c.tags !== undefined && c.tags.length).map(c => c.tags);
+      const anchorTags = annotation.childAnchor.filter(c => c.tags !== undefined && c.tags.length).map(c => c.tags).flat();
       anchorTags.forEach(tag => {
         if (tagSet.hasOwnProperty(tag)) {
           tagSet[tag] += 1;

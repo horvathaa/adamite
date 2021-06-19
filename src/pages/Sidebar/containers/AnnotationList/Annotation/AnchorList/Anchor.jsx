@@ -136,6 +136,11 @@ const Anchor = ({ anchor, replyIdProp }) => {
 
         return (
             <React.Fragment>
+                <div className={textClass + " col"}>
+                    <div className={textClass}>
+                        {anchorContent}
+                    </div>
+                </div>
                 <div className={textClass + " AnchorTagsWrapper"}>
                     {tags &&
                         <div className="AnchorTagMenu">
@@ -158,6 +163,10 @@ const Anchor = ({ anchor, replyIdProp }) => {
 
         return (
             <React.Fragment>
+                <div className={textClass + " col"}>
+                    <div className={textClass}>
+                        {anchorContent}
+                    </div>
                     {tags &&
                         <React.Fragment>
                             <Tooltip title={"Edit Anchor Tags"} aria-label="edit tooltip">
@@ -175,6 +184,7 @@ const Anchor = ({ anchor, replyIdProp }) => {
                                 </Tooltip>}
                         </React.Fragment>
                     }
+                </div>
                 <div className={textClass + " AnchorTagsWrapper"}>
                     {tags &&
                         <div className="AnchorTagMenu">
@@ -201,25 +211,8 @@ const Anchor = ({ anchor, replyIdProp }) => {
                     <img src={anchorOnOtherPage} className="AnchorIcon" alt='anchor on other page' />;
     }
 
-    
-
     let anchorIcon = getAnchorIcon();
     let textClass = collapsed ? "AnchorTextContainer" : "AnchorTextContainerExpanded";
-
-    const anchorObject = currentUrl === url ? (
-        <div className={textClass + " col"}>
-            <div className={textClass}>
-                 {anchorContent}
-            </div>
-        </div>
-    ) : (
-        <div className={textClass}>
-            {anchorContent} 
-            <div className="AnchorUrlContainer" onClick={() => handleExternalAnchor()}>
-                {url}
-            </div>
-        </div>
-    )
 
     return (brokenAnchor && url === currentUrl && !pageAnchor) ?
         (<BrokenAnchorComponent anchorContent={anchorContent} anchorIcon={anchorIcon} collapsed={collapsed} />)
@@ -236,41 +229,59 @@ const Anchor = ({ anchor, replyIdProp }) => {
                     {anchorIcon}
                 </div>
 
-                {editMode ?
+                {url === currentUrl && !pageAnchor ?
+                    editMode ?
                         (
                             <React.Fragment>
-                            {anchorObject}
-                                <div className="AnchorTagMenu">
-                                    <div className="AnchorTagsList">
-                                        <TagsInput value={tags ?? []} onChange={(newTags) => setTags(newTags)} addOnBlur />
-                                    </div>
-                                    <div className="AnchorTagEdit"
-                                        onClick={() => handleOnEditDone()}
-                                    >
-                                        save
+                                <div className={textClass + " col"}>
+                                    <div className={textClass}>
+                                        {anchorContent}
                                     </div>
                                 </div>
-                                </React.Fragment>
+
+                                <div className={textClass + " row"}>
+                                    <div className="AnchorTagInput">
+                                        <div className="Tag-Container">
+                                            <div className="TextareaContainer">
+                                                <TagsInput value={tags ?? []} onChange={(newTags) => setTags(newTags)} renderTag={defaultRenderTag} onlyUnique={true} addOnBlur />
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                                <div className="row">
+                                    <div className="col-4">
+                                        <button className="btn AnchorTagButtons AnchorTagButtonCancel" placeholder="Cancel" onClick={() => closeTagEdit()}>
+                                            Cancel
+                                        </button>
+                                    </div>
+                                    <div className="col-4">
+                                        <button className="btn AnchorTagButtons AnchorTagButtonSubmit" placeholder="save" onClick={() => handleOnEditDone()}>
+                                            Add
+                                        </button>
+                                    </div>
+                                </div>
+                            </React.Fragment>
                         ) : (hovering && isCurrentUser && !collapsed) ? (
-                            <React.Fragment>
-                                {anchorObject}
-                                <AnchortagsButtons
-                                    textClass={textClass}
-                                    anchorContent={anchorContent}
-                                    tags={tags}
-                                    id={id}
-                                    ctx={ctx}
-                                    anchorId={anchorId} />
-                            </React.Fragment>
+                            <AnchortagsButtons
+                                textClass={textClass}
+                                anchorContent={anchorContent}
+                                tags={tags}
+                                id={id}
+                                ctx={ctx}
+                                anchorId={anchorId} />
                         ) : (
-                            <React.Fragment>
-                                {anchorObject}
-                                <Anchortags
-                                    textClass={textClass}
-                                    tags={tags} 
-                                />
-                            </React.Fragment>
-                        )}
+                            <Anchortags
+                                textClass={textClass}
+                                tags={tags} />
+                        ) : (
+                        <div className={textClass}>
+                            {anchorContent}
+                            <div className="AnchorUrlContainer" onClick={() => handleExternalAnchor()}>
+                                {url}
+                            </div>
+                        </div>
+                    )}
             </div>
         );
 }
