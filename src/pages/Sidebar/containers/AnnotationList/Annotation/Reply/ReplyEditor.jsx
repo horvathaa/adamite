@@ -115,6 +115,18 @@ const ReplyEditor = ({ reply = null, finishReply = () => { } }) => {
         finishReply();
     }
 
+    const defaultRenderTag = (props) => {
+        let {tag, key, disabled, onRemove, classNameRemove, getTagDisplayValue, ...other} = props
+        return (
+          <span key={key} {...other}>
+            {getTagDisplayValue(tag.length > 12 ? tag.slice(0,12) + "..." : tag)}
+            {!disabled &&
+              <a className={classNameRemove} onClick={(e) => onRemove(key)} />
+            }
+          </span>
+        )
+      }
+
     let submission = showQuestionAnswerInterface ? (
         <SplitButton
             key="typeOfReply"
@@ -151,7 +163,7 @@ const ReplyEditor = ({ reply = null, finishReply = () => { } }) => {
                 <div className="Tag-Container">
                     <div className="row">
                         <div className="TextareaContainer">
-                            <TagsInput value={newReply.tags ?? []} onChange={tagsHandleChange} onlyUnique={true} />
+                            <TagsInput value={newReply.tags ?? []} onChange={tagsHandleChange} renderTag={defaultRenderTag} onlyUnique={true} />
                         </div>
                     </div>
                 </div>

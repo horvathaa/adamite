@@ -12,11 +12,11 @@
     --rmsc-h: auto !important; /* Height */
 }
 
-.selected{
+/* .selected{
     margin-left: 5px !important;
     border-top-left-radius: 20px !important;
     border-bottom-left-radius: 20px !important;
-}
+} */
 
 .multi-select:focus {
     --rmsc-border: none !important;

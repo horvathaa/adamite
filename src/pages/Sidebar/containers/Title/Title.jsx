@@ -86,13 +86,13 @@ export default class Title extends React.Component {
     const listItems = args.items.map((option, idx) => {
       const currentGroup = Array.isArray(args.activeFilter) ? args.activeFilter[0] : args.activeFilter;
         let active = currentGroup === option.label ? true : false
-        return <Dropdown.Item key={idx} onSelect={(e) => args.updateFunction([option], e)} data-value={option.label}> {active ? <AiOutlineCheck /> : ""} {option.label} </Dropdown.Item>
+        return <Dropdown.Item key={idx} className="DropdownItemOverwrite GroupLimitDropDown" onSelect={(e) => args.updateFunction([option], e)} data-value={option.label}> {active ? <AiOutlineCheck /> : ""} {option.label} </Dropdown.Item>
     });
 
     return (
         <React.Fragment>
             <Dropdown className={args.className} style={{margin: 'auto'}}>
-                <Dropdown.Toggle title={args.header} className="filterDropDown">
+                <Dropdown.Toggle title={args.header} className="filterDropDown GroupLimitTitle">
                     <div className="FilterIconContainer">
                         <args.Icon className="filterReactIcon" />
                     </div>

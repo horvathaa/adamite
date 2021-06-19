@@ -21,6 +21,9 @@ code, pre {
 }
 
 .PostButton .btn{
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-size: .95em !important;
   color: rgb(30 130 74);
   background: rgb(34 195 105 / 17%);

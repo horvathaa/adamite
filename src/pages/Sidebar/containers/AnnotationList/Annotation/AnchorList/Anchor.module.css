@@ -15,6 +15,7 @@
   font-weight: 400;
 }
 .AnchorTextContainerExpanded {
+  display: flex;
   width: 100%;
   padding: 0px 0px 0px 8px;
   font-weight: 400;
@@ -27,15 +28,14 @@
   outline-color: transparent !important;
 }
 .AnchorTagMenu{
-    display: flex;
-    /*justify-content: space-between;*/
-    margin: 8px 5px 0px 8px;
+    display: flow-root;
 }
+
 .AnchorTagsList{
-  display: flex;
+  display: flow-root;
   flex-grow: 5;
-  overflow: hidden;
 }
+
 .AnchorTag{
     border: 1px solid gray;
     border-radius: 5px;
@@ -63,27 +63,33 @@
   .react-tagsinput--focused {
     border-color: darkslategray;
   }
+
+  .react-tagsinput-tag #text {
+    max-width: 20px;
+  }
   
   .react-tagsinput-tag {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
     border: 1px solid #dbdbdb;
     margin: .15rem;
     border-radius: 24px;
     padding: .25em .5rem;
     position: relative;
-    display: flex;
+    display: inline-flex;
     font-size: 0.9rem;
     flex-wrap: wrap;
     position: relative;
     cursor: pointer;
     color: #666;
-    display: inline-block;
     font-family: 'Roboto';
     font-size: .8rem;
     font-weight: 300;
   }
 
   .react-tagsinput-tag a::before {
-    content: " ×";
+    content: " × ";
   }
   
   .react-tagsinput-remove {
@@ -178,5 +184,12 @@
   
   .react-autosuggest__suggestion--highlighted {
     background-color: #ddd;
+  }
+
+  .AnchorTagButton{
+    display: table;
+    background: rgb(34 195 105 / 19%);
+    margin-left: .5rem;
+    border: 1px solid rgb(34 195 105 / 44%) !important;
   }
   

@@ -820,7 +820,7 @@ class Sidebar extends React.Component {
   }
 
 
-  resetNewSelection = ({id = -1} ) => {
+  resetNewSelection = () => {
     this.setState({ newSelection: null });
     if (this.state.annotatingPage) {
       this.setState({ annotatingPage: false });

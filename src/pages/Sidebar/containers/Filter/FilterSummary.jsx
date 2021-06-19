@@ -212,7 +212,7 @@ class FilterSummary extends React.Component {
                     <div className="FilterSection">
                         {this.createDropDown({
                             Icon: BiTimeFive,
-                            className: 'FilterDropDownSearch ',
+                            className: 'FilterDropDownSearch FilterBoxes',
                             activeFilter: this.translateTime(filter.timeRange),
                             header: "Posted date",
                             updateFunction: this.updateTimeRange,
@@ -226,7 +226,7 @@ class FilterSummary extends React.Component {
                     <div className="FilterSection">
                         {this.createDropDown({
                             Icon: BsChatSquareDots,
-                            className: 'FilterDropDownSearch',
+                            className: 'FilterDropDownSearch FilterBoxes',
                             activeFilter: annoType,
                             header: "Annotation Type",
                             updateFunction: this.updateAnnoType,
@@ -241,7 +241,7 @@ class FilterSummary extends React.Component {
                     <div className="FilterSection">
                         {this.createDropDown({
                             Icon: BiSort,
-                            className: 'FilterDropDownSearch',
+                            className: 'FilterDropDownSearch FilterBoxes',
                             activeFilter: currentSort === 'page' ? "Page" : "Time",
                             header: "Sort By",
                             updateFunction: this.updateSort,
