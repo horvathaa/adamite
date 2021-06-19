@@ -15,19 +15,7 @@ import { BiHash, BiTrash } from 'react-icons/bi';
 // https://stackoverflow.com/questions/2540969/remove-querystring-from-url
 function getPathFromUrl(url) { return url.split(/[?#]/)[0]; }
 
-const BrokenAnchorComponent = ({ anchorContent, anchorIcon, collapsed }) => {
-    return (
-        <div
-            className={classNames({ AnchorContainer: true, Truncated: collapsed })}>
-            <Tooltip title={"broken anchor"} aria-label="annotation count">
-                <div className="AnchorIconContainer">
-                    {anchorIcon}
-                </div>
-            </Tooltip>
-            <AnchorObject textClass={textClass} />
-        </div>
-    )
-}
+
 
 
 const Anchor = ({ anchor, replyIdProp }) => {
@@ -231,6 +219,20 @@ const Anchor = ({ anchor, replyIdProp }) => {
         else{
             return ( <Anchortags textClass={textClass} /> );
         }
+    }
+
+    const BrokenAnchorComponent = ({ anchorContent, anchorIcon, collapsed }) => {
+        return (
+            <div
+                className={classNames({ AnchorContainer: true, Truncated: collapsed })}>
+                <Tooltip title={"broken anchor"} aria-label="annotation count">
+                    <div className="AnchorIconContainer">
+                        {anchorIcon}
+                    </div>
+                </Tooltip>
+                <AnchorObject textClass={textClass} />
+            </div>
+        )
     }
 
     function getAnchorIcon() {
