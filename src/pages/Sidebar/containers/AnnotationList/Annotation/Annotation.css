@@ -278,6 +278,10 @@
   stroke: rgb(20, 197, 135);
 }
 
+.AnchorTagsList.col-2{
+  padding: .25rem;
+}
+
 .AnchorTagsList .Tag {
   background-color: white;
 }
@@ -317,6 +321,7 @@
 
 .AnchorContainer .col {
   background-color: transparent !important;
+  display: table;
 }
 
 .AnchorContainer {
