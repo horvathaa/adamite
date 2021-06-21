@@ -228,7 +228,9 @@ class Sidebar extends React.Component {
         const anchorIds = target.map(id => id.slice(37,73))
         anchorIds.forEach((anch, idx) => {
           const anchor = document.getElementById(anch);
-          anchor.classList.remove("Clicked")
+          if(anchor !== null) {
+            anchor.classList.remove("Clicked")
+          }
         })
       }
       else if (
@@ -241,7 +243,9 @@ class Sidebar extends React.Component {
         const clickedAnnos = this.state.filteredAnnotations.filter(anno => annoIds.includes(anno.id));
         clickedAnnos.forEach((anno, idx) => {
             const anchor = document.getElementById(anchorIds[idx]);
-            anchor.classList.add("Clicked")
+            if(anchor !== null) {
+              anchor.classList.add("Clicked")
+            }
           })
       }
       else if (
@@ -256,7 +260,9 @@ class Sidebar extends React.Component {
             let annoDiv = document.getElementById(anno.id);
             annoDiv.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
             const anchor = document.getElementById(anchorIds[idx]);
-            anchor.classList.add("Clicked")
+            if(anchor !== null) {
+              anchor.classList.add("Clicked")
+            }
             chrome.tabs.sendMessage(
               this.state.tabId,
               {
