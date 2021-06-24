@@ -94,16 +94,16 @@ let commands = {
             chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
                 chrome.storage.local.get(['sidebarStatus'], sidebarStatus => {
                     sidebarStatus = sidebarStatus.sidebarStatus;
-                    const index = sidebarStatus !== undefined && sidebarStatus.length ? sidebarStatus.findIndex(side => side.id === tabs[0].id) : -1;
-                    sidebarStatus = sidebarStatus === undefined || Object.keys(sidebarStatus).length === 0 ? [] : sidebarStatus;
+                    sidebarStatus = sidebarStatus !== undefined && sidebarStatus.length ? sidebarStatus : [];
+                    const index = sidebarStatus.length ? sidebarStatus.findIndex(side => side.id === tabs[0].id) : -1;
                     let opening;
                     if (index > -1) {
                         opening = false;
-                        sidebarStatus = sidebarStatus.length ? sidebarStatus.filter(side => side.id !== tabs[0].id) : -1;
+                        sidebarStatus = sidebarStatus.length ? sidebarStatus.filter(side => side.id !== tabs[0].id) : [];
                     }
                     else if (getPathFromUrl(tabs[0].url) !== "" && !getPathFromUrl(tabs[0].url).includes("chrome://")) {
-                        sidebarStatus.push({ id: tabs[0].id, open: true, windowId: tabs[0].windowId })
                         opening = true;
+                        sidebarStatus.push({ id: tabs[0].id, open: true, windowId: tabs[0].windowId })
                     }
                     toggleSidebar(opening);
                     chrome.storage.local.set({ sidebarStatus }, function () {
