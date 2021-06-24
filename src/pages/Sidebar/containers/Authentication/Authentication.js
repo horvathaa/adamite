@@ -64,6 +64,21 @@ const Authentication = props => {
     );
   };
 
+  const signInGoogleClickedHandler = e => {
+    e.preventDefault();
+    chrome.runtime.sendMessage(
+      {
+        msg: 'USER_SIGNINGOOGLE',
+      },
+      response => {
+        console.log(response);
+        if (response !== undefined && response.error) {
+          alert(response.message);
+        }
+      }
+    );
+  };
+
   const forgetPwdClickedHandler = e => {
     e.preventDefault();
     if (!EmailValidator.validate(email)) {
@@ -119,6 +134,8 @@ const Authentication = props => {
       <div className="InputFieldContainer row">
         <button onClick={signUpClickedHandler}><div>Sign up</div></button>
         <button onClick={signInClickedHandler}><div>Sign in</div></button>
+        <button onClick={signInGoogleClickedHandler}><div>Sign in Google</div></button>
+        
         
         {/* <button onClick={forgetPwdClickedHandler}><div>Forget pwd</div></button> */}
       </div>

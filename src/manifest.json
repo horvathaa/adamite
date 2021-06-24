@@ -15,6 +15,14 @@
     "tabs",
     "storage"
   ],
+  "oauth2": {
+    "client_id": "644799342321-k92na2bh4htvbkpi4hqor8cq6t5896pg.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/userinfo.email",
+      "https://www.googleapis.com/auth/userinfo.profile"
+    ]
+  },
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqXCbfiCeNyDi38nXpH6oDUiGthrKfFv80wyskzj3MGUzW390ZQiY/GIvlm5uZExxEauIUpcIPEJJND+DT2kerZpSnXuQfwQB0BwXwfjEWOg7dlmhILOhYNbbNf1WcwdHX07dMoLV1p5hg/mShdPjDva5hZ8a73vmgDllF326pNeVarFw0htH2P+iWqSDvtbRByUm5wAWaerz28VOEfzNo6aHlx5bMfm8EbNMnP+1p6NFO2gyM52kaVbLNmTLooQ3neVsckC00UjnHkcsotGZ1D2cf9bMqZpg3RbSO+gXf3XVXe5z4S8lGF0mJjbuoivxc5pDCdX0D5o8aipR/plmBQIDAQAB",
   "icons": {
     "128": "Adamite.png"
   },
@@ -49,5 +57,5 @@
     "Issue.svg"
   ],
   "manifest_version": 2,
-  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
+  "content_security_policy": "script-src 'self' https://www.gstatic.com/ https://*.firebaseio.com https://www.googleapis.com https://apis.google.com 'unsafe-eval'; object-src 'self'"
 }
