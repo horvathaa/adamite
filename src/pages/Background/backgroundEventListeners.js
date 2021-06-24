@@ -91,19 +91,18 @@ let commands = {
     'UPDATE_ANNOTATIONS_ON_TAB_ACTIVATED': anno.updateAnnotationsOnTabActivated,
     'HANDLE_BROWSER_ACTION_CLICK': () => {
         try {
-            chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+            chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
                 chrome.storage.local.get(['sidebarStatus'], sidebarStatus => {
                     sidebarStatus = sidebarStatus.sidebarStatus;
                     const index = sidebarStatus !== undefined && sidebarStatus.length ? sidebarStatus.findIndex(side => side.id === tabs[0].id) : -1;
                     sidebarStatus = sidebarStatus === undefined || Object.keys(sidebarStatus).length === 0 ? [] : sidebarStatus;
-                    // console.log('what is sidebarstatus lol', sidebarStatus)
                     let opening;
                     if (index > -1) {
-                        opening = !sidebarStatus[index].open;
-                        sidebarStatus[index].open = opening;
+                        opening = false;
+                        sidebarStatus = sidebarStatus.length ? sidebarStatus.filter(side => side.id !== tabs[0].id) : -1;
                     }
                     else if (getPathFromUrl(tabs[0].url) !== "" && !getPathFromUrl(tabs[0].url).includes("chrome://")) {
-                        sidebarStatus.push({ id: tabs[0].id, open: true, url: getPathFromUrl(tabs[0].url) })
+                        sidebarStatus.push({ id: tabs[0].id, open: true, windowId: tabs[0].windowId })
                         opening = true;
                     }
                     toggleSidebar(opening);
@@ -144,65 +143,33 @@ let commands = {
     'HANDLE_TAB_URL_UPDATE': (tabId, changeInfo, tab) => {
         if ("url" in changeInfo) {
             anno.handleTabUpdate(getPathFromUrl(changeInfo.url), tabId);
-            chrome.storage.local.get(['sidebarStatus'], sidebarStatus => {
-                // console.log('what is sidebarstatus lol', sidebarStatus)
-                sidebarStatus = sidebarStatus.sidebarStatus;
-                sidebarStatus = sidebarStatus === undefined || Object.keys(sidebarStatus).length === 0 ? [] : sidebarStatus;
-                const index = sidebarStatus.length ? sidebarStatus.findIndex(side => side.id === tabId) : -1;
-
-                if (index === -1 && getPathFromUrl(changeInfo.url) !== "" && !getPathFromUrl(changeInfo.url).includes("chrome://")) {
-                    sidebarStatus.push({ id: tabId, open: false, url: getPathFromUrl(changeInfo.url) })
-                }
-                else if (index > -1 && sidebarStatus[index].url !== getPathFromUrl(changeInfo.url) && !getPathFromUrl(changeInfo.url).includes("chrome://")) {
-                    sidebarStatus[index].open = false;
-                    toggleSidebar(false);
-                }
-                else if (index > -1) {
-                    toggleSidebar(sidebarStatus[index].open)
-                }
-                else {
-                    return;
-                }
-                chrome.storage.local.set({ sidebarStatus }, function () {
-                    if (chrome.runtime.lastError) {
-                        chrome.storage.local.clear();
-                    }
-                })
-            })
-
         }
     },
     'HANDLE_TAB_REMOVED': (tab) => {
         chrome.storage.local.get(['sidebarStatus'], sidebarStatus => {
-            // console.log('what is sidebarstatus lol', sidebarStatus)
             sidebarStatus = sidebarStatus.sidebarStatus;
-            const newSidebarStatus = sidebarStatus.length ? sidebarStatus.filter(side => side.id !== tab) : -1;
-            chrome.storage.local.set({ sidebarStatus: newSidebarStatus }, function () {
+            const newSidebarStatus = sidebarStatus !== undefined && sidebarStatus.length ? sidebarStatus.filter(side => side.id !== tab) : [];
+                chrome.storage.local.set({ sidebarStatus: newSidebarStatus }, function () {
+                    if (chrome.runtime.lastError) {
+                        chrome.storage.local.clear();
+                    }
+                })
+            
+        })
+    },
+
+    'HANDLE_WINDOW_REMOVED' : (windowId) => {
+        chrome.storage.local.get(['sidebarStatus'], sidebarStatus => {
+            sidebarStatus = sidebarStatus.sidebarStatus;
+            sidebarStatus = sidebarStatus !== undefined && sidebarStatus.length ? sidebarStatus.filter(s => s.windowId !== windowId) : [];
+            chrome.storage.local.set({ sidebarStatus }, function () {
                 if (chrome.runtime.lastError) {
                     chrome.storage.local.clear();
                 }
             })
         })
+        
     },
-
-    'HANDLE_TAB_CREATED': (tab) => {
-        if (getPathFromUrl(tab.url) !== "" && !getPathFromUrl(tab.url).includes("chrome://")) {
-            chrome.storage.local.get(['sidebarStatus'], sidebarStatus => {
-                // console.log('what is sidebarstatus lol', sidebarStatus)
-                sidebarStatus = sidebarStatus.sidebarStatus;
-                sidebarStatus = sidebarStatus === undefined || Object.keys(sidebarStatus).length === 0 ? [] : sidebarStatus;
-                sidebarStatus.push({ id: tab.id, open: false, url: getPathFromUrl(tab.url) });
-                chrome.storage.local.set({ sidebarStatus }, function () {
-                    if (chrome.runtime.lastError) {
-                        chrome.storage.local.clear();
-                    }
-                })
-            })
-
-        }
-    },
-
-
 
     //sidebarHelper
     'REQUEST_SIDEBAR_STATUS': sidebar.requestSidebarStatus,
@@ -248,13 +215,13 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
     return true;
 });
 
-chrome.tabs.onCreated.addListener(function (tab) {
-    commands['HANDLE_TAB_CREATED'](tab);
+chrome.tabs.onRemoved.addListener(function (tab) {
+    commands['HANDLE_TAB_REMOVED'](tab);
     return true;
 });
 
-chrome.tabs.onRemoved.addListener(function (tab) {
-    commands['HANDLE_TAB_REMOVED'](tab);
+chrome.windows.onRemoved.addListener(function (tab) {
+    commands['HANDLE_WINDOW_REMOVED'](tab);
     return true;
 });
 
