@@ -525,14 +525,14 @@ function getAllPublicPinnedAnnotationsListener() {
 }
 
 
-function getAnnotationsByUrlListener(url, groups) {
+async function getAnnotationsByUrlListener(url, groups) {
     const user = fb.getCurrentUser();
     if (user !== null) {
-        publicListener = fb.getAnnotationsByUrl(url).onSnapshot(annotationsSnapshot => {
+        publicListener = fb.getAnnotationsByUrl(url).onSnapshot(async annotationsSnapshot => {
             let annotationsToBroadcast = getListFromSnapshots(annotationsSnapshot);
             annotationsToBroadcast = annotationsToBroadcast.filter(anno => (!anno.deleted && anno.url.includes(url)) && (!(anno.isPrivate && anno.authorId !== user.uid) || (anno.groups.some(g => groups.includes(g)))))
             try {
-                chrome.tabs.query({}, tabs => {
+                await chrome.tabs.query({}, tabs => {
                     const tabsWithUrl = tabs.filter(t => getPathFromUrl(t.url) === url);
                     if (containsObjectWithUrl(url, tabAnnotationCollect)) {
                         tabAnnotationCollect = updateList(tabAnnotationCollect, url, annotationsToBroadcast, false);
@@ -548,6 +548,8 @@ function getAnnotationsByUrlListener(url, groups) {
             }
             catch (error) {
                 console.error('tabs cannot be queried right now', error);
+                if (error == 'Error: Tabs cannot be edited right now (user may be dragging a tab).')
+                setTimeout(() => getAnnotationsByUrlListener(url, groups))
             }
         });
     }

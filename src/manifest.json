@@ -2,6 +2,7 @@
   "description": "A documentation annotator to help software developers learn from one another",
   "version": "0.75.42",
   "name": "ADAMITE",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkD9lTliXm8yFqrelJeoR/+MwSjtg3Fk8t+hMHD0FGDKmlZsbo/0akbbEHUy5v+ErDf3U4ONKeHCjeYh8ozVdrwNT0poJdQMXqXv5TShTcELU0qMTjIErJdsMpTk+xl0dL6wYRV7WXWyJ9zlXHgrIelcUyumPB0Yh9h26VZ6Ez0mZA4Z3Hrdr3YAxS9dlhsw6Zqvzem1v5MNFR6uHzdycw8B6i2u9AxSmNi7WcbAjMD5CRXTrS3xsACXmx5BVv4t3T90IB4AauwAKG5EwxaMffjhnR3nWuphi3+th3BXPkl9FKfNrxMACKfis8JB9/w7Nr2wUAHbUQKnsQ3yO8imn7QIDAQAB",
   "options_page": "options.html",
   "background": {
     "page": "background.html",
