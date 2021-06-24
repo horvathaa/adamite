@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import * as EmailValidator from 'email-validator';
 import './Authentication.css';
+import Google from '../../../../assets/img/Google__G__Logo.png'
 
 const Authentication = props => {
   const [email, setEmail] = useState('');
@@ -132,12 +133,14 @@ const Authentication = props => {
         />
       </div>
       <div className="InputFieldContainer row">
-        <button onClick={signUpClickedHandler}><div>Sign up</div></button>
         <button onClick={signInClickedHandler}><div>Sign in</div></button>
-        <button onClick={signInGoogleClickedHandler}><div>Sign in Google</div></button>
-        
-        
-        {/* <button onClick={forgetPwdClickedHandler}><div>Forget pwd</div></button> */}
+        <button onClick={signUpClickedHandler}><div>Sign up</div></button>
+        <button className="AuthSignInContainer" onClick={signInGoogleClickedHandler}>
+          <div>
+            <img className="authIcon" alt="Google sign-in" src={Google} />
+            Login with Google
+          </div>
+        </button>
       </div>
       <div className="InputFieldContainer row" >
         <div className="Forgotten" onClick={forgetPwdClickedHandler}>Forgot Password?</div>
