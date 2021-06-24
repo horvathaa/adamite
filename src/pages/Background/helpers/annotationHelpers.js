@@ -199,15 +199,21 @@ export async function createAnnotationChildAnchor(request, sender, sendResponse)
             content: newAnno.content,
             xpath: xpath
         }
-        chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-            chrome.tabs.sendMessage(
-                tabs[0].id,
-                {
-                    msg: 'ANNOTATION_ADDED',
-                    newAnno: highlightObj,
-                }
-            );
-        });
+        try {
+            chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+                chrome.tabs.sendMessage(
+                    tabs[0].id,
+                    {
+                        msg: 'ANNOTATION_ADDED',
+                        newAnno: highlightObj,
+                    }
+                );
+            });
+        }
+        catch(error) {
+            console.error('tabs cannot be queried right now', error)
+        }
+        
         broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', newAnno.sharedId);
     });
 }
@@ -224,15 +230,21 @@ export async function updateAnnotation(request, sender, sendResponse) {
         events: fbUnion(editEvent(request.msg, doc.data())),
     }).then(value => {
         if (updateType === "NewAnchor") {
-            chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-                chrome.tabs.sendMessage(
-                    tabs[0].id,
-                    {
-                        msg: 'ANNOTATION_ADDED',
-                        newAnno: newAnno,
-                    }
-                );
-            });
+            try {
+                chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+                    chrome.tabs.sendMessage(
+                        tabs[0].id,
+                        {
+                            msg: 'ANNOTATION_ADDED',
+                            newAnno: newAnno,
+                        }
+                    );
+                });
+            }
+            catch (error) {
+                console.error('tabs cannot be queried right now', error)
+            }
+            
         }
         broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', newAnno.id);
     });
@@ -519,27 +531,24 @@ function getAnnotationsByUrlListener(url, groups) {
         publicListener = fb.getAnnotationsByUrl(url).onSnapshot(annotationsSnapshot => {
             let annotationsToBroadcast = getListFromSnapshots(annotationsSnapshot);
             annotationsToBroadcast = annotationsToBroadcast.filter(anno => (!anno.deleted && anno.url.includes(url)) && (!(anno.isPrivate && anno.authorId !== user.uid) || (anno.groups.some(g => groups.includes(g)))))
-            // let annotationsToBroadcast = tempPublicAnnotations.concat(privateAnnotations);
-            // if (!hasSubArray(annotationsToBroadcast, groupAnnotations)) {
-            //     annotationsToBroadcast = annotationsToBroadcast.concat(groupAnnotations);
-            //     tempPublicAnnotations = tempPublicAnnotations.concat(groupAnnotations)
-            // }
-
-            // annotationsToBroadcast = annotationsToBroadcast.filter(anno => !anno.deleted && anno.url.includes(url));
-            chrome.tabs.query({}, tabs => {
-                const tabsWithUrl = tabs.filter(t => getPathFromUrl(t.url) === url);
-                if (containsObjectWithUrl(url, tabAnnotationCollect)) {
-                    tabAnnotationCollect = updateList(tabAnnotationCollect, url, annotationsToBroadcast, false);
-                }
-                else {
-                    tabAnnotationCollect.push({ tabUrl: url, annotations: annotationsToBroadcast });
-                }
-                let newList = tabAnnotationCollect.filter(obj => obj.tabUrl === url);
-                tabsWithUrl.forEach(t => {
-                    broadcastAnnotationsToTab("CONTENT_UPDATED", newList[0].annotations, url, t.id);
-                })
-            });
-            // publicAnnotations = tempPublicAnnotations;
+            try {
+                chrome.tabs.query({}, tabs => {
+                    const tabsWithUrl = tabs.filter(t => getPathFromUrl(t.url) === url);
+                    if (containsObjectWithUrl(url, tabAnnotationCollect)) {
+                        tabAnnotationCollect = updateList(tabAnnotationCollect, url, annotationsToBroadcast, false);
+                    }
+                    else {
+                        tabAnnotationCollect.push({ tabUrl: url, annotations: annotationsToBroadcast });
+                    }
+                    let newList = tabAnnotationCollect.filter(obj => obj.tabUrl === url);
+                    tabsWithUrl.forEach(t => {
+                        broadcastAnnotationsToTab("CONTENT_UPDATED", newList[0].annotations, url, t.id);
+                    })
+                });
+            }
+            catch (error) {
+                console.error('tabs cannot be queried right now', error);
+            }
         });
     }
 }
