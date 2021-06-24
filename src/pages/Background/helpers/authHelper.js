@@ -53,7 +53,6 @@ export function userSignIn(request, sender, sendResponse) {
 }
 
 export function userGoogleSignIn(request, sender, sendResponse) {
-  console.log("HERE")
   signInWithGoogle()
   .then((result) => {
       /** @type {firebase.auth.OAuthCredential} */
