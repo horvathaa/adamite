@@ -3,13 +3,12 @@ import {
   updateUserProfile,
   signUpWithEmailAndPassword,
   signInWithEmailAndPassword,
+  signInWithGoogle,
   signOut,
-  getElasticApiKey,
+  getElasticApiKey
 } from '../../../firebase/index';
 
 let currentUser = null;
-
-
 
 auth.onAuthStateChanged(user => {
   currentUser = user === null ? null : { uid: user.uid, email: user.email };
@@ -53,6 +52,32 @@ export function userSignIn(request, sender, sendResponse) {
     });
 }
 
+export function userGoogleSignIn(request, sender, sendResponse) {
+  console.log("HERE")
+  signInWithGoogle()
+  .then((result) => {
+      /** @type {firebase.auth.OAuthCredential} */
+      var credential = result.credential;
+
+      // This gives you a Google Access Token. You can use it to access the Google API.
+      var token = credential.accessToken;
+      // The signed-in user info.
+      var user = result.user;
+      console.log("FINISHED", user, token)
+      // ...
+    }).catch((error) => {
+      // Handle Errors here.
+      var errorCode = error.code;
+      var errorMessage = error.message;
+      // The email of the user's account used.
+      var email = error.email;
+      // The firebase.auth.AuthCredential type that was used.
+      var credential = error.credential;
+      console.log(errorMessage);
+      sendResponse({ errorMessage, error: true });
+    });
+}
+
 export function userSignUp(request, sender, sendResponse) {
   const { email, password } = request.payload;
   signUpWithEmailAndPassword(email, password)
@@ -81,46 +106,3 @@ export function userForgotPwd(request, sender, sendResponse) {
       sendResponse({ ...err, error: true });
     });
 }
-
-
-
-// chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-//   if (request.msg === 'GET_CURRENT_USER') {
-//     sendResponse({ payload: { currentUser } });
-//   } else if (request.msg === 'USER_SIGNUP') {
-//     const { email, password } = request.payload;
-//     signUpWithEmailAndPassword(email, password)
-//       .then(result => {
-//         console.log(result);
-//       })
-//       .catch(err => {
-//         console.log(err);
-//         sendResponse({ ...err, error: true });
-//       });
-//   } else if (request.msg === 'USER_SIGNIN') {
-//     const { email, password } = request.payload;
-//     signInWithEmailAndPassword(email, password)
-//       .then(result => {
-//         console.log(result);
-//       })
-//       .catch(err => {
-//         console.log(err);
-//         sendResponse({ ...err, error: true });
-//       });
-//   } else if (request.msg === 'USER_SIGNOUT') {
-//     signOut();
-//   } else if (request.msg === 'USER_FORGET_PWD') {
-//     const { email } = request.payload;
-//     auth
-//       .sendPasswordResetEmail(email)
-//       .then(result => {
-//         console.log(result);
-//         sendResponse({ error: false });
-//       })
-//       .catch(err => {
-//         console.log(err);
-//         sendResponse({ ...err, error: true });
-//       });
-//   }
-//   return true;
-// });

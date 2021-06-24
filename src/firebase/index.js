@@ -9,6 +9,7 @@ export const DB_COLLECTIONS = {
 
 export let db = firebase.firestore();
 export let auth = firebase.auth();
+export const provider = new firebase.auth.GoogleAuthProvider();
 export const getCurrentUser = () => firebase.auth().currentUser;
 export const getCurrentUserId = () => {
   let currentUser = getCurrentUser();
