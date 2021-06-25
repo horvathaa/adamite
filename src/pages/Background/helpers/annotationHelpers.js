@@ -4,7 +4,7 @@ import { clean } from './objectCleaner';
 import firebase from '../../../firebase/firebase';
 import { getCurrentUserId, getCurrentUser } from '../../../firebase/index';
 import { getPathFromUrl } from '../backgroundEventListeners';
-import { getGroups } from './groupAnnotationsHelper';
+import { getGroups, groupListener } from './groupAnnotationsHelper';
 
 // from: https://stackoverflow.com/questions/34151834/javascript-array-contains-includes-sub-array
 function hasSubArray(master, sub) {
@@ -72,10 +72,11 @@ export async function getAnnotationsPageLoad(request, sender, sendResponse) {
     let groups;
 
     chrome.storage.local.get(['groups'], (result) => {
-        if (result.groups !== undefined) {
+        if (result.groups !== undefined && result.groups.length) {
             groups = result.groups.map(g => g.gid);
         }
         else {
+            console.log('uid', uid)
             getGroups({ request: { uid: uid } });
         }
         getAnnotationsByUrlListener(request.url, groups)
@@ -346,11 +347,11 @@ export async function deleteAnnotation(request, sender, sendResponse) {
 }
 
 export function unsubscribeAnnotations(request, sender, sendResponse) {
-    console.log('unsubscribe called');
     if (typeof privateListener === "function") privateListener();
     if (typeof publicListener === "function") publicListener();
     if (typeof pinnedPrivateListener === "function") pinnedPrivateListener();
     if (typeof pinnedPublicListener === "function") pinnedPublicListener();
+    if (typeof groupListener === 'function') groupListener();
 }
 
 export async function filterAnnotationsByTag(request, sender, sendResponse) {

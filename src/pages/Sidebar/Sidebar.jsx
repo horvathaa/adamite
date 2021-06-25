@@ -161,9 +161,11 @@ class Sidebar extends React.Component {
               tab.id
             );
           } else {
-            if (this.unsubscribeAnnotations) {
-              this.unsubscribeAnnotations();
-            }
+            chrome.runtime.sendMessage({
+              from: 'sidebar',
+              msg: 'UNSUBSCRIBE'
+            })
+            this.setState({ annotations: [], filteredAnnotations: [], searchedAnnotations: [], groupAnnotations: [], pinnedAnnos: [], groups: [], activeGroups: [] })
           }
         });
       }
@@ -190,10 +192,16 @@ class Sidebar extends React.Component {
             request.payload.currentUser.uid,
             this.state.url
           );
+          this.setUpGroupsListener(
+            request.payload.currentUser.uid
+          );
+          this.setUpPinnedListener();
         } else {
-          if (this.unsubscribeAnnotations) {
-            this.unsubscribeAnnotations();
-          }
+            chrome.runtime.sendMessage({
+              from: 'sidebar',
+              msg: 'UNSUBSCRIBE'
+            })
+            this.setState({ annotations: [], filteredAnnotations: [], searchedAnnotations: [], groupAnnotations: [], pinnedAnnos: [], groups: [], activeGroups: [] })
         }
       } else if (
         request.from === 'background' &&

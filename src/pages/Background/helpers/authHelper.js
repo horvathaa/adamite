@@ -26,6 +26,7 @@ auth.onAuthStateChanged(user => {
     chrome.storage.sync.set({
       'ElasticAPIKey': '',
     });
+    chrome.storage.local.set({ 'groups': [] });
   }
 });
 
