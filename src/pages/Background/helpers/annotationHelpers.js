@@ -81,8 +81,6 @@ export async function getAnnotationsPageLoad(request, sender, sendResponse) {
         getAnnotationsByUrlListener(request.url, groups)
     })
 
-
-
     let userName = email.substring(0, email.indexOf('@'));
     if (request.tabId !== undefined) {
         chrome.tabs.sendMessage(
@@ -146,14 +144,6 @@ export async function createAnnotation(request, sender, sendResponse) {
         deleted: false,
         archived: false,
         createdTimestamp: new Date().getTime(),
-    }).then(value => {
-        // chrome.runtime.sendMessage({
-        //     from: 'background',
-        //     msg: 'SCROLL_INTO_VIEW',
-        //     payload: {
-        //         id: value
-        //     }
-        // })
     });
     sendResponse({ "msg": 'DONE' });
 }
@@ -168,7 +158,6 @@ export async function createAnnotationReply(request, sender, sendResponse) {
             url: fbUnionNoSpread(url)
         }).then(function (e) {
             broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
-
         });
     }
     else {
@@ -210,10 +199,10 @@ export async function createAnnotationChildAnchor(request, sender, sendResponse)
                 );
             });
         }
-        catch(error) {
+        catch (error) {
             console.error('tabs cannot be queried right now', error)
         }
-        
+
         broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', newAnno.sharedId);
     });
 }
@@ -244,7 +233,7 @@ export async function updateAnnotation(request, sender, sendResponse) {
             catch (error) {
                 console.error('tabs cannot be queried right now', error)
             }
-            
+
         }
         broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', newAnno.id);
     });
@@ -525,32 +514,98 @@ function getAllPublicPinnedAnnotationsListener() {
 }
 
 
-async function getAnnotationsByUrlListener(url, groups) {
+function batchSearchFirestore(returnArray, searchArray, queryFunction) {
+    return new Promise((resolve, reject) => {
+        // console.log("this is gids", searchArray, returnArray)
+        if (searchArray.length === 0) {
+            resolve(returnArray);
+        }
+        else if (searchArray.length > 0) {
+            var batchedSearch = searchArray.length > 10 ? searchArray.slice(0, 10) : searchArray;
+            var arrayRecurSearch = searchArray.length > 10 ? searchArray.slice(10, searchArray.length) : [];
+            // console.log("this is the slice", searchArray.slice(0,10));
+            resolve(queryFunction(batchedSearch)).then(e => {
+                return batchSearchFirestore(returnArray.concat(e), arrayRecurSearch, queryFunction);
+            })
+                .catch(err => {
+                    console.log('Error getting batchSearchFirestore', err);
+                    reject(err);
+                });
+        }
+        resolve(returnArray);
+    });
+}
+
+function getUserDataFromAuthId(authIds) {
+    return fb.getUsersbyID(authIds).get()
+        .then(queryResult => {
+            var tempArray = []
+            if (!queryResult.empty) {
+                queryResult.forEach(docs => {
+                    tempArray.push({
+                        id: docs.id,
+                        ...docs.data(),
+                    });
+                });
+                return tempArray;
+            }
+            return [];
+        })
+        .catch(err => {
+            console.log('Error getting user Profiles', err);
+            throw err;
+        });
+}
+
+function InjectUserData(annotationsToBroadcast) {
+    let authIds = [...new Set(annotationsToBroadcast.map(annotation => annotation.authorId))]
+    return batchSearchFirestore([], authIds, getUserDataFromAuthId).then(authProfiles => {
+            console.log("AUTHORS", authProfiles)
+            let annotationsWithAuthorInfo = annotationsToBroadcast.map(annotation => {
+                const authdata = authProfiles.find(element => element.uid === annotation.authorId);
+                annotation.authorId
+                return {
+                    photoURL: authdata.photoURL,
+                    displayName: authdata.displayName,
+                    ...annotation
+                }
+                
+            })
+            console.log("FINAL", annotationsWithAuthorInfo)
+
+            return(annotationsWithAuthorInfo);
+        });
+}
+
+
+function getAnnotationsByUrlListener(url, groups) {
     const user = fb.getCurrentUser();
     if (user !== null) {
         publicListener = fb.getAnnotationsByUrl(url).onSnapshot(async annotationsSnapshot => {
             let annotationsToBroadcast = getListFromSnapshots(annotationsSnapshot);
             annotationsToBroadcast = annotationsToBroadcast.filter(anno => (!anno.deleted && anno.url.includes(url)) && (!(anno.isPrivate && anno.authorId !== user.uid) || (anno.groups.some(g => groups.includes(g)))))
-            try {
-                await chrome.tabs.query({}, tabs => {
-                    const tabsWithUrl = tabs.filter(t => getPathFromUrl(t.url) === url);
-                    if (containsObjectWithUrl(url, tabAnnotationCollect)) {
-                        tabAnnotationCollect = updateList(tabAnnotationCollect, url, annotationsToBroadcast, false);
-                    }
-                    else {
-                        tabAnnotationCollect.push({ tabUrl: url, annotations: annotationsToBroadcast });
-                    }
-                    let newList = tabAnnotationCollect.filter(obj => obj.tabUrl === url);
-                    tabsWithUrl.forEach(t => {
-                        broadcastAnnotationsToTab("CONTENT_UPDATED", newList[0].annotations, url, t.id);
-                    })
-                });
-            }
-            catch (error) {
-                console.error('tabs cannot be queried right now', error);
-                if (error == 'Error: Tabs cannot be edited right now (user may be dragging a tab).')
-                setTimeout(() => getAnnotationsByUrlListener(url, groups))
-            }
+            InjectUserData(annotationsToBroadcast).then(annotationsToBroadcastWithAuthInfo => {
+                try {
+                    chrome.tabs.query({}, tabs => {
+                        const tabsWithUrl = tabs.filter(t => getPathFromUrl(t.url) === url);
+                        if (containsObjectWithUrl(url, tabAnnotationCollect)) {
+                            tabAnnotationCollect = updateList(tabAnnotationCollect, url, annotationsToBroadcastWithAuthInfo, false);
+                        }
+                        else {
+                            tabAnnotationCollect.push({ tabUrl: url, annotations: annotationsToBroadcast });
+                        }
+                        let newList = tabAnnotationCollect.filter(obj => obj.tabUrl === url);
+                        tabsWithUrl.forEach(t => {
+                            broadcastAnnotationsToTab("CONTENT_UPDATED", newList[0].annotations, url, t.id);
+                        })
+                    });
+                }
+                catch (error) {
+                    console.error('tabs cannot be queried right now', error);
+                    if (error == 'Error: Tabs cannot be edited right now (user may be dragging a tab).')
+                        setTimeout(() => getAnnotationsByUrlListener(url, groups))
+                }
+            });
         });
     }
 }

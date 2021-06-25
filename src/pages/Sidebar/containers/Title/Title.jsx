@@ -114,8 +114,12 @@ export default class Title extends React.Component {
       userName = ""
     }
     else {
-      userName = currentUser.email.substring(0, currentUser.email.indexOf('@'));
+      userName = currentUser.displayName !== "" ? 
+        currentUser.displayName :
+        currentUser.email.substring(0, currentUser.email.indexOf('@'));
     }
+
+    console.log("CURRENT USER", currentUser)
     return (
 
       <div className="TitleContainer">
@@ -129,7 +133,7 @@ export default class Title extends React.Component {
                   </div>
                   <div className="Title">{APP_NAME_FULL}</div>
                 </div>
-              </div> 
+              </div>
               :
               <React.Fragment>
                 <div className="col col-7 col-md-7">
@@ -163,9 +167,11 @@ export default class Title extends React.Component {
                             <div className="container">
                               <div className="row">
                                 <div className="col OptionCol">
-                                  <div className="OptionProfileContainer profileContainer">
-                                    <AiOutlineUser alt="profile" className="userProfile" />
-                                    {/* <img src={profile} alt="profile" className="profile" /> */}
+                                  <div className={"OptionProfileContainer" + currentUser.photoURL === "" ? "profileContainer" : ""}>
+                                    {currentUser.photoURL === "" ? 
+                                      <AiOutlineUser alt="profile" className="userProfile" />:
+                                      <img src={currentUser.photoURL} alt="profile" className="userProfilePhoto" />
+                                    }
                                   </div>
                                 </div>
                                 <div className="col">
@@ -211,8 +217,8 @@ export default class Title extends React.Component {
                             <div className="DropdownIconsWrapper"><BiExit className="DropdownIcons" /></div>
                             Sign Out
                           </Dropdown.Item>
-                          <Dropdown.Item className="OptionLineBreak">
-                            <div className='dropdownItemOverwrite small'>
+                          <Dropdown.Item className="VersionDropDown">
+                            <div className='dropdownItemOverwrite'>
                               Adamite version {pjson.version}
                             </div>
                           </Dropdown.Item>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import * as EmailValidator from 'email-validator';
 import './Authentication.css';
 import Google from '../../../../assets/img/Google__G__Logo.png'
+import Github from '../../../../assets/img/GitHub-Mark-32px.png'
 
 const Authentication = props => {
   const [email, setEmail] = useState('');
@@ -158,7 +159,7 @@ const Authentication = props => {
         </button>
         <button className="AuthSignInContainer" onClick={signInGithubClickedHandler}>
           <div>
-            {/* <img className="authIcon" alt="Google sign-in" src={Google} /> */}
+            <img className="authIcon" alt="Google sign-in" src={Github} />
             Login with GitHub
           </div>
         </button>

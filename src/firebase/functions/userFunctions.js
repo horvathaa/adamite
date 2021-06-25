@@ -30,14 +30,15 @@ export const signOut = () => {
 };
 
 export const updateUserProfile = (user = getCurrentUser()) => {
+  console.log("UPDATING", user)
   db.collection(DB_COLLECTIONS.USERS)
     .doc(user.uid)
     .set(
-      { uid: user.uid, email: user.email, githubProfileLink: '' },
+      { uid: user.uid, 
+        email: user.email, 
+        githubProfileLink: '', 
+        photoURL: user.photoURL, 
+        displayName: user.displayName },
       { merge: true }
     );
 };
-
-// export const getUserProfileById = uid => {
-//   return db.collection(DB_COLLECTIONS.USERS).doc(uid);
-// };

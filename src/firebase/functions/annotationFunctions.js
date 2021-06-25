@@ -131,6 +131,11 @@ export const getAnnotationsByUrl = (url) => {
     .where('url', 'array-contains', url)
 }
 
+export const getUsersbyID = (uids) => {
+  return db.collection(DB_COLLECTIONS.USERS)
+    .where('uid', 'in', uids)
+}
+
 export const getAllPrivatePinnedAnnotationsByUserId = (uid) => {
   return db
     .collection(DB_COLLECTIONS.ANNOTATIONS)

@@ -34,14 +34,19 @@ const EditRowComponent = () => {
     const ctx = useContext(AnnotationContext);
     if (ctx.collapsed || ctx.isNew) return (null);
 
+    console.log("CTX", ctx)
+
     return (
         <React.Fragment>
             <div className={" container " + classNames({
                 Header: true,
                 Truncated: ctx.collapsed,
             })}>
-                <div className="profileContainer">
-                    <AiOutlineUser alt="profile" className="userProfile" />
+                <div className={ctx.anno.photoURL === "" && "profileContainer" }>
+                    {ctx.anno.photoURL === "" ?
+                        <AiOutlineUser alt="profile" className="userProfile" /> :
+                        <img src={ctx.anno.photoURL} alt="profile" className="profilePhoto userProfilePhoto" />
+                    }
                 </div>
                 <div className="userProfileContainer">
 
@@ -74,7 +79,7 @@ const EditRowComponent = () => {
                         </Tooltip>
                         <Tooltip title={"Add new anchor to annotation"} aria-label="add new anchor tooltip" onClick={ctx.handleNewAnchor}>
                             <div className="TopIconContainer" >
-                                <BiAnchor className="profile" alt="add new anchor" id="newAnchor"  />
+                                <BiAnchor className="profile" alt="add new anchor" id="newAnchor" />
                             </div>
                         </Tooltip>
                         {ctx.currentUser.uid === ctx.anno.authorId ? (
@@ -100,7 +105,7 @@ const EditRowComponent = () => {
                             <Dropdown.Toggle id="dropdown-basic" className="vertical-center">
                                 <GiHamburgerMenu alt="Hamburger menu" className="profile" />
                             </Dropdown.Toggle>
-                            <Dropdown.Menu style={{width: '220px'}}>
+                            <Dropdown.Menu style={{ width: '220px' }}>
                                 <Dropdown.Header className="AnnotationOptionsTitle">
                                     Annoation Options
                                     <hr></hr>

@@ -1,6 +1,6 @@
+import { displayName } from 'react-widgets/lib/Calendar';
 import {
   auth,
-  updateUserProfile,
   signUpWithEmailAndPassword,
   signInWithEmailAndPassword,
   signInWithGoogle,
@@ -12,10 +12,9 @@ import {
 let currentUser = null;
 
 auth.onAuthStateChanged(user => {
-  currentUser = user === null ? null : { uid: user.uid, email: user.email };
+  currentUser = user === null ? null : { uid: user.uid, email: user.email, photoURL: user.photoURL, displayName: user.displayName };
   broadcastAuthStatus(currentUser);
   if (user !== null) {
-    updateUserProfile();
     getElasticApiKey().then(function (e) {
       chrome.storage.sync.set({
         'ElasticAPIKey': e,
@@ -63,7 +62,19 @@ export function userGoogleSignIn(request, sender, sendResponse) {
       var token = credential.accessToken;
       // The signed-in user info.
       var user = result.user;
-      console.log("FINISHED", user, token, credential)
+
+      let photoURL = null
+      let displayName = null
+      let email = null;
+      // console.log("FINISHED", user, token, credential)
+      user.providerData.forEach((profile) => {
+        email       = profile.email
+        photoURL  = profile.photoURL;
+        displayName = profile.displayName;
+      });
+      console.log("ITEMS", email, photoURL, displayName, user.providerData)
+      
+      console.log("FINISHED", user.providerData)
       // ...
     }).catch((error) => {
       // Handle Errors here.
@@ -88,7 +99,6 @@ export function githubUserSignIn(request, sender, sendResponse) {
       var token = credential.accessToken;
       // The signed-in user info.
       var user = result.user;
-      console.log("FINISHED", user, token, credential)
       // ...
     }).catch((error) => {
       // Handle Errors here.
