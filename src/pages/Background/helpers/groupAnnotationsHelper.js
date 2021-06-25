@@ -14,7 +14,7 @@ function getListFromSnapshots(snapshots) {
     return out;
 }
 
-let groupListener;
+export let groupListener;
 
 function setUpGetGroupListener(uid) {
     return new Promise((resolve, reject) => {
@@ -26,7 +26,6 @@ function setUpGetGroupListener(uid) {
                     ...snapshot.data()
                 });
             })
-            // console.log('groups in listener', groups);
             chrome.storage.local.set({ 'groups': groups });
             transmitMessage({ msg: "GROUPS_UPDATED", sentFrom: "background", data: { groups } });
         }))
@@ -34,14 +33,12 @@ function setUpGetGroupListener(uid) {
 }
 
 export async function getGroups(request, sender, sendResponse) {
-    groupListener = setUpGetGroupListener(request.uid);
+    groupListener = request.uid !== undefined ? setUpGetGroupListener(request.uid) : setUpGetGroupListener(request.request.uid)
 }
 
 export async function createGroup(request, sender, sendResponse) {
     if (!isContent) return;
     if (request.group.emails !== undefined && request.group.emails.length) {
-        console.log('request.group', request.group)
-        console.log('fb', fb)
         fb.getUsersByEmails(request.group.emails).get().then(function (snapshot) {
             const uids = [request.group.owner].concat(getListFromSnapshots(snapshot).map(u => u.uid));
             if (request.group.gid !== "") {
@@ -72,9 +69,7 @@ export async function createGroup(request, sender, sendResponse) {
         })
     }
     else {
-        console.log('request.group', request.group)
         if (request.group.gid !== "") {
-            console.log('in if');
             fb.updateGroup({
                 name: request.group.name,
                 description: request.group.description,
