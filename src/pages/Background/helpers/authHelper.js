@@ -62,7 +62,7 @@ export function userGoogleSignIn(request, sender, sendResponse) {
       var token = credential.accessToken;
       // The signed-in user info.
       var user = result.user;
-      console.log("FINISHED", user, token)
+      console.log("FINISHED", user, token, credential)
       // ...
     }).catch((error) => {
       // Handle Errors here.

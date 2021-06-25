@@ -56,12 +56,10 @@
 }
 
 .InputFieldContainer button {
-  margin: 5px;
   width: 100%;
   display: flex;
   z-index: 1;
   align-items: center;
-  flex: 1;
   margin: .5rem 6rem;
   border-radius: 24px;
   padding-left: 1em;
@@ -78,6 +76,29 @@
   position: relative;
   transition: 0.1s all ease-in;
   transition: box-shadow .3s;
+}
+
+@media (max-width:440px){
+  .InputFieldContainer button {
+    margin: .5rem 5rem;
+  }
+}
+
+@media (max-width:350px){
+  .InputFieldContainer button {
+    margin: .5rem 2rem;
+  }
+
+  .InputFieldContainer input {
+    margin: .5rem 2rem;
+  }
+}
+
+@media (max-width: 300px){
+
+  .InputFieldContainer button {
+      margin: .5rem 2rem;
+  }
 }
 
 .InputFieldContainer button:hover {
@@ -103,6 +124,34 @@
   opacity: 1;
   font-weight: 300;
   -webkit-appearance: searchfield-cancel-button;
+}
+
+.AuthSignInContainer{
+  background: white !important;
+  color: black !important;
+  border: 1px solid #88888866 !important;
+}
+
+.AuthSignInContainer:hover{
+  border: 1px solid #88888866 !important;
+  /* box-shadow: 1px 3px 5px 0px #88888866; */
+  filter: brightness(1) !important;
+  background-color: #49a867e6 !important;
+  color: white !important;
+}
+
+.authIcon {
+  width: 23px;
+  border-radius: 2em;
+  padding: .2rem;
+  margin: 0rem .5rem;
+  background: white;
+}
+
+@media (max-width:388px){
+  .authIcon {
+    display: none;
+  }
 }
 
 .Forgotten{
