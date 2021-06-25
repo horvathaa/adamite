@@ -73,10 +73,7 @@ export function userGoogleSignIn(request, sender, sendResponse) {
         photoURL  = profile.photoURL;
         displayName = profile.displayName;
       });
-      console.log("ITEMS", email, photoURL, displayName, user.providerData)
-      
-      console.log("FINISHED", user.providerData)
-      // ...
+
     }).catch((error) => {
       // Handle Errors here.
       var errorCode = error.code;

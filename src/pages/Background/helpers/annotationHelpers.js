@@ -69,14 +69,13 @@ export function setPinnedAnnotationListeners(request, sender, sendResponse) {
 export async function getAnnotationsPageLoad(request, sender, sendResponse) {
     let uid = getCurrentUserId();
     let { email } = getCurrentUser();
-    let groups;
+    let groups = [];
 
     chrome.storage.local.get(['groups'], (result) => {
         if (result.groups !== undefined && result.groups.length) {
             groups = result.groups.map(g => g.gid);
         }
         else {
-            console.log('uid', uid)
             getGroups({ request: { uid: uid } });
         }
         getAnnotationsByUrlListener(request.url, groups)
@@ -210,10 +209,8 @@ export async function createAnnotationChildAnchor(request, sender, sendResponse)
 
 
 export async function updateAnnotation(request, sender, sendResponse) {
-    // const { id, content, type, tags, isPrivate, groups, childAnchor } = request.payload;
     const { newAnno, updateType } = request.payload;
     let doc = await fb.getAnnotationById(newAnno.id).get();
-    // console.log(newAnno);
     await fb.updateAnnotationById(newAnno.id, {
         ...newAnno,
         deletedTimestamp: 0,
@@ -238,8 +235,6 @@ export async function updateAnnotation(request, sender, sendResponse) {
         }
         broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', newAnno.id);
     });
-    //broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
-    // console.log("TODO", request.msg);
 }
 
 
@@ -453,9 +448,6 @@ const _createReply = (request) => {
 }
 
 
-
-
-
 export function containsObjectWithUrl(url, list) {
     const test = list.filter(obj => obj.tabUrl === url);
     return test.length !== 0;
@@ -517,14 +509,12 @@ function getAllPublicPinnedAnnotationsListener() {
 
 function batchSearchFirestore(returnArray, searchArray, queryFunction) {
     return new Promise((resolve, reject) => {
-        // console.log("this is gids", searchArray, returnArray)
         if (searchArray.length === 0) {
             resolve(returnArray);
         }
         else if (searchArray.length > 0) {
             var batchedSearch = searchArray.length > 10 ? searchArray.slice(0, 10) : searchArray;
             var arrayRecurSearch = searchArray.length > 10 ? searchArray.slice(10, searchArray.length) : [];
-            // console.log("this is the slice", searchArray.slice(0,10));
             resolve(queryFunction(batchedSearch)).then(e => {
                 return batchSearchFirestore(returnArray.concat(e), arrayRecurSearch, queryFunction);
             })
@@ -561,21 +551,18 @@ function getUserDataFromAuthId(authIds) {
 function InjectUserData(annotationsToBroadcast) {
     let authIds = [...new Set(annotationsToBroadcast.map(annotation => annotation.authorId))]
     return batchSearchFirestore([], authIds, getUserDataFromAuthId).then(authProfiles => {
-            console.log("AUTHORS", authProfiles)
-            let annotationsWithAuthorInfo = annotationsToBroadcast.map(annotation => {
-                const authdata = authProfiles.find(element => element.uid === annotation.authorId);
-                annotation.authorId
-                return {
-                    photoURL: authdata.photoURL,
-                    displayName: authdata.displayName,
-                    ...annotation
-                }
-                
-            })
-            console.log("FINAL", annotationsWithAuthorInfo)
+        let annotationsWithAuthorInfo = annotationsToBroadcast.map(annotation => {
+            const authdata = authProfiles.find(element => element.uid === annotation.authorId);
+            annotation.authorId
+            return {
+                photoURL: authdata.photoURL,
+                displayName: authdata.displayName,
+                ...annotation
+            }
 
-            return(annotationsWithAuthorInfo);
-        });
+        })
+        return (annotationsWithAuthorInfo);
+    });
 }
 
 
@@ -584,7 +571,9 @@ function getAnnotationsByUrlListener(url, groups) {
     if (user !== null) {
         publicListener = fb.getAnnotationsByUrl(url).onSnapshot(async annotationsSnapshot => {
             let annotationsToBroadcast = getListFromSnapshots(annotationsSnapshot);
-            annotationsToBroadcast = annotationsToBroadcast.filter(anno => (!anno.deleted && anno.url.includes(url)) && (!(anno.isPrivate && anno.authorId !== user.uid) || (anno.groups.some(g => groups.includes(g)))))
+            annotationsToBroadcast = annotationsToBroadcast.filter(anno => {
+                return (!anno.deleted && anno.url.includes(url)) && (!(anno.isPrivate && anno.authorId !== user.uid) || (anno.groups.some(g => groups.includes(g))))
+            })
             InjectUserData(annotationsToBroadcast).then(annotationsToBroadcastWithAuthInfo => {
                 try {
                     chrome.tabs.query({}, tabs => {
