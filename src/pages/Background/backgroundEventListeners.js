@@ -21,6 +21,7 @@ let commands = {
     'USER_SIGNUP': authHelper.userSignUp,
     'USER_SIGNIN': authHelper.userSignIn,
     'USER_SIGNINGOOGLE': authHelper.userGoogleSignIn,
+    'USER_SIGNINGITHUB': authHelper.githubUserSignIn,
     'USER_SIGNOUT': authHelper.userSignOut,
     'USER_FORGET_PWD': authHelper.userForgotPwd,
     //background

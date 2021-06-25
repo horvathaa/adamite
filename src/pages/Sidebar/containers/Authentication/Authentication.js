@@ -80,6 +80,21 @@ const Authentication = props => {
     );
   };
 
+  const signInGithubClickedHandler = e => {
+    e.preventDefault();
+    chrome.runtime.sendMessage(
+      {
+        msg: 'USER_SIGNINGITHUB',
+      },
+      response => {
+        console.log(response);
+        if (response !== undefined && response.error) {
+          alert(response.message);
+        }
+      }
+    );
+  };
+
   const forgetPwdClickedHandler = e => {
     e.preventDefault();
     if (!EmailValidator.validate(email)) {
@@ -139,6 +154,12 @@ const Authentication = props => {
           <div>
             <img className="authIcon" alt="Google sign-in" src={Google} />
             Login with Google
+          </div>
+        </button>
+        <button className="AuthSignInContainer" onClick={signInGithubClickedHandler}>
+          <div>
+            {/* <img className="authIcon" alt="Google sign-in" src={Google} /> */}
+            Login with GitHub
           </div>
         </button>
       </div>

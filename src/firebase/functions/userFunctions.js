@@ -4,7 +4,8 @@ import {
   auth,
   getCurrentUser,
   getCurrentUserId,
-  provider
+  provider,
+  githubProvider
 } from '../index';
 
 // https://firebase.google.com/docs/auth/web/password-auth
@@ -19,6 +20,10 @@ export const signInWithEmailAndPassword = (email, password) => {
 export const signInWithGoogle = () => {
   return auth.signInWithPopup(provider);
 };
+
+export const signInWithGithub = () => {
+  return auth.signInWithPopup(githubProvider);
+}
 
 export const signOut = () => {
   return auth.signOut();

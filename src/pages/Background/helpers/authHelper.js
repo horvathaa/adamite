@@ -4,6 +4,7 @@ import {
   signUpWithEmailAndPassword,
   signInWithEmailAndPassword,
   signInWithGoogle,
+  signInWithGithub,
   signOut,
   getElasticApiKey
 } from '../../../firebase/index';
@@ -54,6 +55,31 @@ export function userSignIn(request, sender, sendResponse) {
 
 export function userGoogleSignIn(request, sender, sendResponse) {
   signInWithGoogle()
+  .then((result) => {
+      /** @type {firebase.auth.OAuthCredential} */
+      var credential = result.credential;
+
+      // This gives you a Google Access Token. You can use it to access the Google API.
+      var token = credential.accessToken;
+      // The signed-in user info.
+      var user = result.user;
+      console.log("FINISHED", user, token, credential)
+      // ...
+    }).catch((error) => {
+      // Handle Errors here.
+      var errorCode = error.code;
+      var errorMessage = error.message;
+      // The email of the user's account used.
+      var email = error.email;
+      // The firebase.auth.AuthCredential type that was used.
+      var credential = error.credential;
+      console.log(errorMessage);
+      sendResponse({ errorMessage, error: true });
+    });
+}
+
+export function githubUserSignIn(request, sender, sendResponse) {
+  signInWithGithub()
   .then((result) => {
       /** @type {firebase.auth.OAuthCredential} */
       var credential = result.credential;
