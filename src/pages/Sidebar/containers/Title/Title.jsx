@@ -109,17 +109,16 @@ export default class Title extends React.Component {
 
   render() {
     const { currentUser, groups } = this.props;
-    let userName;
+    let userName = "";
     if (currentUser === null) {
       userName = ""
     }
     else {
-      userName = currentUser.displayName !== "" ? 
+      userName = currentUser.displayName !== "" && currentUser.displayName !== null ? 
         currentUser.displayName :
         currentUser.email.substring(0, currentUser.email.indexOf('@'));
     }
 
-    console.log("CURRENT USER", currentUser)
     return (
 
       <div className="TitleContainer">

@@ -553,7 +553,6 @@ function InjectUserData(annotationsToBroadcast) {
     return batchSearchFirestore([], authIds, getUserDataFromAuthId).then(authProfiles => {
         let annotationsWithAuthorInfo = annotationsToBroadcast.map(annotation => {
             const authdata = authProfiles.find(element => element.uid === annotation.authorId);
-            annotation.authorId
             return {
                 photoURL: authdata.photoURL,
                 displayName: authdata.displayName,

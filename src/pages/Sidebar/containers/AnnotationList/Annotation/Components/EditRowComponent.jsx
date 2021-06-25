@@ -34,8 +34,6 @@ const EditRowComponent = () => {
     const ctx = useContext(AnnotationContext);
     if (ctx.collapsed || ctx.isNew) return (null);
 
-    console.log("CTX", ctx)
-
     return (
         <React.Fragment>
             <div className={" container " + classNames({
