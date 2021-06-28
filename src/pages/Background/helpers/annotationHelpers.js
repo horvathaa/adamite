@@ -486,9 +486,11 @@ function getAllPrivatePinnedAnnotationsListener() {
     if (user !== null) {
         pinnedPrivateListener = fb.getAllPrivatePinnedAnnotationsByUserId(fb.getCurrentUserId()).onSnapshot(annotationsSnapshot => {
             let tempPrivatePinnedAnnotations = getListFromSnapshots(annotationsSnapshot);
-            pinnedAnnotations = tempPrivatePinnedAnnotations.concat(publicPinnedAnnotations);
-            privatePinnedAnnotations = tempPrivatePinnedAnnotations;
-            broadcastAnnotationsUpdated("PINNED_CHANGED", pinnedAnnotations);
+            injectUserData(tempPrivatePinnedAnnotations).then(tempPrivatePinnedAnnotationsWithAuthInfo => {
+                pinnedAnnotations = tempPrivatePinnedAnnotationsWithAuthInfo.concat(publicPinnedAnnotations);
+                privatePinnedAnnotations = tempPrivatePinnedAnnotationsWithAuthInfo;
+                broadcastAnnotationsUpdated("PINNED_CHANGED", pinnedAnnotations);
+            });
         });
     }
 }
@@ -499,9 +501,11 @@ function getAllPublicPinnedAnnotationsListener() {
     if (user !== null) {
         pinnedPublicListener = fb.getAllPinnedAnnotationsByUserId(user.uid).onSnapshot(annotationsSnapshot => {
             let tempPublicPinnedAnnotations = getListFromSnapshots(annotationsSnapshot);
-            pinnedAnnotations = tempPublicPinnedAnnotations.concat(privatePinnedAnnotations);
-            publicPinnedAnnotations = tempPublicPinnedAnnotations;
-            broadcastAnnotationsUpdated("PINNED_CHANGED", pinnedAnnotations);
+            injectUserData(tempPublicPinnedAnnotations).then(tempPublicPinnedAnnotationsWithAuthInfo => {
+                pinnedAnnotations = tempPublicPinnedAnnotationsWithAuthInfo.concat(privatePinnedAnnotations);
+                publicPinnedAnnotations = tempPublicPinnedAnnotationsWithAuthInfo;
+                broadcastAnnotationsUpdated("PINNED_CHANGED", pinnedAnnotations);
+            });
         });
     }
 }
@@ -548,18 +552,36 @@ function getUserDataFromAuthId(authIds) {
         });
 }
 
-function InjectUserData(annotationsToBroadcast) {
-    let authIds = [...new Set(annotationsToBroadcast.map(annotation => annotation.authorId))]
+function getAllAuthIds(annotations) {
+    let authors = []
+    annotations.map(annotation => {
+        authors.push(annotation.authorId);
+        annotation.replies.forEach(replies => {
+            authors.push(replies.authorId)
+        })
+    })
+    return authors;
+}
+
+function injectUserData(annotationsToBroadcast) {
+
+    let authIds = [...new Set(getAllAuthIds(annotationsToBroadcast))];
     return batchSearchFirestore([], authIds, getUserDataFromAuthId).then(authProfiles => {
         let annotationsWithAuthorInfo = annotationsToBroadcast.map(annotation => {
             const authdata = authProfiles.find(element => element.uid === annotation.authorId);
-            annotation.authorId
+            annotation.replies = annotation.replies.map(reply => {
+                let authDataReplies = authProfiles.find(element => element.uid === reply.authorId);
+                return {
+                    photoURL: authDataReplies.photoURL,
+                    displayName: authDataReplies.displayName,
+                    ...reply
+                }
+            })
             return {
                 photoURL: authdata.photoURL,
                 displayName: authdata.displayName,
                 ...annotation
             }
-
         })
         return (annotationsWithAuthorInfo);
     });
@@ -574,7 +596,7 @@ function getAnnotationsByUrlListener(url, groups) {
             annotationsToBroadcast = annotationsToBroadcast.filter(anno => {
                 return (!anno.deleted && anno.url.includes(url)) && (!(anno.isPrivate && anno.authorId !== user.uid) || (anno.groups.some(g => groups.includes(g))))
             })
-            InjectUserData(annotationsToBroadcast).then(annotationsToBroadcastWithAuthInfo => {
+            injectUserData(annotationsToBroadcast).then(annotationsToBroadcastWithAuthInfo => {
                 try {
                     chrome.tabs.query({}, tabs => {
                         const tabsWithUrl = tabs.filter(t => getPathFromUrl(t.url) === url);

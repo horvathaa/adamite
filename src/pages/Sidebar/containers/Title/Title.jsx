@@ -114,12 +114,11 @@ export default class Title extends React.Component {
       userName = ""
     }
     else {
-      userName = currentUser.displayName !== "" ? 
-        currentUser.displayName :
-        currentUser.email.substring(0, currentUser.email.indexOf('@'));
+      userName = currentUser.displayName === "" || currentUser.displayName === null ? 
+        currentUser.email.substring(0, currentUser.email.indexOf('@')):
+        currentUser.displayName ;  
     }
 
-    console.log("CURRENT USER", currentUser)
     return (
 
       <div className="TitleContainer">
@@ -155,8 +154,6 @@ export default class Title extends React.Component {
                       updateFunction: this.props.updateSidebarGroup,
                       items: this.__generateGroups(groups)
                     })}
-                    {/* <div className="row2">
-                    <div className="col2 "> */}
                     <div className="SandwichTopBar NewAnnotationButtonContainer ">
                       <Dropdown onClick={this.onMouseEnterAdd} onBlur={this.onMouseLeaveAdd} show={this.state.dropdownOpenAdd} toggle={this.toggle.toString()} >
                         <Dropdown.Toggle id="dropdown-basic" className="vertical-center">
@@ -167,17 +164,16 @@ export default class Title extends React.Component {
                             <div className="container">
                               <div className="row">
                                 <div className="col OptionCol">
-                                  <div className={"OptionProfileContainer" + currentUser.photoURL === "" ? "profileContainer" : ""}>
-                                    {currentUser.photoURL === "" ? 
+                                  <div className={((currentUser.photoURL === "" || currentUser.photoURL === null) ? " OptionProfileContainer profileContainer" : "")}>
+                                    {currentUser.photoURL === "" || currentUser.photoURL === null ? 
                                       <AiOutlineUser alt="profile" className="userProfile" />:
                                       <img src={currentUser.photoURL} alt="profile" className="userProfilePhoto" />
                                     }
                                   </div>
                                 </div>
                                 <div className="col">
-
                                   <div>
-                                    {userName.toUpperCase()}
+                                    {userName}
                                   </div>
                                   <div className="EmailNameSection">
                                     {currentUser.email}

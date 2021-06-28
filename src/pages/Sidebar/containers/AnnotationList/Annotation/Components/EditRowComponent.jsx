@@ -34,16 +34,14 @@ const EditRowComponent = () => {
     const ctx = useContext(AnnotationContext);
     if (ctx.collapsed || ctx.isNew) return (null);
 
-    console.log("CTX", ctx)
-
     return (
         <React.Fragment>
             <div className={" container " + classNames({
                 Header: true,
                 Truncated: ctx.collapsed,
             })}>
-                <div className={ctx.anno.photoURL === "" && "profileContainer" }>
-                    {ctx.anno.photoURL === "" ?
+                <div className={(ctx.anno.photoURL === "" || ctx.anno.photoURL === null) ? "profileContainer" : ""}>
+                    {ctx.anno.photoURL === "" || ctx.anno.photoURL === null ?
                         <AiOutlineUser alt="profile" className="userProfile" /> :
                         <img src={ctx.anno.photoURL} alt="profile" className="profilePhoto userProfilePhoto" />
                     }
@@ -51,7 +49,8 @@ const EditRowComponent = () => {
                 <div className="userProfileContainer">
 
                     <div className="author">
-                        {ctx.anno.author}
+                        {ctx.anno.displayName === null || ctx.anno.displayName === "" ? ctx.anno.author : ctx.anno.displayName}
+                        {/* {ctx.anno.author} */}
                     </div>
                     <div className="groupName">
                         {ctx.getGroupName()}
@@ -68,15 +67,6 @@ const EditRowComponent = () => {
                                 <AiOutlineComment className="profile" alt="reply" />
                             </div>
                         </Tooltip>
-                        <Tooltip title={"Pin or unpin annotation"} aria-label="pin icon tooltip">
-                            <div className="TopIconContainer" onClick={ctx.handlePin}>
-                                {ctx.anno.pinned ? (
-                                    <AiFillPushpin className="profile" id="pin" alt="pin" />
-                                ) : (
-                                    <AiOutlinePushpin className="profile" id="pin" alt="pin" />
-                                )}
-                            </div>
-                        </Tooltip>
                         <Tooltip title={"Add new anchor to annotation"} aria-label="add new anchor tooltip" onClick={ctx.handleNewAnchor}>
                             <div className="TopIconContainer" >
                                 <BiAnchor className="profile" alt="add new anchor" id="newAnchor" />
@@ -84,6 +74,15 @@ const EditRowComponent = () => {
                         </Tooltip>
                         {ctx.currentUser.uid === ctx.anno.authorId ? (
                             <React.Fragment>
+                                <Tooltip title={"Pin or unpin annotation"} aria-label="pin icon tooltip">
+                                    <div className="TopIconContainer" onClick={ctx.handlePin}>
+                                        {ctx.anno.pinned ? (
+                                            <AiFillPushpin className="profile" id="pin" alt="pin" />
+                                        ) : (
+                                            <AiOutlinePushpin className="profile" id="pin" alt="pin" />
+                                        )}
+                                    </div>
+                                </Tooltip>
                                 <Tooltip title={"Edit annotation"} aria-label="edit tooltip">
                                     <div className="TopIconContainer" >
                                         <AiOutlineEdit className="profile" alt="edit annotation" className="profile" id="edit" onClick={() => ctx.setEditing(!ctx.editing)} />
@@ -116,23 +115,6 @@ const EditRowComponent = () => {
                                     </div>
                                     Reply
                                 </Dropdown.Item>
-                                <Dropdown.Item onClick={ctx.handlePin} className="DropdownItemOverwrite">
-                                    {ctx.anno.pinned ? (
-                                        <React.Fragment>
-                                            <div className="DropdownIconsWrapper">
-                                                <AiFillPushpin className="DropdownIcons" id="pin" alt="pin" />
-                                            </div>
-                                            Unpin
-                                        </React.Fragment>
-                                    ) : (
-                                        <React.Fragment>
-                                            <div className="DropdownIconsWrapper">
-                                                <AiOutlinePushpin className="DropdownIcons" id="pin" alt="pin" />
-                                            </div>
-                                            Pin
-                                        </React.Fragment>
-                                    )}
-                                </Dropdown.Item>
                                 <Dropdown.Item onClick={ctx.handleNewAnchor} className="DropdownItemOverwrite">
                                     <div className="DropdownIconsWrapper">
                                         <BiAnchor className="DropdownIcons" alt="add new anchor" id="newAnchor" />
@@ -141,6 +123,23 @@ const EditRowComponent = () => {
                                 </Dropdown.Item>
                                 {ctx.currentUser.uid === ctx.anno.authorId ? (
                                     <React.Fragment>
+                                        <Dropdown.Item onClick={ctx.handlePin} className="DropdownItemOverwrite">
+                                            {ctx.anno.pinned ? (
+                                                <React.Fragment>
+                                                    <div className="DropdownIconsWrapper">
+                                                        <AiFillPushpin className="DropdownIcons" id="pin" alt="pin" />
+                                                    </div>
+                                                    Unpin
+                                                </React.Fragment>
+                                            ) : (
+                                                <React.Fragment>
+                                                    <div className="DropdownIconsWrapper">
+                                                        <AiOutlinePushpin className="DropdownIcons" id="pin" alt="pin" />
+                                                    </div>
+                                                    Pin
+                                                </React.Fragment>
+                                            )}
+                                        </Dropdown.Item>
                                         <Dropdown.Item onClick={() => ctx.setEditing(!ctx.editing)} className="DropdownItemOverwrite">
                                             <div className="DropdownIconsWrapper">
                                                 <AiOutlineEdit className="DropdownIcons" alt="edit annotation" className="profile" id="edit" />

@@ -63,7 +63,6 @@ export const checkForBrokenAnnotationDeep = (anno, ids) => {
 
 export const highlightAnnotation = (annotation, domId, type) => {
     //will show annotation type
-    console.log('highlighting anno');
     let nodePairs = getNodeSubstringPairs({ annotation: annotation, type: type });
     if (!nodePairs || nodePairs.length == 0) {
         //console.log("no matches");

@@ -534,6 +534,7 @@ class Sidebar extends React.Component {
   }
 
   handlePinnedAnnotation = (id, pinned) => {
+    console.log("PINNING")
     let annotation;
     if (containsObjectWithId(id, this.state.filteredAnnotations)) {
       annotation = this.state.filteredAnnotations.filter(anno => anno.id === id);
