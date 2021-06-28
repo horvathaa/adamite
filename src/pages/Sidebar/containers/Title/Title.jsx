@@ -109,7 +109,7 @@ export default class Title extends React.Component {
 
   render() {
     const { currentUser, groups } = this.props;
-    let userName;
+    let userName = "";
     if (currentUser === null) {
       userName = ""
     }

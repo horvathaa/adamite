@@ -576,7 +576,7 @@ function injectUserData(annotationsToBroadcast) {
                     displayName: authDataReplies.displayName,
                     ...reply
                 }
-            })
+            });
             return {
                 photoURL: authdata.photoURL,
                 displayName: authdata.displayName,
