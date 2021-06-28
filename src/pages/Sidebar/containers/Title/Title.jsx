@@ -36,9 +36,9 @@ export default class Title extends React.Component {
     });
 
     options.push({
-        label: "Private",
-        value: "onlyme",
-        owner: ""
+      label: "Private",
+      value: "onlyme",
+      owner: ""
     });
 
     options = options.concat(groups.map(group => {
@@ -85,134 +85,146 @@ export default class Title extends React.Component {
   createDropDown = (args) => {
     const listItems = args.items.map((option, idx) => {
       const currentGroup = Array.isArray(args.activeFilter) ? args.activeFilter[0] : args.activeFilter;
-        let active = currentGroup === option.label ? true : false
-        return <Dropdown.Item key={idx} className="DropdownItemOverwrite GroupLimitDropDown" onSelect={(e) => args.updateFunction([option], e)} data-value={option.label}> {active ? <AiOutlineCheck /> : ""} {option.label} </Dropdown.Item>
+      let active = currentGroup === option.label ? true : false
+      return <Dropdown.Item key={idx} className="DropdownItemOverwrite GroupLimitDropDown" onSelect={(e) => args.updateFunction([option], e)} data-value={option.label}> {active ? <AiOutlineCheck /> : ""} {option.label} </Dropdown.Item>
     });
 
     return (
-        <React.Fragment>
-            <Dropdown className={args.className} style={{margin: 'auto'}}>
-                <Dropdown.Toggle title={args.header} className="filterDropDown GroupLimitTitle">
-                    <div className="FilterIconContainer">
-                        <args.Icon className="filterReactIcon" />
-                    </div>
-                    &nbsp; {args.activeFilter}
-                </Dropdown.Toggle>
-                <Dropdown.Menu >
-                    <Dropdown.Header>{args.header}</Dropdown.Header>
-                    {listItems}
-                </Dropdown.Menu>
-            </Dropdown>
-        </React.Fragment>
+      <React.Fragment>
+        <Dropdown className={args.className} style={{ margin: 'auto' }}>
+          <Dropdown.Toggle title={args.header} className="filterDropDown GroupLimitTitle">
+            <div className="FilterIconContainer">
+              <args.Icon className="filterReactIcon" />
+            </div>
+            &nbsp; {args.activeFilter}
+          </Dropdown.Toggle>
+          <Dropdown.Menu >
+            <Dropdown.Header>{args.header}</Dropdown.Header>
+            {listItems}
+          </Dropdown.Menu>
+        </Dropdown>
+      </React.Fragment>
     );
   }
 
   render() {
     const { currentUser, groups } = this.props;
-    let userName;
+    let userName = "";
     if (currentUser === null) {
       userName = ""
     }
     else {
-      userName = currentUser.email.substring(0, currentUser.email.indexOf('@'));
+      userName = currentUser.displayName === "" || currentUser.displayName === null ? 
+        currentUser.email.substring(0, currentUser.email.indexOf('@')):
+        currentUser.displayName ;  
     }
+
     return (
 
       <div className="TitleContainer">
         <div className="container">
           <div className="row">
-            <div className="col col-7 col-md-7">
-              <div className="Header">
-                <div className="TitleIcon">
-                  <img className="TitleIcon" src={ADAMITE} alt='Adamite logo' />
+            {currentUser == null ?
+              <div className="col col-12 col-md-12">
+                <div className="Header">
+                  <div className="TitleIcon">
+                    <img className="TitleIcon" src={ADAMITE} alt='Adamite logo' />
+                  </div>
+                  <div className="Title">{APP_NAME_FULL}</div>
                 </div>
-                <div className="Title">{APP_NAME_FULL}</div>
               </div>
-            </div>
-            {currentUser !== null && (
+              :
               <React.Fragment>
-                <div className="col col-5 col-sm-5">
-                  <div className="TitleRight"> 
-                  {this.createDropDown({
-                            Icon: BiGroup,
-                            className: 'FilterDropDownSearch NewAnnotationButtonContainer',
-                            activeFilter: this.props.currentGroup.length ? this.props.currentGroup : 'Public',
-                            header: "My Groups",
-                            updateFunction: this.props.updateSidebarGroup,
-                            items: this.__generateGroups(groups)
-                        })}
-                  {/* <div className="row2">
-                    <div className="col2 "> */}
-                      <div className="SandwichTopBar NewAnnotationButtonContainer ">
-                        <Dropdown onClick={this.onMouseEnterAdd} onBlur={this.onMouseLeaveAdd} show={this.state.dropdownOpenAdd} toggle={this.toggle.toString()} >
-                          <Dropdown.Toggle id="dropdown-basic" className="vertical-center">
-                            <GiHamburgerMenu alt="Hamburger menu" className="profile" />
-                          </Dropdown.Toggle>
-                          <Dropdown.Menu >
-                            <Dropdown.Item className="OptionLineBreak" >
-                              <div className="container">
-                                <div className="row">
-                                  <div className="col OptionCol">
-                                    <div className="OptionProfileContainer profileContainer">
-                                      <AiOutlineUser alt="profile" className="userProfile" />
-                                      {/* <img src={profile} alt="profile" className="profile" /> */}
-                                    </div>
-                                  </div>
-                                  <div className="col">
+                <div className="col col-7 col-md-7">
+                  <div className="Header">
+                    <div className="TitleIcon">
+                      <img className="TitleIcon" src={ADAMITE} alt='Adamite logo' />
+                    </div>
+                    <div className="Title">{APP_NAME_FULL}</div>
+                  </div>
+                </div>
 
-                                    <div>
-                                      {userName.toUpperCase()}
-                                    </div>
-                                    <div className="EmailNameSection">
-                                      {currentUser.email}
-                                    </div>
+                <div className="col col-5 col-sm-5">
+                  <div className="TitleRight">
+                    {this.createDropDown({
+                      Icon: BiGroup,
+                      className: 'FilterDropDownSearch NewAnnotationButtonContainer',
+                      activeFilter: this.props.currentGroup.length ? this.props.currentGroup : 'Public',
+                      header: "My Groups",
+                      updateFunction: this.props.updateSidebarGroup,
+                      items: this.__generateGroups(groups)
+                    })}
+                    <div className="SandwichTopBar NewAnnotationButtonContainer ">
+                      <Dropdown onClick={this.onMouseEnterAdd} onBlur={this.onMouseLeaveAdd} show={this.state.dropdownOpenAdd} toggle={this.toggle.toString()} >
+                        <Dropdown.Toggle id="dropdown-basic" className="vertical-center">
+                          <GiHamburgerMenu alt="Hamburger menu" className="profile" />
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu >
+                          <Dropdown.Item className="OptionLineBreak" >
+                            <div className="container">
+                              <div className="row">
+                                <div className="col OptionCol">
+                                  <div className={((currentUser.photoURL === "" || currentUser.photoURL === null) ? " OptionProfileContainer profileContainer" : "")}>
+                                    {currentUser.photoURL === "" || currentUser.photoURL === null ? 
+                                      <AiOutlineUser alt="profile" className="userProfile" />:
+                                      <img src={currentUser.photoURL} alt="profile" className="userProfilePhoto" />
+                                    }
+                                  </div>
+                                </div>
+                                <div className="col">
+                                  <div>
+                                    {userName}
+                                  </div>
+                                  <div className="EmailNameSection">
+                                    {currentUser.email}
                                   </div>
                                 </div>
                               </div>
-                            </Dropdown.Item>
-                            <Dropdown.Item className="OptionLineBreak">
-                              <hr></hr>
-                            </Dropdown.Item>
-                            <Dropdown.Item onClick={this.props.handleShowAnnotatePage} className="DropdownItemOverwrite">
-                              <div className="DropdownIconsWrapper"><BiFileBlank className="DropdownIcons" /></div>
-                              Add Page Annotation
+                            </div>
+                          </Dropdown.Item>
+                          <Dropdown.Item className="OptionLineBreak">
+                            <hr></hr>
+                          </Dropdown.Item>
+                          <Dropdown.Item onClick={this.props.handleShowAnnotatePage} className="DropdownItemOverwrite">
+                            <div className="DropdownIconsWrapper"><BiFileBlank className="DropdownIcons" /></div>
+                            Add Page Annotation
                           </Dropdown.Item>
                           <Dropdown.Item onClick={this.props.addNewGroup} className="DropdownItemOverwrite">
-                              <div className="DropdownIconsWrapper"><BiUserPlus className="DropdownIcons" /></div>
-                              Create New Group
+                            <div className="DropdownIconsWrapper"><BiUserPlus className="DropdownIcons" /></div>
+                            Create New Group
                           </Dropdown.Item>
-                            <Dropdown.Item onClick={this.props.closeSidebar} className="DropdownItemOverwrite">
-                              <div className="DropdownIconsWrapper"><BiHorizontalCenter className="DropdownIcons" /></div>
-                              Close Sidebar
+                          <Dropdown.Item onClick={this.props.closeSidebar} className="DropdownItemOverwrite">
+                            <div className="DropdownIconsWrapper"><BiHorizontalCenter className="DropdownIcons" /></div>
+                            Close Sidebar
                           </Dropdown.Item>
-                            <Dropdown.Item onClick={this.props.openOptions} className="DropdownItemOverwrite">
-                              <div className="DropdownIconsWrapper"><BiCog className="DropdownIcons" /></div>
-                              Options
+                          <Dropdown.Item onClick={this.props.openOptions} className="DropdownItemOverwrite">
+                            <div className="DropdownIconsWrapper"><BiCog className="DropdownIcons" /></div>
+                            Options
                           </Dropdown.Item>
-                            <Dropdown.Item onClick={this.props.openDocumentation} className="DropdownItemOverwrite">
-                              <div className="DropdownIconsWrapper"><BiBookBookmark className="DropdownIcons" /></div>
-                              View Adamite Documentation
+                          <Dropdown.Item onClick={this.props.openDocumentation} className="DropdownItemOverwrite">
+                            <div className="DropdownIconsWrapper"><BiBookBookmark className="DropdownIcons" /></div>
+                            View Adamite Documentation
                           </Dropdown.Item>
                           <Dropdown.Item onClick={this.props.openBugForm} className="DropdownItemOverwrite">
-                              <div className="DropdownIconsWrapper"><BiBug className="DropdownIcons" /></div>
-                              Submit a Bug
+                            <div className="DropdownIconsWrapper"><BiBug className="DropdownIcons" /></div>
+                            Submit a Bug
                           </Dropdown.Item>
-                            <Dropdown.Item onClick={this.signOutClickedHandler} className="DropdownItemOverwrite">
-                              <div className="DropdownIconsWrapper"><BiExit className="DropdownIcons" /></div>
-                              Sign Out
-                            </Dropdown.Item>
-                            <Dropdown.Item className="OptionLineBreak">
-                              <div className='dropdownItemOverwrite small'>
-                                Adamite version {pjson.version}
-                              </div>
-                            </Dropdown.Item>
-                          </Dropdown.Menu>
-                        </Dropdown>
-                      </div>
+                          <Dropdown.Item onClick={this.signOutClickedHandler} className="DropdownItemOverwrite">
+                            <div className="DropdownIconsWrapper"><BiExit className="DropdownIcons" /></div>
+                            Sign Out
+                          </Dropdown.Item>
+                          <Dropdown.Item className="VersionDropDown">
+                            <div className='dropdownItemOverwrite'>
+                              Adamite version {pjson.version}
+                            </div>
+                          </Dropdown.Item>
+                        </Dropdown.Menu>
+                      </Dropdown>
+                    </div>
                   </div>
                 </div>
               </React.Fragment>
-            )}
+            }
 
           </div>
         </div>

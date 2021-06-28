@@ -4,7 +4,7 @@ import { clean } from './objectCleaner';
 import firebase from '../../../firebase/firebase';
 import { getCurrentUserId, getCurrentUser } from '../../../firebase/index';
 import { getPathFromUrl } from '../backgroundEventListeners';
-import { getGroups } from './groupAnnotationsHelper';
+import { getGroups, groupListener } from './groupAnnotationsHelper';
 
 // from: https://stackoverflow.com/questions/34151834/javascript-array-contains-includes-sub-array
 function hasSubArray(master, sub) {
@@ -69,10 +69,10 @@ export function setPinnedAnnotationListeners(request, sender, sendResponse) {
 export async function getAnnotationsPageLoad(request, sender, sendResponse) {
     let uid = getCurrentUserId();
     let { email } = getCurrentUser();
-    let groups;
+    let groups = [];
 
     chrome.storage.local.get(['groups'], (result) => {
-        if (result.groups !== undefined) {
+        if (result.groups !== undefined && result.groups.length) {
             groups = result.groups.map(g => g.gid);
         }
         else {
@@ -80,8 +80,6 @@ export async function getAnnotationsPageLoad(request, sender, sendResponse) {
         }
         getAnnotationsByUrlListener(request.url, groups)
     })
-
-
 
     let userName = email.substring(0, email.indexOf('@'));
     if (request.tabId !== undefined) {
@@ -146,14 +144,6 @@ export async function createAnnotation(request, sender, sendResponse) {
         deleted: false,
         archived: false,
         createdTimestamp: new Date().getTime(),
-    }).then(value => {
-        // chrome.runtime.sendMessage({
-        //     from: 'background',
-        //     msg: 'SCROLL_INTO_VIEW',
-        //     payload: {
-        //         id: value
-        //     }
-        // })
     });
     sendResponse({ "msg": 'DONE' });
 }
@@ -168,7 +158,6 @@ export async function createAnnotationReply(request, sender, sendResponse) {
             url: fbUnionNoSpread(url)
         }).then(function (e) {
             broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
-
         });
     }
     else {
@@ -199,45 +188,53 @@ export async function createAnnotationChildAnchor(request, sender, sendResponse)
             content: newAnno.content,
             xpath: xpath
         }
-        chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-            chrome.tabs.sendMessage(
-                tabs[0].id,
-                {
-                    msg: 'ANNOTATION_ADDED',
-                    newAnno: highlightObj,
-                }
-            );
-        });
+        try {
+            chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+                chrome.tabs.sendMessage(
+                    tabs[0].id,
+                    {
+                        msg: 'ANNOTATION_ADDED',
+                        newAnno: highlightObj,
+                    }
+                );
+            });
+        }
+        catch (error) {
+            console.error('tabs cannot be queried right now', error)
+        }
+
         broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', newAnno.sharedId);
     });
 }
 
 
 export async function updateAnnotation(request, sender, sendResponse) {
-    // const { id, content, type, tags, isPrivate, groups, childAnchor } = request.payload;
     const { newAnno, updateType } = request.payload;
     let doc = await fb.getAnnotationById(newAnno.id).get();
-    // console.log(newAnno);
     await fb.updateAnnotationById(newAnno.id, {
         ...newAnno,
         deletedTimestamp: 0,
         events: fbUnion(editEvent(request.msg, doc.data())),
     }).then(value => {
         if (updateType === "NewAnchor") {
-            chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-                chrome.tabs.sendMessage(
-                    tabs[0].id,
-                    {
-                        msg: 'ANNOTATION_ADDED',
-                        newAnno: newAnno,
-                    }
-                );
-            });
+            try {
+                chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+                    chrome.tabs.sendMessage(
+                        tabs[0].id,
+                        {
+                            msg: 'ANNOTATION_ADDED',
+                            newAnno: newAnno,
+                        }
+                    );
+                });
+            }
+            catch (error) {
+                console.error('tabs cannot be queried right now', error)
+            }
+
         }
         broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', newAnno.id);
     });
-    //broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', id);
-    // console.log("TODO", request.msg);
 }
 
 
@@ -334,11 +331,11 @@ export async function deleteAnnotation(request, sender, sendResponse) {
 }
 
 export function unsubscribeAnnotations(request, sender, sendResponse) {
-    console.log('unsubscribe called');
     if (typeof privateListener === "function") privateListener();
     if (typeof publicListener === "function") publicListener();
     if (typeof pinnedPrivateListener === "function") pinnedPrivateListener();
     if (typeof pinnedPublicListener === "function") pinnedPublicListener();
+    if (typeof groupListener === 'function') groupListener();
 }
 
 export async function filterAnnotationsByTag(request, sender, sendResponse) {
@@ -451,9 +448,6 @@ const _createReply = (request) => {
 }
 
 
-
-
-
 export function containsObjectWithUrl(url, list) {
     const test = list.filter(obj => obj.tabUrl === url);
     return test.length !== 0;
@@ -492,9 +486,11 @@ function getAllPrivatePinnedAnnotationsListener() {
     if (user !== null) {
         pinnedPrivateListener = fb.getAllPrivatePinnedAnnotationsByUserId(fb.getCurrentUserId()).onSnapshot(annotationsSnapshot => {
             let tempPrivatePinnedAnnotations = getListFromSnapshots(annotationsSnapshot);
-            pinnedAnnotations = tempPrivatePinnedAnnotations.concat(publicPinnedAnnotations);
-            privatePinnedAnnotations = tempPrivatePinnedAnnotations;
-            broadcastAnnotationsUpdated("PINNED_CHANGED", pinnedAnnotations);
+            injectUserData(tempPrivatePinnedAnnotations).then(tempPrivatePinnedAnnotationsWithAuthInfo => {
+                pinnedAnnotations = tempPrivatePinnedAnnotationsWithAuthInfo.concat(publicPinnedAnnotations);
+                privatePinnedAnnotations = tempPrivatePinnedAnnotationsWithAuthInfo;
+                broadcastAnnotationsUpdated("PINNED_CHANGED", pinnedAnnotations);
+            });
         });
     }
 }
@@ -505,41 +501,123 @@ function getAllPublicPinnedAnnotationsListener() {
     if (user !== null) {
         pinnedPublicListener = fb.getAllPinnedAnnotationsByUserId(user.uid).onSnapshot(annotationsSnapshot => {
             let tempPublicPinnedAnnotations = getListFromSnapshots(annotationsSnapshot);
-            pinnedAnnotations = tempPublicPinnedAnnotations.concat(privatePinnedAnnotations);
-            publicPinnedAnnotations = tempPublicPinnedAnnotations;
-            broadcastAnnotationsUpdated("PINNED_CHANGED", pinnedAnnotations);
+            injectUserData(tempPublicPinnedAnnotations).then(tempPublicPinnedAnnotationsWithAuthInfo => {
+                pinnedAnnotations = tempPublicPinnedAnnotationsWithAuthInfo.concat(privatePinnedAnnotations);
+                publicPinnedAnnotations = tempPublicPinnedAnnotationsWithAuthInfo;
+                broadcastAnnotationsUpdated("PINNED_CHANGED", pinnedAnnotations);
+            });
         });
     }
+}
+
+
+function batchSearchFirestore(returnArray, searchArray, queryFunction) {
+    return new Promise((resolve, reject) => {
+        if (searchArray.length === 0) {
+            resolve(returnArray);
+        }
+        else if (searchArray.length > 0) {
+            var batchedSearch = searchArray.length > 10 ? searchArray.slice(0, 10) : searchArray;
+            var arrayRecurSearch = searchArray.length > 10 ? searchArray.slice(10, searchArray.length) : [];
+            resolve(queryFunction(batchedSearch)).then(e => {
+                return batchSearchFirestore(returnArray.concat(e), arrayRecurSearch, queryFunction);
+            })
+                .catch(err => {
+                    console.log('Error getting batchSearchFirestore', err);
+                    reject(err);
+                });
+        }
+        resolve(returnArray);
+    });
+}
+
+function getUserDataFromAuthId(authIds) {
+    return fb.getUsersbyID(authIds).get()
+        .then(queryResult => {
+            var tempArray = []
+            if (!queryResult.empty) {
+                queryResult.forEach(docs => {
+                    tempArray.push({
+                        id: docs.id,
+                        ...docs.data(),
+                    });
+                });
+                return tempArray;
+            }
+            return [];
+        })
+        .catch(err => {
+            console.log('Error getting user Profiles', err);
+            throw err;
+        });
+}
+
+function getAllAuthIds(annotations) {
+    let authors = []
+    annotations.map(annotation => {
+        authors.push(annotation.authorId);
+        annotation.replies.forEach(replies => {
+            authors.push(replies.authorId)
+        })
+    })
+    return authors;
+}
+
+function injectUserData(annotationsToBroadcast) {
+
+    let authIds = [...new Set(getAllAuthIds(annotationsToBroadcast))];
+    return batchSearchFirestore([], authIds, getUserDataFromAuthId).then(authProfiles => {
+        let annotationsWithAuthorInfo = annotationsToBroadcast.map(annotation => {
+            const authdata = authProfiles.find(element => element.uid === annotation.authorId);
+            annotation.replies = annotation.replies.map(reply => {
+                let authDataReplies = authProfiles.find(element => element.uid === reply.authorId);
+                return {
+                    photoURL: authDataReplies.photoURL,
+                    displayName: authDataReplies.displayName,
+                    ...reply
+                }
+            });
+            return {
+                photoURL: authdata.photoURL,
+                displayName: authdata.displayName,
+                ...annotation
+            }
+        })
+        return (annotationsWithAuthorInfo);
+    });
 }
 
 
 function getAnnotationsByUrlListener(url, groups) {
     const user = fb.getCurrentUser();
     if (user !== null) {
-        publicListener = fb.getAnnotationsByUrl(url).onSnapshot(annotationsSnapshot => {
+        publicListener = fb.getAnnotationsByUrl(url).onSnapshot(async annotationsSnapshot => {
             let annotationsToBroadcast = getListFromSnapshots(annotationsSnapshot);
-            annotationsToBroadcast = annotationsToBroadcast.filter(anno => (!anno.deleted && anno.url.includes(url)) && (!(anno.isPrivate && anno.authorId !== user.uid) || (anno.groups.some(g => groups.includes(g)))))
-            // let annotationsToBroadcast = tempPublicAnnotations.concat(privateAnnotations);
-            // if (!hasSubArray(annotationsToBroadcast, groupAnnotations)) {
-            //     annotationsToBroadcast = annotationsToBroadcast.concat(groupAnnotations);
-            //     tempPublicAnnotations = tempPublicAnnotations.concat(groupAnnotations)
-            // }
-
-            // annotationsToBroadcast = annotationsToBroadcast.filter(anno => !anno.deleted && anno.url.includes(url));
-            chrome.tabs.query({}, tabs => {
-                const tabsWithUrl = tabs.filter(t => getPathFromUrl(t.url) === url);
-                if (containsObjectWithUrl(url, tabAnnotationCollect)) {
-                    tabAnnotationCollect = updateList(tabAnnotationCollect, url, annotationsToBroadcast, false);
+            annotationsToBroadcast = annotationsToBroadcast.filter(anno => {
+                return (!anno.deleted && anno.url.includes(url)) && (!(anno.isPrivate && anno.authorId !== user.uid) || (anno.groups.some(g => groups.includes(g))))
+            })
+            injectUserData(annotationsToBroadcast).then(annotationsToBroadcastWithAuthInfo => {
+                try {
+                    chrome.tabs.query({}, tabs => {
+                        const tabsWithUrl = tabs.filter(t => getPathFromUrl(t.url) === url);
+                        if (containsObjectWithUrl(url, tabAnnotationCollect)) {
+                            tabAnnotationCollect = updateList(tabAnnotationCollect, url, annotationsToBroadcastWithAuthInfo, false);
+                        }
+                        else {
+                            tabAnnotationCollect.push({ tabUrl: url, annotations: annotationsToBroadcast });
+                        }
+                        let newList = tabAnnotationCollect.filter(obj => obj.tabUrl === url);
+                        tabsWithUrl.forEach(t => {
+                            broadcastAnnotationsToTab("CONTENT_UPDATED", newList[0].annotations, url, t.id);
+                        })
+                    });
                 }
-                else {
-                    tabAnnotationCollect.push({ tabUrl: url, annotations: annotationsToBroadcast });
+                catch (error) {
+                    console.error('tabs cannot be queried right now', error);
+                    if (error == 'Error: Tabs cannot be edited right now (user may be dragging a tab).')
+                        setTimeout(() => getAnnotationsByUrlListener(url, groups))
                 }
-                let newList = tabAnnotationCollect.filter(obj => obj.tabUrl === url);
-                tabsWithUrl.forEach(t => {
-                    broadcastAnnotationsToTab("CONTENT_UPDATED", newList[0].annotations, url, t.id);
-                })
             });
-            // publicAnnotations = tempPublicAnnotations;
         });
     }
 }

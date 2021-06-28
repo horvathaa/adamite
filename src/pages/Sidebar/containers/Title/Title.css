@@ -301,6 +301,21 @@
   cursor: default;
 }
 
+.VersionDropDown{
+  margin-top: .5rem;
+  color: #6B778C !important;
+  font-size: .75rem;
+  font-weight: 300 !important;
+  padding: 0rem 1.5rem !important;
+  cursor: pointer;
+}
+
+.VersionDropDown:hover{
+  background: transparent !important;
+  background-color: transparent !important;
+  cursor: default;
+}
+
 .TitleRight{
   display: inline-flex;
   float: right;

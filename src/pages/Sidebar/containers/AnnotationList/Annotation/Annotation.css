@@ -95,6 +95,26 @@
   cursor: pointer;
 }
 
+.userProfilePhoto {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: block;
+  text-align: center;
+  margin: auto;
+  padding: .1em;
+  border: 1px solid #49a86773;
+  color: #1d1e24c4;
+  cursor: pointer;
+}
+
+.profilePhoto {
+  width: 50px !important;
+  height: 50px !important;
+}
+
+
+
 .profile {
   width: 20px;
   height: 20px;

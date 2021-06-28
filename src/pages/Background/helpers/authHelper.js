@@ -1,21 +1,20 @@
+import { displayName } from 'react-widgets/lib/Calendar';
 import {
   auth,
-  updateUserProfile,
   signUpWithEmailAndPassword,
   signInWithEmailAndPassword,
+  signInWithGoogle,
+  signInWithGithub,
   signOut,
-  getElasticApiKey,
+  getElasticApiKey
 } from '../../../firebase/index';
 
 let currentUser = null;
 
-
-
 auth.onAuthStateChanged(user => {
-  currentUser = user === null ? null : { uid: user.uid, email: user.email };
+  currentUser = user === null ? null : { uid: user.uid, email: user.email, photoURL: user.photoURL, displayName: user.displayName };
   broadcastAuthStatus(currentUser);
   if (user !== null) {
-    updateUserProfile();
     getElasticApiKey().then(function (e) {
       chrome.storage.sync.set({
         'ElasticAPIKey': e,
@@ -26,6 +25,7 @@ auth.onAuthStateChanged(user => {
     chrome.storage.sync.set({
       'ElasticAPIKey': '',
     });
+    chrome.storage.local.set({ 'groups': [] });
   }
 });
 
@@ -50,6 +50,64 @@ export function userSignIn(request, sender, sendResponse) {
     .catch(err => {
       console.log(err);
       sendResponse({ ...err, error: true });
+    });
+}
+
+export function userGoogleSignIn(request, sender, sendResponse) {
+  signInWithGoogle()
+  .then((result) => {
+      /** @type {firebase.auth.OAuthCredential} */
+      var credential = result.credential;
+
+      // This gives you a Google Access Token. You can use it to access the Google API.
+      var token = credential.accessToken;
+      // The signed-in user info.
+      var user = result.user;
+
+      let photoURL = null
+      let displayName = null
+      let email = null;
+      // console.log("FINISHED", user, token, credential)
+      user.providerData.forEach((profile) => {
+        email       = profile.email
+        photoURL  = profile.photoURL;
+        displayName = profile.displayName;
+      });
+
+    }).catch((error) => {
+      // Handle Errors here.
+      var errorCode = error.code;
+      var errorMessage = error.message;
+      // The email of the user's account used.
+      var email = error.email;
+      // The firebase.auth.AuthCredential type that was used.
+      var credential = error.credential;
+      console.log(errorMessage);
+      sendResponse({ errorMessage, error: true });
+    });
+}
+
+export function githubUserSignIn(request, sender, sendResponse) {
+  signInWithGithub()
+  .then((result) => {
+      /** @type {firebase.auth.OAuthCredential} */
+      var credential = result.credential;
+
+      // This gives you a Google Access Token. You can use it to access the Google API.
+      var token = credential.accessToken;
+      // The signed-in user info.
+      var user = result.user;
+      // ...
+    }).catch((error) => {
+      // Handle Errors here.
+      var errorCode = error.code;
+      var errorMessage = error.message;
+      // The email of the user's account used.
+      var email = error.email;
+      // The firebase.auth.AuthCredential type that was used.
+      var credential = error.credential;
+      console.log(errorMessage);
+      sendResponse({ errorMessage, error: true });
     });
 }
 
@@ -81,46 +139,3 @@ export function userForgotPwd(request, sender, sendResponse) {
       sendResponse({ ...err, error: true });
     });
 }
-
-
-
-// chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-//   if (request.msg === 'GET_CURRENT_USER') {
-//     sendResponse({ payload: { currentUser } });
-//   } else if (request.msg === 'USER_SIGNUP') {
-//     const { email, password } = request.payload;
-//     signUpWithEmailAndPassword(email, password)
-//       .then(result => {
-//         console.log(result);
-//       })
-//       .catch(err => {
-//         console.log(err);
-//         sendResponse({ ...err, error: true });
-//       });
-//   } else if (request.msg === 'USER_SIGNIN') {
-//     const { email, password } = request.payload;
-//     signInWithEmailAndPassword(email, password)
-//       .then(result => {
-//         console.log(result);
-//       })
-//       .catch(err => {
-//         console.log(err);
-//         sendResponse({ ...err, error: true });
-//       });
-//   } else if (request.msg === 'USER_SIGNOUT') {
-//     signOut();
-//   } else if (request.msg === 'USER_FORGET_PWD') {
-//     const { email } = request.payload;
-//     auth
-//       .sendPasswordResetEmail(email)
-//       .then(result => {
-//         console.log(result);
-//         sendResponse({ error: false });
-//       })
-//       .catch(err => {
-//         console.log(err);
-//         sendResponse({ ...err, error: true });
-//       });
-//   }
-//   return true;
-// });

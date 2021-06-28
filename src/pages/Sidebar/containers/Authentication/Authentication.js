@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import * as EmailValidator from 'email-validator';
 import './Authentication.css';
+import Google from '../../../../assets/img/Google__G__Logo.png'
+import Github from '../../../../assets/img/GitHub-Mark-32px.png'
 
 const Authentication = props => {
   const [email, setEmail] = useState('');
@@ -64,6 +66,36 @@ const Authentication = props => {
     );
   };
 
+  const signInGoogleClickedHandler = e => {
+    e.preventDefault();
+    chrome.runtime.sendMessage(
+      {
+        msg: 'USER_SIGNINGOOGLE',
+      },
+      response => {
+        console.log(response);
+        if (response !== undefined && response.error) {
+          alert(response.message);
+        }
+      }
+    );
+  };
+
+  const signInGithubClickedHandler = e => {
+    e.preventDefault();
+    chrome.runtime.sendMessage(
+      {
+        msg: 'USER_SIGNINGITHUB',
+      },
+      response => {
+        console.log(response);
+        if (response !== undefined && response.error) {
+          alert(response.message);
+        }
+      }
+    );
+  };
+
   const forgetPwdClickedHandler = e => {
     e.preventDefault();
     if (!EmailValidator.validate(email)) {
@@ -91,31 +123,49 @@ const Authentication = props => {
 
   return (
     <div className="AuthContainer">
-      <div className="InputFieldContainer">
-        Email:{' '}
+      <div className="InputFieldContainer row">
+        <div className="Header">
+          <h3>Login</h3> <hr />
+        </div>
+      </div>
+      <div className="InputFieldContainer row">
         <input
           type="email"
           value={email}
-          placeholder="abc@gmail.com"
+          placeholder="email"
           onChange={e => {
             setEmail(e.target.value);
           }}
         />
       </div>
-      <div className="InputFieldContainer">
-        Password:
+      <div className="InputFieldContainer row">
         <input
           type="password"
           value={password}
+          placeholder="password"
           onChange={e => {
             setPassword(e.target.value);
           }}
         />
       </div>
-      <div className="InputFieldContainer">
-        <button onClick={signUpClickedHandler}>Sign up</button>
-        <button onClick={signInClickedHandler}>Sign in</button>
-        <button onClick={forgetPwdClickedHandler}>Forget pwd</button>
+      <div className="InputFieldContainer row">
+        <button onClick={signInClickedHandler}><div>Sign in</div></button>
+        <button onClick={signUpClickedHandler}><div>Sign up</div></button>
+        <button className="AuthSignInContainer" onClick={signInGoogleClickedHandler}>
+          <div>
+            <img className="authIcon" alt="Google sign-in" src={Google} />
+            Login with Google
+          </div>
+        </button>
+        <button className="AuthSignInContainer" onClick={signInGithubClickedHandler}>
+          <div>
+            <img className="authIcon" alt="Google sign-in" src={Github} />
+            Login with GitHub
+          </div>
+        </button>
+      </div>
+      <div className="InputFieldContainer row" >
+        <div className="Forgotten" onClick={forgetPwdClickedHandler}>Forgot Password?</div>
       </div>
     </div>
   );

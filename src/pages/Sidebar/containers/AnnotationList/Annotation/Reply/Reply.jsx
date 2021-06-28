@@ -11,7 +11,7 @@ import cleanReplyModel from './ReplyModel';
 import { Dropdown } from 'react-bootstrap';
 import Tooltip from '@material-ui/core/Tooltip';
 import { BsTrash } from 'react-icons/bs';
-import { AiOutlineEdit} from 'react-icons/ai';
+import { AiOutlineEdit, AiOutlineUser } from 'react-icons/ai';
 import { GiHamburgerMenu } from 'react-icons/gi';
 
 const Reply = ({ idx, reply }) => {
@@ -55,15 +55,21 @@ const Reply = ({ idx, reply }) => {
                 finishReply={finishReply}
             />) : (
                 <React.Fragment>
-                    {idx !== 0 }
+                    {idx !== 0}
                     <li key={idx} className="ReplyContent">
                         <div className=" container Header">
-                            <div className="profileContainer">
-                                <img src={profile} alt="profile" className="profile" />
+                            <div className={replyData.photoURL === "" && "profileContainer"}>
+                                {replyData.photoURL === ""  || replyData.photoURL === null ?
+                                    <AiOutlineUser alt="profile" className="userProfile" /> :
+                                    <img src={replyData.photoURL} alt="profile" className="profilePhoto userProfilePhoto" />
+                                }
                             </div>
+                            {/* <div className="profileContainer">
+                                <img src={profile} alt="profile" className="profile" />
+                            </div> */}
                             <div className="userProfileContainer">
                                 <div className="author">
-                                    {replyData.author}
+                                    {replyData.displayName === null || replyData.displayName === "" ? replyData.author : replyData.displayName}
                                 </div>
                                 <div className="timestamp">
                                     {formatTimestamp(replyData.timestamp)}
@@ -95,7 +101,7 @@ const Reply = ({ idx, reply }) => {
                                         </Dropdown.Toggle>
                                         <Dropdown.Menu style={{ width: '220px' }}>
                                             <Dropdown.Header className="AnnotationOptionsTitle">
-                                                 Reply Options
+                                                Reply Options
                                                 <hr></hr>
                                             </Dropdown.Header>
                                             {/* <Dropdown.Item onClick={ctx.transmitAdoptedToParent} className="DropdownItemOverwrite">
@@ -124,22 +130,6 @@ const Reply = ({ idx, reply }) => {
                                     </Dropdown>
                                 </div>
                             </div>
-
-                            {/* <div className="row">
-                                <div className="AnnotationIconContainer">
-                                    {star}
-                                    {currentUser.uid === replyData.authorId ? (
-                                        <React.Fragment>
-                                            <div className="TopIconContainer" >
-                                                <img src={edit} alt="edit reply" className="profile" id="edit" onClick={_ => setEditing(true)} />
-                                            </div>
-                                            <div className="TopIconContainer" >
-                                                <img src={trash} alt="delete reply" className="profile" id="delete" onClick={deleteReply} />
-                                            </div>
-                                        </React.Fragment>
-                                    ) : (null)}
-                                </div>
-                            </div> */}
                         </div>
                         {reply.anchor !== null ? (
                             <Anchor anchor={reply.anchor} replyIdProp={replyData.replyId} />) : (null)}

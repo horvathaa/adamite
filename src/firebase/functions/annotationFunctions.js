@@ -119,16 +119,19 @@ export const getAllPinnedAnnotationsByUserId = (uid) => {
 };
 
 export const getGroupAnnotationsByGroupId = (gid) => {
-  // console.log('in annofunctions', gid);
   return db
     .collection(DB_COLLECTIONS.ANNOTATIONS)//.doc("06OlxrYfO08cofa2mDb9");
     .where('groups', 'array-contains', gid) // switch to array-contains-any to look across all groups that user is in
-  // .where('authorId', '!=', uid);     // .where('url', 'array-contains', url) fuck u firestore and ur arbitrary limitations
 };
 
 export const getAnnotationsByUrl = (url) => {
   return db.collection(DB_COLLECTIONS.ANNOTATIONS)
     .where('url', 'array-contains', url)
+}
+
+export const getUsersbyID = (uids) => {
+  return db.collection(DB_COLLECTIONS.USERS)
+    .where('uid', 'in', uids)
 }
 
 export const getAllPrivatePinnedAnnotationsByUserId = (uid) => {
