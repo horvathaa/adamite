@@ -83,11 +83,6 @@ class SearchBar extends React.Component {
         return (
             <React.Fragment>
                 <div className="autosuggest-row">
-                    {/* <div className="autosuggest-col-sm">
-                    <IconSelector type={suggestion.type} />
-                         <img className="react-autosuggest__icon" src={chrome.extension.getURL(this.iconSelector(suggestion.type))} alt="annnotation type" /> 
-                    </div>
-                    <div className="vr">&nbsp;</div> */}
                     <div className="autosuggest-col-6">
                         <Tooltip title={"Author"} aria-label="Author">
                             <div className="Tag TypeTag TypeAuthor">{suggestion.author}</div>
@@ -95,7 +90,7 @@ class SearchBar extends React.Component {
     
                         <Tooltip title={"Annotation Type"} aria-label="Annotation Type">
                             <div className="Tag TypeTag">
-                                {suggestion.type}
+                                {suggestion.type}&nbsp;
                                 <IconSelector type={suggestion.type} />
                             </div>
                         </Tooltip>
@@ -104,7 +99,6 @@ class SearchBar extends React.Component {
                         <div className="autosuggest-row-inner AnchorContainer">
                             <div className="autosuggest-col-6-icon">
                                 <BiAnchor className="react-autosuggest__anchor-content-icon" />
-                                {/* <img className="react-autosuggest__anchor-content-icon" src={suggestion.url.includes(this.props.url) ? anchorOnPage : anchorOnOtherPage} alt="anchor location" /> */}
                             </div>
                             <div className="autosuggest-col-6 AnchorSuggestContent">
                                 <Highlighter
@@ -123,15 +117,12 @@ class SearchBar extends React.Component {
                                 textToHighlight={content}
                             />
                         </div>
-                        {/* && suggestion.tags.length > 0 */}
-
                         <div className="react-autosuggest__tags">
                             {"tags" in suggestion && (
                                 suggestion.tags.map((items, idx) => {
-                                    return <div key={idx} className="Tag">{items}</div>
+                                    return <div key={idx} className="Tag">#{items}</div>
                                 })
                             )}
-                            {/* <div key={++suggestion.tags.length} className="Tag TypeTag">{suggestion.type}</div> */}
                         </div>
 
                     </div>
