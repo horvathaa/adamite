@@ -7,6 +7,7 @@ import { Dropdown } from 'react-bootstrap';
 import Tooltip from '@material-ui/core/Tooltip';
 import { BsTrash } from 'react-icons/bs';
 import { AiOutlinePushpin, AiOutlineEdit, AiFillPushpin, AiOutlineComment, AiOutlineUser } from 'react-icons/ai';
+import { FaRegComments }  from 'react-icons/fa';
 import { BiAnchor } from 'react-icons/bi';
 import AnnotationContext from "../AnnotationContext";
 import { formatTimestamp } from "../../../../utils"
@@ -64,7 +65,7 @@ const EditRowComponent = () => {
                     <div className="AnnotationIconContainer">
                         <Tooltip title={"Reply to annotation"} aria-label="reply icon tooltip">
                             <div className="TopIconContainer" onClick={() => ctx.setReplying(true)}>
-                                <AiOutlineComment className="profile" alt="reply" />
+                                <FaRegComments className="profile" alt="reply" />
                             </div>
                         </Tooltip>
                         <Tooltip title={"Add new anchor to annotation"} aria-label="add new anchor tooltip" onClick={ctx.handleNewAnchor}>
@@ -111,7 +112,7 @@ const EditRowComponent = () => {
                                 </Dropdown.Header>
                                 <Dropdown.Item onClick={() => ctx.setReplying(true)} className="DropdownItemOverwrite">
                                     <div className="DropdownIconsWrapper">
-                                        <AiOutlineComment className="DropdownIcons" alt="reply" />
+                                        <FaRegComments className="DropdownIcons" alt="reply" />
                                     </div>
                                     Reply
                                 </Dropdown.Item>
