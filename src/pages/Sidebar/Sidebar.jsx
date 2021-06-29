@@ -279,22 +279,6 @@ class Sidebar extends React.Component {
               }
             );
           })
-          // setTimeout(() => {
-          //   anchorIds.forEach((anch, idx) => {
-          //     const anchor = document.getElementById(anch);
-          //     anchor.classList.remove("Clicked")
-              
-          //       chrome.tabs.sendMessage(
-          //         this.state.tabId,
-          //         {
-          //           msg: 'ANNOTATION_DEFOCUS',
-          //           id: annoIds[idx],
-          //           // replyId: this.props.replyId
-          //         }
-          //       );
-          //   })
-            
-          // }, 2500)
       } else if (
         request.from === 'background' &&
         request.msg === 'TOGGLE_SIDEBAR'
