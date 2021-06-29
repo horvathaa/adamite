@@ -12,19 +12,16 @@ import {
 let currentUser = null;
 
 auth.onAuthStateChanged(user => {
+  currentUser = user === null ? null : { uid: user.uid, email: user.email, photoURL: user.photoURL, displayName: user.displayName };
+  broadcastAuthStatus(currentUser);
+
   if (user !== null) {
-    if(!user.emailVerified){;
-      auth.signOut();
+    if(!user.emailVerified){
+      currentUser = null;
       broadcastAuthStatus(null);
       return;
     }
-    broadcastAuthStatus({ uid: user.uid, 
-        email: 
-        user.email, 
-        photoURL: user.photoURL, 
-        displayName: user.displayName }
-    );
-    console.log("USER VERIFIED?", user.emailVerified)
+    console.log("USER VERIFIED?", user.emailVerified, user)
     getElasticApiKey().then(function (e) {
       chrome.storage.sync.set({
         'ElasticAPIKey': e,
@@ -32,7 +29,6 @@ auth.onAuthStateChanged(user => {
     })
   }
   else {
-    broadcastAuthStatus(null);
     chrome.storage.sync.set({
       'ElasticAPIKey': '',
     });
@@ -60,6 +56,7 @@ export function userSignIn(request, sender, sendResponse) {
          alert("Email has not been validated. Cannot sign you in.");
          auth.signOut()
        }
+
     })
     .catch(err => {
       console.log(err);
