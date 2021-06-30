@@ -208,10 +208,10 @@ export function addNewAnchor({ request, type }) {
             endOffset: rect.endOffset,
         };
 
-        var tempArry = []
-        for (var i = 0; i < textNodes.length; i++) {
-            tempArry.push(xpathConversion(textNodes[i].parentNode))
-        }
+        // var tempArry = []
+        // for (var i = 0; i < textNodes.length; i++) {
+        //     tempArry.push(xpathConversion(textNodes[i].parentNode))
+        // }
 
         var xpathToNode = {
             start: xpathConversion(textNodes[0]),
@@ -307,10 +307,10 @@ export const createAnnotationCallback = (response, event) => {
                 endOffset: rect.endOffset,
             };
 
-            var tempArry = []
-            for (var i = 0; i < textNodes.length; i++) {
-                tempArry.push(xpathConversion(textNodes[i].parentNode))
-            }
+            // var tempArry = []
+            // for (var i = 0; i < textNodes.length; i++) {
+            //     tempArry.push(xpathConversion(textNodes[i].parentNode))
+            // }
 
             var xpathToNode = {
                 start: xpathConversion(textNodes[0]),

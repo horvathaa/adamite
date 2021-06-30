@@ -84,6 +84,22 @@ const Anchor = ({ anchor, replyIdProp }) => {
         else if (message === 'ANNOTATION_DEFOCUS') setHovering(false);
     }
 
+    const annotateAllInstances = () => {
+        chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+            const taburl = getPathFromUrl(tabs[0].url);
+            if (url === taburl) {
+                chrome.tabs.sendMessage(
+                    tabs[0].id,
+                    {
+                        msg: 'ANNOTATE_ALL_INSTANCES',
+                        id: id,
+                        anchorText: anchorContent
+                    }
+                );
+            }
+        });
+    }
+
     const handleOnEditDone = () => {
         if (tags !== anchor.tags) { updateAnchorTags({ newTags: tags, anchorId: anchorId }); }
         setEditMode(false);
@@ -174,6 +190,13 @@ const Anchor = ({ anchor, replyIdProp }) => {
             <React.Fragment>
                 <div className={textClass + " col"}>
                     <AnchorObject textClass={textClass} />
+                </div>
+                <div className="AnchorTagsList col-2" onClick={() => { annotateAllInstances() }}>
+                    <Tooltip title={"Anchor All Instances"} aria-label="edit tooltip">
+                        <div className="AnchorHashTagbutton Tag">
+                            <BiPlusCircle alt="edit annotation" className="profile" id="edit" />
+                        </div>
+                    </Tooltip>
                 </div>
                 {tags &&
                     <React.Fragment>

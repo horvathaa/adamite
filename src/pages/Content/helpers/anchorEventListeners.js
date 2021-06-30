@@ -106,6 +106,12 @@ let messagesIn = {
         // let spanNames = Array.from(document.querySelectorAll('.highlight-adamite-annotation')).map(s => s.getAttribute('name'));
         sendResponse({ spanNames: kv })
     },
+    'ANNOTATE_ALL_INSTANCES': (request, sender, sendResponse) => {
+        // get phrase to annotate from request,
+        // send to findAllMatchingPhrases which should traverse the dom to find the phrase and return the node and phrase pairs
+        // convert to XPath
+        // send back to annotation to append as multiple anchors?
+    },
     'ANNOTATION_FOCUS_ONCLICK': (request, sender, sendResponse) => {
         let findSpan = getSpanFromRequest(request);
         if (findSpan.length === 0) { console.log('len is 0?'); return; }
