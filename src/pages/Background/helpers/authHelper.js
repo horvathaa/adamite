@@ -14,7 +14,13 @@ let currentUser = null;
 auth.onAuthStateChanged(user => {
   currentUser = user === null ? null : { uid: user.uid, email: user.email, photoURL: user.photoURL, displayName: user.displayName };
   broadcastAuthStatus(currentUser);
+
   if (user !== null) {
+    if(!user.emailVerified){
+      currentUser = null;
+      broadcastAuthStatus(null);
+      return;
+    }
     getElasticApiKey().then(function (e) {
       chrome.storage.sync.set({
         'ElasticAPIKey': e,
@@ -45,7 +51,11 @@ export function userSignIn(request, sender, sendResponse) {
   const { email, password } = request.payload;
   signInWithEmailAndPassword(email, password)
     .then(result => {
-      console.log(result);
+      if(!result.user.emailVerified){ 
+         alert("Email has not been validated. Cannot sign you in.");
+         auth.signOut()
+       }
+
     })
     .catch(err => {
       console.log(err);
@@ -55,7 +65,7 @@ export function userSignIn(request, sender, sendResponse) {
 
 export function userGoogleSignIn(request, sender, sendResponse) {
   signInWithGoogle()
-  .then((result) => {
+    .then((result) => {
       /** @type {firebase.auth.OAuthCredential} */
       var credential = result.credential;
 
@@ -69,8 +79,8 @@ export function userGoogleSignIn(request, sender, sendResponse) {
       let email = null;
       // console.log("FINISHED", user, token, credential)
       user.providerData.forEach((profile) => {
-        email       = profile.email
-        photoURL  = profile.photoURL;
+        email = profile.email
+        photoURL = profile.photoURL;
         displayName = profile.displayName;
       });
 
@@ -89,7 +99,7 @@ export function userGoogleSignIn(request, sender, sendResponse) {
 
 export function githubUserSignIn(request, sender, sendResponse) {
   signInWithGithub()
-  .then((result) => {
+    .then((result) => {
       /** @type {firebase.auth.OAuthCredential} */
       var credential = result.credential;
 
@@ -114,8 +124,12 @@ export function githubUserSignIn(request, sender, sendResponse) {
 export function userSignUp(request, sender, sendResponse) {
   const { email, password } = request.payload;
   signUpWithEmailAndPassword(email, password)
-    .then(result => {
-      console.log(result);
+    .then(userCredential => {
+      // send verification mail.
+      userCredential.user.sendEmailVerification();
+      auth.signOut();
+      alert("Email sent With Validation link");
+      console.log(userCredential);
     })
     .catch(err => {
       console.log(err);

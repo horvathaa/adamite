@@ -218,6 +218,7 @@ code {
     border-top: none !important;
     border-radius: 0 0 24px 24px;
     box-shadow: 0 4px 6px 0 rgba(32,33,36,0.28);
+    font-family: 'Roboto';
   }
   
   .react-autosuggest__suggestion {
@@ -260,6 +261,8 @@ code {
 
   .autosuggest-row-inner{
     display: flex;
+    font-size: 14px;
+    font-weight: 200;
   }
   
   .autosuggest-col-sm{
@@ -283,11 +286,30 @@ code {
     align-items: center;
   }
   .react-autosuggest__user-content{
-    margin-left: 1%;
+    margin-left: 5%;
     margin-top: 2%;
     width: 85%;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-weight: 200;
+    font-size: 14px;
+  }
+
+  mark, .mark{
+    padding: 0 !important;
+  }
+
+  .TypeTag{
+    float: right;
+    background: rgb(34 195 105 / 12%);
+    border: 0px;
+    margin-bottom: .5rem;
+  }
+
+  .TypeAuthor{
+    float: left;
+    max-width: 180px;
+    background: #ebfacfa3;
   }
 
   .react-autosuggest__tags{
@@ -338,11 +360,17 @@ code {
   .YourHighlightClass{
     background-color: yellow; 
   }
+
+  .AnchorSuggestContent{
+    font-size: 13px;
+  }
+
   .highlight {
     background-color: yellow; 
     padding: 4px;
     border-radius: 2px;
   }
+
   .vertical-bar{
     position: relative;
     display: inline-block;
