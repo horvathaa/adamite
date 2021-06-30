@@ -556,7 +556,7 @@ function getAllAuthIds(annotations) {
     let authors = []
     annotations.map(annotation => {
         authors.push(annotation.authorId);
-        annotation.replies.forEach(replies => {
+        annotation.replies?.forEach(replies => {
             authors.push(replies.authorId)
         })
     })
@@ -569,7 +569,7 @@ function injectUserData(annotationsToBroadcast) {
     return batchSearchFirestore([], authIds, getUserDataFromAuthId).then(authProfiles => {
         let annotationsWithAuthorInfo = annotationsToBroadcast.map(annotation => {
             const authdata = authProfiles.find(element => element.uid === annotation.authorId);
-            annotation.replies = annotation.replies.map(reply => {
+            annotation.replies = annotation.replies?.map(reply => {
                 let authDataReplies = authProfiles.find(element => element.uid === reply.authorId);
                 return {
                     photoURL: authDataReplies.photoURL,
