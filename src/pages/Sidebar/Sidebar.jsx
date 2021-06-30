@@ -456,7 +456,6 @@ class Sidebar extends React.Component {
 
   openBugForm = () => {
     const userName = this.state.currentUser.email.substring(0, this.state.currentUser.email.indexOf('@')); 
-    console.log('pjson', pjson)
     chrome.tabs.create({ 'url': 'https://docs.google.com/forms/d/e/1FAIpQLScA3vI8-q5CSJpxDbmuM8tjQuvoCdu9XM6KTTieUrJeHHcGOw/viewform?usp=pp_url&entry.1555642790=' + userName + '&entry.1692277697=' + pjson.version + '&entry.872204213=I+think+I\'m+experiencing+a+bug+with+Adamite&entry.896576682=Your+question+here&entry.1167786342=Your+bug+here' })
   }
 
@@ -471,7 +470,6 @@ class Sidebar extends React.Component {
 
 
   updateSidebarGroup = (options, e) => {
-    console.log("hell", options)
     let groupNames = [];
     const { uid } = this.state.currentUser;
     // todo - check options to see whether or not the label is in activeGroups - if it is, then great, do what we already do
@@ -496,7 +494,7 @@ class Sidebar extends React.Component {
           }
         },
           (res) => {
-            console.log('res', res)
+
             if (res !== undefined && res.length) {
               this.setState({ groupAnnotations: res });
               this.setState({ activeGroups: groupNames });
@@ -534,7 +532,6 @@ class Sidebar extends React.Component {
   }
 
   handlePinnedAnnotation = (id, pinned) => {
-    console.log("PINNING")
     let annotation;
     if (containsObjectWithId(id, this.state.filteredAnnotations)) {
       annotation = this.state.filteredAnnotations.filter(anno => anno.id === id);
