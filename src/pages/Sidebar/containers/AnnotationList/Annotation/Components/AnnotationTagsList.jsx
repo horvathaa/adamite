@@ -24,7 +24,7 @@ const AnnotationTagsList = () => {
             <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>
                 {ctx.anno.tags.map((tagContent, idx) => {
                     return (
-                        <CustomTag idx={idx} content={tagContent} deleteTag={ctx.deleteTag} editing={ctx.editing} />
+                        <CustomTag key={idx} content={tagContent} deleteTag={ctx.deleteTag} editing={ctx.editing} />
                     )
                 }
                 )}

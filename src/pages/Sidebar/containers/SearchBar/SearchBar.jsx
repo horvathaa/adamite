@@ -10,13 +10,27 @@ import '../../../../assets/img/SVGs/Todo.svg';
 import '../../../../assets/img/SVGs/Question.svg';
 import '../../../../assets/img/SVGs/Issue.svg';
 import '../../../../assets/img/SVGs/location.svg';
-import anchorOnPage from '../../../../assets/img/SVGs/Anchor_onpage.svg';
-import anchorOnOtherPage from '../../../../assets/img/SVGs/Anchor_otherpage_1.svg';
 import Highlighter from "react-highlight-words";
-import ReactHtmlParser from 'react-html-parser';
-import classNames from 'classnames';
 import { AiOutlineSearch, AiOutlineCloseCircle } from 'react-icons/ai';
 import { BiWorld, BiWindow, BiLayer } from 'react-icons/bi';
+
+import Tooltip from '@material-ui/core/Tooltip';
+import { BiComment, BiTask, BiAnchor } from 'react-icons/bi';
+import { AiOutlineQuestionCircle, AiOutlineExclamationCircle } from 'react-icons/ai';
+import { FaHighlighter } from 'react-icons/fa';
+
+
+const IconSelector = ({ type }) => {
+
+    if (type === undefined) {
+        return (<BiComment />);
+    }
+    if (type === 'default') return (<BiComment />);
+    if (type === 'question') return (<AiOutlineQuestionCircle />);
+    if (type === 'to-do') return (<BiTask />);
+    if (type === 'highlight') return (<FaHighlighter />);
+    if (type === 'issue') return (<AiOutlineExclamationCircle />);
+}
 
 
 class SearchBar extends React.Component {
@@ -42,14 +56,6 @@ class SearchBar extends React.Component {
         )
     }
 
-    iconSelector = (type) => {
-        if (type === undefined) return 'search.svg';
-        if (type === 'default') return 'Default.svg';
-        if (type === 'question') return 'Question.svg';
-        if (type === 'to-do') return 'Todo.svg';
-        if (type === 'highlight') return 'Highlight.svg';
-        if (type === 'issue') return 'Issue.svg';
-    }
 
 
 
@@ -69,19 +75,32 @@ class SearchBar extends React.Component {
                 content = suggestion.highlight.content !== undefined ? suggestion.highlight.content[0].replace(new RegExp('(<em>)|(<\/em>)', 'g'), '') : content;
             }
         }
+
+        console.log("SUGGESTION", suggestion)
+        if (!("tags" in suggestion)) {
+            suggestion.tags = [];
+        }
         return (
             <React.Fragment>
                 <div className="autosuggest-row">
-                    <div className="autosuggest-col-sm">
-                        <img className="react-autosuggest__icon" src={chrome.extension.getURL(this.iconSelector(suggestion.type))} alt="annnotation type" />
-                    </div>
-                    <div className="vr">&nbsp;</div>
                     <div className="autosuggest-col-6">
-                        <div className="autosuggest-row-inner">
-                            <div className="autosuggest-col-6-icon">
-                                <img className="react-autosuggest__anchor-content-icon" src={suggestion.url.includes(this.props.url) ? anchorOnPage : anchorOnOtherPage} alt="anchor location" />
+                        <Tooltip title={"Author"} aria-label="Author">
+                            <div className="Tag TypeTag TypeAuthor">{suggestion.author}</div>
+                        </Tooltip>
+    
+                        <Tooltip title={"Annotation Type"} aria-label="Annotation Type">
+                            <div className="Tag TypeTag">
+                                {suggestion.type}&nbsp;
+                                <IconSelector type={suggestion.type} />
                             </div>
-                            <div className="autosuggest-col-6">
+                        </Tooltip>
+
+
+                        <div className="autosuggest-row-inner AnchorContainer">
+                            <div className="autosuggest-col-6-icon">
+                                <BiAnchor className="react-autosuggest__anchor-content-icon" />
+                            </div>
+                            <div className="autosuggest-col-6 AnchorSuggestContent">
                                 <Highlighter
                                     highlightClassName="highlight-adamite-search-suggest"
                                     searchWords={searchAnchorContent}
@@ -98,13 +117,14 @@ class SearchBar extends React.Component {
                                 textToHighlight={content}
                             />
                         </div>
-                        {"tags" in suggestion && suggestion.tags.length > 0 && (
-                            <div className="react-autosuggest__tags">
-                                {suggestion.tags.map((items, idx) => {
-                                    return <div key={idx} className="shortCode">{items}</div>
-                                })}
-                            </div>
-                        )}
+                        <div className="react-autosuggest__tags">
+                            {"tags" in suggestion && (
+                                suggestion.tags.map((items, idx) => {
+                                    return <div key={idx} className="Tag">#{items}</div>
+                                })
+                            )}
+                        </div>
+
                     </div>
                 </div>
             </React.Fragment >
@@ -277,13 +297,13 @@ class SearchBar extends React.Component {
                                 <div onClick={(e) => this.changeValue(e.target.textContent)}>
                                     <BiWindow className="SearchIcon" />
                                     On Page
-                            </div>
+                                </div>
                             </Dropdown.Item>
                             <Dropdown.Item className="DropdownItemOverwrite">
                                 <div onClick={(e) => this.changeValue(e.target.textContent)}>
                                     <BiLayer className="SearchIcon" />
                                     Across Site
-                            </div>
+                                </div>
 
                             </Dropdown.Item>
                         </Dropdown.Menu>
