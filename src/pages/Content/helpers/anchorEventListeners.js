@@ -15,6 +15,7 @@ import {
 } from './AnchorEngine/AnchorHighlight';
 
 import { updateXpaths, } from './AnchorEngine/AnchorDestroy';
+import { findAllMatchingPhrases } from './AnchorEngine/AnchorHelpers';
 
 // from: https://stackoverflow.com/questions/11805955/how-to-get-the-distance-from-the-top-for-an-element
 function getPosition(element) {
@@ -107,6 +108,10 @@ let messagesIn = {
         sendResponse({ spanNames: kv })
     },
     'ANNOTATE_ALL_INSTANCES': (request, sender, sendResponse) => {
+        console.log('in here', request);
+        const { anchorText } = request.payload;
+        const phraseXPathPairs = findAllMatchingPhrases(anchorText);
+        
         // get phrase to annotate from request,
         // send to findAllMatchingPhrases which should traverse the dom to find the phrase and return the node and phrase pairs
         // convert to XPath

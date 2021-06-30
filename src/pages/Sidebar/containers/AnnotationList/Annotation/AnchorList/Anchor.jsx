@@ -9,7 +9,7 @@ import '../Annotation.css';
 import './Anchor.module.css';
 import TagsInput from 'react-tagsinput';
 import AnnotationContext from "../AnnotationContext";
-import { BiHash, BiTrash } from 'react-icons/bi';
+import { BiHash, BiTrash, BiPlusCircle } from 'react-icons/bi';
 
 // helper method from
 // https://stackoverflow.com/questions/2540969/remove-querystring-from-url
