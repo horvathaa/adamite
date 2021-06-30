@@ -21,7 +21,6 @@ auth.onAuthStateChanged(user => {
       broadcastAuthStatus(null);
       return;
     }
-    console.log("USER VERIFIED?", user.emailVerified, user)
     getElasticApiKey().then(function (e) {
       chrome.storage.sync.set({
         'ElasticAPIKey': e,
