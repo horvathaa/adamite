@@ -92,8 +92,14 @@ const Anchor = ({ anchor, replyIdProp }) => {
                     tabs[0].id,
                     {
                         msg: 'ANNOTATE_ALL_INSTANCES',
-                        id: id,
-                        anchorText: anchorContent
+                        payload: {
+                            newAnno: {
+                                id: id,
+                                url: url,
+                                childAnchor: ctx.anno.childAnchor
+                            },
+                            anchorText: anchorContent
+                        }
                     }
                 );
             }

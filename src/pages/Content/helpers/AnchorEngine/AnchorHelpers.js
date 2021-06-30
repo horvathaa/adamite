@@ -54,6 +54,7 @@ export const findAllMatchingPhrases = (phrase) => {
     };
 
     displayWordList(words);
+    return words;
 }
 
 
