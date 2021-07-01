@@ -93,11 +93,7 @@ const Anchor = ({ anchor, replyIdProp }) => {
                     {
                         msg: 'ANNOTATE_ALL_INSTANCES',
                         payload: {
-                            newAnno: {
-                                id: id,
-                                url: url,
-                                childAnchor: ctx.anno.childAnchor
-                            },
+                            newAnno: ctx.anno,
                             anchorText: anchorContent
                         }
                     }

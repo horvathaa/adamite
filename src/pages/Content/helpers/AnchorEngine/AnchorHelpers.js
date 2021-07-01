@@ -31,53 +31,23 @@ export const findAllMatchingPhrases = (phrase) => {
             // text = text.split(' ');
             // console.log('text', text)
             // also need to add check to see if we've alreayd highlighted the instance
-            if (text.length && anchorText === text) {
-                // console.log('exact match', text, node, 'parent', node.parentNode);
-                console.log('match - index', node.textContent.indexOf(phrase))
-                
+            // chain of webpages that lead to this solution -> MDN ClassList -> return DOMTokenList -> DOMTokenList methods -> contains
+            if (((text.length && anchorText === text) || (text.length && text.includes(anchorText))) && !node.parentNode.classList.contains('highlight-adamite-annotation')) {
                 let lastStartIndex = 0;
                 while(node.textContent.indexOf(phrase, lastStartIndex) !== -1) {
-                    words.push({ nodeText: node.textContent, 
-                        xpath: {start: xpathConversion(node),
-                            end: xpathConversion(node),
-                            startOffset: node.textContent.indexOf(phrase, lastStartIndex),
-                            endOffset: node.textContent.length - (phrase.length + node.textContent.indexOf(phrase, lastStartIndex))
-                        }})
+                    words.push(
+                        { 
+                            nodeText: node.textContent, 
+                            xpath: {
+                                start: xpathConversion(node),
+                                end: xpathConversion(node),
+                                startOffset: node.textContent.indexOf(phrase, lastStartIndex),
+                                endOffset: node.textContent.length - (phrase.length + node.textContent.indexOf(phrase, lastStartIndex))
+                            }
+                        }
+                    );
                     lastStartIndex = node.textContent.indexOf(phrase, lastStartIndex) + 1;
                 }
-
-                // for (var i = 0, length = text.length; i < length; i += 1) {
-                //     var matched = false,
-                //         word = text[i];
-
-                //     for (var j = 0, numberOfWords = words.length; j < numberOfWords; j += 1) {
-                //         if (words[j][0] === word) {
-                //             matched = true;
-                //             words[j][1] += 1;
-                //         }
-                //     }
-
-                //     if (!matched) {
-                //         words.push([word, 1]);
-                //     }
-
-                // }
-            }
-            else if(text.length && text.includes(anchorText)) {
-                console.log('match - index', node.textContent.indexOf(phrase))
-                
-                // console.log('partial match - text includes anchor text! text var', text, 'node', node, 'parent', node.parentNode)
-                let lastStartIndex = 0;
-                while(node.textContent.indexOf(phrase, lastStartIndex) !== -1) {
-                    words.push({ nodeText: node.textContent, 
-                        xpath: {start: xpathConversion(node),
-                            end: xpathConversion(node),
-                            startOffset: node.textContent.indexOf(phrase, lastStartIndex),
-                            endOffset: node.textContent.length - (phrase.length + node.textContent.indexOf(phrase, lastStartIndex))
-                        }})
-                    lastStartIndex = node.textContent.indexOf(phrase, lastStartIndex) + 1;
-                }
-                
             }
         }
     });

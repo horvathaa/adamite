@@ -2,7 +2,7 @@
 // Transmitting messages to background and other parts of extension
 import { transmitMessage } from './anchorEventTransmitter';
 // Creating Annotations and anchors
-import { addNewAnchor, createAnnotationCallback, } from './AnchorEngine/AnchorCreate';
+import { addAutomatedAnchors, addNewAnchor, createAnnotationCallback, } from './AnchorEngine/AnchorCreate';
 // Changes to DOM
 import { removeHighlightSpans, getHighlightSpanIds } from './AnchorEngine/AnchorDomChanges';
 
@@ -16,6 +16,11 @@ import {
 
 import { updateXpaths, } from './AnchorEngine/AnchorDestroy';
 import { findAllMatchingPhrases } from './AnchorEngine/AnchorHelpers';
+
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // from: https://stackoverflow.com/questions/11805955/how-to-get-the-distance-from-the-top-for-an-element
 function getPosition(element) {
@@ -108,14 +113,42 @@ let messagesIn = {
         sendResponse({ spanNames: kv })
     },
     'ANNOTATE_ALL_INSTANCES': (request, sender, sendResponse) => {
-        console.log('in here', request);
-        const { anchorText } = request.payload;
-        const phraseXPathPairs = findAllMatchingPhrases(anchorText);
-        
-        // get phrase to annotate from request,
-        // send to findAllMatchingPhrases which should traverse the dom to find the phrase and return the node and phrase pairs
-        // convert to XPath
-        // send back to annotation to append as multiple anchors?
+        let positionString = "";
+        chrome.storage.sync.get(['sidebarOnLeft'], result => {
+                if (result.sidebarOnLeft) {
+                    positionString = "top-right";
+                }
+                else {
+                    positionString = "top-left";
+                }
+            toast.success('No more instances to annotate!', {
+                position: positionString,
+                autoClose: 3000,
+                hideProgressBar: true,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
+            let modal = document.createElement("div");
+            modal.classList.add("success-notif-div");
+            document.body.appendChild(modal);
+            const toastModal = <ToastContainer
+                position={positionString}
+                autoClose={3000}
+                hideProgressBar
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+            />;
+            
+            const { anchorText } = request.payload;
+            const phraseXPathPairs = findAllMatchingPhrases(anchorText);
+            phraseXPathPairs.length ? addAutomatedAnchors({request, pairs: phraseXPathPairs}) : ReactDOM.render(toastModal, modal);
+        });
     },
     'ANNOTATION_FOCUS_ONCLICK': (request, sender, sendResponse) => {
         let findSpan = getSpanFromRequest(request);

@@ -189,6 +189,27 @@ const alertBackgroundOfNewSelection = (selection, offsets, xpath, type, content,
 };
 
 
+export function addAutomatedAnchors({ request, pairs }) {
+    const { newAnno, anchorText } = request.payload;
+    const newAnchors = pairs.map(p => {
+        return {
+            parentId: newAnno.id,
+            id: uuidv4(),
+            xpath: p.xpath,
+            url: getPathFromUrl(window.location.href),
+            anchor: anchorText,
+            offsets: {startOffset: p.xpath.startOffset, endOffset: p.xpath.endOffset},
+            hostname: window.location.hostname,
+            tags: []
+        }
+    })
+
+    const newA = { ...newAnno, childAnchor: newAnno.childAnchor.concat(newAnchors) };
+    transmitMessage({ msg: 'ANNOTATION_UPDATED', data: { "payload": { newAnno: newA, updateType: "NewAnchor" } } });
+
+}
+
+
 
 
 export function addNewAnchor({ request, type }) {
