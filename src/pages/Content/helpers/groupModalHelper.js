@@ -48,7 +48,7 @@ chrome.runtime.onMessage.addListener((request) => {
             msg: 'GROUP_MODAL_CLOSED',
             from: 'helper'
         });
-        const dialogEl = document.getElementById('blurg');
+        const dialogEl = document.getElementById('group-modal');
         dialogEl.classList.remove("new-group-modal-shown")
         dialogEl.classList.add('new-group-modal-hidden');
         dialogEl.close();
@@ -93,7 +93,7 @@ chrome.runtime.onMessage.addListener((request) => {
             msg: 'GROUP_MODAL_CLOSED',
             from: 'helper'
         });
-        const dialogEl = document.getElementById('blurg');
+        const dialogEl = document.getElementById('group-modal');
         dialogEl.classList.remove("new-group-modal-shown")
         dialogEl.classList.add('new-group-modal-hidden');
         dialogEl.close();
@@ -138,7 +138,7 @@ chrome.runtime.onMessage.addListener((request) => {
             msg: 'GROUP_MODAL_CLOSED',
             from: 'helper'
         });
-        const dialogEl = document.getElementById('blurg');
+        const dialogEl = document.getElementById('group-modal');
         dialogEl.classList.remove("new-group-modal-shown")
         dialogEl.classList.add('new-group-modal-hidden');
         dialogEl.close();
@@ -179,7 +179,7 @@ function hideOnClickOutside(element) {
     });
 }
 const showModal = () => {
-    const dialog = document.getElementById("blurg");
+    const dialog = document.getElementById("group-modal");
     if (dialog.classList.contains('new-group-modal-hidden')) {
         dialog.classList.remove("new-group-modal-hidden")
         dialog.classList.add('new-group-modal-shown');
@@ -190,7 +190,7 @@ const showModal = () => {
 }
 
 const hideModal = () => {
-    const dialog = document.getElementById('blurg');
+    const dialog = document.getElementById('group-modal');
     if (dialog.classList.contains('new-group-modal-shown')) {
         dialog.classList.remove("new-group-modal-shown")
         dialog.classList.add('new-group-modal-hidden');
@@ -206,7 +206,7 @@ const renderModal = (owner) => {
     let modal = document.createElement("dialog");
     modal.classList.add("new-group-modal-hidden");
     document.body.appendChild(modal);
-    modal.setAttribute('id', 'blurg');
+    modal.setAttribute('id', 'group-modal');
     const App = (
         <React.Fragment>
 

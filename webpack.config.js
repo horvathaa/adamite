@@ -12,7 +12,7 @@ var alias = {
   'react-dom': '@hot-loader/react-dom',
 };
 
-var secretsPath = path.join(__dirname, 'secrets.' + env.NODE_ENV + '.js');
+var secretsPath = path.join(__dirname, 'secrets.' + env.NODE_ENV + '.js'); 
 
 var fileExtensions = [
   'jpg',
@@ -169,8 +169,8 @@ var options = {
   ],
 };
 
-if (env.NODE_ENV === 'development') {
-  options.devtool = 'cheap-module-eval-source-map';
-}
+// if (env.NODE_ENV === 'development') {
+//   options.devtool = 'cheap-module-eval-source-map';
+// }
 
 module.exports = options;
