@@ -7,6 +7,13 @@ html, body {
     margin-bottom: 5em;
 }
 
+*{
+    -ms-overflow-style: none;
+  }
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
 .new-group-modal {
     /* pointer-events: none; */
     height: 70%;

@@ -1,3 +1,11 @@
+*{
+    -ms-overflow-style: none;
+  }
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+
 .new-group-modal-hidden {
     /* pointer-events: none; */
     height: 70%;

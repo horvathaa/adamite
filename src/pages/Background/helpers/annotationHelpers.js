@@ -563,6 +563,7 @@ function getAllAuthIds(annotations) {
     return authors;
 }
 
+// TODO: add error checking for if the annotation list and/or auth lists are empty
 function injectUserData(annotationsToBroadcast) {
 
     let authIds = [...new Set(getAllAuthIds(annotationsToBroadcast))];
