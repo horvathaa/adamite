@@ -21,10 +21,9 @@ The project structure is heavily inspired by and adapted from [https://github.co
 
 1. Check if your [Node.js](https://nodejs.org/) version is >= **10.13**.
 2. Clone this repository.
-3. Change the name of your extension on `src/manifest.json`.
-4. Run `npm install` to install the dependencies.
-5. Run `npm start`
-6. Load your extension on Chrome following:
+3. Run `npm install` to install the dependencies.
+4. Run `npm start`
+5. Load your extension on Chrome following:
    1. Access `chrome://extensions/`
    2. Check `Developer mode`
    3. Click on `Load unpacked extension`
@@ -34,11 +33,11 @@ The project structure is heavily inspired by and adapted from [https://github.co
 
 All of the code is placed in the `src` folder.
 
-The code is structured with an options page, Sidebar (which contains React components for each individual part of the Sidebar), a content scripts folder (for parts of the application that require access to the current webpage), and a background page (for connecting to the Firestore backend and connecting to ElasticSearch).
+The code is structured with an options page, Sidebar (which contains React components for each individual part of the Sidebar), a content scripts folder (for parts of the application that require access to the current webpage), and a background page (for connecting to the Firestore backend and connecting to ElasticSearch, along with managing Chrome runtime events).
 
 ## Webpack auto-reload and HRM
 
-This application uses webpack auto-reload so whenever you save a file that is not in the content script directory, the app will reload using the webpack development server.
+This application uses webpack auto-reload so whenever you save a file that is not in the content script directory, the app will reload using the webpack development server. If you are modifying any of the content scripts, manually reload Adamite by clicking the "refresh" icon on the Chrome Extensions page.
 
 If you want to run the development mode on another port, just specify the env var `port` like this:
 
