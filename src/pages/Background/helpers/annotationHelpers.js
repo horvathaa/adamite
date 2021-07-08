@@ -146,6 +146,15 @@ export async function createAnnotation(request, sender, sendResponse) {
         createdTimestamp: new Date().getTime(),
     });
     sendResponse({ "msg": 'DONE' });
+    console.log('newAnno', newAnno);
+    chrome
+    if(newAnno.tags.length) {
+        chrome.storage.local.get(['lastUsedTags'], ( { lastUsedTags } ) => {
+            console.log('lastUsedTags', lastUsedTags)
+            const newTags = lastUsedTags.length <= 5 ? lastUsedTags.concat(newAnno.tags) : newAnno.tags.concat(lastUsedTags.splice(0, 5 - newAnno.tags.length)) // this sucks 
+            chrome.storage.local.set({ lastUsedTags: newTags })
+        })
+    }
 }
 
 

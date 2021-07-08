@@ -26,6 +26,89 @@ function getPathFromUrl(url) {
     return url.split(/[?#]/)[0];
 }
 
+const CommonActionPopover = ({ selection, xpathToNode, offsets, removePopover }) => {
+    const [selected, setSelected] = useState(null);
+    const [lastUsedTags, setLastUsedTags] = useState([]);
+    const [showTagMenu, setShowTagMenu] = useState(false);
+    const newAnnoId = uuidv4();
+    const url = getPathFromUrl(window.location.href);
+
+    useEffect(() => {
+        setSelected(selection.toString());
+        chrome.storage.local.get(['lastUsedTags'], ({ lastUsedTags }) => {
+            console.log('tags', lastUsedTags);
+            setLastUsedTags(lastUsedTags);
+        })
+    }, []);
+
+    const createAnnotationTagged = (event, type = "default", tag) => {
+        event.stopPropagation();
+        if (selected) {
+            transmitMessage({
+                msg: 'CREATE_ANNOTATION', sentFrom: "AnchorCreate",
+                data: {
+                    payload: {
+                        anchor: selected,
+                        xpath: xpathToNode,
+                        offsets: offsets,
+                        url: url,
+                        newAnno: {
+                            id: newAnnoId,
+                            type: type,
+                            content: '',
+                            replies: [],
+                            tags: [tag],
+                            isPrivate: true,
+                            groups: [],
+                            childAnchor: [
+                                {
+                                    id: uuidv4(),
+                                    anchor: selected,
+                                    // hostname: url.hostname,
+                                    parentId: newAnnoId,
+                                    xpath: xpathToNode,
+                                    offsets: offsets,
+                                    url: url,
+                                    tags: []
+                                }
+                            ]
+                        }
+                    }
+                }
+            });
+            selection.removeAllRanges();
+            removePopover();
+        }
+
+    }
+
+    return (
+        <div className="CreatAnnotationRow">
+            <div className="onHoverCreateAnnotation" 
+                onMouseEnter={() => setShowTagMenu(true)}
+                onMouseLeave={() => setShowTagMenu(false)}
+            >
+                <div className="buttonIconContainer">
+                    <BiComment alt="default annotation" className="svg-button" />
+                </div>
+                Make Annotation with Tag
+                {showTagMenu && lastUsedTags?.length ? 
+                <div className="buttonColumn">
+                    {lastUsedTags.map(tag => {
+                        return (
+                            <div className="onHoverCreateAnnotation" onClick={(e) => createAnnotationTagged(e, "default", tag)} >
+                                {tag}
+                            </div>
+                        )
+                    })}
+                </div> : (null)}
+            </div>
+        </div>
+    );
+
+
+}
+
 const Popover = ({ selection, xpathToNode, offsets, rectPopover, removePopover }) => {
     const [selected, setSelected] = useState(null);
     const [showQuestionMenu, setShowQuestionMenu] = useState(false);
@@ -115,10 +198,22 @@ function displayPopoverBasedOnRectPosition(rect, props) {
     popOverAnchor.top = '0px';
     popOverAnchor.style.left = `0px`;
     // console.log("Display pop over")
-    ReactDOM.render(
-        <Popover removePopover={removePopover} {...props} />,
-        popOverAnchor
-    );
+    chrome.storage.local.get(['annotateOnly'], ({ annotateOnly }) => {
+        console.log('what', annotateOnly)
+        if(annotateOnly) {
+            ReactDOM.render(
+                <CommonActionPopover removePopover={removePopover} {...props} />,
+                popOverAnchor
+            );
+        }
+        else {
+            ReactDOM.render(
+                <Popover removePopover={removePopover} {...props} />,
+                popOverAnchor
+            );
+        }
+    })
+    
 
     // adjusting position of popover box after mounting
     popOverAnchor.style.top = `${rect.bottom + 5 + window.scrollY}px`;

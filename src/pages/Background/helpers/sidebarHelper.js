@@ -145,7 +145,6 @@ export async function requestSidebarStatus(request, sender, sendResponse) {
       let annotateOnly = sidebarStatus?.annotateOnly;
       let status;
       sidebarStatus = sidebarStatus?.sidebarStatus;
-      console.log('annotateOnly', annotateOnly);
       if (sidebarStatus !== undefined && sidebarStatus.length && tab.length && tab !== undefined) {
         const i = sidebarStatus.findIndex(t => t.id === tab[0].id);
         status = i > -1 ? sidebarStatus[i].open : false;

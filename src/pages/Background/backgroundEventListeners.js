@@ -114,6 +114,22 @@ let commands = {
                         }
                     })
                     if (opening) {
+                        chrome.storage.local.get(['annotateOnly'], (annotateOnly) => {
+                            console.log('annotateOnly', annotateOnly);
+                            if(annotateOnly) {
+                                chrome.storage.local.set({
+                                    'annotateOnly': false
+                                }, function () {
+                                    if (chrome.runtime.lastError) {
+                                        chrome.storage.local.clear();
+                                    }
+                                })
+                                chrome.contextMenus.update('contextMenuBadge', {
+                                    'checked': false
+                                })
+                            } // maybe have highlight and sorting as else clause since, in theory, annos should already be highlighted??
+                        })
+                        
                         if (anno.containsObjectWithUrl(getPathFromUrl(tabs[0].url), anno.tabAnnotationCollect)) {
                             const tabInfo = anno.tabAnnotationCollect.filter(obj => obj.tabUrl === getPathFromUrl(tabs[0].url));
                             chrome.tabs.sendMessage(tabs[0].id, {

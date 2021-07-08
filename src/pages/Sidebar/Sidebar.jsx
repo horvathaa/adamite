@@ -307,9 +307,9 @@ class Sidebar extends React.Component {
           msg: 'REQUEST_SIDEBAR_STATUS',
           from: 'content'
         }, (sidebarOpen) => {
-          if (sidebarOpen !== undefined && typeof(sidebarOpen) === Boolean && sidebarOpen) {
+          if (sidebarOpen !== undefined && typeof(sidebarOpen) === "boolean" && sidebarOpen) {
             // REAALLLY hate this so-called "solution" lmao
-            console.log('in here', sidebarOpen);
+            console.log('in here real inside~~', sidebarOpen);
             chrome.runtime.sendMessage({
               msg: 'REQUEST_TOGGLE_SIDEBAR',
               from: 'content',
@@ -346,6 +346,8 @@ class Sidebar extends React.Component {
               payload: request.payload,
               url: request.url
             })
+            this.setState({ annotations });
+            this.requestFilterUpdate();
           }
           else {
             this.setState({ annotations });
