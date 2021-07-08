@@ -215,9 +215,11 @@ const checkSidebarStatus = () => {
       msg: 'REQUEST_SIDEBAR_STATUS',
     },
     (response) => {
-      let sidebarOpen = response;
-      if (Frame.isReady()) {
-        Frame.toggle(sidebarOpen);
+      if(response !== 'annotateOnly') {
+        let sidebarOpen = response;
+        if (Frame.isReady()) {
+          Frame.toggle(sidebarOpen);
+        }
       }
     }
   );

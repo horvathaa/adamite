@@ -307,8 +307,9 @@ class Sidebar extends React.Component {
           msg: 'REQUEST_SIDEBAR_STATUS',
           from: 'content'
         }, (sidebarOpen) => {
-          if (sidebarOpen !== undefined && sidebarOpen) {
+          if (sidebarOpen !== undefined && typeof(sidebarOpen) === Boolean && sidebarOpen) {
             // REAALLLY hate this so-called "solution" lmao
+            console.log('in here', sidebarOpen);
             chrome.runtime.sendMessage({
               msg: 'REQUEST_TOGGLE_SIDEBAR',
               from: 'content',
@@ -338,6 +339,13 @@ class Sidebar extends React.Component {
               this.setState({ annotations, pageLocationSort: annotations })
               this.requestFilterUpdate();
             });
+          }
+          else if(sidebarOpen === 'annotateOnly') {
+            chrome.tabs.sendMessage(request.tabId, {
+              msg: 'HIGHLIGHT_ANNOTATIONS',
+              payload: request.payload,
+              url: request.url
+            })
           }
           else {
             this.setState({ annotations });

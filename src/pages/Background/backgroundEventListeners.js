@@ -212,6 +212,17 @@ chrome.browserAction.onClicked.addListener(function () {
     return true;
 });
 
+chrome.contextMenus.onClicked.addListener((info) => {
+    const { checked } = info;
+    chrome.storage.local.set({
+        'annotateOnly': checked
+    });
+    if(checked) {
+        toggleSidebar(false);
+        chrome.storage.local.set({ sidebarStatus: [] });
+    }
+});
+
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
     commands['HANDLE_TAB_URL_UPDATE'](tabId, changeInfo, tab);
     return true;
@@ -226,6 +237,21 @@ chrome.windows.onRemoved.addListener(function (tab) {
     commands['HANDLE_WINDOW_REMOVED'](tab);
     return true;
 });
+
+chrome.runtime.onInstalled.addListener(function() {
+    const rightClickMenuOption = {
+        'type': 'checkbox',
+        'checked': false,
+        'title': 'Run In Annotate-Only Mode',
+        'contexts': ['browser_action'],
+        'id': "contextMenuBadge"
+    }
+    chrome.contextMenus.create(rightClickMenuOption, () => {
+        chrome.storage.local.set({
+            'annotateOnly': false
+        })
+    });
+  });
 
 // chrome.runtime.onSuspend.addListener(function () {
 //     anno.unsubscribeAnnotations();

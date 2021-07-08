@@ -13,7 +13,8 @@
   "permissions": [
     "chrome://favicon/",
     "tabs",
-    "storage"
+    "storage",
+    "contextMenus"
   ],
   "oauth2": {
     "client_id": "644799342321-k92na2bh4htvbkpi4hqor8cq6t5896pg.apps.googleusercontent.com",
