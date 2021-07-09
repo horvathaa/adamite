@@ -35,8 +35,7 @@ const CommonActionPopover = ({ selection, xpathToNode, offsets, removePopover })
 
     useEffect(() => {
         setSelected(selection.toString());
-        chrome.storage.local.get(['lastUsedTags'], ({ lastUsedTags }) => {
-            console.log('tags', lastUsedTags);
+        chrome.storage.local.get(['lastUsedTags'], ( { lastUsedTags } ) => {
             setLastUsedTags(lastUsedTags);
         })
     }, []);

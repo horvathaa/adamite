@@ -141,7 +141,6 @@ const updateShouldShrinkBodyStatus = (toStatus) => {
 export async function requestSidebarStatus(request, sender, sendResponse) {
   chrome.tabs.query(({ active: true, currentWindow: true }), tab => {
     chrome.storage.local.get(['sidebarStatus', 'annotateOnly'], sidebarStatus => {
-      console.log('sidebarStatuts', sidebarStatus)
       let annotateOnly = sidebarStatus?.annotateOnly;
       let status;
       sidebarStatus = sidebarStatus?.sidebarStatus;

@@ -149,6 +149,9 @@ class Sidebar extends React.Component {
             currentUserData.payload.currentUser.uid
           );
           this.setUpPinnedListener();
+          chrome.contextMenus.update('contextMenuBadge', {
+            'enabled': true
+          })
         }
         else if (chrome.runtime.lastError) { console.error(chrome.runtime.lastError); return }
         chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
@@ -161,9 +164,13 @@ class Sidebar extends React.Component {
               tab.id
             );
           } else {
+            // add remove highlight
             chrome.runtime.sendMessage({
               from: 'sidebar',
               msg: 'UNSUBSCRIBE'
+            })
+            chrome.contextMenus.update('contextMenuBadge', {
+              'enabled': false
             })
             this.setState({ annotations: [], filteredAnnotations: [], searchedAnnotations: [], groupAnnotations: [], pinnedAnnos: [], groups: [], activeGroups: [] })
           }
@@ -196,10 +203,16 @@ class Sidebar extends React.Component {
             request.payload.currentUser.uid
           );
           this.setUpPinnedListener();
+          chrome.contextMenus.update('contextMenuBadge', {
+            'enabled': true
+          })
         } else {
             chrome.runtime.sendMessage({
               from: 'sidebar',
               msg: 'UNSUBSCRIBE'
+            })
+            chrome.contextMenus.update('contextMenuBadge', {
+              'enabled': false
             })
             this.setState({ annotations: [], filteredAnnotations: [], searchedAnnotations: [], groupAnnotations: [], pinnedAnnos: [], groups: [], activeGroups: [] })
         }
@@ -309,7 +322,6 @@ class Sidebar extends React.Component {
         }, (sidebarOpen) => {
           if (sidebarOpen !== undefined && typeof(sidebarOpen) === "boolean" && sidebarOpen) {
             // REAALLLY hate this so-called "solution" lmao
-            console.log('in here real inside~~', sidebarOpen);
             chrome.runtime.sendMessage({
               msg: 'REQUEST_TOGGLE_SIDEBAR',
               from: 'content',
@@ -352,6 +364,10 @@ class Sidebar extends React.Component {
           else {
             this.setState({ annotations });
             this.requestFilterUpdate();
+            chrome.runtime.sendMessage({
+              msg: 'UNSUBSCRIBE',
+              from: 'content'
+            })
 
           }
         })

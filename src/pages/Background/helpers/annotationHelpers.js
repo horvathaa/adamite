@@ -146,13 +146,18 @@ export async function createAnnotation(request, sender, sendResponse) {
         createdTimestamp: new Date().getTime(),
     });
     sendResponse({ "msg": 'DONE' });
-    console.log('newAnno', newAnno);
-    chrome
     if(newAnno.tags.length) {
         chrome.storage.local.get(['lastUsedTags'], ( { lastUsedTags } ) => {
-            console.log('lastUsedTags', lastUsedTags)
-            const newTags = lastUsedTags.length <= 5 ? lastUsedTags.concat(newAnno.tags) : newAnno.tags.concat(lastUsedTags.splice(0, 5 - newAnno.tags.length)) // this sucks 
-            chrome.storage.local.set({ lastUsedTags: newTags })
+            if(!lastUsedTags) {
+
+                chrome.storage.local.set({ lastUsedTags: newAnno.tags })
+            }
+            else {
+                const newTags = lastUsedTags?.length <= 5 ? 
+                    [...new Set(lastUsedTags?.concat(newAnno.tags))] : 
+                    [...new Set(newAnno.tags.concat(lastUsedTags?.splice(0, 5 - newAnno.tags.length)))] // this sucks 
+                chrome.storage.local.set({ lastUsedTags: newTags })
+            }
         })
     }
 }
@@ -341,7 +346,7 @@ export async function deleteAnnotation(request, sender, sendResponse) {
 
 export function unsubscribeAnnotations(request, sender, sendResponse) {
     if (typeof privateListener === "function") privateListener();
-    if (typeof publicListener === "function") publicListener();
+    if (typeof publicListener === "function")  publicListener();
     if (typeof pinnedPrivateListener === "function") pinnedPrivateListener();
     if (typeof pinnedPublicListener === "function") pinnedPublicListener();
     if (typeof groupListener === 'function') groupListener();
@@ -397,6 +402,7 @@ export function handleTabUpdate(url, tabId) {
             groups = result.groups.map(g => g.gid);
         }
     });
+    // unsubscribeAnnotations();
     getAnnotationsByUrlListener(url, groups)
 }
 
@@ -600,6 +606,7 @@ function injectUserData(annotationsToBroadcast) {
 
 function getAnnotationsByUrlListener(url, groups) {
     const user = fb.getCurrentUser();
+    console.log('url', url)
     if (user !== null) {
         publicListener = fb.getAnnotationsByUrl(url).onSnapshot(async annotationsSnapshot => {
             let annotationsToBroadcast = getListFromSnapshots(annotationsSnapshot);
