@@ -3,6 +3,10 @@
     opacity: 50%;
 }
 
+.groupButton {
+    text-align: center;
+}
+
 .highlight-adamite-annotation {
     background-color: rgb(38, 207, 0, 0.35);
     cursor: pointer;

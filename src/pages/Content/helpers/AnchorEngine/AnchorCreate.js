@@ -8,7 +8,7 @@ import '../../../../assets/img/SVGs/Highlight.svg';
 import '../../../../assets/img/SVGs/Todo.svg';
 import '../../../../assets/img/SVGs/Question.svg';
 import '../../../../assets/img/SVGs/Issue.svg';
-import { BiComment, BiTask, BiGroup } from 'react-icons/bi';
+import { BiComment, BiTask, BiGroup, BiChevronDown } from 'react-icons/bi';
 import { AiOutlineQuestionCircle, AiOutlineExclamationCircle } from 'react-icons/ai';
 
 import { ToastContainer, toast } from 'react-toastify';
@@ -16,6 +16,7 @@ import { FaHighlighter } from 'react-icons/fa';
 import 'react-toastify/dist/ReactToastify.css';
 import { transmitMessage } from '../anchorEventTransmitter';
 import { v4 as uuidv4 } from 'uuid';
+import { StepContent } from '@material-ui/core';
 /*
 Bug with page overlay
 */
@@ -31,6 +32,8 @@ const CommonActionPopover = ({ selection, xpathToNode, offsets, removePopover })
     const [lastUsedTags, setLastUsedTags] = useState([]);
     const [lastUsedGroup, setLastUsedGroup] = useState([]);
     const [showTagMenu, setShowTagMenu] = useState(false);
+    const [showTextEntry, setShowTextEntry] = useState(false);
+    const [groupTextContent, setGroupTextContent] = useState("");
     const newAnnoId = uuidv4();
     const url = getPathFromUrl(window.location.href);
 
@@ -99,7 +102,7 @@ const CommonActionPopover = ({ selection, xpathToNode, offsets, removePopover })
                         newAnno: {
                             id: newAnnoId,
                             type: "default",
-                            content: '',
+                            content: groupTextContent.length ? groupTextContent : '',
                             replies: [],
                             tags: [],
                             isPrivate: true,
@@ -147,11 +150,26 @@ const CommonActionPopover = ({ selection, xpathToNode, offsets, removePopover })
                     })}
                 </div> : (null)}
             </div>
-            <div className="onHoverCreateAnnotation" onClick={(e) => createAnnotationInGroup(e)}>
-                <div className="buttonIconContainer">
-                    <BiGroup alt="group annotation" className="svg-button" />
+            <div className="onHoverCreateAnnotation" >
+                <div className="groupButton" onClick={(e) => createAnnotationInGroup(e)}>
+                    <div className="buttonIconContainer"  >
+                        <BiGroup alt="group annotation" className="svg-button" />
+                    </div>
+                    Use Last Group
                 </div>
-                Use Last Group
+                <div className="buttonColumn"
+                onMouseEnter={() => setShowTextEntry(true)}
+                onMouseLeave={() => setShowTextEntry(false)}>
+                {showTextEntry ? (
+                    <div>
+                        <textarea type="text" id="groupContentWindow" onKeyDown={(e) => {
+                            if(e.key === "Enter") {
+                                createAnnotationInGroup(e)
+                            }
+                        }} onChange={_ => setGroupTextContent(document.getElementById('groupContentWindow').value)}/>
+                    </div>
+                ) : ("...")}
+                </div>
             </div>
         </div>
     );
