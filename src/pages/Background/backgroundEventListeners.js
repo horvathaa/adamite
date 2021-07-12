@@ -144,7 +144,6 @@ let commands = {
                                 })
                             })
                         }
-                        console.log('tabs', tabs[0].url)
                         anno.getAnnotationsPageLoad({url: tabs[0].url});
                     }
                     else {
@@ -202,6 +201,14 @@ let commands = {
         if(checked) {
             toggleSidebar(false);
             chrome.storage.local.set({ sidebarStatus: [] });
+            chrome.tabs.query({ active: true, currentWindow: true}, tabs => {
+                const tabInfo = anno.tabAnnotationCollect.filter(obj => obj.tabUrl === getPathFromUrl(tabs[0].url));
+                chrome.tabs.sendMessage(tabs[0].id, {
+                    msg: 'HIGHLIGHT_ANNOTATIONS',
+                    payload: tabInfo[0].annotations,
+                    url: getPathFromUrl(tabs[0].url)
+                })
+            })
         }
         // when done with this mode, remove any highlights
         else {

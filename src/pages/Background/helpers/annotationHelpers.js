@@ -147,7 +147,10 @@ export async function createAnnotation(request, sender, sendResponse) {
     });
     sendResponse({ "msg": 'DONE' });
     if(newAnno.tags.length) {
-        setLastUsedTags(newAnno);
+        setLastUsedTags(newAnno.tags);
+    }
+    if(newAnno.groups.length) {
+        setLastUsedGroup(newAnno.groups);
     }
 }
 
@@ -238,7 +241,10 @@ export async function updateAnnotation(request, sender, sendResponse) {
         }
         broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', newAnno.id);
         if(newAnno.tags?.length) {
-            setLastUsedTags(newAnno);
+            setLastUsedTags(newAnno.tags);
+        }
+        if(newAnno.groups?.length) {
+            setLastUsedGroup(newAnno.groups);
         }
     });
 }
@@ -630,17 +636,33 @@ function getAnnotationsByUrlListener(url, groups) {
     }
 }
 
-function setLastUsedTags(newAnno) {
+function setLastUsedTags(tags) {
     chrome.storage.local.get(['lastUsedTags'], ( { lastUsedTags } ) => {
         if(!lastUsedTags) {
-
-            chrome.storage.local.set({ lastUsedTags: newAnno.tags })
+            chrome.storage.local.set({ lastUsedTags: tags })
         }
         else {
             const newTags = lastUsedTags?.length <= 5 ? 
-                [...new Set(lastUsedTags?.concat(newAnno.tags))] : 
-                [...new Set(newAnno.tags.concat(lastUsedTags?.splice(0, 5 - newAnno.tags.length)))] // this sucks 
-            chrome.storage.local.set({ lastUsedTags: newTags })
+                [...new Set(lastUsedTags?.concat(tags))] : 
+                [...new Set(tags.concat(lastUsedTags?.splice(0, 5 - tags.length)))] // this sucks 
+            chrome.storage.local.set({ lastUsedTags: newTags }, function () {
+                if (chrome.runtime.lastError) {
+                    chrome.storage.local.clear();
+                }
+            })
         }
+    })
+}
+
+function setLastUsedGroup(group) {
+    chrome.storage.local.get(['lastGroup'], ( { lastGroup } ) => {
+        if(lastGroup !== group) {
+            chrome.storage.local.set({ lastGroup: group }, function () {
+                if (chrome.runtime.lastError) {
+                    chrome.storage.local.clear();
+                }
+            })
+        }
+        return;
     })
 }

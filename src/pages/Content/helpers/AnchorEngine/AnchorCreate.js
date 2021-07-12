@@ -8,7 +8,7 @@ import '../../../../assets/img/SVGs/Highlight.svg';
 import '../../../../assets/img/SVGs/Todo.svg';
 import '../../../../assets/img/SVGs/Question.svg';
 import '../../../../assets/img/SVGs/Issue.svg';
-import { BiComment, BiTask } from 'react-icons/bi';
+import { BiComment, BiTask, BiGroup } from 'react-icons/bi';
 import { AiOutlineQuestionCircle, AiOutlineExclamationCircle } from 'react-icons/ai';
 
 import { ToastContainer, toast } from 'react-toastify';
@@ -29,6 +29,7 @@ function getPathFromUrl(url) {
 const CommonActionPopover = ({ selection, xpathToNode, offsets, removePopover }) => {
     const [selected, setSelected] = useState(null);
     const [lastUsedTags, setLastUsedTags] = useState([]);
+    const [lastUsedGroup, setLastUsedGroup] = useState([]);
     const [showTagMenu, setShowTagMenu] = useState(false);
     const newAnnoId = uuidv4();
     const url = getPathFromUrl(window.location.href);
@@ -37,6 +38,9 @@ const CommonActionPopover = ({ selection, xpathToNode, offsets, removePopover })
         setSelected(selection.toString());
         chrome.storage.local.get(['lastUsedTags'], ( { lastUsedTags } ) => {
             setLastUsedTags(lastUsedTags);
+        })
+        chrome.storage.local.get(['lastGroup'], ( { lastGroup } ) => {
+            setLastUsedGroup(lastGroup);
         })
     }, []);
 
@@ -81,6 +85,47 @@ const CommonActionPopover = ({ selection, xpathToNode, offsets, removePopover })
 
     }
 
+    const createAnnotationInGroup = (event) => {
+        event.stopPropagation();
+        if (selected) {
+            transmitMessage({
+                msg: 'CREATE_ANNOTATION', sentFrom: "AnchorCreate",
+                data: {
+                    payload: {
+                        anchor: selected,
+                        xpath: xpathToNode,
+                        offsets: offsets,
+                        url: url,
+                        newAnno: {
+                            id: newAnnoId,
+                            type: "default",
+                            content: '',
+                            replies: [],
+                            tags: [],
+                            isPrivate: true,
+                            groups: lastUsedGroup !== undefined && lastUsedGroup !== null && lastUsedGroup.length ? lastUsedGroup : [],
+                            childAnchor: [
+                                {
+                                    id: uuidv4(),
+                                    anchor: selected,
+                                    // hostname: url.hostname,
+                                    parentId: newAnnoId,
+                                    xpath: xpathToNode,
+                                    offsets: offsets,
+                                    url: url,
+                                    tags: []
+                                }
+                            ]
+                        }
+                    }
+                }
+            });
+            selection.removeAllRanges();
+            removePopover();
+        }
+
+    }
+
     return (
         <div className="CreatAnnotationRow">
             <div className="onHoverCreateAnnotation" 
@@ -88,9 +133,9 @@ const CommonActionPopover = ({ selection, xpathToNode, offsets, removePopover })
                 onMouseLeave={() => setShowTagMenu(false)}
             >
                 <div className="buttonIconContainer">
-                    <BiComment alt="default annotation" className="svg-button" />
+                    <BiComment alt="default tagged annotation" className="svg-button" />
                 </div>
-                Make Annotation with Tag
+                Use Tags
                 {showTagMenu && lastUsedTags?.length ? 
                 <div className="buttonColumn">
                     {lastUsedTags.map(tag => {
@@ -101,6 +146,12 @@ const CommonActionPopover = ({ selection, xpathToNode, offsets, removePopover })
                         )
                     })}
                 </div> : (null)}
+            </div>
+            <div className="onHoverCreateAnnotation" onClick={(e) => createAnnotationInGroup(e)}>
+                <div className="buttonIconContainer">
+                    <BiGroup alt="group annotation" className="svg-button" />
+                </div>
+                Use Last Group
             </div>
         </div>
     );
@@ -198,7 +249,6 @@ function displayPopoverBasedOnRectPosition(rect, props) {
     popOverAnchor.style.left = `0px`;
     // console.log("Display pop over")
     chrome.storage.local.get(['annotateOnly'], ({ annotateOnly }) => {
-        console.log('what', annotateOnly)
         if(annotateOnly) {
             ReactDOM.render(
                 <CommonActionPopover removePopover={removePopover} {...props} />,
