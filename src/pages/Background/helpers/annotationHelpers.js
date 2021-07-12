@@ -147,18 +147,7 @@ export async function createAnnotation(request, sender, sendResponse) {
     });
     sendResponse({ "msg": 'DONE' });
     if(newAnno.tags.length) {
-        chrome.storage.local.get(['lastUsedTags'], ( { lastUsedTags } ) => {
-            if(!lastUsedTags) {
-
-                chrome.storage.local.set({ lastUsedTags: newAnno.tags })
-            }
-            else {
-                const newTags = lastUsedTags?.length <= 5 ? 
-                    [...new Set(lastUsedTags?.concat(newAnno.tags))] : 
-                    [...new Set(newAnno.tags.concat(lastUsedTags?.splice(0, 5 - newAnno.tags.length)))] // this sucks 
-                chrome.storage.local.set({ lastUsedTags: newTags })
-            }
-        })
+        setLastUsedTags(newAnno);
     }
 }
 
@@ -248,6 +237,9 @@ export async function updateAnnotation(request, sender, sendResponse) {
 
         }
         broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', newAnno.id);
+        if(newAnno.tags?.length) {
+            setLastUsedTags(newAnno);
+        }
     });
 }
 
@@ -606,7 +598,6 @@ function injectUserData(annotationsToBroadcast) {
 
 function getAnnotationsByUrlListener(url, groups) {
     const user = fb.getCurrentUser();
-    console.log('url', url)
     if (user !== null) {
         publicListener = fb.getAnnotationsByUrl(url).onSnapshot(async annotationsSnapshot => {
             let annotationsToBroadcast = getListFromSnapshots(annotationsSnapshot);
@@ -637,4 +628,19 @@ function getAnnotationsByUrlListener(url, groups) {
             });
         });
     }
+}
+
+function setLastUsedTags(newAnno) {
+    chrome.storage.local.get(['lastUsedTags'], ( { lastUsedTags } ) => {
+        if(!lastUsedTags) {
+
+            chrome.storage.local.set({ lastUsedTags: newAnno.tags })
+        }
+        else {
+            const newTags = lastUsedTags?.length <= 5 ? 
+                [...new Set(lastUsedTags?.concat(newAnno.tags))] : 
+                [...new Set(newAnno.tags.concat(lastUsedTags?.splice(0, 5 - newAnno.tags.length)))] // this sucks 
+            chrome.storage.local.set({ lastUsedTags: newTags })
+        }
+    })
 }
