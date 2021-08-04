@@ -72,6 +72,7 @@ export const toggleSidebar = (toStatus = null) => {
       active: true
     },
     function (tab) {
+      console.log('toggling');
 
       // tab[0].forEach((tab) => {
       if (tab !== undefined && tab.length) {

@@ -567,7 +567,7 @@ function getUserDataFromAuthId(authIds) {
 
 function getAllAuthIds(annotations) {
     let authors = []
-    annotations.map(annotation => {
+    annotations.forEach(annotation => {
         authors.push(annotation.authorId);
         annotation.replies?.forEach(replies => {
             authors.push(replies.authorId)

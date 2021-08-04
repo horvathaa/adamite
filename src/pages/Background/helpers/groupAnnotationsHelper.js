@@ -42,7 +42,6 @@ export async function createGroup(request, sender, sendResponse) {
         fb.getUsersByEmails(request.group.emails).get().then(function (snapshot) {
             const uids = [request.group.owner].concat(getListFromSnapshots(snapshot).map(u => u.uid));
             if (request.group.gid !== "") {
-                console.log('in if');
                 fb.updateGroup({
                     name: request.group.name,
                     description: request.group.description,
