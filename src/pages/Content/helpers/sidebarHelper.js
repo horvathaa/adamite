@@ -104,10 +104,19 @@ chrome.storage.sync.get(['sidebarOnLeft'], (result) => {
  * Chrome runtime event listener
  */
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+
   if (request.from === 'background' && request.msg === 'TOGGLE_SIDEBAR') {
     if (Frame.isReady()) {
       Frame.toggle(request.toStatus);
     }
+  } else if(
+    request.from === 'background' &&
+    request.msg === 'GOOGLE_SEARCH'
+  ) {
+    console.log('in listener');
+    const inputField = document.querySelectorAll("input.gLFyf.gsfi")[0];
+    console.log('inputField', inputField);
+    inputField.value ? sendResponse(inputField.value) : sendResponse("undefined");
   } else if (
     request.from === 'background' &&
     request.msg === 'UPDATE_SIDEBAR_ON_LEFT_STATUS'

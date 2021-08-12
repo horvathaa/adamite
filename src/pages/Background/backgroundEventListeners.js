@@ -287,6 +287,7 @@ chrome.contextMenus.onClicked.addListener((info) => {
 });
 
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
+    console.log('changeInfo', changeInfo);
     commands['HANDLE_TAB_URL_UPDATE'](tabId, changeInfo, tab);
     return true;
 });
@@ -308,6 +309,7 @@ chrome.runtime.onInstalled.addListener(function() {
 
 chrome.runtime.onSuspend.addListener(function () {
     console.log('legit... does this ever get called........');
+    chrome.contextMenus.remove('contextMenuBadge');
     anno.unsubscribeAnnotations();
     // chrome.runtime.Port.disconnect();
 })

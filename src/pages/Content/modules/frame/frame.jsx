@@ -64,6 +64,7 @@ const containerRightMinimizedClass = css({
 
 const containerLeftMinimizedClass = css({
   transform: 'translateX(-105%)',
+  display: 'none'
   // ':hover': {
   //   transform: `translateX(-94%)`,
   // },

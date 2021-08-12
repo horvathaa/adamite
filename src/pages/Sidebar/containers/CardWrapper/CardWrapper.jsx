@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
-import ReactMarkdown from 'react-markdown'
+import ReactMarkdown from 'react-markdown';
 import CodeBlock from "./CodeBlockMarkdown";
 import Tooltip from '@material-ui/core/Tooltip';
 import './CardWrapper.module.css';
@@ -8,6 +8,8 @@ import { GiCancel } from 'react-icons/gi';
 import RichEditor from '../RichTextEditor/RichTextEditor';
 import TagsInput from 'react-tagsinput';
 import Dropdown from 'react-dropdown';
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { coy } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { SplitButton, Dropdown as BootstrapDropdown } from 'react-bootstrap';
 import AnnotationContext from "../AnnotationList/Annotation/AnnotationContext";
 
@@ -24,7 +26,7 @@ const CardWrapper = ({ isNew = false }) => {
 
     useEffect(() => {
         if (newAnno !== ctx.anno) { setNewAnno(newAnno); }
-    });
+    }, [newAnno]);
 
     const dropDownSelection = (option) => {
         let newVal = (option.value === 'Normal') ? "default" : (option.value === 'highlight') ? "highlight" : option.value;
@@ -41,7 +43,16 @@ const CardWrapper = ({ isNew = false }) => {
             }
           </span>
         )
-      }
+    }
+
+    const codeComponent = {
+        code({node, inline, className, children, ...props }) {
+            return !inline ? <SyntaxHighlighter style={coy} language={'js'} PreTag="div" children={String(children).replace(/\n$/, '')} {...props} /> :
+            <code className={className} {...props}>
+                {children}
+            </code>
+        }
+    }
 
     const options = ['Normal', 'To-do', 'Question', 'Highlight', 'Issue'];
     const defaultOption = options[0];
@@ -131,7 +142,7 @@ const CardWrapper = ({ isNew = false }) => {
             })}>
                 <ReactMarkdown
                     children={elseContent}
-                    components={{ code: CodeBlock }}
+                    components={codeComponent}
                 />
             </div>
         </React.Fragment>}

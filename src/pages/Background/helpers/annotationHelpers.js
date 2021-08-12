@@ -78,7 +78,7 @@ export async function getAnnotationsPageLoad(request, sender, sendResponse) {
         else {
             getGroups({ request: { uid: uid } });
         }
-        getAnnotationsByUrlListener(request.url, groups)
+        getAnnotationsByUrlListener(request.url, groups, request.tabId);
     })
 
     let userName = email.substring(0, email.indexOf('@'));
@@ -384,7 +384,7 @@ export function updateAnnotationsOnTabActivated(activeInfo) {
                         groups = result.groups.map(g => g.gid);
                     }
                 });
-                getAnnotationsByUrlListener(getPathFromUrl(activeInfo.url), groups)
+                getAnnotationsByUrlListener(getPathFromUrl(activeInfo.url), groups, activeInfo.tabId)
                 // getAllAnnotationsByUrlListener(getPathFromUrl(tab.url), tab.id);
                 // getPrivateAnnotationsByUrlListener(getPathFromUrl(tab.url), tab.id);
             });
@@ -401,7 +401,7 @@ export function handleTabUpdate(url, tabId) {
         }
     });
     // unsubscribeAnnotations();
-    getAnnotationsByUrlListener(url, groups)
+    getAnnotationsByUrlListener(url, groups, tabId)
 }
 
 
@@ -602,8 +602,23 @@ function injectUserData(annotationsToBroadcast) {
 }
 
 
-function getAnnotationsByUrlListener(url, groups) {
+function getAnnotationsByUrlListener(url, groups, tabId) {
     const user = fb.getCurrentUser();
+    console.log('url', url);
+    // idk if this is really where this should go lol...
+    if(url === 'https://www.google.com/search') {
+        console.log('in if in url listener');
+        // chrome.tabs.query({ active: true, })
+        chrome.tabs.sendMessage(tabId, {
+            msg: 'GOOGLE_SEARCH',
+            from: 'background'
+        }, response => {
+            console.log('response', response)
+            if(response && response !== "undefined") chrome.storage.local.set({
+                'search': response
+            });
+        })
+    }
     if (user !== null) {
         publicListener = fb.getAnnotationsByUrl(url).onSnapshot(async annotationsSnapshot => {
             let annotationsToBroadcast = getListFromSnapshots(annotationsSnapshot);

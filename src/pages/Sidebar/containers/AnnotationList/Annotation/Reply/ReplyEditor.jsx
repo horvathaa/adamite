@@ -55,7 +55,7 @@ const ReplyEditor = ({ reply = null, finishReply = () => { } }) => {
         });
     });
 
-    const replyChangeHandler = (value) => { setNewReply({ ...newReply, replyContent: value }); }
+    const replyChangeHandler = (value, contentBlock) => { setNewReply({ ...newReply, replyContent: value, replyBlock: contentBlock }); }
     const cancelReply = () => { setNewReply(reply); finishReply({ reply: reply }); }
     const tagsHandleChange = (newTag) => { setNewReply({ ...newReply, tags: newTag }) }
 
@@ -160,7 +160,10 @@ const ReplyEditor = ({ reply = null, finishReply = () => { } }) => {
                 </div>
             ) : (null)}
             <div className="ReplyField">
-                <RichTextEditor annotationContent={newReply.replyContent} annotationChangeHandler={replyChangeHandler} />
+                <RichTextEditor 
+                    annotationContent={newReply.replyBlock ? newReply.replyBlock : newReply.replyContent}
+                    annotationChangeHandler={replyChangeHandler}
+                 />
                 <div className="Tag-Container">
                     <div className="row">
                         <div className="TextareaContainer">
