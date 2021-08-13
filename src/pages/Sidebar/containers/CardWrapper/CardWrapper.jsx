@@ -80,7 +80,7 @@ const CardWrapper = ({ isNew = false }) => {
                         annotationContent={newAnno.contentBlock === undefined ? ctx.anno.content : ctx.anno.contentBlock}
                         annotationChangeHandler={(content, contentBlock) => setNewAnno({ ...newAnno, content, contentBlock })}
                     />
-                    <RichEditor2 annotationChangeHandler={(content, contentBlock) => setNewAnno({ ...newAnno, content, contentBlock })}/>
+                    {/* <RichEditor2 annotationChangeHandler={(content, contentBlock) => setNewAnno({ ...newAnno, content, contentBlock })}/> */}
                 </div>
 
                 <div className="Tag-Container">
