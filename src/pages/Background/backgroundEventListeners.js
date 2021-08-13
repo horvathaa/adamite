@@ -228,7 +228,7 @@ let commands = {
             'contexts': ['browser_action'],
             'id': "contextMenuBadge"
         }
-        chrome.contextMenus.create(contextMenuOptions, () => {
+        const id = chrome.contextMenus.create(contextMenuOptions, () => {
             if(authHelper.getUser() != null) {
                 chrome.storage.local.set({
                     'annotateOnly': false
