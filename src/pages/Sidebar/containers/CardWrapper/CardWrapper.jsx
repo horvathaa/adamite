@@ -6,6 +6,7 @@ import './CardWrapper.module.css';
 import classNames from 'classnames';
 import { GiCancel } from 'react-icons/gi';
 import RichEditor from '../RichTextEditor/RichTextEditor';
+import RichEditor2 from '../RichTextEditor/RichTextEditor2';
 import TagsInput from 'react-tagsinput';
 import Dropdown from 'react-dropdown';
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -23,6 +24,7 @@ const CardWrapper = ({ isNew = false }) => {
 
     const [newAnno, setNewAnno] = useState(ctx.anno);
     const [groups, setGroups] = useState(ctx.anno.groups);
+
 
     useEffect(() => {
         if (newAnno !== ctx.anno) { setNewAnno(newAnno); }
@@ -78,6 +80,7 @@ const CardWrapper = ({ isNew = false }) => {
                         annotationContent={newAnno.contentBlock === undefined ? ctx.anno.content : ctx.anno.contentBlock}
                         annotationChangeHandler={(content, contentBlock) => setNewAnno({ ...newAnno, content, contentBlock })}
                     />
+                    <RichEditor2 annotationChangeHandler={(content, contentBlock) => setNewAnno({ ...newAnno, content, contentBlock })}/>
                 </div>
 
                 <div className="Tag-Container">

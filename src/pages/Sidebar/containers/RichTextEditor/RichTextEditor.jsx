@@ -14,6 +14,7 @@ import createCodeEditorPlugin from 'draft-js-code-editor-plugin';
 
 
 
+
 export default class RichEditor extends React.Component {
     constructor(props) {
         super(props);
