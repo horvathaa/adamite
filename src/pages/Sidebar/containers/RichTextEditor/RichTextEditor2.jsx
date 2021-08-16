@@ -29,6 +29,8 @@ const HOTKEYS = {
     'mod+`': 'code',
 }
 
+
+
 const LIST_TYPES = ['numbered-list', 'bulleted-list']
 
 const toggleBlock = (editor, format) => {
@@ -200,43 +202,13 @@ const MarkButton = ({ format, icon }) => {
         </Button>
     )
 }
-
 const initialValue = [
     {
-        type: 'paragraph',
-        children: [
-            { text: 'This is editable ' },
-            { text: 'rich', bold: true },
-            { text: ' text, ' },
-            { text: 'much', italic: true },
-            { text: ' better than a ' },
-            { text: '<textarea>', code: true },
-            { text: '!' },
-            { text: '<h1>Hi!</h1>', }
-        ],
-    },
-    {
-        type: 'paragraph',
-        children: [
-            {
-                text:
-                    "Since it's rich text, you can do things like turn a selection of text ",
-            },
-            { text: 'bold', bold: true },
-            {
-                text:
-                    ', or add a semantically rendered block quote in the middle of the page, like this:',
-            },
-        ],
-    },
-    {
-        type: 'block-quote',
-        children: [{ text: 'A wise quote.' }],
-    },
-    {
-        type: 'paragraph',
-        children: [{ text: 'Try it out for yourself!' }],
-    },
+        type:'paragraph',
+        children: [{
+            text: ''
+        }]
+    }
 ]
 
 
@@ -244,7 +216,7 @@ const initialValue = [
 const RichTextEditor2 = ({ annotationChangeHandler }) => {
 
     const [value, setValue] = useState(initialValue)
-    const [language, setLanguage] = useState('html')
+    const [language, setLanguage] = useState('js')
     const renderElement = useCallback(props => {
         switch (props.element.type) {
           case 'code':
@@ -265,10 +237,39 @@ const RichTextEditor2 = ({ annotationChangeHandler }) => {
         )
     }
 
-    const updateValue = (value) => {
-        console.log("this value!!!", value,);
-        setValue(value);
-        annotationChangeHandler(JSON.stringify(value), JSON.stringify(value));
+    const appendProgrammingLanguage = (node) => {
+        if (Text.isText(node)) {
+            const newNode = node.code ? {
+                code: true,
+                text: node.text,
+                language: language
+            } : node;
+            return newNode
+        }
+
+        const children = node.children.map(n => appendProgrammingLanguage(n));
+
+        if(node.type === 'code') {
+            return {
+                type: 'code',
+                children: node.children,
+                language: language
+            }
+        }
+        else {
+            return children
+        }
+    }
+
+    const updateValue = (newValue) => {
+        console.log("this value!!!", newValue);
+        const serializedVal = {
+            children: newValue
+        }
+        const editor = appendProgrammingLanguage(serializedVal);
+        console.log('editor', editor);
+        setValue(newValue);
+        annotationChangeHandler(JSON.stringify(editor), JSON.stringify(editor));
     }
 
 
@@ -330,7 +331,7 @@ const RichTextEditor2 = ({ annotationChangeHandler }) => {
                     contentEditable={false}
                     style={{ position: 'relative', top: '5px', right: '5px' }}
                 >
-                    <h3>
+                    <div>
                         Select a language
                         <select
                             value={language}
@@ -345,7 +346,7 @@ const RichTextEditor2 = ({ annotationChangeHandler }) => {
                             <option value="java">Java</option>
                             <option value="php">PHP</option>
                         </select>
-                    </h3>
+                    </div>
                 </div>
                 <Editable
                     renderElement={renderElement}

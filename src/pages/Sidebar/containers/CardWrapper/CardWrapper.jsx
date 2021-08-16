@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import CodeBlock from "./CodeBlockMarkdown";
 import Tooltip from '@material-ui/core/Tooltip';
 import './CardWrapper.module.css';
+import { Text } from 'slate'
 import classNames from 'classnames';
 import { GiCancel } from 'react-icons/gi';
 import RichEditor from '../RichTextEditor/RichTextEditor';
@@ -13,6 +14,40 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { coy } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { SplitButton, Dropdown as BootstrapDropdown } from 'react-bootstrap';
 import AnnotationContext from "../AnnotationList/Annotation/AnnotationContext";
+
+const deserializeJson = (node) => {
+    // node = JSON.parse(node);
+    console.log('node', node);
+    if (Text.isText(node)) {
+        let string = node.text;
+        if (node.bold) {
+          string = `**${string}**`
+        }
+        if (node.code) {
+            string = `\`${string}\``
+        }
+        return string
+      }
+
+      console.log('node')
+    
+      const children = node.children.map(n => deserializeJson(n)).join('')
+    
+      switch (node.type) {
+        case 'quote':
+          return `>${children}`
+        case 'paragraph':
+          return `\n${children}\n`
+        case 'link':
+          return `[${children}](${escapeHtml(node.url)})`
+        case 'code':
+            return `\t${children}\n`
+        // case 'codeblock':
+        //     return `\t${children}`
+        default:
+          return children
+      }
+}
 
 const CardWrapper = ({ isNew = false }) => {
     const ctx = useContext(AnnotationContext);
@@ -72,15 +107,16 @@ const CardWrapper = ({ isNew = false }) => {
     let annoTypeDropDownValue = (ctx.anno.type === 'default') ? 'normal' : (ctx.anno.type === 'highlight') ? 'empty' : ctx.anno.type;
     const placeHolderString = newAnno.tags === undefined || !newAnno.tags.length ? 'Add a tag then hit Enter' : 'Add a tag';
 
+
     const CardEditor = (<React.Fragment>
         {ctx.editing ? (
             <React.Fragment>
                 <div className="TextareaContainer">
-                    <RichEditor
+                    {/* <RichEditor
                         annotationContent={newAnno.contentBlock === undefined ? ctx.anno.content : ctx.anno.contentBlock}
                         annotationChangeHandler={(content, contentBlock) => setNewAnno({ ...newAnno, content, contentBlock })}
-                    />
-                    {/* <RichEditor2 annotationChangeHandler={(content, contentBlock) => setNewAnno({ ...newAnno, content, contentBlock })}/> */}
+                    /> */}
+                    <RichEditor2 annotationChangeHandler={(content, contentBlock) => setNewAnno({ ...newAnno, content, contentBlock })}/>
                 </div>
 
                 <div className="Tag-Container">
@@ -144,7 +180,7 @@ const CardWrapper = ({ isNew = false }) => {
                 annotationContent: true
             })}>
                 <ReactMarkdown
-                    children={elseContent}
+                    children={deserializeJson(JSON.parse(elseContent))}
                     components={codeComponent}
                 />
             </div>
