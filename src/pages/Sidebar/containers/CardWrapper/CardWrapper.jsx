@@ -15,39 +15,16 @@ import { coy } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { SplitButton, Dropdown as BootstrapDropdown } from 'react-bootstrap';
 import AnnotationContext from "../AnnotationList/Annotation/AnnotationContext";
 
-const deserializeJson = (node) => {
-    // node = JSON.parse(node);
-    console.log('node', node);
-    if (Text.isText(node)) {
-        let string = node.text;
-        if (node.bold) {
-          string = `**${string}**`
-        }
-        if (node.code) {
-            string = `\`${string}\``
-        }
-        return string
-      }
-
-      console.log('node')
-    
-      const children = node.children.map(n => deserializeJson(n)).join('')
-    
-      switch (node.type) {
-        case 'quote':
-          return `>${children}`
-        case 'paragraph':
-          return `\n${children}\n`
-        case 'link':
-          return `[${children}](${escapeHtml(node.url)})`
-        case 'code':
-            return `\t${children}\n`
-        // case 'codeblock':
-        //     return `\t${children}`
-        default:
-          return children
-      }
+const isJson = (str) => {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
 }
+
+
 
 const CardWrapper = ({ isNew = false }) => {
     const ctx = useContext(AnnotationContext);
@@ -59,6 +36,41 @@ const CardWrapper = ({ isNew = false }) => {
 
     const [newAnno, setNewAnno] = useState(ctx.anno);
     const [groups, setGroups] = useState(ctx.anno.groups);
+    const pl = isJson(elseContent) ? JSON.parse(elseContent).language : 'js';
+
+    const deserializeJson = (node) => {
+        if (Text.isText(node)) {
+            let string = node.text;
+            if (node.bold && node.italic && string !== "") {
+                string = `***${string}***`
+            }
+            else if(node.bold && string !== "") {
+                string = `**${string}**`
+            }
+            else if(node.italic && string !== "") {
+                string = `*${string}*`
+            }
+            if (node.code) {
+                string = `\`${string}\``
+            }
+            
+            return string
+        }
+        
+        const children = node.children.map(n => deserializeJson(n)).join('');
+    
+        switch (node.type) {
+            case 'paragraph':
+                return `\n${children}\n`
+            case 'link':
+                return `[${children}](${escapeHtml(node.url)})`
+            case 'code': {
+                return `\t${children}\n`
+            }
+            default:
+                return children
+        }
+    }
 
 
     useEffect(() => {
@@ -84,7 +96,7 @@ const CardWrapper = ({ isNew = false }) => {
 
     const codeComponent = {
         code({node, inline, className, children, ...props }) {
-            return !inline ? <SyntaxHighlighter style={coy} language={'js'} PreTag="div" children={String(children).replace(/\n$/, '')} {...props} /> :
+            return !inline ? <SyntaxHighlighter style={coy} language={pl} PreTag="div" children={String(children).replace(/\n$/, '')} {...props} /> :
             <code className={className} {...props}>
                 {children}
             </code>
@@ -93,6 +105,8 @@ const CardWrapper = ({ isNew = false }) => {
 
     const options = ['Normal', 'To-do', 'Question', 'Highlight', 'Issue'];
     const defaultOption = options[0];
+
+    // console.log('markdown', deserializeJson(JSON.parse(elseContent)));
 
 
     let splitButtonText;
@@ -116,7 +130,24 @@ const CardWrapper = ({ isNew = false }) => {
                         annotationContent={newAnno.contentBlock === undefined ? ctx.anno.content : ctx.anno.contentBlock}
                         annotationChangeHandler={(content, contentBlock) => setNewAnno({ ...newAnno, content, contentBlock })}
                     /> */}
-                    <RichEditor2 annotationChangeHandler={(content, contentBlock) => setNewAnno({ ...newAnno, content, contentBlock })}/>
+                    <RichEditor2 
+                        initialContent={
+                            isJson(elseContent) ? 
+                                JSON.parse(elseContent).children : 
+                                [ {
+                                        type:'paragraph',
+                                        children: [{
+                                            text: elseContent
+                                        }]
+                                    }
+                                ]
+                        }
+                        initialLanguage={
+                            isJson(elseContent) ? 
+                                JSON.parse(elseContent).language :
+                                'js'
+                        } 
+                        annotationChangeHandler={(content) => setNewAnno({ ...newAnno, content })}/>
                 </div>
 
                 <div className="Tag-Container">
@@ -180,7 +211,7 @@ const CardWrapper = ({ isNew = false }) => {
                 annotationContent: true
             })}>
                 <ReactMarkdown
-                    children={deserializeJson(JSON.parse(elseContent))}
+                    children={isJson(elseContent) ? deserializeJson(JSON.parse(elseContent)) : elseContent}
                     components={codeComponent}
                 />
             </div>

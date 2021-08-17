@@ -1,6 +1,13 @@
+.language-select {
+  padding-bottom: 0.4rem;
+
+}
+
+
 .RichEditorCodeBlock{
   background: rgb(209 238 189 / 36%);
   padding: .25rem 1rem;
+  padding-top: .5rem;
 
 }
 .RichEditor-root {

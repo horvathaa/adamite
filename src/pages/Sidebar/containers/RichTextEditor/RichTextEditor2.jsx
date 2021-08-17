@@ -11,6 +11,33 @@ import { withHistory } from 'slate-history'
 import { Button, Icon, Toolbar } from './SlateComponents.js'
 import { css } from '@emotion/css'
 import { render } from 'react-dom'
+import { BiBold, BiItalic, BiCode } from 'react-icons/bi';
+
+// AMBER: If we want to support multiple programming languages in one annotation, I think this approach will be necessary
+// for now, just have one language declared at the top level of the rich text editor tree
+// const appendProgrammingLanguage = (node) => {
+//     if (Text.isText(node)) {
+//         const newNode = node.code ? {
+//             code: true,
+//             text: node.text,
+//             language: language
+//         } : node;
+//         return newNode
+//     }
+
+//     const children = node.children.map(n => appendProgrammingLanguage(n));
+
+//     if(node.type === 'code') {
+//         return {
+//             type: 'code',
+//             children: node.children,
+//             language: language
+//         }
+//     }
+//     else {
+//         return children
+//     }
+// }
 
 
 // eslint-disable-next-line
@@ -25,7 +52,6 @@ Prism.languages.markdown = Prism.languages.extend("markup", {}), Prism.languages
 const HOTKEYS = {
     'mod+b': 'bold',
     'mod+i': 'italic',
-    'mod+u': 'underline',
     'mod+`': 'code',
 }
 
@@ -41,14 +67,18 @@ const toggleBlock = (editor, format) => {
         match: n => LIST_TYPES.includes(n.type),
         split: true,
     })
-    console.log("ISAC", format)
+    // console.log("ISAC", format)
     if(format === "code"){
-        console.log("true!")
-        Transforms.setNodes(
+        !isActive ? Transforms.setNodes(
             editor,
             { type: 'code' },
             { match: n => Editor.isBlock(editor, n) } 
-          )
+          ) : 
+          Transforms.setNodes(
+            editor,
+            { type: 'paragraph' ,
+             children: [] } 
+            )
     }
     else {
         Transforms.setNodes(editor, {
@@ -73,8 +103,9 @@ const toggleMark = (editor, format) => {
 }
 
 const isBlockActive = (editor, format) => {
+    if(!editor.selection) return false
     const [match] = Editor.nodes(editor, {
-        match: n => n.type === format,
+        match: n =>  n.type === format,
     })
 
     return !!match
@@ -86,7 +117,6 @@ const isMarkActive = (editor, format) => {
 }
 
 const Element = ({ attributes, children, element }) => {
-    console.log("ITEMS", attributes, children, element)
     switch (element.type) {
         case 'block-quote':
             return <blockquote {...attributes}>{children}</blockquote>
@@ -109,7 +139,7 @@ const Leaf = ({ attributes, children, leaf }) => {
     if (leaf.bold) {
         children = <strong>{children}</strong>
     }
-    console.log("LEAF", leaf, attributes, children.props.parent)
+    // console.log("LEAF", leaf, attributes, children.props.parent)
     if (leaf.code || (children.props.parent !== undefined && children.props.parent.type == "code")) {
         var classes = "";
         children = <span className={css`
@@ -174,7 +204,8 @@ const Leaf = ({ attributes, children, leaf }) => {
 }
 
 const BlockButton = ({ format, icon }) => {
-    const editor = useSlate()
+    const editor = useSlate();
+    const logo = <BiCode />
     return (
         <Button
             active={isBlockActive(editor, format)}
@@ -183,13 +214,14 @@ const BlockButton = ({ format, icon }) => {
                 toggleBlock(editor, format)
             }}
         >
-            <Icon>{icon}</Icon>
+            <Icon>{logo}</Icon>
         </Button>
     )
 }
 
 const MarkButton = ({ format, icon }) => {
     const editor = useSlate()
+    const logo = icon === 'format_bold' ? <BiBold /> : <BiItalic />
     return (
         <Button
             active={isMarkActive(editor, format)}
@@ -198,25 +230,38 @@ const MarkButton = ({ format, icon }) => {
                 toggleMark(editor, format)
             }}
         >
-            <Icon>{icon}</Icon>
+            <Icon>{logo}</Icon>
         </Button>
     )
 }
-const initialValue = [
-    {
-        type:'paragraph',
-        children: [{
-            text: ''
-        }]
+
+// this is stupid
+const isJsonObj = (obj) => {
+    const str = JSON.stringify(obj);
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
     }
-]
+    return true;
+}
+
+
 
 
 // Define our app...
-const RichTextEditor2 = ({ annotationChangeHandler }) => {
+const RichTextEditor2 = ({ initialContent, initialLanguage, annotationChangeHandler }) => {
+    const initialValue = initialContent && isJsonObj(initialContent) ? initialContent : [
+        {
+            type:'paragraph',
+            children: [{
+                text: ''
+            }]
+        }
+    ]
 
     const [value, setValue] = useState(initialValue)
-    const [language, setLanguage] = useState('js')
+    const [language, setLanguage] = useState(initialLanguage)
     const renderElement = useCallback(props => {
         switch (props.element.type) {
           case 'code':
@@ -227,6 +272,7 @@ const RichTextEditor2 = ({ annotationChangeHandler }) => {
       }, []);
     const renderLeaf = useCallback(props => <Leaf {...props} />, [])
     const editor = useMemo(() => withHistory(withReact(createEditor())), [])
+    
 
     // Define a React component renderer for our code blocks.
     const CodeElement = props => {
@@ -237,37 +283,13 @@ const RichTextEditor2 = ({ annotationChangeHandler }) => {
         )
     }
 
-    const appendProgrammingLanguage = (node) => {
-        if (Text.isText(node)) {
-            const newNode = node.code ? {
-                code: true,
-                text: node.text,
-                language: language
-            } : node;
-            return newNode
-        }
-
-        const children = node.children.map(n => appendProgrammingLanguage(n));
-
-        if(node.type === 'code') {
-            return {
-                type: 'code',
-                children: node.children,
-                language: language
-            }
-        }
-        else {
-            return children
-        }
-    }
+    
 
     const updateValue = (newValue) => {
-        console.log("this value!!!", newValue);
-        const serializedVal = {
-            children: newValue
+        let editor = {
+            children: newValue,
+            language: language
         }
-        const editor = appendProgrammingLanguage(serializedVal);
-        console.log('editor', editor);
         setValue(newValue);
         annotationChangeHandler(JSON.stringify(editor), JSON.stringify(editor));
     }
@@ -318,21 +340,13 @@ const RichTextEditor2 = ({ annotationChangeHandler }) => {
                 <Toolbar>
                     <MarkButton format="bold" icon="format_bold" />
                     <MarkButton format="italic" icon="format_italic" />
-                    <MarkButton format="underline" icon="format_underlined" />
-                    <MarkButton format="code" icon="code"/>
                     <BlockButton format="code" icon="code" />
-                    <BlockButton format="heading-one" icon="looks_one" />
-                    <BlockButton format="heading-two" icon="looks_two" />
-                    <BlockButton format="block-quote" icon="format_quote" />
-                    <BlockButton format="numbered-list" icon="format_list_numbered" />
-                    <BlockButton format="bulleted-list" icon="format_list_bulleted" />
                 </Toolbar>
                 <div
                     contentEditable={false}
                     style={{ position: 'relative', top: '5px', right: '5px' }}
                 >
-                    <div>
-                        Select a language
+                    <div className="language-select">
                         <select
                             value={language}
                             style={{ float: 'right' }}
