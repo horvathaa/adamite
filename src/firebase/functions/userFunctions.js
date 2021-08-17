@@ -30,7 +30,6 @@ export const signOut = () => {
 };
 
 export const updateUserProfile = (user = getCurrentUser()) => {
-  console.log("UPDATING", user)
   db.collection(DB_COLLECTIONS.USERS)
     .doc(user.uid)
     .set(

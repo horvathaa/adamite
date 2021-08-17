@@ -1,15 +1,30 @@
 import React, { useContext, useState, useEffect } from 'react';
-import ReactMarkdown from 'react-markdown'
+import ReactMarkdown from 'react-markdown';
 import CodeBlock from "./CodeBlockMarkdown";
 import Tooltip from '@material-ui/core/Tooltip';
 import './CardWrapper.module.css';
+import { Text } from 'slate'
 import classNames from 'classnames';
 import { GiCancel } from 'react-icons/gi';
 import RichEditor from '../RichTextEditor/RichTextEditor';
+import RichEditor2 from '../RichTextEditor/RichTextEditor2';
 import TagsInput from 'react-tagsinput';
 import Dropdown from 'react-dropdown';
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { coy } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { SplitButton, Dropdown as BootstrapDropdown } from 'react-bootstrap';
 import AnnotationContext from "../AnnotationList/Annotation/AnnotationContext";
+
+const isJson = (str) => {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
+}
+
+
 
 const CardWrapper = ({ isNew = false }) => {
     const ctx = useContext(AnnotationContext);
@@ -21,10 +36,46 @@ const CardWrapper = ({ isNew = false }) => {
 
     const [newAnno, setNewAnno] = useState(ctx.anno);
     const [groups, setGroups] = useState(ctx.anno.groups);
+    const pl = isJson(elseContent) ? JSON.parse(elseContent).language : 'js';
+
+    const deserializeJson = (node) => {
+        if (Text.isText(node)) {
+            let string = node.text;
+            if (node.bold && node.italic && string !== "") {
+                string = `***${string}***`
+            }
+            else if(node.bold && string !== "") {
+                string = `**${string}**`
+            }
+            else if(node.italic && string !== "") {
+                string = `*${string}*`
+            }
+            if (node.code) {
+                string = `\`${string}\``
+            }
+            
+            return string
+        }
+        
+        const children = node.children.map(n => deserializeJson(n)).join('');
+    
+        switch (node.type) {
+            case 'paragraph':
+                return `\n${children}\n`
+            case 'link':
+                return `[${children}](${escapeHtml(node.url)})`
+            case 'code': {
+                return `\t${children}\n`
+            }
+            default:
+                return children
+        }
+    }
+
 
     useEffect(() => {
         if (newAnno !== ctx.anno) { setNewAnno(newAnno); }
-    });
+    }, [newAnno]);
 
     const dropDownSelection = (option) => {
         let newVal = (option.value === 'Normal') ? "default" : (option.value === 'highlight') ? "highlight" : option.value;
@@ -41,10 +92,21 @@ const CardWrapper = ({ isNew = false }) => {
             }
           </span>
         )
-      }
+    }
+
+    const codeComponent = {
+        code({node, inline, className, children, ...props }) {
+            return !inline ? <SyntaxHighlighter style={coy} language={pl} PreTag="div" children={String(children).replace(/\n$/, '')} {...props} /> :
+            <code className={className} {...props}>
+                {children}
+            </code>
+        }
+    }
 
     const options = ['Normal', 'To-do', 'Question', 'Highlight', 'Issue'];
     const defaultOption = options[0];
+
+    // console.log('markdown', deserializeJson(JSON.parse(elseContent)));
 
 
     let splitButtonText;
@@ -59,14 +121,33 @@ const CardWrapper = ({ isNew = false }) => {
     let annoTypeDropDownValue = (ctx.anno.type === 'default') ? 'normal' : (ctx.anno.type === 'highlight') ? 'empty' : ctx.anno.type;
     const placeHolderString = newAnno.tags === undefined || !newAnno.tags.length ? 'Add a tag then hit Enter' : 'Add a tag';
 
+
     const CardEditor = (<React.Fragment>
         {ctx.editing ? (
             <React.Fragment>
                 <div className="TextareaContainer">
-                    <RichEditor
-                        annotationContent={newAnno.contentBlock === undefined ? ctx.anno.content : newAnno.contentBlock}
+                    {/* <RichEditor
+                        annotationContent={newAnno.contentBlock === undefined ? ctx.anno.content : ctx.anno.contentBlock}
                         annotationChangeHandler={(content, contentBlock) => setNewAnno({ ...newAnno, content, contentBlock })}
-                    />
+                    /> */}
+                    <RichEditor2 
+                        initialContent={
+                            isJson(elseContent) ? 
+                                JSON.parse(elseContent).children : 
+                                [ {
+                                        type:'paragraph',
+                                        children: [{
+                                            text: elseContent
+                                        }]
+                                    }
+                                ]
+                        }
+                        initialLanguage={
+                            isJson(elseContent) ? 
+                                JSON.parse(elseContent).language :
+                                'js'
+                        } 
+                        annotationChangeHandler={(content) => setNewAnno({ ...newAnno, content })}/>
                 </div>
 
                 <div className="Tag-Container">
@@ -130,8 +211,8 @@ const CardWrapper = ({ isNew = false }) => {
                 annotationContent: true
             })}>
                 <ReactMarkdown
-                    children={elseContent}
-                    components={{ code: CodeBlock }}
+                    children={isJson(elseContent) ? deserializeJson(JSON.parse(elseContent)) : elseContent}
+                    components={codeComponent}
                 />
             </div>
         </React.Fragment>}

@@ -47,6 +47,7 @@ const containerVisibleClass = css({
 });
 
 const containerMinimizedClass = css({
+  // display: 'none',
   cursor: 'pointer',
   '& > iframe': {
     pointerEvents: 'none',
@@ -55,6 +56,7 @@ const containerMinimizedClass = css({
 
 const containerRightMinimizedClass = css({
   transform: 'translateX(105%)',
+  display: 'none'
   // ':hover': {
   //   transform: `translateX(94%)`,
   // },
@@ -62,6 +64,7 @@ const containerRightMinimizedClass = css({
 
 const containerLeftMinimizedClass = css({
   transform: 'translateX(-105%)',
+  display: 'none'
   // ':hover': {
   //   transform: `translateX(-94%)`,
   // },

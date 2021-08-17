@@ -2,6 +2,62 @@ import $ from 'jquery';
 //import * as xpathRange from "./packages/xpath-range";
 //var xpathRange = require('xpath-range');
 
+
+export const findAllMatchingPhrases = (phrase) => {
+    let words = [];
+    const anchorText = phrase.replace(/[^A-Za-z]/g, ' ').split(' ').join('').toLowerCase();
+
+    console.log('anchorText', anchorText);
+
+
+    let walkDOM = function (node, func) {
+        func(node);
+        node = node.firstChild;
+        while(node) {
+            walkDOM(node, func);
+            node = node.nextSibling;
+        }
+
+    };
+
+    walkDOM(document.body, function (node) {
+        // console.log('anchorText', anchorText);
+
+        if (node.nodeName === '#text') {
+            var text = node.textContent;
+
+            text = text.replace(/[^A-Za-z]/g, ' ').split(' ').join('').toLowerCase();
+            
+            // text = text.split(' ');
+            // console.log('text', text)
+            // also need to add check to see if we've alreayd highlighted the instance
+            // chain of webpages that lead to this solution -> MDN ClassList -> return DOMTokenList -> DOMTokenList methods -> contains
+            if (((text.length && anchorText === text) || (text.length && text.includes(anchorText))) && !node.parentNode.classList.contains('highlight-adamite-annotation')) {
+                let lastStartIndex = 0;
+                while(node.textContent.indexOf(phrase, lastStartIndex) !== -1) {
+                    words.push(
+                        { 
+                            nodeText: node.textContent, 
+                            xpath: {
+                                start: xpathConversion(node),
+                                end: xpathConversion(node),
+                                startOffset: node.textContent.indexOf(phrase, lastStartIndex),
+                                endOffset: node.textContent.length - (phrase.length + node.textContent.indexOf(phrase, lastStartIndex))
+                            }
+                        }
+                    );
+                    lastStartIndex = node.textContent.indexOf(phrase, lastStartIndex) + 1;
+                }
+            }
+        }
+    });
+
+
+    console.log('done', words);
+    return words;
+}
+
+
 // Equivalent -> xpath.fromNode;
 //Creates an Xpath from a node
 export const xpathConversion = (element) => {

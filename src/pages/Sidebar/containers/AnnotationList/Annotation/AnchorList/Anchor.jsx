@@ -9,7 +9,7 @@ import '../Annotation.css';
 import './Anchor.module.css';
 import TagsInput from 'react-tagsinput';
 import AnnotationContext from "../AnnotationContext";
-import { BiHash, BiTrash } from 'react-icons/bi';
+import { BiHash, BiTrash, BiPlusCircle } from 'react-icons/bi';
 
 // helper method from
 // https://stackoverflow.com/questions/2540969/remove-querystring-from-url
@@ -82,6 +82,24 @@ const Anchor = ({ anchor, replyIdProp }) => {
         });
         if (message === 'ANNOTATION_FOCUS') setHovering(true);
         else if (message === 'ANNOTATION_DEFOCUS') setHovering(false);
+    }
+
+    const annotateAllInstances = () => {
+        chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+            const taburl = getPathFromUrl(tabs[0].url);
+            if (url === taburl) {
+                chrome.tabs.sendMessage(
+                    tabs[0].id,
+                    {
+                        msg: 'ANNOTATE_ALL_INSTANCES',
+                        payload: {
+                            newAnno: ctx.anno,
+                            anchorText: anchorContent
+                        }
+                    }
+                );
+            }
+        });
     }
 
     const handleOnEditDone = () => {
@@ -174,6 +192,13 @@ const Anchor = ({ anchor, replyIdProp }) => {
             <React.Fragment>
                 <div className={textClass + " col"}>
                     <AnchorObject textClass={textClass} />
+                </div>
+                <div className="AnchorTagsList col-2" onClick={() => { annotateAllInstances() }}>
+                    <Tooltip title={"Anchor All Instances"} aria-label="edit tooltip">
+                        <div className="AnchorHashTagbutton Tag">
+                            <BiPlusCircle alt="edit annotation" className="profile" id="edit" />
+                        </div>
+                    </Tooltip>
                 </div>
                 {tags &&
                     <React.Fragment>

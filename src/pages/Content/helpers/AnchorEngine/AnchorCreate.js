@@ -8,7 +8,7 @@ import '../../../../assets/img/SVGs/Highlight.svg';
 import '../../../../assets/img/SVGs/Todo.svg';
 import '../../../../assets/img/SVGs/Question.svg';
 import '../../../../assets/img/SVGs/Issue.svg';
-import { BiComment, BiTask } from 'react-icons/bi';
+import { BiComment, BiTask, BiGroup, BiChevronDown } from 'react-icons/bi';
 import { AiOutlineQuestionCircle, AiOutlineExclamationCircle } from 'react-icons/ai';
 
 import { ToastContainer, toast } from 'react-toastify';
@@ -16,6 +16,7 @@ import { FaHighlighter } from 'react-icons/fa';
 import 'react-toastify/dist/ReactToastify.css';
 import { transmitMessage } from '../anchorEventTransmitter';
 import { v4 as uuidv4 } from 'uuid';
+import { StepContent } from '@material-ui/core';
 /*
 Bug with page overlay
 */
@@ -24,6 +25,156 @@ Bug with page overlay
 // https://stackoverflow.com/questions/2540969/remove-querystring-from-url
 function getPathFromUrl(url) {
     return url.split(/[?#]/)[0];
+}
+
+const CommonActionPopover = ({ selection, xpathToNode, offsets, removePopover }) => {
+    const [selected, setSelected] = useState(null);
+    const [lastUsedTags, setLastUsedTags] = useState([]);
+    const [lastUsedGroup, setLastUsedGroup] = useState([]);
+    const [showTagMenu, setShowTagMenu] = useState(false);
+    const [showTextEntry, setShowTextEntry] = useState(false);
+    const [groupTextContent, setGroupTextContent] = useState("");
+    const newAnnoId = uuidv4();
+    const url = getPathFromUrl(window.location.href);
+
+    useEffect(() => {
+        setSelected(selection.toString());
+        chrome.storage.local.get(['lastUsedTags'], ( { lastUsedTags } ) => {
+            setLastUsedTags(lastUsedTags);
+        })
+        chrome.storage.local.get(['lastGroup'], ( { lastGroup } ) => {
+            setLastUsedGroup(lastGroup);
+        })
+    }, []);
+
+    const createAnnotationTagged = (event, type = "default", tag) => {
+        event.stopPropagation();
+        if (selected) {
+            transmitMessage({
+                msg: 'CREATE_ANNOTATION', sentFrom: "AnchorCreate",
+                data: {
+                    payload: {
+                        anchor: selected,
+                        xpath: xpathToNode,
+                        offsets: offsets,
+                        url: url,
+                        newAnno: {
+                            id: newAnnoId,
+                            type: type,
+                            content: '',
+                            replies: [],
+                            tags: [tag],
+                            isPrivate: true,
+                            groups: [],
+                            childAnchor: [
+                                {
+                                    id: uuidv4(),
+                                    anchor: selected,
+                                    // hostname: url.hostname,
+                                    parentId: newAnnoId,
+                                    xpath: xpathToNode,
+                                    offsets: offsets,
+                                    url: url,
+                                    tags: []
+                                }
+                            ]
+                        }
+                    }
+                }
+            });
+            selection.removeAllRanges();
+            removePopover();
+        }
+
+    }
+
+    const createAnnotationInGroup = (event) => {
+        event.stopPropagation();
+        if (selected) {
+            transmitMessage({
+                msg: 'CREATE_ANNOTATION', sentFrom: "AnchorCreate",
+                data: {
+                    payload: {
+                        anchor: selected,
+                        xpath: xpathToNode,
+                        offsets: offsets,
+                        url: url,
+                        newAnno: {
+                            id: newAnnoId,
+                            type: "default",
+                            content: groupTextContent.length ? groupTextContent : '',
+                            replies: [],
+                            tags: [],
+                            isPrivate: true,
+                            groups: lastUsedGroup !== undefined && lastUsedGroup !== null && lastUsedGroup.length ? lastUsedGroup : [],
+                            childAnchor: [
+                                {
+                                    id: uuidv4(),
+                                    anchor: selected,
+                                    // hostname: url.hostname,
+                                    parentId: newAnnoId,
+                                    xpath: xpathToNode,
+                                    offsets: offsets,
+                                    url: url,
+                                    tags: []
+                                }
+                            ]
+                        }
+                    }
+                }
+            });
+            selection.removeAllRanges();
+            removePopover();
+        }
+
+    }
+
+    return (
+        <div className="CreatAnnotationRow">
+            <div className="onHoverCreateAnnotation" 
+                onMouseEnter={() => setShowTagMenu(true)}
+                onMouseLeave={() => setShowTagMenu(false)}
+            >
+                <div className="buttonIconContainer">
+                    <BiComment alt="default tagged annotation" className="svg-button" />
+                </div>
+                Use Tags
+                {showTagMenu && lastUsedTags?.length ? 
+                <div className="buttonColumn">
+                    {lastUsedTags.map(tag => {
+                        return (
+                            <div className="onHoverCreateAnnotation" onClick={(e) => createAnnotationTagged(e, "default", tag)} >
+                                {tag}
+                            </div>
+                        )
+                    })}
+                </div> : (null)}
+            </div>
+            <div className="onHoverCreateAnnotation" >
+                <div className="groupButton" onClick={(e) => createAnnotationInGroup(e)}>
+                    <div className="buttonIconContainer"  >
+                        <BiGroup alt="group annotation" className="svg-button" />
+                    </div>
+                    Use Last Group
+                </div>
+                <div className="buttonColumn"
+                onMouseEnter={() => setShowTextEntry(true)}
+                onMouseLeave={() => setShowTextEntry(false)}>
+                {showTextEntry ? (
+                    <div>
+                        <textarea type="text" id="groupContentWindow" onKeyDown={(e) => {
+                            if(e.key === "Enter") {
+                                createAnnotationInGroup(e)
+                            }
+                        }} onChange={_ => setGroupTextContent(document.getElementById('groupContentWindow').value)}/>
+                    </div>
+                ) : ("...")}
+                </div>
+            </div>
+        </div>
+    );
+
+
 }
 
 const Popover = ({ selection, xpathToNode, offsets, rectPopover, removePopover }) => {
@@ -115,10 +266,21 @@ function displayPopoverBasedOnRectPosition(rect, props) {
     popOverAnchor.top = '0px';
     popOverAnchor.style.left = `0px`;
     // console.log("Display pop over")
-    ReactDOM.render(
-        <Popover removePopover={removePopover} {...props} />,
-        popOverAnchor
-    );
+    chrome.storage.local.get(['annotateOnly'], ({ annotateOnly }) => {
+        if(annotateOnly) {
+            ReactDOM.render(
+                <CommonActionPopover removePopover={removePopover} {...props} />,
+                popOverAnchor
+            );
+        }
+        else {
+            ReactDOM.render(
+                <Popover removePopover={removePopover} {...props} />,
+                popOverAnchor
+            );
+        }
+    })
+    
 
     // adjusting position of popover box after mounting
     popOverAnchor.style.top = `${rect.bottom + 5 + window.scrollY}px`;
@@ -189,6 +351,27 @@ const alertBackgroundOfNewSelection = (selection, offsets, xpath, type, content,
 };
 
 
+export function addAutomatedAnchors({ request, pairs }) {
+    const { newAnno, anchorText } = request.payload;
+    const newAnchors = pairs.map(p => {
+        return {
+            parentId: newAnno.id,
+            id: uuidv4(),
+            xpath: p.xpath,
+            url: getPathFromUrl(window.location.href),
+            anchor: anchorText,
+            offsets: {startOffset: p.xpath.startOffset, endOffset: p.xpath.endOffset},
+            hostname: window.location.hostname,
+            tags: []
+        }
+    })
+
+    const newA = { ...newAnno, childAnchor: newAnno.childAnchor.concat(newAnchors) };
+    transmitMessage({ msg: 'ANNOTATION_UPDATED', data: { "payload": { newAnno: newA, updateType: "NewAnchor" } } });
+
+}
+
+
 
 
 export function addNewAnchor({ request, type }) {
@@ -208,10 +391,10 @@ export function addNewAnchor({ request, type }) {
             endOffset: rect.endOffset,
         };
 
-        var tempArry = []
-        for (var i = 0; i < textNodes.length; i++) {
-            tempArry.push(xpathConversion(textNodes[i].parentNode))
-        }
+        // var tempArry = []
+        // for (var i = 0; i < textNodes.length; i++) {
+        //     tempArry.push(xpathConversion(textNodes[i].parentNode))
+        // }
 
         var xpathToNode = {
             start: xpathConversion(textNodes[0]),
@@ -294,7 +477,7 @@ function openSelectAnchorToast() {
 export const createAnnotationCallback = (response, event) => {
     // response is whether or not the sidebar is open
     // we only want to show the pop up if the sidebar is open
-    if (response) {
+    if (response || response === 'annotateOnly') {
         var selection = window.getSelection();
         if (selection.type === 'Range') {
             const rect = selection.getRangeAt(0);
@@ -307,10 +490,10 @@ export const createAnnotationCallback = (response, event) => {
                 endOffset: rect.endOffset,
             };
 
-            var tempArry = []
-            for (var i = 0; i < textNodes.length; i++) {
-                tempArry.push(xpathConversion(textNodes[i].parentNode))
-            }
+            // var tempArry = []
+            // for (var i = 0; i < textNodes.length; i++) {
+            //     tempArry.push(xpathConversion(textNodes[i].parentNode))
+            // }
 
             var xpathToNode = {
                 start: xpathConversion(textNodes[0]),

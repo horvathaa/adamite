@@ -57,6 +57,7 @@ let commands = {
 
     'REQUEST_PIN_UPDATE': anno.updateAnnotationPinned,
     'UPDATE_QUESTION': anno.updateAnnotationQuestion,
+    'UPDATE_ANNOTATIONS_ON_TAB_ACTIVATED': anno.updateAnnotationsOnTabActivated,
     'FINISH_TODO': anno.updateAnnotationTodoFinished,
     'UPDATE_XPATH_BY_IDS': anno.updateAnnotationXPath,
     'UPDATE_REPLIES': anno.updateAnnotationReplies,
@@ -90,7 +91,7 @@ let commands = {
     'GET_GROUPS_PAGE_LOAD': groups.getGroups,
 
     // LOCAL COMMANDS
-    'UPDATE_ANNOTATIONS_ON_TAB_ACTIVATED': anno.updateAnnotationsOnTabActivated,
+
     'HANDLE_BROWSER_ACTION_CLICK': () => {
         try {
             chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
@@ -114,6 +115,21 @@ let commands = {
                         }
                     })
                     if (opening) {
+                        chrome.storage.local.get(['annotateOnly'], (annotateOnly) => {
+                            if(annotateOnly) {
+                                chrome.storage.local.set({
+                                    'annotateOnly': false
+                                }, function () {
+                                    if (chrome.runtime.lastError) {
+                                        chrome.storage.local.clear();
+                                    }
+                                })
+                                chrome.contextMenus.update('contextMenuBadge', {
+                                    'checked': false
+                                })
+                            } // maybe have highlight and sorting as else clause since, in theory, annos should already be highlighted??
+                        })
+                        
                         if (anno.containsObjectWithUrl(getPathFromUrl(tabs[0].url), anno.tabAnnotationCollect)) {
                             const tabInfo = anno.tabAnnotationCollect.filter(obj => obj.tabUrl === getPathFromUrl(tabs[0].url));
                             chrome.tabs.sendMessage(tabs[0].id, {
@@ -128,11 +144,13 @@ let commands = {
                                 })
                             })
                         }
+                        anno.getAnnotationsPageLoad({url: tabs[0].url});
                     }
                     else {
                         chrome.tabs.sendMessage(tabs[0].id, {
                             msg: 'REMOVE_HIGHLIGHTS'
                         })
+                        anno.unsubscribeAnnotations();
                     }
                 })
             })
@@ -148,6 +166,7 @@ let commands = {
         }
     },
     'HANDLE_TAB_REMOVED': (tab) => {
+        anno.unsubscribeAnnotations();
         chrome.storage.local.get(['sidebarStatus'], sidebarStatus => {
             sidebarStatus = sidebarStatus.sidebarStatus;
             const newSidebarStatus = sidebarStatus !== undefined && sidebarStatus.length ? sidebarStatus.filter(side => side.id !== tab) : [];
@@ -161,6 +180,7 @@ let commands = {
     },
 
     'HANDLE_WINDOW_REMOVED' : (windowId) => {
+        anno.unsubscribeAnnotations();
         chrome.storage.local.get(['sidebarStatus'], sidebarStatus => {
             sidebarStatus = sidebarStatus.sidebarStatus;
             sidebarStatus = sidebarStatus !== undefined && sidebarStatus.length ? sidebarStatus.filter(s => s.windowId !== windowId) : [];
@@ -171,6 +191,55 @@ let commands = {
             })
         })
         
+    },
+    'HANDLE_CONTEXT_MENU_CLICK': (info) => {
+        const { checked } = info;
+        chrome.storage.local.set({
+            'annotateOnly': checked
+        });
+        // close sidebar and begin quick operating mode
+        if(checked) {
+            toggleSidebar(false);
+            chrome.storage.local.set({ sidebarStatus: [] });
+            chrome.tabs.query({ active: true, currentWindow: true}, tabs => {
+                const tabInfo = anno.tabAnnotationCollect.filter(obj => obj.tabUrl === getPathFromUrl(tabs[0].url));
+                chrome.tabs.sendMessage(tabs[0].id, {
+                    msg: 'HIGHLIGHT_ANNOTATIONS',
+                    payload: tabInfo[0].annotations,
+                    url: getPathFromUrl(tabs[0].url)
+                })
+            })
+        }
+        // when done with this mode, remove any highlights
+        else {
+            chrome.tabs.query({ active: true, currentWindow: true}, tabs => {
+                chrome.tabs.sendMessage(tabs[0].id, {
+                    msg: 'REMOVE_HIGHLIGHTS'
+                })
+            })
+            anno.unsubscribeAnnotations(); 
+        }
+    },
+    'CREATE_CONTEXT_MENU':() => {
+        const contextMenuOptions = {
+            'type': 'checkbox',
+            'checked': false,
+            'title': 'Run In Annotate-Only Mode',
+            'contexts': ['browser_action'],
+            'id': "contextMenuBadge"
+        }
+        const id = chrome.contextMenus.create(contextMenuOptions, () => {
+            if(authHelper.getUser() != null) {
+                chrome.storage.local.set({
+                    'annotateOnly': false
+                })
+            } else {
+                chrome.contextMenus.update('contextMenuBadge', {
+                    'enabled': false
+                })
+            }
+            
+        });
     },
 
     //sidebarHelper
@@ -212,7 +281,13 @@ chrome.browserAction.onClicked.addListener(function () {
     return true;
 });
 
+chrome.contextMenus.onClicked.addListener((info) => {
+    commands['HANDLE_CONTEXT_MENU_CLICK'](info);
+    return true;
+});
+
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
+    console.log('changeInfo', changeInfo);
     commands['HANDLE_TAB_URL_UPDATE'](tabId, changeInfo, tab);
     return true;
 });
@@ -227,7 +302,14 @@ chrome.windows.onRemoved.addListener(function (tab) {
     return true;
 });
 
-// chrome.runtime.onSuspend.addListener(function () {
-//     anno.unsubscribeAnnotations();
-//     chrome.runtime.Port.disconnect();
-// })
+chrome.runtime.onInstalled.addListener(function() {
+    commands['CREATE_CONTEXT_MENU']();
+    return true;
+  });
+
+chrome.runtime.onSuspend.addListener(function () {
+    console.log('legit... does this ever get called........');
+    chrome.contextMenus.remove('contextMenuBadge');
+    anno.unsubscribeAnnotations();
+    // chrome.runtime.Port.disconnect();
+})

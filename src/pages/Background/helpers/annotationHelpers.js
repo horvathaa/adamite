@@ -78,7 +78,7 @@ export async function getAnnotationsPageLoad(request, sender, sendResponse) {
         else {
             getGroups({ request: { uid: uid } });
         }
-        getAnnotationsByUrlListener(request.url, groups)
+        getAnnotationsByUrlListener(request.url, groups, request.tabId);
     })
 
     let userName = email.substring(0, email.indexOf('@'));
@@ -146,6 +146,12 @@ export async function createAnnotation(request, sender, sendResponse) {
         createdTimestamp: new Date().getTime(),
     });
     sendResponse({ "msg": 'DONE' });
+    if(newAnno.tags.length) {
+        setLastUsedTags(newAnno.tags);
+    }
+    if(newAnno.groups.length) {
+        setLastUsedGroup(newAnno.groups);
+    }
 }
 
 
@@ -234,6 +240,12 @@ export async function updateAnnotation(request, sender, sendResponse) {
 
         }
         broadcastAnnotationsUpdated('ELASTIC_CONTENT_UPDATED', newAnno.id);
+        if(newAnno.tags?.length) {
+            setLastUsedTags(newAnno.tags);
+        }
+        if(newAnno.groups?.length) {
+            setLastUsedGroup(newAnno.groups);
+        }
     });
 }
 
@@ -332,7 +344,7 @@ export async function deleteAnnotation(request, sender, sendResponse) {
 
 export function unsubscribeAnnotations(request, sender, sendResponse) {
     if (typeof privateListener === "function") privateListener();
-    if (typeof publicListener === "function") publicListener();
+    if (typeof publicListener === "function")  publicListener();
     if (typeof pinnedPrivateListener === "function") pinnedPrivateListener();
     if (typeof pinnedPublicListener === "function") pinnedPublicListener();
     if (typeof groupListener === 'function') groupListener();
@@ -372,7 +384,7 @@ export function updateAnnotationsOnTabActivated(activeInfo) {
                         groups = result.groups.map(g => g.gid);
                     }
                 });
-                getAnnotationsByUrlListener(getPathFromUrl(activeInfo.url), groups)
+                getAnnotationsByUrlListener(getPathFromUrl(activeInfo.url), groups, activeInfo.tabId)
                 // getAllAnnotationsByUrlListener(getPathFromUrl(tab.url), tab.id);
                 // getPrivateAnnotationsByUrlListener(getPathFromUrl(tab.url), tab.id);
             });
@@ -388,7 +400,8 @@ export function handleTabUpdate(url, tabId) {
             groups = result.groups.map(g => g.gid);
         }
     });
-    getAnnotationsByUrlListener(url, groups)
+    // unsubscribeAnnotations();
+    getAnnotationsByUrlListener(url, groups, tabId)
 }
 
 
@@ -554,7 +567,7 @@ function getUserDataFromAuthId(authIds) {
 
 function getAllAuthIds(annotations) {
     let authors = []
-    annotations.map(annotation => {
+    annotations.forEach(annotation => {
         authors.push(annotation.authorId);
         annotation.replies?.forEach(replies => {
             authors.push(replies.authorId)
@@ -563,6 +576,7 @@ function getAllAuthIds(annotations) {
     return authors;
 }
 
+// TODO: add error checking for if the annotation list and/or auth lists are empty
 function injectUserData(annotationsToBroadcast) {
 
     let authIds = [...new Set(getAllAuthIds(annotationsToBroadcast))];
@@ -588,8 +602,23 @@ function injectUserData(annotationsToBroadcast) {
 }
 
 
-function getAnnotationsByUrlListener(url, groups) {
+function getAnnotationsByUrlListener(url, groups, tabId) {
     const user = fb.getCurrentUser();
+    console.log('url', url);
+    // idk if this is really where this should go lol...
+    if(url === 'https://www.google.com/search') {
+        console.log('in if in url listener');
+        // chrome.tabs.query({ active: true, })
+        chrome.tabs.sendMessage(tabId, {
+            msg: 'GOOGLE_SEARCH',
+            from: 'background'
+        }, response => {
+            console.log('response', response)
+            if(response && response !== "undefined") chrome.storage.local.set({
+                'search': response
+            });
+        })
+    }
     if (user !== null) {
         publicListener = fb.getAnnotationsByUrl(url).onSnapshot(async annotationsSnapshot => {
             let annotationsToBroadcast = getListFromSnapshots(annotationsSnapshot);
@@ -620,4 +649,35 @@ function getAnnotationsByUrlListener(url, groups) {
             });
         });
     }
+}
+
+function setLastUsedTags(tags) {
+    chrome.storage.local.get(['lastUsedTags'], ( { lastUsedTags } ) => {
+        if(!lastUsedTags) {
+            chrome.storage.local.set({ lastUsedTags: tags })
+        }
+        else {
+            const newTags = lastUsedTags?.length <= 5 ? 
+                [...new Set(lastUsedTags?.concat(tags))] : 
+                [...new Set(tags.concat(lastUsedTags?.splice(0, 5 - tags.length)))] // this sucks 
+            chrome.storage.local.set({ lastUsedTags: newTags }, function () {
+                if (chrome.runtime.lastError) {
+                    chrome.storage.local.clear();
+                }
+            })
+        }
+    })
+}
+
+function setLastUsedGroup(group) {
+    chrome.storage.local.get(['lastGroup'], ( { lastGroup } ) => {
+        if(lastGroup !== group) {
+            chrome.storage.local.set({ lastGroup: group }, function () {
+                if (chrome.runtime.lastError) {
+                    chrome.storage.local.clear();
+                }
+            })
+        }
+        return;
+    })
 }

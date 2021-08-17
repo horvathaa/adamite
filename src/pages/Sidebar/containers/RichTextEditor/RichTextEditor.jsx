@@ -14,6 +14,7 @@ import createCodeEditorPlugin from 'draft-js-code-editor-plugin';
 
 
 
+
 export default class RichEditor extends React.Component {
     constructor(props) {
         super(props);
@@ -91,11 +92,27 @@ export default class RichEditor extends React.Component {
     }
 
     _toggleBlockType(blockType) {
+        console.log('state prior to toggle', this.state.editorState.getCurrentContent());
+
+        let contentState = editorState.getCurrentContent();
+
+        if (blockType === 'code-block') {
+            
+            {
+            }
+            
+        }
+        
+
+
+        let editorState = RichUtils.toggleBlockType(
+            this.state.editorState,
+            blockType
+        );
+
+        console.log('ed', editorState);
         this.onChange(
-            RichUtils.toggleBlockType(
-                this.state.editorState,
-                blockType
-            )
+            editorState
         );
     }
 

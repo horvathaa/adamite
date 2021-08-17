@@ -44,6 +44,11 @@ const broadcastAuthStatus = user => {
     },
   });
 };
+
+export function getUser() {
+  return currentUser;
+}
+
 export function getCurrentUser(request, sender, sendResponse) {
   sendResponse({ payload: { currentUser } });
 }

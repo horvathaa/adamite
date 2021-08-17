@@ -86,7 +86,7 @@ const EditRowComponent = () => {
                                 </Tooltip>
                                 <Tooltip title={"Edit annotation"} aria-label="edit tooltip">
                                     <div className="TopIconContainer" >
-                                        <AiOutlineEdit className="profile" alt="edit annotation" className="profile" id="edit" onClick={() => ctx.setEditing(!ctx.editing)} />
+                                        <AiOutlineEdit className="profile" alt="edit annotation" className="profile" id="edit" onClick={() => ctx.setEditing(!ctx.editing) }/>
                                         {/* <img src={edit} alt="edit annotation" className="profile" id="edit" onClick={() => ctx.setEditing(!ctx.editing)} /> */}
                                     </div>
                                 </Tooltip>

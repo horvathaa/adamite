@@ -13,6 +13,9 @@ import Tooltip from '@material-ui/core/Tooltip';
 import { BsTrash } from 'react-icons/bs';
 import { AiOutlineEdit, AiOutlineUser } from 'react-icons/ai';
 import { GiHamburgerMenu } from 'react-icons/gi';
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { coy } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import ReactMarkdown from 'react-markdown';
 
 const Reply = ({ idx, reply }) => {
 
@@ -30,6 +33,15 @@ const Reply = ({ idx, reply }) => {
             setReply(reply);
         }
     }, [reply, replyData])
+
+    const codeComponent = {
+        code({node, inline, className, children, ...props }) {
+            return !inline ? <SyntaxHighlighter style={coy} language={'js'} PreTag="div" children={String(children).replace(/\n$/, '')} {...props} /> :
+            <code className={className} {...props}>
+                {children}
+            </code>
+        }
+    }
 
 
 
@@ -133,11 +145,15 @@ const Reply = ({ idx, reply }) => {
                         </div>
                         {reply.anchor !== null ? (
                             <Anchor anchor={reply.anchor} replyIdProp={replyData.replyId} />) : (null)}
-                        <div className="annotationContent">
+                        {/* <div className="annotationContent">
                             <div className="contentBody">
                                 {replyData.replyContent}
                             </div>
-                        </div>
+                        </div> */}
+                        <ReactMarkdown
+                            children={replyData.replyContent}
+                            components={codeComponent}
+                        />
                         {replyData.tags !== undefined && replyData.tags.length ? (
                             <div className="TagRow">
                                 <ul style={{ margin: 0, padding: '0px 0px 0px 0px' }}>

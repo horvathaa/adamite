@@ -72,6 +72,7 @@ export const toggleSidebar = (toStatus = null) => {
       active: true
     },
     function (tab) {
+      console.log('toggling');
 
       // tab[0].forEach((tab) => {
       if (tab !== undefined && tab.length) {
@@ -140,9 +141,10 @@ const updateShouldShrinkBodyStatus = (toStatus) => {
 
 export async function requestSidebarStatus(request, sender, sendResponse) {
   chrome.tabs.query(({ active: true, currentWindow: true }), tab => {
-    chrome.storage.local.get(['sidebarStatus'], sidebarStatus => {
+    chrome.storage.local.get(['sidebarStatus', 'annotateOnly'], sidebarStatus => {
+      let annotateOnly = sidebarStatus?.annotateOnly;
       let status;
-      sidebarStatus = sidebarStatus.sidebarStatus;
+      sidebarStatus = sidebarStatus?.sidebarStatus;
       if (sidebarStatus !== undefined && sidebarStatus.length && tab.length && tab !== undefined) {
         const i = sidebarStatus.findIndex(t => t.id === tab[0].id);
         status = i > -1 ? sidebarStatus[i].open : false;
@@ -150,6 +152,7 @@ export async function requestSidebarStatus(request, sender, sendResponse) {
       else {
         status = false;
       }
+      status = annotateOnly ? 'annotateOnly' : status;
       sendResponse(status);
     })
 
