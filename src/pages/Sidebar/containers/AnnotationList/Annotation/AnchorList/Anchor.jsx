@@ -46,7 +46,7 @@ const Anchor = ({ anchor, replyIdProp }) => {
         });
         ctx.updateAnchors(childAnch);
     }
-    const deleteAnchor = ({ anchorId }) => {
+    const deleteAnchor = () => {
         const childAnch = ctx.anno.childAnchor.filter((c) => c.id !== anchorId)
         ctx.updateAnchors(childAnch);
     }
@@ -200,6 +200,13 @@ const Anchor = ({ anchor, replyIdProp }) => {
                         </div>
                     </Tooltip>
                 </div>
+                {ctx.anno.childAnchor.length > 1 && <div className="AnchorTagsList col-2" onClick={() => { deleteAnchor() }}>
+                    <Tooltip title={"Delete Anchor"} aria-label="edit tooltip">
+                        <div className="AnchorHashTagbutton Tag">
+                            <BiTrash alt="delete anchor" className="profile" id="edit" />
+                        </div>
+                    </Tooltip>
+                </div>}
                 {tags &&
                     <React.Fragment>
                         <div className="AnchorTagsList col-2" onClick={() => { setEditMode(true) }}>
