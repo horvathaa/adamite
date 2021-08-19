@@ -1,11 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import Frame from '../modules/frame/frame';
 import { ToastContainer, toast } from 'react-toastify';
+import './annoRec.css';
+import CardWrapper from '../../Sidebar/containers/CardWrapper/CardWrapper';
+import Adamite from '../../../assets/img/Adamite.png';
+
 
 let shouldShrinkBody = true;
 let sidebarLocation = 'right';
 let sidebarWidth = 280;
+
 
 const setSidebarWidth = (width) => {
   sidebarWidth = width;
@@ -100,16 +105,45 @@ chrome.storage.sync.get(['sidebarOnLeft'], (result) => {
   mountSidebar();
 });
 
-const AnnoPreview = ({ anno }) => {
-  console.log('rendering', anno);
-  
-  return (anno.map(a => {
+const AnnoPreview = ({ annoList }) => {
+
+  const [show, setShow] = useState(false);
+  const descrip = annoList.length === 1 ? `There is ${annoList.length} annotation on this page` : `There are ${annoList.length} annotations on this page`;
+
+  const AnchorObject = ({ anchorText }) => {
     return (
-      <div>
-        {a.content}
+        <div className="AnchorTextContainerExpanded">
+          {anchorText}
+        </div>
+    )
+  }
+
+  const Anno = ({ anno }) => {
+    const anchorText = anno.childAnchor.map(a => { if(anno.url.includes(a.url)) { return a.anchor} })
+    return (
+      <div className="AnnotationContainer">
+        {anchorText.map(anch => <AnchorObject anchorText={anch} />)}
+        <CardWrapper anno={anno} />
       </div>
-      )
-  }))
+    )
+  }
+  
+  
+  return (
+    <React.Fragment>
+      <div className="anno-rec-descrip" onClick={() => setShow(!show)}>
+        <div className="img-container">
+            <img src={chrome.extension.getURL(Adamite)} className="adamite-logo" />
+        </div>
+        {descrip}
+      </div>
+      {show && 
+        <div className="anno-rec-container">
+          {annoList.map(a => <Anno anno={a} />)}
+        </div>
+      }
+    </React.Fragment>
+  )
   
 }
 
@@ -127,13 +161,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     request.from === 'background' &&
     request.msg === 'GOOGLE_SEARCH'
   ) {
-    console.log('in listener');
     const inputField = document.querySelectorAll("input.gLFyf.gsfi")[0];
-    console.log('inputField', inputField);
     inputField.value ? sendResponse(inputField.value) : sendResponse("undefined");
     const links = [];
     document.querySelectorAll('div.yuRUbf > a').forEach(a => links.push(a.href));
-    console.log('links', links);
     chrome.runtime.sendMessage({
       msg: 'GET_GOOGLE_RESULT_ANNOTATIONS',
       from: 'content',
@@ -141,11 +172,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         urls: links
       }
     }, response => {
-      console.log('res', response);
       if(response && response.length) {
         const as = document.querySelectorAll('div.yuRUbf > a');
         const matchedUrls = [...new Set(response.flatMap(a => a.url))];
-        console.log('as', as, 'match', matchedUrls);
         let nodeAnnoPairs = [];
         as.forEach(a => {
           if(matchedUrls.includes(a.href)) {
@@ -153,13 +182,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           }
         });
         console.log('nodeAnnoPairs', nodeAnnoPairs);
-        nodeAnnoPairs.forEach(p => {
-          let div = document.createElement('div');
-          p.node.appendChild(div);
-          ReactDOM.render(
-            <AnnoPreview anno={p.anno} />,
-            div
-        );
+        
+        
+        nodeAnnoPairs.forEach((p) => {
+          const parentDiv = document.createElement('div');
+          p.node.appendChild(parentDiv);
+          ReactDOM.render(<AnnoPreview annoList={p.anno} />, parentDiv);
         })
       }
     });

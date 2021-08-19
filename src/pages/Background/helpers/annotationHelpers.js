@@ -127,11 +127,13 @@ export function getAnnotationById(request, sender, sendResponse) {
 
 export async function getGoogleResultAnnotations(request, sender, sendResponse) {
     let { urls } = request.payload;
+    const uid = fb.getCurrentUser().uid;
     let annos = [];
     console.log('in background')
     urls = urls.slice(0, 10);
     fb.getAnnotationsFromArrayOfUrls(urls).get().then(function (querySnapshot) {
         annos = querySnapshot.empty ? [] : getListFromSnapshots(querySnapshot)
+        annos = annos.filter(a => a.isPrivate && a.authorId === uid || !a.isPrivate) // (add check for user groups)
         console.log('annos', annos);
         sendResponse(annos);
     });
