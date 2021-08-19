@@ -125,6 +125,19 @@ export function getAnnotationById(request, sender, sendResponse) {
     });
 }
 
+export async function getGoogleResultAnnotations(request, sender, sendResponse) {
+    let { urls } = request.payload;
+    let annos = [];
+    console.log('in background')
+    urls = urls.slice(0, 10);
+    fb.getAnnotationsFromArrayOfUrls(urls).get().then(function (querySnapshot) {
+        annos = querySnapshot.empty ? [] : getListFromSnapshots(querySnapshot)
+        console.log('annos', annos);
+        sendResponse(annos);
+    });
+
+}
+
 export async function createAnnotation(request, sender, sendResponse) {
     let { url, newAnno } = request.payload;
     const hostname = new URL(url).hostname;

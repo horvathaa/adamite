@@ -54,6 +54,7 @@ let commands = {
 
     'ANNOTATION_UPDATED': anno.updateAnnotation,
     'REQUEST_ADOPTED_UPDATE': anno.updateAnnotationAdopted,
+    'GET_GOOGLE_RESULT_ANNOTATIONS': anno.getGoogleResultAnnotations,
 
     'REQUEST_PIN_UPDATE': anno.updateAnnotationPinned,
     'UPDATE_QUESTION': anno.updateAnnotationQuestion,

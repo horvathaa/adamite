@@ -100,6 +100,20 @@ chrome.storage.sync.get(['sidebarOnLeft'], (result) => {
   mountSidebar();
 });
 
+const AnnoPreview = ({ anno }) => {
+  console.log('rendering', anno);
+  
+  return (anno.map(a => {
+    return (
+      <div>
+        {a.content}
+      </div>
+      )
+  }))
+  
+}
+
+
 /**
  * Chrome runtime event listener
  */
@@ -117,6 +131,38 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     const inputField = document.querySelectorAll("input.gLFyf.gsfi")[0];
     console.log('inputField', inputField);
     inputField.value ? sendResponse(inputField.value) : sendResponse("undefined");
+    const links = [];
+    document.querySelectorAll('div.yuRUbf > a').forEach(a => links.push(a.href));
+    console.log('links', links);
+    chrome.runtime.sendMessage({
+      msg: 'GET_GOOGLE_RESULT_ANNOTATIONS',
+      from: 'content',
+      payload: {
+        urls: links
+      }
+    }, response => {
+      console.log('res', response);
+      if(response && response.length) {
+        const as = document.querySelectorAll('div.yuRUbf > a');
+        const matchedUrls = [...new Set(response.flatMap(a => a.url))];
+        console.log('as', as, 'match', matchedUrls);
+        let nodeAnnoPairs = [];
+        as.forEach(a => {
+          if(matchedUrls.includes(a.href)) {
+            nodeAnnoPairs.push({node: a.parentNode, anno: response.filter(anno => anno.url.includes(a.href))});
+          }
+        });
+        console.log('nodeAnnoPairs', nodeAnnoPairs);
+        nodeAnnoPairs.forEach(p => {
+          let div = document.createElement('div');
+          p.node.appendChild(div);
+          ReactDOM.render(
+            <AnnoPreview anno={p.anno} />,
+            div
+        );
+        })
+      }
+    });
   } else if (
     request.from === 'background' &&
     request.msg === 'UPDATE_SIDEBAR_ON_LEFT_STATUS'
