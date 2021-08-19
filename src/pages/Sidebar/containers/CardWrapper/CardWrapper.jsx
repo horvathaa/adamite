@@ -96,8 +96,8 @@ const CardWrapper = ({ isNew = false, anno = null }) => {
 
     const codeComponent = {
         code({node, inline, className, children, ...props }) {
-            return !inline ? <SyntaxHighlighter style={coy} language={pl} PreTag="div" children={String(children).replace(/\n$/, '')} {...props} /> :
-            <code className={className} {...props}>
+            return !inline ? <SyntaxHighlighter wrapLongLines={true} style={coy} language={pl}  PreTag="div" children={String(children).replace(/\n$/, '')} {...props} /> :
+            <code style={{whiteSpace: 'pre-wrap !important' }}  {...props}>
                 {children}
             </code>
         }
