@@ -94,7 +94,7 @@ class FilterSummary extends React.Component {
             this.selection.annoType = [choice];
         }
         else if (this.selection.annoType.includes(choice)) {
-            this.selection.annoType = this.selection.annoType.filter(t => t !== choice).length ? this.selection.annoType : ['default', 'to-do', 'question', 'highlight', 'issue'];
+            this.selection.annoType = this.selection.annoType.filter(t => t !== choice).length ? this.selection.annoType.filter(t => t !== choice) : ['default', 'to-do', 'question', 'highlight', 'issue'];
         }
         else {
             this.selection.annoType.push(choice);

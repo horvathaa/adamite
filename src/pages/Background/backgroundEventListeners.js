@@ -204,11 +204,12 @@ let commands = {
             chrome.storage.local.set({ sidebarStatus: [] });
             chrome.tabs.query({ active: true, currentWindow: true}, tabs => {
                 const tabInfo = anno.tabAnnotationCollect.filter(obj => obj.tabUrl === getPathFromUrl(tabs[0].url));
-                chrome.tabs.sendMessage(tabs[0].id, {
-                    msg: 'HIGHLIGHT_ANNOTATIONS',
-                    payload: tabInfo[0].annotations,
-                    url: getPathFromUrl(tabs[0].url)
-                })
+                if(tabInfo && tabInfo.length) // are there annotations on this page?
+                    chrome.tabs.sendMessage(tabs[0].id, {
+                        msg: 'HIGHLIGHT_ANNOTATIONS',
+                        payload: tabInfo[0].annotations,
+                        url: getPathFromUrl(tabs[0].url)
+                    })
             })
         }
         // when done with this mode, remove any highlights
@@ -310,7 +311,7 @@ chrome.runtime.onInstalled.addListener(function() {
 
 chrome.runtime.onSuspend.addListener(function () {
     console.log('legit... does this ever get called........');
-    chrome.contextMenus.remove('contextMenuBadge');
+    // chrome.contextMenus.remove('contextMenuBadge');
     anno.unsubscribeAnnotations();
     // chrome.runtime.Port.disconnect();
 })

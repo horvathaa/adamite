@@ -157,12 +157,12 @@ const Authentication = props => {
             Login with Google
           </div>
         </button>
-        <button className="AuthSignInContainer" onClick={signInGithubClickedHandler}>
+        {/* <button className="AuthSignInContainer" onClick={signInGithubClickedHandler}>
           <div>
             <img className="authIcon" alt="Google sign-in" src={Github} />
             Login with GitHub
           </div>
-        </button>
+        </button> */}
       </div>
       <div className="InputFieldContainer row" >
         <div className="Forgotten" onClick={forgetPwdClickedHandler}>Forgot Password?</div>
