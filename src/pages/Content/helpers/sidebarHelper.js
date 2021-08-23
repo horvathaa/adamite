@@ -181,7 +181,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             nodeAnnoPairs.push({node: a.parentNode, anno: response.filter(anno => anno.url.includes(a.href))});
           }
         });
-        console.log('nodeAnnoPairs', nodeAnnoPairs);
         
         
         nodeAnnoPairs.forEach((p) => {

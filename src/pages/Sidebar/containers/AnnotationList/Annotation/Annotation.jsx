@@ -122,7 +122,6 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, scr
 
 
         handlePin: () => {
-          console.log("REALLY PINNING")
           const newAnno = { ...anno, pinned: !anno.pinned };
           if (newAnno !== anno) {
             chrome.runtime.sendMessage({

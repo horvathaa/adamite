@@ -47,8 +47,16 @@ const Anchor = ({ anchor, replyIdProp }) => {
         ctx.updateAnchors(childAnch);
     }
     const deleteAnchor = () => {
-        const childAnch = ctx.anno.childAnchor.filter((c) => c.id !== anchorId)
-        ctx.updateAnchors(childAnch);
+        const childAnch = ctx.anno.childAnchor.filter((c) => c.id !== anchorId);
+        // check to see if this is the last annotation with this URL
+        if(!childAnch.some(c => c.url === url)) {
+            const newUrls = ctx.anno.url.filter(u => u !== url);
+            const newAnno = {...ctx.anno, url: newUrls, childAnchors: childAnch };
+            ctx.updateAnnotation(newAnno);
+        }
+        else {
+            ctx.updateAnchors(childAnch);
+        }
     }
 
     const defaultRenderTag = (props) => {

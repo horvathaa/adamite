@@ -289,7 +289,6 @@ chrome.contextMenus.onClicked.addListener((info) => {
 });
 
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
-    console.log('changeInfo', changeInfo);
     commands['HANDLE_TAB_URL_UPDATE'](tabId, changeInfo, tab);
     return true;
 });
