@@ -177,8 +177,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         const matchedUrls = [...new Set(response.flatMap(a => a.url))];
         let nodeAnnoPairs = [];
         as.forEach(a => {
-          if(matchedUrls.includes(a.href)) {
-            nodeAnnoPairs.push({node: a.parentNode, anno: response.filter(anno => anno.url.includes(a.href))});
+          let href = a.href;
+          if(href.includes("developer.mozilla.org/en/")) {
+            let arr = href.split("/en/")
+            href = arr[0] + '/en-US/' + arr[1]
+          }
+          if(matchedUrls.includes(href)) {
+            nodeAnnoPairs.push({node: a.parentNode, anno: response.filter(anno => anno.url.includes(href))});
           }
         });
         

@@ -130,6 +130,13 @@ export async function getGoogleResultAnnotations(request, sender, sendResponse) 
     const uid = fb.getCurrentUser().uid;
     let annos = [];
     urls = urls.slice(0, 10);
+    urls = urls.map(u => {
+        if(u.includes("developer.mozilla.org/en/")) {
+            let arr = u.split("/en/")
+            u = arr[0] + '/en-US/' + arr[1]
+        }
+        return u;
+    })
     fb.getAnnotationsFromArrayOfUrls(urls).get().then(function (querySnapshot) {
         annos = querySnapshot.empty ? [] : getListFromSnapshots(querySnapshot)
         annos = annos.filter(a => (a.isPrivate && a.authorId === uid || !a.isPrivate) && !a.deleted) // (add check for user groups)
