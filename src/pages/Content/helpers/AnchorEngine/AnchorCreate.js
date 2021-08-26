@@ -8,7 +8,7 @@ import '../../../../assets/img/SVGs/Highlight.svg';
 import '../../../../assets/img/SVGs/Todo.svg';
 import '../../../../assets/img/SVGs/Question.svg';
 import '../../../../assets/img/SVGs/Issue.svg';
-import { BiComment, BiTask, BiGroup, BiChevronDown } from 'react-icons/bi';
+import { BiComment, BiEraser, BiTask, BiGroup, BiChevronDown } from 'react-icons/bi';
 import { AiOutlineQuestionCircle, AiOutlineExclamationCircle } from 'react-icons/ai';
 
 import { ToastContainer, toast } from 'react-toastify';

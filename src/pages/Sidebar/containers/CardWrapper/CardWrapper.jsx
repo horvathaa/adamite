@@ -78,7 +78,7 @@ const CardWrapper = ({ isNew = false, anno = null }) => {
     }, [newAnno]);
 
     const dropDownSelection = (option) => {
-        let newVal = (option.value === 'Normal') ? "default" : (option.value === 'highlight') ? "highlight" : option.value;
+        let newVal = (option.value === 'Normal') ? "default" : (option.value === 'highlight' || option.value === 'Highlight') ? "highlight" : option.value.toLowerCase();
         setNewAnno({ ...newAnno, type: newVal });
     }
 

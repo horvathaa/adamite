@@ -13,6 +13,11 @@
     position: relative;
 }
 
+.ReplyContent > p {
+    margin-top: 0.5rem;
+    color: #6B778C
+}
+
 .QuestionAnswerMarker {
     font-size: 1.4em;
     font-weight: 700;

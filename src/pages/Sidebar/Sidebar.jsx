@@ -238,7 +238,6 @@ class Sidebar extends React.Component {
         });
       }
       else if (request.from === 'background' && request.msg === 'SCROLL_INTO_VIEW') {
-        console.log('is this even happening', request.payload.id)
         this.scrollToNewAnnotation();
       }
       else if (

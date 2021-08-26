@@ -5,6 +5,7 @@ import Anchor from '../AnchorList/Anchor';
 import '../Annotation.css';
 import './Reply.module.css';
 import ReplyEditor from './ReplyEditor';
+import { Text } from 'slate'
 import AnnotationContext from "../AnnotationContext";
 import { formatTimestamp } from "../../../../utils"
 import cleanReplyModel from './ReplyModel';
@@ -16,6 +17,15 @@ import { GiHamburgerMenu } from 'react-icons/gi';
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { coy } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import ReactMarkdown from 'react-markdown';
+
+const isJson = (str) => {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
+}
 
 const Reply = ({ idx, reply }) => {
 
@@ -33,6 +43,40 @@ const Reply = ({ idx, reply }) => {
             setReply(reply);
         }
     }, [reply, replyData])
+
+    const deserializeJson = (node) => {
+        if (Text.isText(node)) {
+            let string = node.text;
+            if (node.bold && node.italic && string !== "") {
+                string = `***${string}***`
+            }
+            else if(node.bold && string !== "") {
+                string = `**${string}**`
+            }
+            else if(node.italic && string !== "") {
+                string = `*${string}*`
+            }
+            if (node.code) {
+                string = `\`${string}\``
+            }
+            
+            return string
+        }
+        
+        const children = node.children.map(n => deserializeJson(n)).join('');
+    
+        switch (node.type) {
+            case 'paragraph':
+                return `\n${children}\n`
+            case 'link':
+                return `[${children}](${escapeHtml(node.url)})`
+            case 'code': {
+                return `\t${children}\n`
+            }
+            default:
+                return children
+        }
+    }
 
     const codeComponent = {
         code({node, inline, className, children, ...props }) {
@@ -122,7 +166,7 @@ const Reply = ({ idx, reply }) => {
                                                 </div>
                                                 Star Comment
                                             </Dropdown.Item> */}
-                                            {ctx.currentUser.uid === ctx.anno.authorId ? (
+                                            {ctx.currentUser.uid === replyData.authorId ? (
                                                 <React.Fragment>
                                                     <Dropdown.Item onClick={_ => setEditing(true)} className="DropdownItemOverwrite">
                                                         <div className="DropdownIconsWrapper">
@@ -151,7 +195,7 @@ const Reply = ({ idx, reply }) => {
                             </div>
                         </div> */}
                         <ReactMarkdown
-                            children={replyData.replyContent}
+                            children={isJson(replyData.replyContent) ? deserializeJson(JSON.parse(replyData.replyContent)) : replyData.replyContent}
                             components={codeComponent}
                         />
                         {replyData.tags !== undefined && replyData.tags.length ? (

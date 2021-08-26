@@ -13,7 +13,7 @@ import RepliesList from './Reply/RepliesList';
 import { FaHighlighter } from 'react-icons/fa';
 import Tooltip from '@material-ui/core/Tooltip';
 
-import { BiComment, BiTask } from 'react-icons/bi';
+import { BiComment, BiTask, BiEraser } from 'react-icons/bi';
 import { AiOutlineQuestionCircle, AiOutlineExclamationCircle } from 'react-icons/ai';
 
 /*
@@ -85,6 +85,11 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, scr
         "Normal",
         <BiComment alt={`${anno.type} type badge`} className="badgeIconSvg" />);
     }
+    // else if (anno.type === 'erased') {
+    //   return renderBadgeInner(
+    //     "Erased",
+    //     <BiEraser alt={`${anno.type} type badge`} className="badgeIconSvg" />);
+    // }
     else {
       return renderBadgeInner(
         "Highlight",
@@ -198,12 +203,16 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, scr
           if (confirm("Are you sure? This action cannot be reversed")) {
             chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
               let url = tabs[0].url;
-              if (currentUrl[0] === url) {
+              if (currentUrl === url) {
+                const anchorIds = anno.childAnchor.filter(a => a.url === currentUrl).map(a => anno.id.toString() + '-' + a.id.toString());
+                const replyIds = anno.replies && anno.replies.length ? anno.replies.filter(r => r.anchor !== null && r.anchor.url === currentUrl).map(r =>anno.id.toString() + '-' + r.anchor.id.toString()) : [];
+                const ids = replyIds.length ? anchorIds.concat(replyIds) : anchorIds;
                 chrome.tabs.sendMessage(
                   tabs[0].id,
                   {
                     msg: 'ANNOTATION_DELETED_ON_PAGE',
                     id: anno.id,
+                    anchorIds: ids
                   }
                 );
               }

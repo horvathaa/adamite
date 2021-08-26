@@ -68,6 +68,7 @@ export const highlightAnnotation = (annotation, domId, type) => {
         //console.log("no matches");
         return false;
     }
+    
     nodePairs.forEach((pair) => {
         addHighlightToSubstring({
             node: pair.node,
@@ -75,7 +76,8 @@ export const highlightAnnotation = (annotation, domId, type) => {
             startOffset: pair.startOffset,
             endOffset: pair.endOffset,
             spanId: domId,
-            isPreview: false
+            isPreview: false,
+            annotationType: annotation.type
         });
     });
 
