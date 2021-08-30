@@ -463,6 +463,10 @@ class Sidebar extends React.Component {
     chrome.tabs.create({ 'url': "https://www.adamite.net" })
   }
 
+  openAdamiteSite = () => {
+    chrome.tabs.create({ 'url': "https://adamite.netlify.app" })
+  }
+
   openBugForm = () => {
     const userName = this.state.currentUser.email.substring(0, this.state.currentUser.email.indexOf('@')); 
     chrome.tabs.create({ 'url': 'https://docs.google.com/forms/d/e/1FAIpQLScA3vI8-q5CSJpxDbmuM8tjQuvoCdu9XM6KTTieUrJeHHcGOw/viewform?usp=pp_url&entry.1555642790=' + userName + '&entry.1692277697=' + pjson.version + '&entry.872204213=I+think+I\'m+experiencing+a+bug+with+Adamite&entry.896576682=Your+question+here&entry.1167786342=Your+bug+here' })
@@ -955,6 +959,7 @@ class Sidebar extends React.Component {
           closeSidebar={this.closeSidebar}
           openOptions={this.openOptions}
           openDocumentation={this.openDocumentation}
+          openAdamiteSite={this.openAdamiteSite}
           openBugForm={this.openBugForm}
           updateSidebarGroup={this.updateSidebarGroup}
           currentGroup={this.state.activeGroups}

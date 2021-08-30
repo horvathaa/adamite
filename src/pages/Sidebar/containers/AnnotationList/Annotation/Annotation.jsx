@@ -70,7 +70,7 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, scr
         "Issue",
         <AiOutlineExclamationCircle alt={`${anno.type} type badge`} className="badgeIconSvg" />);
     }
-    else if (anno.type === 'todo') {
+    else if (anno.type === 'todo' || anno.type === 'to-do') {
       return renderBadgeInner(
         "To-do",
         <BiTask alt={`${anno.type} type badge`} className="badgeIconSvg" />);

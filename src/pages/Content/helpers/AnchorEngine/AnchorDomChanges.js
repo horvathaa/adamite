@@ -264,6 +264,7 @@ export const removeSpans = (collection) => {
         });
     }
     else {
+        // I don't know why this is the way it is lol
         while (collection[0] !== undefined) {
             var parent = collection[0].parentNode;
             $(collection[0]).contents().unwrap();

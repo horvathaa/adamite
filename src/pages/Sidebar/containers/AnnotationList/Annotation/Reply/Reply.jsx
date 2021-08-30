@@ -189,11 +189,6 @@ const Reply = ({ idx, reply }) => {
                         </div>
                         {reply.anchor !== null ? (
                             <Anchor anchor={reply.anchor} replyIdProp={replyData.replyId} />) : (null)}
-                        {/* <div className="annotationContent">
-                            <div className="contentBody">
-                                {replyData.replyContent}
-                            </div>
-                        </div> */}
                         <ReactMarkdown
                             children={isJson(replyData.replyContent) ? deserializeJson(JSON.parse(replyData.replyContent)) : replyData.replyContent}
                             components={codeComponent}
