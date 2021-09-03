@@ -1,9 +1,9 @@
-*{
+/* *{
     -ms-overflow-style: none;
-  }
-  ::-webkit-scrollbar {
+  } */
+  /* ::-webkit-scrollbar {
     display: none;
-  }
+  } */
 
 
 .new-group-modal-hidden {
