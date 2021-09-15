@@ -65,8 +65,6 @@ document.addEventListener('mousedown', event => {
 });
 let messagesIn = {
     'ANNOTATION_DELETED_ON_PAGE': (request, sender, sendResponse) => {
-        // let findSpan = getSpanFromRequest(request);
-        // console.log('findspan', findSpan)
         const spans = getSpansFromRequest(request);
         updateXpaths(spans, request.id)
 

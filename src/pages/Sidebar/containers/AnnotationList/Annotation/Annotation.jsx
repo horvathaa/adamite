@@ -177,7 +177,8 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, scr
               msg: 'ADD_NEW_ANCHOR',
               payload: {
                 newAnno: anno,
-                updateType: "NewAnchor"
+                updateType: "NewAnchor",
+                anchorCreator: currentUser.uid
               }
             });
           });

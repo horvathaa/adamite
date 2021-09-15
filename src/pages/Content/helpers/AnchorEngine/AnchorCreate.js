@@ -377,7 +377,7 @@ export function addAutomatedAnchors({ request, pairs }) {
 export function addNewAnchor({ request, type }) {
     // console.log("aff new Anchor")
     var selection = window.getSelection();
-    const { newAnno } = request.payload;
+    const { newAnno, anchorCreator } = request.payload;
     if (selection.type === 'Range') {
         const rect = selection.getRangeAt(0);
 
@@ -411,7 +411,8 @@ export function addNewAnchor({ request, type }) {
             anchor: selection.toString(),
             offsets: offsets,
             hostname: window.location.hostname,
-            tags: []
+            tags: [],
+            anchorCreator: anchorCreator
         };
 
         if (newAnno.url !== undefined) {
