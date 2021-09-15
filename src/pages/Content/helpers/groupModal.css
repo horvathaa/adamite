@@ -6,7 +6,7 @@
   } */
 
 
-.new-group-modal-hidden {
+.new-group-modal-hidden #group-modal {
     /* pointer-events: none; */
     height: 70%;
     width: 40%;
