@@ -7,6 +7,7 @@ export const DB_COLLECTIONS = {
   GROUPS: 'groups'
 };
 
+export let emailAuthProvider = firebase.auth.EmailAuthProvider;
 export let db = firebase.firestore();
 export let auth = firebase.auth();
 export const provider = new firebase.auth.GoogleAuthProvider();

@@ -24,6 +24,7 @@ let commands = {
     'USER_SIGNINGITHUB': authHelper.githubUserSignIn,
     'USER_SIGNOUT': authHelper.userSignOut,
     'USER_FORGET_PWD': authHelper.userForgotPwd,
+    'USER_PASS_RECEIVED': authHelper.handleLinkingAccounts,
     //background
     'CONTENT_SELECTED': (request, sender, sendResponse) =>
         isContent(request) ? transmitMessage({

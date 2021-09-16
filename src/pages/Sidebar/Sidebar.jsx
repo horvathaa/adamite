@@ -4,6 +4,7 @@ import classNames from 'classnames';
 import Title from './containers/Title/Title';
 import Authentication from './containers//Authentication//Authentication';
 import AnnotationList from './containers/AnnotationList/AnnotationList';
+import GetUserEmailPass from './containers/GetUserEmailPass/GetUserEmailPass';
 import FilterSummary from './containers/Filter/FilterSummary';
 import SearchBar from './containers/SearchBar/SearchBar';
 import { v4 as uuidv4 } from 'uuid';
@@ -50,6 +51,7 @@ class Sidebar extends React.Component {
     searchBarInputText: '',
     searchState: false,
     showFiltered: true,
+    firstTimeUserPrompt: false,
     showPinned: false,
     pinnedAnnos: [],
     annotatingPage: false,
@@ -216,7 +218,14 @@ class Sidebar extends React.Component {
             })
             this.setState({ annotations: [], filteredAnnotations: [], searchedAnnotations: [], groupAnnotations: [], pinnedAnnos: [], groups: [], activeGroups: [] })
         }
-      } else if (
+      } 
+      else if(
+        request.from === 'background' && 
+        request.msg === 'PROMPT_FOR_EMAIL_PASS'
+      ) {
+        this.setState({ firstTimeUserPrompt: true });
+      }
+      else if (
         request.from === 'background' &&
         request.msg === 'CONTENT_SELECTED'
       ) {
@@ -838,6 +847,18 @@ class Sidebar extends React.Component {
     // }
   };
 
+  notifySidebarOfPassword = (pass) => {
+    this.setState({ firstTimeUserPrompt: false });
+    chrome.runtime.sendMessage({
+      msg: 'USER_PASS_RECEIVED',
+      from: 'sidebar',
+      payload: {
+        email: this.state.currentUser.email,
+        pass
+      }
+    })
+  }
+
   scrollToNewAnnotation = (id) => {
     let annoDiv = null;
     annoDiv = document.getElementById(this.state.newAnnotationId);
@@ -999,7 +1020,12 @@ class Sidebar extends React.Component {
                   />) : (null)
                 }
               </div>
-
+              {(this.state.firstTimeUserPrompt) && 
+                (
+                  <GetUserEmailPass notifySidebarOfPassword={this.notifySidebarOfPassword} />
+                )
+              }
+              
               {(this.state.newSelection || this.state.annotatingPage) &&
                 (
                   <Annotation
