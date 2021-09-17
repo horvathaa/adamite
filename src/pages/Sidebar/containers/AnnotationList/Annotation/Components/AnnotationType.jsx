@@ -18,8 +18,6 @@ const isJson = (str) => {
     return true;
 }
 
-
-
 const AnnotationType = () => {
     const ctx = useContext(AnnotationContext);
     const answeredQuestion = ctx.anno.type === 'question' && ctx.anno.howClosed === "Answered";
