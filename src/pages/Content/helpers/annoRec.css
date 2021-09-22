@@ -76,14 +76,14 @@
     font-size: .75rem;
     color: #a3a9b1;
 }
-.AnchorTextContainer {
+/* .AnchorTextContainer {
   width: 100%;
   padding: 0px 0px 0px 8px;
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
   font-weight: 400;
-}
+} */
 
 .AnchorTextContainerExpanded {
     display: flex;
