@@ -771,23 +771,6 @@ class Sidebar extends React.Component {
 
   applyFilter = (filterSelection) => {
     this.setState({ filterSelection: filterSelection });
-    if (filterSelection.siteScope.includes('onPage') && !filterSelection.siteScope.includes('acrossWholeSite')) {
-      if (this.state.groupAnnotations.length) {
-        // let viewableGroupAnnotations = [];
-        // this.state.groupAnnotations.forEach((group) => {
-        //   viewableGroupAnnotations = viewableGroupAnnotations.concat(group.annotations);
-        // })
-        this.setState({
-          filteredGroupAnnotations:
-            this.state.groupAnnotations.filter(annotation => {
-              return this.checkSiteScope(annotation, filterSelection.siteScope) &&
-                this.checkUserScope(annotation, filterSelection.userScope) &&
-                this.checkAnnoType(annotation, filterSelection.annoType) &&
-                checkTimeRange(annotation, filterSelection.timeRange) &&
-                this.checkTags(annotation, filterSelection.tags)
-            })
-        })
-      }
       this.setState({
         filteredAnnotations:
           this.state.annotations.filter(annotation => {
@@ -799,10 +782,6 @@ class Sidebar extends React.Component {
               this.checkArchived(annotation, filterSelection.showArchived)
           })
       });
-    }
-    else if (filterSelection.siteScope.includes('acrossWholeSite')) {
-      this.filterAcrossWholeSite(filterSelection);
-    }
   }
 
   requestFilterUpdate() {
@@ -830,10 +809,6 @@ class Sidebar extends React.Component {
     })
   }
 
-  // to-do make this work probs race condition where annotationlist requests this be called before
-  // this.selection is set
-  // now that we have filter by unique IDs I think we could use that to filter out children annotations
-  // at least when computing length of list
   requestChildAnchorFilterUpdate(annotations) {
     this.setState({
       filteredAnnotations:
