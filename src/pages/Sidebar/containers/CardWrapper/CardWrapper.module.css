@@ -26,6 +26,15 @@ code, pre {
   }
 }
 
+.PostButton{
+  position: relative;
+  display: -ms-inline-flexbox;
+  display: inherit;
+  vertical-align: middle;
+  width: 100%;
+  max-width: 200px;
+}
+
 .PostButton .btn{
   max-width: 100px;
   overflow: hidden;
@@ -37,6 +46,11 @@ code, pre {
   padding: .7rem;
   border-bottom-left-radius: 8px;
   border-top-left-radius: 8px;
+
+}
+
+.PostButton .btn{
+  max-width: 400px;
 }
 
 .PostButton .btn:hover, .PostButton .btn:focus {
@@ -67,6 +81,10 @@ code, pre {
     max-height: 200px;
     overflow: auto;
     
+  }
+  #dropdown-split-variants-secondary{
+    max-width: 30px;
+    text-overflow: clip;
   }
 
   .react-tagsinput-input.empty {

@@ -13,6 +13,10 @@ import { css } from '@emotion/css'
 import { render } from 'react-dom'
 import { BiBold, BiItalic, BiCode } from 'react-icons/bi';
 
+
+
+
+
 // AMBER: If we want to support multiple programming languages in one annotation, I think this approach will be necessary
 // for now, just have one language declared at the top level of the rich text editor tree
 // const appendProgrammingLanguage = (node) => {
@@ -206,10 +210,12 @@ const Leaf = ({ attributes, children, leaf }) => {
 const BlockButton = ({ format, icon }) => {
     const editor = useSlate();
     const logo = <BiCode />
+    
     return (
         <Button
             active={isBlockActive(editor, format)}
             onMouseDown={event => {
+                console.log("here", editor)
                 event.preventDefault()
                 toggleBlock(editor, format)
             }}
@@ -258,9 +264,19 @@ const RichTextEditor2 = ({ initialContent, initialLanguage, annotationChangeHand
                 text: ''
             }]
         }
-    ]
+    ];
+    const createInitialValue = () => initialContent && isJsonObj(initialContent) ? initialContent : [
+        {
+            type:'paragraph',
+            children: [{
+                text: ''
+            }]
+        }
+    ];
 
-    const [value, setValue] = useState(initialValue)
+    // const editor = useMemo(() => withReact(createEditor()), []);
+
+    const [value, setValue] = useState(initialContent ? initialValue : createInitialValue)
     const [language, setLanguage] = useState(initialLanguage)
     const renderElement = useCallback(props => {
         switch (props.element.type) {
@@ -334,21 +350,26 @@ const RichTextEditor2 = ({ initialContent, initialLanguage, annotationChangeHand
         [language]
     )
 
+   
+    
     return (
         <Slate editor={editor} value={value} onChange={value => updateValue(value)}>
             <div className="RichEditor-root">
-                <Toolbar>
+                <Toolbar >
                     <MarkButton format="bold" icon="format_bold" />
                     <MarkButton format="italic" icon="format_italic" />
                     <BlockButton format="code" icon="code" />
+                    {isBlockActive(editor, "code") &&
                     <div
                         contentEditable={false}
-                        style={{ position: 'relative', top: '5px', right: '5px' }}
+                        style={{ position: 'relative', right: '5px' }}
                     >
+                        
                         <div className="language-select">
                             <select
                                 value={language}
-                                style={{ float: 'right', borderRadius: '8px', borderColor: '#717171', cursor: 'pointer' }}
+                                className="RichTextCodeSelect"
+                                // style={{ float: 'right', borderRadius: '8px', borderColor: '#717171', cursor: 'pointer' }}
                                 onChange={e => setLanguage(e.target.value)}
                             >
                                 <option value="js">JavaScript</option>
@@ -361,6 +382,7 @@ const RichTextEditor2 = ({ initialContent, initialLanguage, annotationChangeHand
                             </select>
                         </div>
                     </div>
+}
                 </Toolbar>
                 
                 <Editable
@@ -369,6 +391,7 @@ const RichTextEditor2 = ({ initialContent, initialLanguage, annotationChangeHand
                     placeholder="Enter some rich text…"
                     spellCheck
                     autoFocus
+                    className="RichTextBody"
                     onKeyDown={event => {
                         for (const hotkey in HOTKEYS) {
                             if (isHotkey(hotkey, event)) {

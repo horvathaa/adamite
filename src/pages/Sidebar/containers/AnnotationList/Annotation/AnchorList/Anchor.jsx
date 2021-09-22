@@ -216,13 +216,13 @@ const Anchor = ({ anchor, replyIdProp }) => {
                 <div className={textClass + " col"}>
                     <AnchorObject textClass={textClass} />
                 </div>
-                <div className="AnchorTagsList col-2" onClick={() => annotateAllInstances() }>
+                {/* <div className="AnchorTagsList col-2" onClick={() => annotateAllInstances() }>
                     <Tooltip title={"Anchor All Instances"} aria-label="edit tooltip">
                         <div className="AnchorHashTagbutton Tag">
                             <BiPlusCircle alt="anchor all instances of phrase" className="profile" id="edit" />
                         </div>
                     </Tooltip>
-                </div>
+                </div> */}
                 {ctx.anno.childAnchor.length > 1 && <div className="AnchorTagsList col-2" onClick={() => { deleteAnchor() }}>
                     <Tooltip title={"Delete Anchor"} aria-label="edit tooltip">
                         <div className="AnchorHashTagbutton Tag">
@@ -230,7 +230,7 @@ const Anchor = ({ anchor, replyIdProp }) => {
                         </div>
                     </Tooltip>
                 </div>}
-                {tags &&
+                {/* {tags &&
                     <React.Fragment>
                         <div className="AnchorTagsList col-2" onClick={() => { setEditMode(true) }}>
                             <Tooltip title={"Edit Anchor Tags"} aria-label="edit tooltip">
@@ -247,7 +247,7 @@ const Anchor = ({ anchor, replyIdProp }) => {
                             }
                         </div>
                     </React.Fragment>
-                }
+                } */}
                 <div className={textClass + " AnchorTagsWrapper"}>
                     {tags &&
                         <div className="AnchorTagMenu">
