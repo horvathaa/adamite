@@ -1,10 +1,15 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto:400,100,100italic,300,300italic,400italic,500,500italic,700,700italic,900italic,900');
+
 html, body {
     margin: 0; 
     height: 90%; 
     width: 100%;
-    overflow: scroll;
+    /* overflow: scroll; */
+    overflow-y: auto;
+    overflow-x: hidden;
     position: fixed;
     margin-bottom: 5em;
+    font-family: 'Roboto', sans-serif;
 }
 
 /* *{
@@ -14,16 +19,20 @@ html, body {
     display: none;
   } */
 
-.new-group-modal {
-    /* pointer-events: none; */
-    height: 70%;
-    width: 60%;
+  .new-group-modal-shown {
+    height: 90%;
+    width: 40%;
     border: none;
-    top:150px;
-    border-radius:20px;
-    background-color:white;
-    position: fixed; 
-    box-shadow: 0px 12px 48px rgba(29, 5, 64, 0.32);
+    /* top: 5%; */
+    /* padding: 1em; */
+    margin: auto;
+    margin: 8rem auto;
+    /* border-radius: 20px; */
+    background-color: transparent;
+    overflow: hidden !important;
+    position: fixed;
+    /* box-shadow: 0px 12px 48px rgb(29 5 64 / 32%); */
+    display: inline-block;
 }
 
 .table-row {
@@ -31,7 +40,7 @@ html, body {
 }
 
 .table-row:hover {
-    background-color:#e6e7e8;
+    background-color:#49a86724;
     -moz-border-radius: 20px;
     -webkit-border-radius: 20px;
     -khtml-border-radius: 20px;
@@ -77,8 +86,10 @@ table tbody tr th {
 }
 
 .table{
+    width: 99%;
     padding-top: .5em;
     width: 100%;
+    margin-bottom: 20px;
 }
 
 .profile-container {
@@ -90,23 +101,28 @@ table tbody tr th {
     text-align: center;
 }
 
-.trash-icon {
-    float: right;
-    padding: 5px;
-    margin-right: 2em;
-    cursor: pointer;
-}
 
-.trash-icon:hover{
-    color: blue;
+
+.table-icon-container{
+    padding: 4px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background-color: white;
+    border: 1px solid #49a86773;
+    text-align: center;
+    margin-right: .75em;
+    display: inline-block;
+    font-size: 1.75em;
 }
 
 .header-icon-container{
     padding: 4px;
-    width: 1.5em;
-    height: 1.5em;
+    width: 1em;
+    height: 1em;
     border-radius: 50%;
-    background-color: #EBECF0;
+    background-color: white;
+    border: 1px solid #49a86773;
     text-align: center;
     margin-right: .75em;
     display: inline-block;
@@ -130,13 +146,42 @@ table tbody tr th {
 .profile {
     width: 20px;
     height: 20px;
-    color: #1d1e24c4;
+    color: #215832;;
+    cursor: pointer;
+}
+
+.user-profile {
+    width: 13px;
+    height: 13px;
+    color: #215832;
+    cursor: pointer;
+}
+
+.trash-icon {
+    float: right;
+    width: 18px !important;
+    height: 18px !important;
+    padding: 5px;
+    margin-right: 2em;
+    cursor: pointer;
+}
+
+.trash-icon:hover{
+    color: #2158327d;
+}
+
+.close {
+    width: 20px;
+    height: 20px;
+    padding-right: 2rem;
+    color: #215832;;
     cursor: pointer;
 }
 
 .table-email {
-    float: left;
-    font-size: 15px;
+        float: left;
+        font-size: 12px;
+        font-family: 'Roboto', sans-serif;
 }
 
 .table-owner{
@@ -165,44 +210,50 @@ table tbody tr th {
     border-radius: 20px;
 }
 
+.input-table{
+    height: fit-content !important;
+    max-height: 200px;
+    overflow-y: scroll;
+    overflow-x: clip;
+}
+
 .input-modal{
+    margin: 0 1rem;
     height: 3em;
-    background: #f8f9fa;;
-    border-bottom: 1px solid currentcolor;
+    margin-top: .75rem;
     -moz-border-radius: 6px 6px 0 0;
     border-radius: 6px 6px 0 0;
     color: currentcolor;
-}
-
-.input-modal:hover{
-    background: #e6e7e8;
 }
 
 .input-modal-description{
     height: 8em;
-    background: #f8f9fa;;
-    border-bottom: 1px solid currentcolor;
-    -moz-border-radius: 6px 6px 0 0;
-    border-radius: 6px 6px 0 0;
+    width: 99%;
+   
+
     color: currentcolor;
 }
 
-.input-modal-description:hover{
-    background: #e6e7e8;
+
+input{
+    border: none;
 }
 
 .input {
     height: 100%;
-    width: 100%;
+    width: 100%; 
     padding: 0 .75em;
-    border: none;
+    border-radius: 6px;
+    border: 1px solid #dee0e3;
     background: transparent;
 }
 
-.input:focus {
+.input:focus{
+    border-radius: 6px;
+    border: 1px solid #49a86773;
     outline: none;
-    border: none;
-    background: transparent;
+    z-index: -1;
+    transition: height 0.3s, width 0.3s 0.1s;
 }
 
 .input-description {
@@ -226,25 +277,19 @@ table tbody tr th {
     background-color: #f35b2e !important;
 }
 .btn {
-    bottom: 0;
-    right: 0;
-    position: absolute;
-    display: inline-block;
     font-weight: 300 !important;
+    float: right;
     color: #212529;
-    text-align: center;
-    vertical-align: middle;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-    background-color: #5dea96e8;
+    background-color: rgb(34 195 105 / 17%);
     border: 1px solid transparent;
     padding: 0.375rem 0.75rem;
     font-size: .9rem !important;
     line-height: 1.5;
     border-radius: 0.35rem;
-    /* transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; */
 }
 
 .btn:focus {
@@ -258,11 +303,16 @@ table tbody tr th {
 
 .header {
     display: flex;
+    margin: 0 1rem;
 }
 
 .title {
     display: inline-block;
     margin-block-start: 0.3em;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    
 }
 
 footer {
@@ -277,4 +327,49 @@ footer {
 
 .App {
     margin-bottom: 2em;
+    overflow-y: scroll;
+    height: 100%;
 }
+
+.app-container {
+    overflow-x: hidden;
+    overflow-y: auto;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.newApp{
+    margin-bottom: 1rem;
+    padding: 1em;
+    padding-bottom: 1.5rem;
+    border-radius: 8px;
+    background-color: #fff;
+    border-width: 0;
+    -moz-box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3),0 1px 3px 1px rgba(60,64,67,0.15);
+    box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3),0 1px 3px 1px rgba(60,64,67,0.15);
+}
+
+
+input:focus ~ .floating-label,
+input:not(:focus):valid ~ .floating-label{
+    background: white;
+    font-size: 11px;
+    margin-top: -42px;
+    opacity: 1;
+    padding: 0 .3rem;
+}
+
+.floating-label {
+    /* position: absolute; */
+    pointer-events: none;
+    display: inline-table;
+    margin-top: -24px;
+    margin-left: 20px;
+    /* left: 20px; */
+    font-family: 'Roboto', sans-serif;
+
+    transition: 0.2s ease all;
+}
+
+
+  

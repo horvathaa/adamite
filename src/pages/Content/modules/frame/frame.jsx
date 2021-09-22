@@ -256,7 +256,7 @@ export class Frame extends Component {
           }}
         >
           <Resizable
-            minWidth={Math.min(250, viewportWidth - 20)}
+            minWidth={Math.min(350, viewportWidth - 20)}
             maxWidth={Math.min(800, viewportWidth - 20)}
             size={{ width: this.state.width, height: this.state.height }}
             enable={{
