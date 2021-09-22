@@ -24,6 +24,7 @@ let commands = {
     'USER_SIGNINGITHUB': authHelper.githubUserSignIn,
     'USER_SIGNOUT': authHelper.userSignOut,
     'USER_FORGET_PWD': authHelper.userForgotPwd,
+    'USER_PASS_RECEIVED': authHelper.handleLinkingAccounts,
     //background
     'CONTENT_SELECTED': (request, sender, sendResponse) =>
         isContent(request) ? transmitMessage({
@@ -54,6 +55,7 @@ let commands = {
 
     'ANNOTATION_UPDATED': anno.updateAnnotation,
     'REQUEST_ADOPTED_UPDATE': anno.updateAnnotationAdopted,
+    'GET_GOOGLE_RESULT_ANNOTATIONS': anno.getGoogleResultAnnotations,
 
     'REQUEST_PIN_UPDATE': anno.updateAnnotationPinned,
     'UPDATE_QUESTION': anno.updateAnnotationQuestion,
@@ -203,11 +205,12 @@ let commands = {
             chrome.storage.local.set({ sidebarStatus: [] });
             chrome.tabs.query({ active: true, currentWindow: true}, tabs => {
                 const tabInfo = anno.tabAnnotationCollect.filter(obj => obj.tabUrl === getPathFromUrl(tabs[0].url));
-                chrome.tabs.sendMessage(tabs[0].id, {
-                    msg: 'HIGHLIGHT_ANNOTATIONS',
-                    payload: tabInfo[0].annotations,
-                    url: getPathFromUrl(tabs[0].url)
-                })
+                if(tabInfo && tabInfo.length) // are there annotations on this page?
+                    chrome.tabs.sendMessage(tabs[0].id, {
+                        msg: 'HIGHLIGHT_ANNOTATIONS',
+                        payload: tabInfo[0].annotations,
+                        url: getPathFromUrl(tabs[0].url)
+                    })
             })
         }
         // when done with this mode, remove any highlights
@@ -287,7 +290,6 @@ chrome.contextMenus.onClicked.addListener((info) => {
 });
 
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
-    console.log('changeInfo', changeInfo);
     commands['HANDLE_TAB_URL_UPDATE'](tabId, changeInfo, tab);
     return true;
 });
@@ -309,7 +311,7 @@ chrome.runtime.onInstalled.addListener(function() {
 
 chrome.runtime.onSuspend.addListener(function () {
     console.log('legit... does this ever get called........');
-    chrome.contextMenus.remove('contextMenuBadge');
+    // chrome.contextMenus.remove('contextMenuBadge');
     anno.unsubscribeAnnotations();
     // chrome.runtime.Port.disconnect();
 })

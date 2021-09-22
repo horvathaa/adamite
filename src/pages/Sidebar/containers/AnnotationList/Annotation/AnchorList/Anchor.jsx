@@ -26,6 +26,7 @@ const Anchor = ({ anchor, replyIdProp }) => {
         currentUrl = ctx.currentUrl,
         collapsed = ctx.collapsed,
         isCurrentUser = ctx.isCurrentUser,
+        isAnchorCreator = anchor.anchorCreator ? ctx.currentUser.uid === anchor.anchorCreator : false,
         replyId = replyIdProp,
         anchorContent = anchor.anchor,
         anchorId = anchor.id,
@@ -46,9 +47,31 @@ const Anchor = ({ anchor, replyIdProp }) => {
         });
         ctx.updateAnchors(childAnch);
     }
-    const deleteAnchor = ({ anchorId }) => {
-        const childAnch = ctx.anno.childAnchor.filter((c) => c.id !== anchorId)
-        ctx.updateAnchors(childAnch);
+    const deleteAnchor = () => {
+        const childAnch = ctx.anno.childAnchor.filter((c) => c.id !== anchorId);
+        // check to see if this is the last annotation with this URL
+        if(!childAnch.some(c => c.url === url)) {
+            const newUrls = ctx.anno.url.filter(u => u !== url);
+            const newAnno = {...ctx.anno, url: newUrls, childAnchors: childAnch };
+            ctx.updateAnnotation(newAnno);
+        }
+        else {
+            ctx.updateAnchors(childAnch);
+        }
+        // remove highlight
+        if(url === currentUrl) {
+            const anchorIds = id + '-' + anchorId;
+            chrome.tabs.query({ active: true, lastFocusedWindow: true}, tabs => {
+                chrome.tabs.sendMessage(
+                    tabs[0].id,
+                    {
+                      msg: 'ANNOTATION_DELETED_ON_PAGE',
+                      id: id,
+                      anchorIds: [anchorIds]
+                    }
+                  );
+            })
+        }
     }
 
     const defaultRenderTag = (props) => {
@@ -193,25 +216,32 @@ const Anchor = ({ anchor, replyIdProp }) => {
                 <div className={textClass + " col"}>
                     <AnchorObject textClass={textClass} />
                 </div>
-                <div className="AnchorTagsList col-2" onClick={() => { annotateAllInstances() }}>
+                <div className="AnchorTagsList col-2" onClick={() => annotateAllInstances() }>
                     <Tooltip title={"Anchor All Instances"} aria-label="edit tooltip">
                         <div className="AnchorHashTagbutton Tag">
-                            <BiPlusCircle alt="edit annotation" className="profile" id="edit" />
+                            <BiPlusCircle alt="anchor all instances of phrase" className="profile" id="edit" />
                         </div>
                     </Tooltip>
                 </div>
+                {ctx.anno.childAnchor.length > 1 && <div className="AnchorTagsList col-2" onClick={() => { deleteAnchor() }}>
+                    <Tooltip title={"Delete Anchor"} aria-label="edit tooltip">
+                        <div className="AnchorHashTagbutton Tag">
+                            <BiTrash alt="delete anchor" className="profile" id="edit" />
+                        </div>
+                    </Tooltip>
+                </div>}
                 {tags &&
                     <React.Fragment>
                         <div className="AnchorTagsList col-2" onClick={() => { setEditMode(true) }}>
                             <Tooltip title={"Edit Anchor Tags"} aria-label="edit tooltip">
                                 <div className="AnchorHashTagbutton Tag">
-                                    <BiHash alt="edit annotation" className="profile" id="edit" />
+                                    <BiHash alt="edit anchor tags" className="profile" id="edit" />
                                 </div>
                             </Tooltip>
                             {id && ctx.anno.childAnchor.length > 1 &&
                                 <Tooltip title={"Delete Anchor Tags"} aria-label="Delete tooltip">
                                     <div className="AnchorHashTagbutton Tag">
-                                        <BiTrash alt="delete annotation" className="profile" id="trash" />
+                                        <BiTrash alt="delete anchor tags" className="profile" id="trash" />
                                     </div>
                                 </Tooltip>
                             }
@@ -238,7 +268,7 @@ const Anchor = ({ anchor, replyIdProp }) => {
         if(editMode){
             return ( <EditMode textClass={textClass} /> );
         }
-        else if(hovering && isCurrentUser && !collapsed){
+        else if(hovering && (isCurrentUser || isAnchorCreator) && !collapsed){
             return ( <AnchortagsButtons textClass={textClass} /> );
         }
         else{

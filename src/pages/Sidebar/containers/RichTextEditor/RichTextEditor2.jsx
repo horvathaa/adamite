@@ -341,27 +341,28 @@ const RichTextEditor2 = ({ initialContent, initialLanguage, annotationChangeHand
                     <MarkButton format="bold" icon="format_bold" />
                     <MarkButton format="italic" icon="format_italic" />
                     <BlockButton format="code" icon="code" />
-                </Toolbar>
-                <div
-                    contentEditable={false}
-                    style={{ position: 'relative', top: '5px', right: '5px' }}
-                >
-                    <div className="language-select">
-                        <select
-                            value={language}
-                            style={{ float: 'right' }}
-                            onChange={e => setLanguage(e.target.value)}
-                        >
-                            <option value="js">JavaScript</option>
-                            <option value="css">CSS</option>
-                            <option value="html">HTML</option>
-                            <option value="python">Python</option>
-                            <option value="sql">SQL</option>
-                            <option value="java">Java</option>
-                            <option value="php">PHP</option>
-                        </select>
+                    <div
+                        contentEditable={false}
+                        style={{ position: 'relative', top: '5px', right: '5px' }}
+                    >
+                        <div className="language-select">
+                            <select
+                                value={language}
+                                style={{ float: 'right', borderRadius: '8px', borderColor: '#717171', cursor: 'pointer' }}
+                                onChange={e => setLanguage(e.target.value)}
+                            >
+                                <option value="js">JavaScript</option>
+                                <option value="css">CSS</option>
+                                <option value="html">HTML</option>
+                                <option value="python">Python</option>
+                                <option value="sql">SQL</option>
+                                <option value="java">Java</option>
+                                <option value="php">PHP</option>
+                            </select>
+                        </div>
                     </div>
-                </div>
+                </Toolbar>
+                
                 <Editable
                     renderElement={renderElement}
                     renderLeaf={renderLeaf}

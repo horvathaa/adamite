@@ -1,0 +1,28 @@
+.user-email-card {
+    padding: 10px;
+    background: white;
+    box-shadow: 2px 2px 2px #88888887;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    position: relative;
+    font-size: 0.9rem;
+    color: #6B778C;
+    margin-top: -10px;
+}
+
+.button-row {
+    display: flex;
+}
+
+.submit-btn {
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: .95em !important;
+    color: rgb(30 130 74);
+    background: rgb(34 195 105 / 17%);
+    border: 0px;
+    padding: .7rem;
+    border-bottom-left-radius: 8px;
+    border-top-left-radius: 8px;
+}

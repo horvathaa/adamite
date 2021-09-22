@@ -26,16 +26,16 @@ const isJson = (str) => {
 
 
 
-const CardWrapper = ({ isNew = false }) => {
+const CardWrapper = ({ isNew = false, anno = null }) => {
     const ctx = useContext(AnnotationContext);
-    const id = "id" in ctx.anno ? ctx.anno.id : false,
-        pageAnnotation = ctx.anno.anchor,
-        elseContent = ctx.anno.content,
-        collapsed = ctx.collapsed,
+    const id = ctx.anno && "id" in ctx.anno ? ctx.anno.id : anno ? anno.id : false,
+        pageAnnotation = anno ? anno.anchor : ctx.anno.anchor,
+        elseContent = anno ? anno.content : ctx.anno.content,
+        collapsed = anno ? true : ctx.collapsed,
         userGroups = ctx.userGroups;
 
-    const [newAnno, setNewAnno] = useState(ctx.anno);
-    const [groups, setGroups] = useState(ctx.anno.groups);
+    const [newAnno, setNewAnno] = useState(anno ? anno : ctx.anno);
+    const [groups, setGroups] = useState(anno ? anno.groups : ctx.anno.groups);
     const pl = isJson(elseContent) ? JSON.parse(elseContent).language : 'js';
 
     const deserializeJson = (node) => {
@@ -78,7 +78,7 @@ const CardWrapper = ({ isNew = false }) => {
     }, [newAnno]);
 
     const dropDownSelection = (option) => {
-        let newVal = (option.value === 'Normal') ? "default" : (option.value === 'highlight') ? "highlight" : option.value;
+        let newVal = (option.value === 'Normal') ? "default" : (option.value === 'highlight' || option.value === 'Highlight') ? "highlight" : option.value.toLowerCase();
         setNewAnno({ ...newAnno, type: newVal });
     }
 
@@ -96,8 +96,8 @@ const CardWrapper = ({ isNew = false }) => {
 
     const codeComponent = {
         code({node, inline, className, children, ...props }) {
-            return !inline ? <SyntaxHighlighter style={coy} language={pl} PreTag="div" children={String(children).replace(/\n$/, '')} {...props} /> :
-            <code className={className} {...props}>
+            return !inline ? <SyntaxHighlighter wrapLongLines={true} style={coy} language={pl}  PreTag="div" children={String(children).replace(/\n$/, '')} {...props} /> :
+            <code style={{whiteSpace: 'pre-wrap !important' }}  {...props}>
                 {children}
             </code>
         }
@@ -118,7 +118,7 @@ const CardWrapper = ({ isNew = false }) => {
     else {
         splitButtonText = !newAnno.isPrivate ? "Post to Public" : "Post as Private";
     }
-    let annoTypeDropDownValue = (ctx.anno.type === 'default') ? 'normal' : (ctx.anno.type === 'highlight') ? 'empty' : ctx.anno.type;
+    let annoTypeDropDownValue = (newAnno.type === 'default') ? 'normal' : (newAnno.type === 'highlight') ? 'empty' : newAnno.type;
     const placeHolderString = newAnno.tags === undefined || !newAnno.tags.length ? 'Add a tag then hit Enter' : 'Add a tag';
 
 
@@ -207,7 +207,7 @@ const CardWrapper = ({ isNew = false }) => {
             </React.Fragment>
         ) : <React.Fragment>
             <div className={classNames({
-                Truncated: collapsed,
+                Truncated: anno ? false : collapsed,
                 annotationContent: true
             })}>
                 <ReactMarkdown

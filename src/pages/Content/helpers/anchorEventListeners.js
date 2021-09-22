@@ -65,8 +65,9 @@ document.addEventListener('mousedown', event => {
 });
 let messagesIn = {
     'ANNOTATION_DELETED_ON_PAGE': (request, sender, sendResponse) => {
-        let findSpan = getSpanFromRequest(request);
-        updateXpaths(findSpan, request.id)
+        const spans = getSpansFromRequest(request);
+        updateXpaths(spans, request.id)
+
     },
     'ADD_NEW_ANCHOR': (request, sender, sendResponse) => {
         // console.log("add new");
@@ -178,6 +179,10 @@ let messagesIn = {
     'REMOVE_HIGHLIGHTS': (request, sender, sendResponse) => {
         removeHighlightSpans({ isPreview: false });
     },
+}
+
+function getSpansFromRequest(request) {
+    return request.anchorIds.map(id => document.getElementsByName(id)[0]);
 }
 
 

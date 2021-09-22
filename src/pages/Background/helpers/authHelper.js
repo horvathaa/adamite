@@ -1,5 +1,6 @@
-import { displayName } from 'react-widgets/lib/Calendar';
 import {
+  emailAuthProvider,
+  getCurrentUser as fbGetCurrentUser,
   auth,
   signUpWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -45,6 +46,20 @@ const broadcastAuthStatus = user => {
   });
 };
 
+export function handleLinkingAccounts(request, sender, sendResponse) {
+  const { email, pass } = request.payload;
+  if(email && pass && email !== "" && pass !== "") {
+    const credential = emailAuthProvider.credential(email, pass);
+    fbGetCurrentUser().linkWithCredential(credential).then((userCred) => {
+      console.log('Successfully linked accounrts')
+    })
+    .catch((error) => {
+      console.error('Unable to link accounts', error);
+    })
+  }
+  
+}
+
 export function getUser() {
   return currentUser;
 }
@@ -73,6 +88,12 @@ export function userGoogleSignIn(request, sender, sendResponse) {
     .then((result) => {
       /** @type {firebase.auth.OAuthCredential} */
       var credential = result.credential;
+      if(result.additionalUserInfo.isNewUser) {
+        chrome.runtime.sendMessage({
+          msg: 'PROMPT_FOR_EMAIL_PASS',
+          from: 'background'
+        })
+      }
 
       // This gives you a Google Access Token. You can use it to access the Google API.
       var token = credential.accessToken;
@@ -107,6 +128,12 @@ export function githubUserSignIn(request, sender, sendResponse) {
     .then((result) => {
       /** @type {firebase.auth.OAuthCredential} */
       var credential = result.credential;
+      if(result.additionalUserInfo.isNewUser) {
+        chrome.runtime.sendMessage({
+          msg: 'PROMPT_FOR_EMAIL_PASS',
+          from: 'background'
+        })
+      }
 
       // This gives you a Google Access Token. You can use it to access the Google API.
       var token = credential.accessToken;
@@ -116,6 +143,7 @@ export function githubUserSignIn(request, sender, sendResponse) {
     }).catch((error) => {
       // Handle Errors here.
       var errorCode = error.code;
+      console.log('error code', error.code);
       var errorMessage = error.message;
       // The email of the user's account used.
       var email = error.email;

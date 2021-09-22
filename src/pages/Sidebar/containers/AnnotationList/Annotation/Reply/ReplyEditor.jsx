@@ -1,5 +1,5 @@
 import React, { useEffect, useContext, useState } from 'react';
-import RichTextEditor from '../../../RichTextEditor/RichTextEditor';
+import RichTextEditor2 from '../../../RichTextEditor/RichTextEditor2';
 import TagsInput from 'react-tagsinput';
 import classNames from 'classnames';
 import '../Annotation.css';
@@ -12,6 +12,15 @@ import { v4 as uuidv4 } from 'uuid';
 import cleanReplyModel from './ReplyModel';
 import Tooltip from '@material-ui/core/Tooltip';
 import { formatTimestamp } from '../../../../utils';
+
+const isJson = (str) => {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
+}
 
 
 const ReplyEditor = ({ reply = null, finishReply = () => { } }) => {
@@ -62,6 +71,9 @@ const ReplyEditor = ({ reply = null, finishReply = () => { } }) => {
     const markAnswer = () => { setNewReply({ ...newReply, answer: !newReply.answer, question: false }) }
     const markQuestion = () => { setNewReply({ ...newReply, answer: false, question: !newReply.question }) }
 
+    
+    
+    
     const requestNewAnchor = () => {
 
         let replyId;
@@ -160,8 +172,28 @@ const ReplyEditor = ({ reply = null, finishReply = () => { } }) => {
                 </div>
             ) : (null)}
             <div className="ReplyField">
-                <RichTextEditor 
-                    annotationContent={newReply.replyBlock ? newReply.replyBlock : newReply.replyContent}
+                {/* change to RTE2 */}
+                <RichTextEditor2
+                   
+                        // annotationContent = {newReply.replyBlock ? newReply.replyBlock : newReply.replyContent}
+                        initialContent={
+                            isJson(newReply.replyContent) ? 
+                                JSON.parse(newReply.replyContent).children : 
+                                [ {
+                                        type:'paragraph',
+                                        children: [{
+                                            text: newReply.replyContent
+                                        }]
+                                    }
+                                ]
+                        }
+                        initialLanguage={
+                            isJson(newReply.replyContent) ? 
+                                JSON.parse(newReply.replyContent).language :
+                                'js'
+                        } 
+                    
+                    
                     annotationChangeHandler={replyChangeHandler}
                  />
                 <div className="Tag-Container">

@@ -13,23 +13,35 @@ import '../../../../assets/img/SVGs/location.svg';
 import Highlighter from "react-highlight-words";
 import { AiOutlineSearch, AiOutlineCloseCircle } from 'react-icons/ai';
 import { BiWorld, BiWindow, BiLayer } from 'react-icons/bi';
-
+import { Text } from 'slate';
 import Tooltip from '@material-ui/core/Tooltip';
 import { BiComment, BiTask, BiAnchor } from 'react-icons/bi';
 import { AiOutlineQuestionCircle, AiOutlineExclamationCircle } from 'react-icons/ai';
 import { FaHighlighter } from 'react-icons/fa';
+import { string } from 'prop-types';
+
+const annoTypes = ['default', 'question', 'to-do', 'highlight', 'issue'];
+
+const isJson = (str) => {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
+}
 
 
 const IconSelector = ({ type }) => {
 
-    if (type === undefined) {
+    if (type === undefined || !annoTypes.includes(type.toLowerCase())) {
         return (<BiComment />);
     }
-    if (type === 'default') return (<BiComment />);
-    if (type === 'question') return (<AiOutlineQuestionCircle />);
-    if (type === 'to-do') return (<BiTask />);
-    if (type === 'highlight') return (<FaHighlighter />);
-    if (type === 'issue') return (<AiOutlineExclamationCircle />);
+    if (type.toLowerCase() === 'default') return (<BiComment />);
+    if (type.toLowerCase() === 'question') return (<AiOutlineQuestionCircle />);
+    if (type.toLowerCase() === 'to-do') return (<BiTask />);
+    if (type.toLowerCase() === 'highlight') return (<FaHighlighter />);
+    if (type.toLowerCase() === 'issue') return (<AiOutlineExclamationCircle />);
 }
 
 
@@ -38,6 +50,42 @@ class SearchBar extends React.Component {
         super(props);
         this.inputRef = React.createRef();
     }
+
+    deserializeJsonIntoPlainText = (node) => {
+        if (Text.isText(node)) {
+            let string = node.text;
+            if (node.bold && node.italic && string !== "") {
+                string = `***${string}***`
+            }
+            else if(node.bold && string !== "") {
+                string = `**${string}**`
+            }
+            else if(node.italic && string !== "") {
+                string = `*${string}*`
+            }
+            if (node.code) {
+                string = `\`${string}\``
+            }
+            
+            return string
+        }
+        if(!node.children) {
+            return string;
+        }
+        const children = node.children.map(n => this.deserializeJsonIntoPlainText(n)).join('');
+        switch (node.type) {
+            case 'paragraph':
+                return `\n${children}\n`
+            case 'link':
+                return `[${children}](${escapeHtml(node.url)})`
+            case 'code': {
+                return `\t${children}\n`
+            }
+            default:
+                return children
+        }
+    }
+
     state = {
         value: '',
         suggestions: [],
@@ -46,7 +94,7 @@ class SearchBar extends React.Component {
     }
     highlightSearchWords = (sentence, baseContent) => {
         sentence = Array.isArray(sentence) ? sentence[0] : sentence;
-        return typeof sentence === "undefined" ? baseContent : sentence.match(new RegExp('(?<=<em>)(.*?)(?=<\/em>)', 'g'));
+        return typeof sentence === "undefined" || typeof sentence !== 'string' ? baseContent : sentence.match(new RegExp('(?<=<em>)(.*?)(?=<\/em>)', 'g'));
     }
 
     componentDidMount() {
@@ -63,7 +111,7 @@ class SearchBar extends React.Component {
         var searchAnchorContent = this.state.value.split(" ");
         var anchorContent = suggestion.childAnchor[0].anchor;
         var searchContent = this.state.value.split(" ");
-        var content = suggestion.content;
+        var content = isJson(suggestion.content) ? this.deserializeJsonIntoPlainText(JSON.parse(suggestion.content)) : suggestion.content;
 
         if (suggestion.hasOwnProperty("highlight")) {
             if (suggestion.highlight.hasOwnProperty("childAnchor.anchor")) {
@@ -71,12 +119,20 @@ class SearchBar extends React.Component {
                 anchorContent = suggestion.highlight.hasOwnProperty("childAnchor.anchor") ? suggestion.highlight["childAnchor.anchor"][0].replace(new RegExp('(<em>)|(<\/em>)', 'g'), '') : anchorContent;
             }
             if (suggestion.highlight.content !== undefined) {
-                searchContent = this.highlightSearchWords(suggestion.highlight.content, searchContent);
-                content = suggestion.highlight.content !== undefined ? suggestion.highlight.content[0].replace(new RegExp('(<em>)|(<\/em>)', 'g'), '') : content;
+                if(isJson(suggestion.highlight.content) && searchContent.includes(JSON.parse(suggestion.highlight.content).language.replace(new RegExp('(<em>)|(<\/em>)', 'g'), ''))) {
+                    content = content;
+                }
+                else if(isJson(suggestion.highlight.content)) {
+                    searchContent = this.highlightSearchWords(this.deserializeJsonIntoPlainText(suggestion.highlight.content), searchContent);
+                    content = content;
+                }
+                else {
+                    searchContent = this.highlightSearchWords(suggestion.highlight.content, searchContent);
+                    content = suggestion.highlight.content !== undefined ? suggestion.highlight.content[0].replace(new RegExp('(<em>)|(<\/em>)', 'g'), '') : content;
+                }
             }
         }
 
-        console.log("SUGGESTION", suggestion)
         if (!("tags" in suggestion)) {
             suggestion.tags = [];
         }

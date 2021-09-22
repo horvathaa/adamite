@@ -75,7 +75,7 @@ const Authentication = props => {
       response => {
         console.log(response);
         if (response !== undefined && response.error) {
-          alert(response.message);
+          alert('Unable to log in');
         }
       }
     );
@@ -90,7 +90,7 @@ const Authentication = props => {
       response => {
         console.log(response);
         if (response !== undefined && response.error) {
-          alert(response.message);
+          alert('Unable to log in');
         }
       }
     );
@@ -159,7 +159,7 @@ const Authentication = props => {
         </button>
         <button className="AuthSignInContainer" onClick={signInGithubClickedHandler}>
           <div>
-            <img className="authIcon" alt="Google sign-in" src={Github} />
+            <img className="authIcon" alt="Github sign-in" src={Github} />
             Login with GitHub
           </div>
         </button>

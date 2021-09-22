@@ -125,6 +125,26 @@ export function getAnnotationById(request, sender, sendResponse) {
     });
 }
 
+export async function getGoogleResultAnnotations(request, sender, sendResponse) {
+    let { urls } = request.payload;
+    const uid = fb.getCurrentUser().uid;
+    let annos = [];
+    urls = urls.slice(0, 10);
+    urls = urls.map(u => {
+        if(u.includes("developer.mozilla.org/en/")) {
+            let arr = u.split("/en/")
+            u = arr[0] + '/en-US/' + arr[1]
+        }
+        return u;
+    })
+    fb.getAnnotationsFromArrayOfUrls(urls).get().then(function (querySnapshot) {
+        annos = querySnapshot.empty ? [] : getListFromSnapshots(querySnapshot)
+        annos = annos.filter(a => (a.isPrivate && a.authorId === uid || !a.isPrivate) && !a.deleted) // (add check for user groups)
+        sendResponse(annos);
+    });
+
+}
+
 export async function createAnnotation(request, sender, sendResponse) {
     let { url, newAnno } = request.payload;
     const hostname = new URL(url).hostname;
@@ -607,13 +627,11 @@ function getAnnotationsByUrlListener(url, groups, tabId) {
     console.log('url', url);
     // idk if this is really where this should go lol...
     if(url === 'https://www.google.com/search') {
-        console.log('in if in url listener');
         // chrome.tabs.query({ active: true, })
         chrome.tabs.sendMessage(tabId, {
             msg: 'GOOGLE_SEARCH',
             from: 'background'
         }, response => {
-            console.log('response', response)
             if(response && response !== "undefined") chrome.storage.local.set({
                 'search': response
             });

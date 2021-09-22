@@ -3,19 +3,19 @@ import { transmitMessage } from "../anchorEventTransmitter";
 
 
 
-export function addHighlightToSubstring({ node, substring, spanId, startOffset, endOffset, isPreview = false }) {
+export function addHighlightToSubstring({ node, substring, spanId, startOffset, endOffset, isPreview = false, annotationType }) {
     //console.log("IN")
     let _spanId = isPreview ? "annoPreview" : spanId;
     let _className = isPreview ? "highlight-adamite-annotation-preview" : "highlight-adamite-annotation";
-    splitReinsertText(node, substring, startOffset, endOffset, function (node, match, offset) {
-        _addHighlightSpan({ match: match, node: node, spanId: _spanId, className: _className });
+    splitReinsertText(node, substring, startOffset, endOffset, function (node, match, offset, annotationType) {
+        _addHighlightSpan({ match: match, node: node, spanId: _spanId, className: _className, type: annotationType });
 
-    });
+    }, annotationType);
 }
-function _addHighlightSpan({ match, node, spanId, className }) {
+function _addHighlightSpan({ match, node, spanId, className, type }) {
     var span = document.createElement("span");
     span.setAttribute("name", spanId);
-    span.textContent = match;
+    if(type !== 'erased') span.textContent = match;
     span.onclick = anchorClick;
     span.onmouseover = highlightAnchorSidebar;
     span.onmouseout = unhighlightAnchor;
@@ -49,7 +49,7 @@ export const getHighlightSpanIds = ({ isPreview = false }) => {
 
 //1. Better matching of strings when faced with formatting issues
 //Splits text in node and calls callback action to preform on middle node
-var splitReinsertText = function (node, substring, startOffset, endOffset, callback) {
+var splitReinsertText = function (node, substring, startOffset, endOffset, callback, type) {
     //console.log("splitReinsertText");
     //console.log(node.data);
     function formatText(string) {
@@ -61,7 +61,7 @@ var splitReinsertText = function (node, substring, startOffset, endOffset, callb
             let newTextNode = node.splitText(startOffset);
             // should check to make sure match is same as substring
             newTextNode.data = newTextNode.data.substr(substring.length);
-            callback(node, match, startOffset);
+            callback(node, match, startOffset, type);
             return newTextNode;
         });
     } else if (node.data.includes(substring.trim())) {
@@ -71,7 +71,7 @@ var splitReinsertText = function (node, substring, startOffset, endOffset, callb
             let newTextNode = node.splitText(startOffset);
             // should check to make sure match is same as substring
             newTextNode.data = newTextNode.data.substr(substring.trim().length);
-            callback(node, match, startOffset);
+            callback(node, match, startOffset, type);
             return newTextNode;
         });
     }
@@ -104,7 +104,7 @@ var splitReinsertText = function (node, substring, startOffset, endOffset, callb
                     let newTextNode = node.splitText(offset);
                     // should check to make sure match is same as substring
                     newTextNode.data = newTextNode.data.substr(substringText1.length);
-                    callback(node, match, offset);
+                    callback(node, match, offset, type);
                     return newTextNode;
                 });
 
@@ -256,11 +256,22 @@ export function anchorClick(e) {
  * @param {Array} collection 
  */
 export const removeSpans = (collection) => {
-    while (collection[0] !== undefined) {
-        var parent = collection[0].parentNode;
-        $(collection[0]).contents().unwrap();
-        parent.normalize();
+    if(collection.length > 1) {
+        collection.forEach(h => {
+            let parent = h.parentNode;
+            $(h).contents().unwrap();
+            parent.normalize();
+        });
     }
+    else {
+        // I don't know why this is the way it is lol
+        while (collection[0] !== undefined) {
+            var parent = collection[0].parentNode;
+            $(collection[0]).contents().unwrap();
+            parent.normalize();
+        }
+    }
+    
 }
 
 

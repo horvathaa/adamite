@@ -3,7 +3,7 @@ import { Dropdown } from 'react-bootstrap';
 import { APP_NAME_FULL } from '../../../../shared/constants';
 import ADAMITE from '../../../../assets/img/Adamite.png';
 import { GiHamburgerMenu } from 'react-icons/gi';
-import { BiFileBlank, BiHorizontalCenter, BiBookBookmark, BiCog, BiExit, BiGroup, BiUserPlus, BiBug } from 'react-icons/bi';
+import { BiFileBlank, BiWindowAlt, BiHorizontalCenter, BiBookBookmark, BiCog, BiExit, BiGroup, BiUserPlus, BiBug } from 'react-icons/bi';
 import { AiOutlineCheck, AiOutlineUser } from 'react-icons/ai';
 import './Title.css';
 
@@ -200,6 +200,10 @@ export default class Title extends React.Component {
                           <Dropdown.Item onClick={this.props.openOptions} className="DropdownItemOverwrite">
                             <div className="DropdownIconsWrapper"><BiCog className="DropdownIcons" /></div>
                             Options
+                          </Dropdown.Item>
+                          <Dropdown.Item onClick={this.props.openAdamiteSite} className="DropdownItemOverwrite">
+                            <div className="DropdownIconsWrapper"><BiWindowAlt className="DropdownIcons" /></div>
+                            View All Your Annotations
                           </Dropdown.Item>
                           <Dropdown.Item onClick={this.props.openDocumentation} className="DropdownItemOverwrite">
                             <div className="DropdownIconsWrapper"><BiBookBookmark className="DropdownIcons" /></div>

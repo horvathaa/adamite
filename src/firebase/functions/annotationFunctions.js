@@ -72,6 +72,11 @@ export const updateGroup = async ({
   }).then(_ => console.log('success'), _ => console.log('rejected!'));
 };
 
+export const getAnnotationsFromArrayOfUrls = urls => {
+  return db.collection(DB_COLLECTIONS.ANNOTATIONS)
+    .where('url', 'array-contains-any', urls)
+    .where('deleted', '==', false);
+}
 
 export const getAnnotationsAcrossSite = hostname => {
   return db.collection(DB_COLLECTIONS.ANNOTATIONS)

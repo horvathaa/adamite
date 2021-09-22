@@ -20,7 +20,7 @@ export const Button = React.forwardRef(
               : '#aaa'
             : active
             ? 'black'
-            : '#ccc'};
+            : '#717171'};
         `
       )}
     />
@@ -94,7 +94,7 @@ export const Icon = React.forwardRef(({ className, ...props }, ref) => (
       'material-icons',
       className,
       css`
-        font-size: 0.8rem;
+        font-size: 1rem;
         vertical-align: text-bottom;
       `
     )}

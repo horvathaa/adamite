@@ -1,11 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import Frame from '../modules/frame/frame';
 import { ToastContainer, toast } from 'react-toastify';
+import './annoRec.css';
+import CardWrapper from '../../Sidebar/containers/CardWrapper/CardWrapper';
+import Adamite from '../../../assets/img/Adamite.png';
+
 
 let shouldShrinkBody = true;
 let sidebarLocation = 'right';
 let sidebarWidth = 280;
+
 
 const setSidebarWidth = (width) => {
   sidebarWidth = width;
@@ -100,6 +105,49 @@ chrome.storage.sync.get(['sidebarOnLeft'], (result) => {
   mountSidebar();
 });
 
+const AnnoPreview = ({ annoList }) => {
+
+  const [show, setShow] = useState(false);
+  const descrip = annoList.length === 1 ? `There is ${annoList.length} annotation on this page` : `There are ${annoList.length} annotations on this page`;
+
+  const AnchorObject = ({ anchorText }) => {
+    return (
+        <div className="AnchorTextContainerExpanded">
+          {anchorText}
+        </div>
+    )
+  }
+
+  const Anno = ({ anno }) => {
+    const anchorText = anno.childAnchor.map(a => { if(anno.url.includes(a.url)) { return a.anchor} })
+    return (
+      <div className="AnnotationContainer">
+        {anchorText.map(anch => <AnchorObject anchorText={anch} />)}
+        <CardWrapper anno={anno} />
+      </div>
+    )
+  }
+  
+  
+  return (
+    <React.Fragment>
+      <div className="anno-rec-descrip" onClick={() => setShow(!show)}>
+        <div className="img-container">
+            <img src={chrome.extension.getURL(Adamite)} className="adamite-logo" />
+        </div>
+        {descrip}
+      </div>
+      {show && 
+        <div className="anno-rec-container">
+          {annoList.map(a => <Anno anno={a} />)}
+        </div>
+      }
+    </React.Fragment>
+  )
+  
+}
+
+
 /**
  * Chrome runtime event listener
  */
@@ -113,10 +161,40 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     request.from === 'background' &&
     request.msg === 'GOOGLE_SEARCH'
   ) {
-    console.log('in listener');
     const inputField = document.querySelectorAll("input.gLFyf.gsfi")[0];
-    console.log('inputField', inputField);
     inputField.value ? sendResponse(inputField.value) : sendResponse("undefined");
+    const links = [];
+    document.querySelectorAll('div.yuRUbf > a').forEach(a => links.push(a.href));
+    chrome.runtime.sendMessage({
+      msg: 'GET_GOOGLE_RESULT_ANNOTATIONS',
+      from: 'content',
+      payload: {
+        urls: links
+      }
+    }, response => {
+      if(response && response.length) {
+        const as = document.querySelectorAll('div.yuRUbf > a');
+        const matchedUrls = [...new Set(response.flatMap(a => a.url))];
+        let nodeAnnoPairs = [];
+        as.forEach(a => {
+          let href = a.href;
+          if(href.includes("developer.mozilla.org/en/")) {
+            let arr = href.split("/en/")
+            href = arr[0] + '/en-US/' + arr[1]
+          }
+          if(matchedUrls.includes(href)) {
+            nodeAnnoPairs.push({node: a.parentNode, anno: response.filter(anno => anno.url.includes(href))});
+          }
+        });
+        
+        
+        nodeAnnoPairs.forEach((p) => {
+          const parentDiv = document.createElement('div');
+          p.node.appendChild(parentDiv);
+          ReactDOM.render(<AnnoPreview annoList={p.anno} />, parentDiv);
+        })
+      }
+    });
   } else if (
     request.from === 'background' &&
     request.msg === 'UPDATE_SIDEBAR_ON_LEFT_STATUS'
