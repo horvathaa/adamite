@@ -14,7 +14,9 @@ const cleanReplyModel = (replyData) => {
         question: "question" in d ? d.question : false,
         timestamp: "timestamp" in d ? d.timestamp : new Date().getTime(),
         anchor: "anchor" in d ? d.anchor : null,
-        replyBlock: "replyBlock" in d ? d.replyBlock : ""
+        replyBlock: "replyBlock" in d ? d.replyBlock : "",
+        photoURL: "photoURL" in d ? d.photoURL : "",
+        displayName: "displayName" in d ? d.displayName : d.author ? d.author : ""
     }
 }
 export default cleanReplyModel;

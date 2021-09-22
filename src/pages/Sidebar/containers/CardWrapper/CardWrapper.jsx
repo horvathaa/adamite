@@ -6,7 +6,6 @@ import './CardWrapper.module.css';
 import { Text } from 'slate'
 import classNames from 'classnames';
 import { GiCancel } from 'react-icons/gi';
-import RichEditor from '../RichTextEditor/RichTextEditor';
 import RichEditor2 from '../RichTextEditor/RichTextEditor2';
 import TagsInput from 'react-tagsinput';
 import Dropdown from 'react-dropdown';

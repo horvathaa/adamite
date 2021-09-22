@@ -1,6 +1,6 @@
 
 
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import classNames from 'classnames';
 import '../Annotation.css';
 import { Dropdown } from 'react-bootstrap';
@@ -34,6 +34,20 @@ handleDeleteRequest
 const EditRowComponent = () => {
     const ctx = useContext(AnnotationContext);
     if (ctx.collapsed || ctx.isNew) return (null);
+    let photoUrl = ctx.anno.photoURL;
+    let displayName = ctx.anno.displayName;
+
+    useEffect(() => {
+        if(ctx.anno.photoURL) {
+            photoUrl = ctx.anno.photoURL
+        }
+        if(ctx.anno.displayName) {
+            displayName = ctx.anno.displayName;
+        }
+    }, [ctx.anno]);
+
+    const checkHasPhoto = (ctx.anno.photoURL && ctx.anno.photoURL !== "");
+    const checkHasDisplayName = (ctx.anno.displayName && ctx.anno.displayName !== "");
 
     return (
         <React.Fragment>
@@ -41,17 +55,15 @@ const EditRowComponent = () => {
                 Header: true,
                 Truncated: ctx.collapsed,
             })}>
-                <div className={(!ctx.anno.photoUrl || ctx.anno.photoURL === "" || ctx.anno.photoURL === null) ? "profileContainer" : ""}>
-                    {!ctx.anno.photoUrl || ctx.anno.photoURL === "" || ctx.anno.photoURL === null ?
+                <div className={!checkHasPhoto ? "profileContainer" : ""}>
+                    {!checkHasPhoto ?
                         <AiOutlineUser alt="profile" className="userProfile" /> :
-                        <img src={ctx.anno.photoURL} alt="profile" className="profilePhoto userProfilePhoto" />
+                        <img src={photoUrl} alt="profile" className="profilePhoto userProfilePhoto" />
                     }
                 </div>
                 <div className="userProfileContainer">
-
                     <div className="author">
-                        {!ctx.anno.displayName || ctx.anno.displayName === null || ctx.anno.displayName === "" ? ctx.anno.author : ctx.anno.displayName}
-                        {/* {ctx.anno.author} */}
+                        {!checkHasDisplayName ? ctx.anno.author : displayName}
                     </div>
                     <div className="groupName">
                         {ctx.getGroupName()}
