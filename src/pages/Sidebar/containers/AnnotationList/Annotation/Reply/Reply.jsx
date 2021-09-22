@@ -35,14 +35,21 @@ const Reply = ({ idx, reply }) => {
     const currentUser = ctx.currentUser;
     const [replyData, setReply] = useState(cleanReplyModel(reply));
     const [editing, setEditing] = useState(false);
-    const [adopted, setAdopted] = useState(false); // switch to liked - array of objects where each item in the list is an object {id: currentUser.id, liked: true/false}
+    // const [adopted, setAdopted] = useState(false); // switch to liked - array of objects where each item in the list is an object {id: currentUser.id, liked: true/false}
     let showQuestionAnswerInterface = ctx.anno.type === 'question';
+    let photoUrl = reply.photoURL;
 
     useEffect(() => {
         if (reply !== replyData) {
             setReply(reply);
         }
-    }, [reply, replyData])
+        if(reply.photoURL) {
+            photoUrl = reply.photoURL;
+        }
+        if(reply.displayName) {
+            displayName = reply.displayName;
+        }
+    }, [reply, replyData, ctx.anno])
 
     const deserializeJson = (node) => {
         if (Text.isText(node)) {
@@ -98,10 +105,6 @@ const Reply = ({ idx, reply }) => {
         ctx.updateAnnotation({ ...ctx.anno, replies: remainingReplies });
     }
 
-    // const star = adopted ?
-    //     <AiFillStar className="profile" /> :
-    //     <AiOutlineStar className="profile" />;
-
     return (<React.Fragment>
         {editing ?
             (<ReplyEditor
@@ -115,9 +118,9 @@ const Reply = ({ idx, reply }) => {
                     <li key={idx} className="ReplyContent">
                         <div className=" container Header">
                             <div className={replyData.photoURL === "" && "profileContainer"}>
-                                {replyData.photoURL === ""  || replyData.photoURL === null ?
+                                {replyData.photoURL === "" ?
                                     <AiOutlineUser alt="profile" className="userProfile" /> :
-                                    <img src={replyData.photoURL} alt="profile" className="profilePhoto userProfilePhoto" />
+                                    <img src={photoUrl} alt="profile" className="profilePhoto userProfilePhoto" />
                                 }
                             </div>
                             {/* <div className="profileContainer">
@@ -125,7 +128,7 @@ const Reply = ({ idx, reply }) => {
                             </div> */}
                             <div className="userProfileContainer">
                                 <div className="author">
-                                    {replyData.displayName === null || replyData.displayName === "" ? replyData.author : replyData.displayName}
+                                    {replyData.displayName === "" ? replyData.author : displayName}
                                 </div>
                                 <div className="timestamp">
                                     {formatTimestamp(replyData.timestamp)}
@@ -160,12 +163,6 @@ const Reply = ({ idx, reply }) => {
                                                 Reply Options
                                                 <hr></hr>
                                             </Dropdown.Header>
-                                            {/* <Dropdown.Item onClick={ctx.transmitAdoptedToParent} className="DropdownItemOverwrite">
-                                                <div className="DropdownIconsWrapper">
-                                                    {star}
-                                                </div>
-                                                Star Comment
-                                            </Dropdown.Item> */}
                                             {ctx.currentUser.uid === replyData.authorId ? (
                                                 <React.Fragment>
                                                     <Dropdown.Item onClick={_ => setEditing(true)} className="DropdownItemOverwrite">

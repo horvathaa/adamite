@@ -15,7 +15,11 @@
 
 .ReplyContent > p {
     margin-top: 0.5rem;
-    color: #6B778C
+    color: #6B778C;
+    padding-top: 5px;
+    padding-left: 15px;
+    padding-bottom: 10px;
+    padding-right: 15px;
 }
 
 .QuestionAnswerMarker {

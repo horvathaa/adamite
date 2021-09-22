@@ -126,7 +126,7 @@ class Sidebar extends React.Component {
     if (scrollIsAtTheBottom && this.state.searchState) {
       this.ElasticSearch("SCROLL_ELASTIC")
         .then(res => {
-          const results = res.response.data.hits.hits.map(h => h._source)
+          const results = res.response ? res.response?.data.hits.hits.map(h => h._source) : []
           this.setState({
             searchedAnnotations: this.state.searchedAnnotations.concat(results)
           })
@@ -771,23 +771,6 @@ class Sidebar extends React.Component {
 
   applyFilter = (filterSelection) => {
     this.setState({ filterSelection: filterSelection });
-    if (filterSelection.siteScope.includes('onPage') && !filterSelection.siteScope.includes('acrossWholeSite')) {
-      if (this.state.groupAnnotations.length) {
-        // let viewableGroupAnnotations = [];
-        // this.state.groupAnnotations.forEach((group) => {
-        //   viewableGroupAnnotations = viewableGroupAnnotations.concat(group.annotations);
-        // })
-        this.setState({
-          filteredGroupAnnotations:
-            this.state.groupAnnotations.filter(annotation => {
-              return this.checkSiteScope(annotation, filterSelection.siteScope) &&
-                this.checkUserScope(annotation, filterSelection.userScope) &&
-                this.checkAnnoType(annotation, filterSelection.annoType) &&
-                checkTimeRange(annotation, filterSelection.timeRange) &&
-                this.checkTags(annotation, filterSelection.tags)
-            })
-        })
-      }
       this.setState({
         filteredAnnotations:
           this.state.annotations.filter(annotation => {
@@ -799,10 +782,6 @@ class Sidebar extends React.Component {
               this.checkArchived(annotation, filterSelection.showArchived)
           })
       });
-    }
-    else if (filterSelection.siteScope.includes('acrossWholeSite')) {
-      this.filterAcrossWholeSite(filterSelection);
-    }
   }
 
   requestFilterUpdate() {
@@ -819,10 +798,17 @@ class Sidebar extends React.Component {
     });
   }
 
-  // to-do make this work probs race condition where annotationlist requests this be called before
-  // this.selection is set
-  // now that we have filter by unique IDs I think we could use that to filter out children annotations
-  // at least when computing length of list
+  returnFilteredAnnotations = (annotations) => {
+    return annotations.filter(annotation => {
+      return this.checkSiteScope(annotation, this.state.filterSelection.siteScope) &&
+        this.checkUserScope(annotation, this.state.filterSelection.userScope) &&
+        this.checkAnnoType(annotation, this.state.filterSelection.annoType) &&
+        checkTimeRange(annotation, this.state.filterSelection.timeRange) &&
+        this.checkTags(annotation, this.state.filterSelection.tags) &&
+        this.checkArchived(annotation, this.state.showArchived);
+    })
+  }
+
   requestChildAnchorFilterUpdate(annotations) {
     this.setState({
       filteredAnnotations:
@@ -935,9 +921,7 @@ class Sidebar extends React.Component {
       renderedAnnotations = searchedAnnotations;
     }
     else if (groupAnnotations.length) {
-      // groupAnnotations.forEach((group) => {
-      renderedAnnotations = renderedAnnotations.concat(groupAnnotations);
-      // });
+      renderedAnnotations = renderedAnnotations.concat(this.state.groupAnnotations);
     }
     else {
       renderedAnnotations = filteredAnnotations;
@@ -963,10 +947,10 @@ class Sidebar extends React.Component {
 
     let tempSearchCount;
     if (this.state.showPinned) {
-      tempSearchCount = renderedAnnotations.length + pinnedAnnosCopy.length;
+      tempSearchCount = this.returnFilteredAnnotations(renderedAnnotations).length + pinnedAnnosCopy.length;
     }
     else {
-      tempSearchCount = renderedAnnotations.length;
+      tempSearchCount = this.returnFilteredAnnotations(renderedAnnotations).length;
     }
     // const newAnnoId = uuidv4();
     return (
@@ -1110,7 +1094,7 @@ class Sidebar extends React.Component {
                   There's nothing here! Try searching for an annotation, modifying your groups or filters, or creating a new annotation
                 </div>
               ) : (
-                <AnnotationList annotations={renderedAnnotations}
+                <AnnotationList annotations={this.returnFilteredAnnotations(renderedAnnotations)}
                   groups={groups}
                   currentUser={currentUser}
                   url={this.state.url}

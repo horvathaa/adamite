@@ -144,6 +144,9 @@ export function githubUserSignIn(request, sender, sendResponse) {
       // Handle Errors here.
       var errorCode = error.code;
       console.log('error code', error.code);
+      if(error.code === 'auth/account-exists-with-different-credential') {
+        
+      }
       var errorMessage = error.message;
       // The email of the user's account used.
       var email = error.email;

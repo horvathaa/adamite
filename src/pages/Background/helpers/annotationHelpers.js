@@ -602,20 +602,14 @@ function injectUserData(annotationsToBroadcast) {
     let authIds = [...new Set(getAllAuthIds(annotationsToBroadcast))];
     return batchSearchFirestore([], authIds, getUserDataFromAuthId).then(authProfiles => {
         let annotationsWithAuthorInfo = annotationsToBroadcast.map(annotation => {
-            const authdata = authProfiles.find(element => element.uid === annotation.authorId);
+            const authData = authProfiles.find(element => element.uid === annotation.authorId);
             annotation.replies = annotation.replies?.map(reply => {
                 let authDataReplies = authProfiles.find(element => element.uid === reply.authorId);
-                return {
-                    photoURL: authDataReplies.photoURL,
-                    displayName: authDataReplies.displayName,
-                    ...reply
-                }
+                const injectReply = Object.assign({}, reply, authDataReplies);
+                return injectReply;
             });
-            return {
-                photoURL: authdata.photoURL,
-                displayName: authdata.displayName,
-                ...annotation
-            }
+            const anno = Object.assign({}, authData, annotation);
+            return anno;
         })
         return (annotationsWithAuthorInfo);
     });
@@ -624,7 +618,6 @@ function injectUserData(annotationsToBroadcast) {
 
 function getAnnotationsByUrlListener(url, groups, tabId) {
     const user = fb.getCurrentUser();
-    console.log('url', url);
     // idk if this is really where this should go lol...
     if(url === 'https://www.google.com/search') {
         // chrome.tabs.query({ active: true, })
