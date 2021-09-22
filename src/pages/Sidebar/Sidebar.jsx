@@ -126,7 +126,7 @@ class Sidebar extends React.Component {
     if (scrollIsAtTheBottom && this.state.searchState) {
       this.ElasticSearch("SCROLL_ELASTIC")
         .then(res => {
-          const results = res.response.data.hits.hits.map(h => h._source)
+          const results = res.response ? res.response?.data.hits.hits.map(h => h._source) : []
           this.setState({
             searchedAnnotations: this.state.searchedAnnotations.concat(results)
           })
@@ -819,6 +819,17 @@ class Sidebar extends React.Component {
     });
   }
 
+  returnFilteredAnnotations = (annotations) => {
+    return annotations.filter(annotation => {
+      return this.checkSiteScope(annotation, this.state.filterSelection.siteScope) &&
+        this.checkUserScope(annotation, this.state.filterSelection.userScope) &&
+        this.checkAnnoType(annotation, this.state.filterSelection.annoType) &&
+        checkTimeRange(annotation, this.state.filterSelection.timeRange) &&
+        this.checkTags(annotation, this.state.filterSelection.tags) &&
+        this.checkArchived(annotation, this.state.showArchived);
+    })
+  }
+
   // to-do make this work probs race condition where annotationlist requests this be called before
   // this.selection is set
   // now that we have filter by unique IDs I think we could use that to filter out children annotations
@@ -935,9 +946,7 @@ class Sidebar extends React.Component {
       renderedAnnotations = searchedAnnotations;
     }
     else if (groupAnnotations.length) {
-      // groupAnnotations.forEach((group) => {
-      renderedAnnotations = renderedAnnotations.concat(groupAnnotations);
-      // });
+      renderedAnnotations = renderedAnnotations.concat(this.state.groupAnnotations);
     }
     else {
       renderedAnnotations = filteredAnnotations;
@@ -963,10 +972,10 @@ class Sidebar extends React.Component {
 
     let tempSearchCount;
     if (this.state.showPinned) {
-      tempSearchCount = renderedAnnotations.length + pinnedAnnosCopy.length;
+      tempSearchCount = this.returnFilteredAnnotations(renderedAnnotations).length + pinnedAnnosCopy.length;
     }
     else {
-      tempSearchCount = renderedAnnotations.length;
+      tempSearchCount = this.returnFilteredAnnotations(renderedAnnotations).length;
     }
     // const newAnnoId = uuidv4();
     return (
@@ -1110,7 +1119,7 @@ class Sidebar extends React.Component {
                   There's nothing here! Try searching for an annotation, modifying your groups or filters, or creating a new annotation
                 </div>
               ) : (
-                <AnnotationList annotations={renderedAnnotations}
+                <AnnotationList annotations={this.returnFilteredAnnotations(renderedAnnotations)}
                   groups={groups}
                   currentUser={currentUser}
                   url={this.state.url}

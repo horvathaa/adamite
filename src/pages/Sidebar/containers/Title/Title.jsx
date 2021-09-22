@@ -111,7 +111,9 @@ export default class Title extends React.Component {
     const { currentUser, groups } = this.props;
     let userName = "";
     if (currentUser === null) {
-      userName = ""
+      // to be clear, this shouldn't ever occur as the user should not be able to see the dropdown
+      // if they are not logged in
+      userName = "anonymous";
     }
     else {
       userName = currentUser.displayName === "" || currentUser.displayName === null ? 

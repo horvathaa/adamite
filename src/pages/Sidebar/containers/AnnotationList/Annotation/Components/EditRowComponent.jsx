@@ -41,8 +41,8 @@ const EditRowComponent = () => {
                 Header: true,
                 Truncated: ctx.collapsed,
             })}>
-                <div className={(ctx.anno.photoURL === "" || ctx.anno.photoURL === null) ? "profileContainer" : ""}>
-                    {ctx.anno.photoURL === "" || ctx.anno.photoURL === null ?
+                <div className={(!ctx.anno.photoUrl || ctx.anno.photoURL === "" || ctx.anno.photoURL === null) ? "profileContainer" : ""}>
+                    {!ctx.anno.photoUrl || ctx.anno.photoURL === "" || ctx.anno.photoURL === null ?
                         <AiOutlineUser alt="profile" className="userProfile" /> :
                         <img src={ctx.anno.photoURL} alt="profile" className="profilePhoto userProfilePhoto" />
                     }
@@ -50,7 +50,7 @@ const EditRowComponent = () => {
                 <div className="userProfileContainer">
 
                     <div className="author">
-                        {ctx.anno.displayName === null || ctx.anno.displayName === "" ? ctx.anno.author : ctx.anno.displayName}
+                        {!ctx.anno.displayName || ctx.anno.displayName === null || ctx.anno.displayName === "" ? ctx.anno.author : ctx.anno.displayName}
                         {/* {ctx.anno.author} */}
                     </div>
                     <div className="groupName">
