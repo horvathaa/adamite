@@ -19,6 +19,7 @@
     border-top-right-radius: 8px;
     font-size: 14px;
     padding: 5px 15px 15px 15px;
+    min-height: 150px;
   }
 
 
