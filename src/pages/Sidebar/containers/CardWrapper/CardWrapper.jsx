@@ -126,10 +126,6 @@ const CardWrapper = ({ isNew = false, anno = null }) => {
         {ctx.editing ? (
             <React.Fragment>
                 <div className="TextareaContainer">
-                    {/* <RichEditor
-                        annotationContent={newAnno.contentBlock === undefined ? ctx.anno.content : ctx.anno.contentBlock}
-                        annotationChangeHandler={(content, contentBlock) => setNewAnno({ ...newAnno, content, contentBlock })}
-                    /> */}
                     <RichEditor2 
                         initialContent={
                             isJson(elseContent) ? 
