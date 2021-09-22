@@ -1,7 +1,7 @@
 import React from 'react';
 import './GroupModal.css';
 import profile from '../../assets/img/SVGs/Profile.svg';
-import { AiOutlineUsergroupAdd, AiOutlineDelete, AiOutlineClose } from 'react-icons/ai';
+import { AiOutlineUsergroupAdd, AiOutlineDelete, AiOutlineClose, AiOutlineShareAlt, AiOutlineUser } from 'react-icons/ai';
 import 'react-toastify/dist/ReactToastify.css';
 // import { copySync } from 'fs-extra';
 
@@ -176,96 +176,110 @@ class Groups extends React.Component {
         return (
 
             <React.Fragment>
-                <div className="App">
-                    <div>
-                        <div className="header">
-                            <div className="header-icon-container">
-                                <AiOutlineUsergroupAdd className="profile" />
-                            </div>
-                            <div>
-                                <h1 className="title"> {editState ? "Edit" : "Create"} Group </h1>
-                            </div>
-                            <div className="header-icon-container-right" onClick={() => {
-                                chrome.runtime.sendMessage({
-                                    msg: 'HIDE_GROUP',
-                                    from: 'modal'
-                                })
-                            }}>
-                                <AiOutlineClose className="profile" />
-                            </div>
+                <div className="newApp">
+                    <div className="header">
+                        <div className="header-icon-container">
+                            <AiOutlineUsergroupAdd className="profile" />
                         </div>
                         <div>
+                            <h1 className="title"> {editState ? "Edit" : "Create"} a Group </h1>
+                        </div>
+                        <div className="header-icon-container-right" onClick={() => {
+                            chrome.runtime.sendMessage({
+                                msg: 'HIDE_GROUP',
+                                from: 'modal'
+                            })
+                        }}>
+                            {/* <AiOutlineClose className="close" /> */}
+                        </div>
+                    </div>
+                    {/* <div>
                             <h3>Name</h3>
+                        </div> */}
+                    {invalidName.length > 0 ?
+                        <div className="invalid-user">
+                            {invalidName}
                         </div>
-                        {invalidName.length > 0 ?
-                            <div className="invalid-user">
-                                {invalidName}
-                            </div>
-                            : null
-                        }
-                        <div className="input-modal">
-                            <input value={groupName} onChange={value => this.nameHandleChange(value)} placeholder="Please add a name" className="input" />
-                        </div>
-                        <div>
+                        : null
+                    }
+                    <div className="input-modal">
+                        <input value={groupName} onChange={value => this.nameHandleChange(value)} type="text" placeholder="" className="input" required />
+                        <span className="floating-label">Group Name</span>
+                    </div>
+                    {/* <div>
                             <h3>Description</h3>
-                        </div>
-                        <div className="input-modal-description">
-                            <textarea placeholder="Please add a description" value={groupDescription} onChange={value => this.groupDescriptionHandleChange(value)} className="input-description" />
+                        </div> */}
+                    <div className="input-modal">
+                        <input value={groupDescription} onChange={value => this.groupDescriptionHandleChange(value)} className="input" required />
+                        <span className="floating-label">Description</span>
+                    </div>
+                    {/* <div>
+                            <h3>Share</h3>
+                        </div> */}
+
+
+                </div>
+                <div className="newApp">
+                    <div className="header">
+                        <div className="header-icon-container">
+                            <AiOutlineShareAlt className="profile" />
                         </div>
                         <div>
-                            <h3>Share</h3>
+                            <h1 className="title"> Share </h1>
                         </div>
-                        {invalidUser.length > 0 ?
-                            <div className="invalid-user">
-                                {invalidUser}
-                            </div>
-                            : null
-                        }
-                        <div className="input-modal">
-                            <input type="email" placeholder="Add people to your group by email" className="input" onKeyDown={this.onKeyDown} />
+                    </div>
+                    {invalidUser.length > 0 ?
+                        <div className="invalid-user">
+                            {invalidUser}
                         </div>
-                        <table className="table" cellSpacing="0" cellPadding="0">
-                            <tbody>
-                                {emails.map((items, idx) => {
-                                    return <tr key={idx} className="table-row">
-                                        <th className="table-icon border-left">
-                                            <div>
-                                                <div className="profile-container">
-                                                    <img src={profile} alt="profile" className="profile" />
-
-                                                </div>
-                                            </div>
-                                        </th>
+                        : null
+                    }
+                    <div className="input-modal">
+                        <input type="email" className="input" onKeyDown={this.onKeyDown} required />
+                        <span className="floating-label">Email of User to Add</span>
+                    </div>
+                    <div className="input-table input-modal">
+                    <table className="table" cellSpacing="0" cellPadding="0">
+                        <tbody>
+                            {emails.map((items, idx) => {
+                                return <tr key={idx} className="table-row">
+                                    <th className="table-icon border-left">                                     
+                                            <div className="table-icon-container">
+                                                <AiOutlineUser className="user-profile" />
+                                            </div>                                       
+                                    </th>
+                                    <th >
+                                        <div className="table-email">
+                                            {items}
+                                        </div>
+                                    </th>
+                                    {items === ownerEmail ?
                                         <th >
-                                            <div className="table-email">
-                                                {items}
+                                            <div className="table-owner">
+                                                Creator
                                             </div>
                                         </th>
-                                        {items === ownerEmail ?
-                                            <th >
-                                                <div className="table-owner">
-                                                    Creator
-                                                </div>
-                                            </th>
-                                            :
-                                            <th >
-                                                <AiOutlineDelete className="profile trash-icon" onClick={() => this.onClickDelete(items)} />
-                                            </th>
-                                        }
-                                    </tr>
-                                }
-                                )}
-                            </tbody>
-                        </table>
+                                        :
+                                        <th >
+                                            <AiOutlineDelete className="profile trash-icon" onClick={() => this.onClickDelete(items)} />
+                                        </th>
+                                    }
+                                </tr>
+                            }
+                            )}
+                        </tbody>
+                    </table>
                     </div>
                 </div>
-                <footer>
+                <div className="newApp" style={{paddingBottom: "1em"}}>
+                    <div style={{ display: "flow-root"}}>
                     {editState ?
                         <button className="btn-delete btn" onClick={this.onClickDeletez} >Delete Group</button>
                         : null
                     }
                     <button className="btn" onClick={() => this.onClickCreate()} >{editState ? "Update" : "Create"}</button>
-                </footer>
+                    </div>
+                </div>
             </React.Fragment>
         );
     }
