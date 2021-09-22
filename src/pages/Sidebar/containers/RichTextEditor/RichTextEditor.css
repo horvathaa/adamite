@@ -1,8 +1,15 @@
-.language-select {
+/* .language-select {
   padding-bottom: 0.4rem;
 
+} */
+
+.language-select:focus-visible{
+  outline: transparent;
 }
 
+.RichTextCodeSelect:focus-visible{
+  outline: transparent;
+}
 
 .RichEditorCodeBlock{
   background: rgb(209 238 189 / 36%);
@@ -100,4 +107,33 @@
   
   .RichEditor-activeButton {
     color: #5890ff;
+  }
+
+  .RichTextCodeSelect {
+    border: 0px solid #dbdbdb;
+    /* margin: .15rem; */
+    border-radius: 24px;
+    /* padding: .15rem .25rem 0 .15rem; */
+    position: relative;
+    display: flex;
+    font-size: 0.9rem;
+    color: #717171;
+    flex-wrap: wrap;
+    line-height: 2em;
+    /* height: 2em; */
+    /* margin-right: 1em; */
+    position: relative;
+    cursor: pointer;
+  }
+
+  .RichTextEditorHeader{
+    position: relative;
+    padding: 3px 18px;
+
+
+    border-bottom: 1px solid #b3b3b3;
+  }
+
+  .RichTextBody{
+    margin-top: 1rem ;
   }

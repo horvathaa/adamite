@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { cx, css } from '@emotion/css'
+import "./RichTextEditor.css"
 import { GrBlockQuote } from "react-icons/gr";
 import { MdFormatBold, MdFormatItalic, MdFormatUnderlined, MdCode, MdFormatListBulleted, MdFormatListNumbered } from 'react-icons/md';
 import reactSyntaxHighlighter from 'react-syntax-highlighter';
@@ -146,13 +147,7 @@ export const Toolbar = React.forwardRef(({ className, ...props }, ref) => (
     {...props}
     ref={ref}
     className={cx(
-      className,
-      css`
-        position: relative;
-        padding: 1px 18px;
-        margin: 0 -20px;
-        border-bottom: 2px solid #eee;
-      `
+      className ="RichTextEditorHeader"
     )}
   />
 ))
