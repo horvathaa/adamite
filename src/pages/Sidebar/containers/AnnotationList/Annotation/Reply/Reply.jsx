@@ -40,7 +40,6 @@ const Reply = ({ idx, reply }) => {
     let photoUrl = reply.photoURL;
 
     useEffect(() => {
-        console.log('useeffect', reply)
         if (reply !== replyData) {
             setReply(reply);
         }
