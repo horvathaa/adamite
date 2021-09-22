@@ -1,6 +1,6 @@
 {
   "description": "A documentation annotator to help software developers learn from one another",
-  "version": "0.75.429",
+  "version": "0.76.0",
   "name": "ADAMITE",
   "options_page": "options.html",
   "background": {
