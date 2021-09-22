@@ -154,7 +154,7 @@ const ReplyEditor = ({ reply = null, finishReply = () => { } }) => {
         <Button
             className= "TagButton"
             key="replySubmit"
-            id="dropdown-split-variants-secondary"
+            // id="dropdown-split-variants-secondary"
             variant="secondary"
             title={"Post Reply"}
             onClick={submitReply}
