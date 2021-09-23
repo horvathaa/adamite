@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './FilterSummary.css';
+import '../AnnotationList/Annotation/Annotation.css';
+import '../Title/Title.css';
 import { AiFillClockCircle, AiOutlineCheck, AiOutlineCloseCircle, AiOutlineUsergroupAdd } from 'react-icons/ai';
 import { BiTimeFive, BiHash } from 'react-icons/bi';
 import { BsChatSquareDots, BsXCircle } from 'react-icons/bs';
@@ -109,26 +111,30 @@ class FilterSummary extends React.Component {
     }
 
     createDropDown = (args) => {
+
         const listItems = args.items.map((option, idx) => {
             let active = args.activeFilter.includes(option.visible) ? true : false
+
             return <Dropdown.Item key={idx} onSelect={args.updateFunction} data-value={option.value} className="DropdownItemOverwrite"> {active ? <AiOutlineCheck /> : ""} {option.visible} </Dropdown.Item>
         });
 
+        const dropdown = <React.Fragment>
+                            <Dropdown className={args.className}>
+                                <Dropdown.Toggle title={args.header} className="filterDropDown">
+                                    <div className="FilterIconContainer">
+                                        <args.Icon className="filterReactIcon" />
+                                    </div>
+                                    &nbsp; {args.activeFilter}
+                                </Dropdown.Toggle>
+                                <Dropdown.Menu >
+                                    <Dropdown.Header className="AnnotationOptionsTitle dropdown-header">{args.header}<hr></hr></Dropdown.Header>
+                                    {listItems}
+                                </Dropdown.Menu>
+                            </Dropdown>
+                        </React.Fragment>
+
         return (
-            <React.Fragment>
-                <Dropdown className={args.className}>
-                    <Dropdown.Toggle title={args.header} className="filterDropDown">
-                        <div className="FilterIconContainer">
-                            <args.Icon className="filterReactIcon" />
-                        </div>
-                        &nbsp; {args.activeFilter}
-                    </Dropdown.Toggle>
-                    <Dropdown.Menu >
-                        <Dropdown.Header className="AnnotationOptionsTitle dropdown-header">{args.header}<hr></hr></Dropdown.Header>
-                        {listItems}
-                    </Dropdown.Menu>
-                </Dropdown>
-            </React.Fragment>
+            dropdown
         );
     }
 

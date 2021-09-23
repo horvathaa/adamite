@@ -179,7 +179,7 @@ function hideOnClickOutside(element) {
     });
 }
 const showModal = () => {
-    const dialog = document.getElementById("group-modal");
+    const dialog = document.getElementById("adamite-group-modal");
     if (dialog.classList.contains('new-group-modal-hidden')) {
         dialog.classList.remove("new-group-modal-hidden")
         dialog.classList.add('new-group-modal-shown');
@@ -203,25 +203,27 @@ const hideModal = () => {
 }
 
 const renderModal = (owner) => {
-    let modal = document.createElement("dialog");
-    modal.classList.add("new-group-modal-hidden");
-    document.body.appendChild(modal);
-    modal.setAttribute('id', 'group-modal');
-    const App = (
-        <React.Fragment>
-
-            <iframe className="iframe-modal-wrapper"
-
-                src={chrome.extension.getURL('groupmodal.html')
-                    + "?uid=" + owner.uid
-                    + "&email=" + owner.email
-                    + "&userName=" + owner.userName
-                }
-            />
-        </React.Fragment>
-
-    );
-    ReactDOM.render(App, modal);
+    if(!document.getElementById('adamite-group-modal')) {
+        let modal = document.createElement("dialog");
+        modal.classList.add("new-group-modal-hidden");
+        document.body.appendChild(modal);
+        modal.setAttribute('id', 'adamite-group-modal');
+        const App = (
+            <React.Fragment>
+    
+                <iframe className="iframe-modal-wrapper"
+    
+                    src={chrome.extension.getURL('groupmodal.html')
+                        + "?uid=" + owner.uid
+                        + "&email=" + owner.email
+                        + "&userName=" + owner.userName
+                    }
+                />
+            </React.Fragment>
+    
+        );
+        ReactDOM.render(App, modal);
+    }
 }
 
 

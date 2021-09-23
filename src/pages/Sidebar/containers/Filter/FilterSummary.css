@@ -64,7 +64,7 @@
     flex-wrap: wrap;
     line-height: 2em;
     height: 2em;
-    overflow: auto;
+    /* overflow: auto; */
     /* margin-right: 1em; */
     position: relative;
     cursor: pointer;
