@@ -119,7 +119,7 @@ const EditRowComponent = () => {
                             </Dropdown.Toggle>
                             <Dropdown.Menu style={{ width: '220px' }}>
                                 <Dropdown.Header className="AnnotationOptionsTitle">
-                                    Annoation Options
+                                    Annotation Options
                                     <hr></hr>
                                 </Dropdown.Header>
                                 <Dropdown.Item onClick={() => ctx.setReplying(true)} className="DropdownItemOverwrite">
