@@ -1,14 +1,21 @@
 import axios from 'axios';
 import { getElasticApiKey } from '../../../firebase/index';
+import {searchFirebaseFunction} from '../../../firebase/index';
 
 const path = 'https://f1a4257d658c481787cc581e18b9c97e.us-central1.gcp.cloud.es.io:9243/annotations/_search';
 
 export async function searchElastic(request, sender, sendResponse) {
-    keyWrapper(search, { userSearch: request.userSearch, query: searchBarQuery(request, true), url: request.url, successFunction: searchBarSuccess })
-        .then(e => sendResponse({ response: e }))
-        .catch(function (err) {
-            console.log("wrapper error", err.response.status)
-        });
+    // let results = JSON.parse((await searchFirebaseFunction(request)).data)
+    // console.log(results)
+    sendResponse({ response: JSON.parse((await searchFirebaseFunction(request)).data)});
+
+    // console.log("test", request)
+    // keyWrapper(search, { userSearch: request.userSearch, query: searchBarQuery(request, true), url: request.url, successFunction: searchBarSuccess })
+    //     .then(e => sendResponse({ response: e }))
+    //     .catch(function (err) {
+    //         console.log("wrapper error", err.response.status)
+    //     });
+
 }
 
 export async function groupElastic(request, sender, sendResponse) {
@@ -232,6 +239,7 @@ export function storeQueryForScroll(query, total, url) {
     if (query.from < total) {
         query.from = query.from + 10;
     }
+    console.log('HEY!!!', { [url]: query } )
     chrome.storage.local.set({ [url]: query });
 }
 
@@ -332,6 +340,7 @@ export function groupSearchSuccess(res, args) {
 }
 
 export function searchBarSuccess(res, args) {
+    console.log("here")
     var finalArray = [];
     var userSearch = args.userSearch
     if (res.data.hits.hits.length !== 0) {

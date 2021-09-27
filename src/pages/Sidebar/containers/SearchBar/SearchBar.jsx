@@ -204,10 +204,9 @@ class SearchBar extends React.Component {
             this.inputRef.current.blur();
             this.ElasticSearch2(input.value)
                 .then(res => {
-                    const results = res.data.hits.hits.map(h => h._source)
-                    this.setState({ hits: res.data.hits.total.value })
-                    this.props.searchedSearchCount(res.data.hits.total.value);
-                    this.props.handleSearchBarInputText({ suggestion: results, searchState: true })
+                    this.setState({ hits: res.hits })
+                    this.props.searchedSearchCount(res.hit);
+                    this.props.handleSearchBarInputText({ suggestion: res.results, searchState: true })
                 })
         }
         /* Backspace clear search */
@@ -258,7 +257,7 @@ class SearchBar extends React.Component {
                     userSearch: inputText
                 },
                     response => {
-                        // console.log('response is probs messed up', response)
+                        console.log("response!!", response)
                         resolve(response.response);
                     });
             });
@@ -268,10 +267,7 @@ class SearchBar extends React.Component {
     onSuggestionsFetchRequested = ({ value }) => {
         this.ElasticSearch2(value)
             .then(res => {
-                // console.log("THESE RAW REZ", res.data.hits.total.value)
-                const results = res.data.hits.hits.map(h => h._source)
-                // console.log("THESE RESULTS", results)
-                this.setState({ suggestions: results, hits: res.data.hits.total.value })
+                this.setState({ suggestions: res.results, hits: res.hits })
             })
     }
 
