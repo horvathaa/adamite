@@ -14,6 +14,7 @@ export function getPathFromUrl(url) {
 
 const isContent = (res) => res.from === 'content';
 export let sidebarStatus = [];
+let tabToUrl = {};
 
 let commands = {
     //authHelper
@@ -167,8 +168,10 @@ let commands = {
             anno.handleTabUpdate(getPathFromUrl(changeInfo.url), tabId);
         }
     },
-    'HANDLE_TAB_REMOVED': (tab) => {
+    'HANDLE_TAB_REMOVED': (tab, url) => {
+        console.log("tab!", url)
         anno.unsubscribeAnnotations();
+        elastic.removeQueryForScroll(url)
         chrome.storage.local.get(['sidebarStatus'], sidebarStatus => {
             sidebarStatus = sidebarStatus.sidebarStatus;
             const newSidebarStatus = sidebarStatus !== undefined && sidebarStatus.length ? sidebarStatus.filter(side => side.id !== tab) : [];
@@ -254,7 +257,8 @@ let commands = {
     // elasticSearchWrapper
     'SEARCH_ELASTIC': elastic.searchElastic,
     'GROUP_ELASTIC': elastic.groupElastic,
-    'SCROLL_ELASTIC': elastic.scrollElastic,
+    'SCROLL_ELASTIC': elastic.searchElastic,
+    // 'SCROLL_ELASTIC': elastic.scrollElastic,
     "SEARCH_ELASTIC_BY_ID": elastic.searchElasticById,
     "REFRESH_FOR_CONTENT_UPDATED": elastic.refreshContentUpdate,
     'REMOVE_PAGINATION_SEARCH_CACHE': elastic.removePaginationSearchCache,
@@ -290,12 +294,16 @@ chrome.contextMenus.onClicked.addListener((info) => {
 });
 
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
+    tabToUrl[tabId] = tab.url;
     commands['HANDLE_TAB_URL_UPDATE'](tabId, changeInfo, tab);
     return true;
 });
 
 chrome.tabs.onRemoved.addListener(function (tab) {
-    commands['HANDLE_TAB_REMOVED'](tab);
+    commands['HANDLE_TAB_REMOVED'](tab, tabToUrl[tab]);
+
+    // Remove information for non-existent tab
+    delete tabToUrl[tab];
     return true;
 });
 

@@ -257,7 +257,6 @@ class SearchBar extends React.Component {
                     userSearch: inputText
                 },
                     response => {
-                        console.log("response!!", response)
                         resolve(response.response);
                     });
             });
