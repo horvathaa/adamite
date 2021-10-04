@@ -1,7 +1,6 @@
-import { DB_COLLECTIONS, db, getCurrentUserId } from '../index';
 import firebase from '../firebase';
 
 
-export const searchElastic = (userQuery) => {
-    return firebase.functions().httpsCallable('elasticApiAuth')({}).then((result) => { return result });
-  }
+export const searchFirebaseFunction = (userQuery) => {
+  return firebase.functions().httpsCallable('search')({ userQuery }).then((result) => { return result });
+}

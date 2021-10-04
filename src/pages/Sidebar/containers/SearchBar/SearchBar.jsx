@@ -204,10 +204,9 @@ class SearchBar extends React.Component {
             this.inputRef.current.blur();
             this.ElasticSearch2(input.value)
                 .then(res => {
-                    const results = res.data.hits.hits.map(h => h._source)
-                    this.setState({ hits: res.data.hits.total.value })
-                    this.props.searchedSearchCount(res.data.hits.total.value);
-                    this.props.handleSearchBarInputText({ suggestion: results, searchState: true })
+                    this.setState({ hits: res.hits })
+                    this.props.searchedSearchCount(res.hit);
+                    this.props.handleSearchBarInputText({ suggestion: res.results, searchState: true })
                 })
         }
         /* Backspace clear search */
@@ -228,21 +227,6 @@ class SearchBar extends React.Component {
 
     }
 
-    doanothersearch = (id) => {
-        return new Promise((resolve, reject) => {
-            chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-                let url = tabs[0].url;
-                chrome.runtime.sendMessage({
-                    msg: 'SEARCH_ELASTIC_BY_ID',
-                    id: id,
-                    url: url
-                },
-                    response => {
-                        resolve(response.response);
-                    });
-            });
-        });
-    }
 
     ElasticSearch2 = (inputText) => {
         return new Promise((resolve, reject) => {
@@ -258,7 +242,6 @@ class SearchBar extends React.Component {
                     userSearch: inputText
                 },
                     response => {
-                        // console.log('response is probs messed up', response)
                         resolve(response.response);
                     });
             });
@@ -268,10 +251,7 @@ class SearchBar extends React.Component {
     onSuggestionsFetchRequested = ({ value }) => {
         this.ElasticSearch2(value)
             .then(res => {
-                // console.log("THESE RAW REZ", res.data.hits.total.value)
-                const results = res.data.hits.hits.map(h => h._source)
-                // console.log("THESE RESULTS", results)
-                this.setState({ suggestions: results, hits: res.data.hits.total.value })
+                this.setState({ suggestions: res.results, hits: res.hits })
             })
     }
 

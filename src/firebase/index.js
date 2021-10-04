@@ -28,3 +28,4 @@ export const getElasticApiKey = () => {
 
 export * from './functions/userFunctions';
 export * from './functions/annotationFunctions';
+export * from './functions/searchFunctions';
