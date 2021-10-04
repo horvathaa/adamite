@@ -7,7 +7,6 @@ import {
   signInWithGoogle,
   signInWithGithub,
   signOut,
-  getElasticApiKey
 } from '../../../firebase/index';
 
 let currentUser = null;
@@ -22,16 +21,16 @@ auth.onAuthStateChanged(user => {
       broadcastAuthStatus(null);
       return;
     }
-    getElasticApiKey().then(function (e) {
-      chrome.storage.sync.set({
-        'ElasticAPIKey': e,
-      });
-    })
+    // getElasticApiKey().then(function (e) {
+    //   chrome.storage.sync.set({
+    //     'ElasticAPIKey': e,
+    //   });
+    // })
   }
   else {
-    chrome.storage.sync.set({
-      'ElasticAPIKey': '',
-    });
+    // chrome.storage.sync.set({
+    //   'ElasticAPIKey': '',
+    // });
     chrome.storage.local.set({ 'groups': [] });
   }
 });

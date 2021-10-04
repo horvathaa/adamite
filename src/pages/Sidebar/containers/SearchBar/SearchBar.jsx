@@ -227,21 +227,6 @@ class SearchBar extends React.Component {
 
     }
 
-    doanothersearch = (id) => {
-        return new Promise((resolve, reject) => {
-            chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-                let url = tabs[0].url;
-                chrome.runtime.sendMessage({
-                    msg: 'SEARCH_ELASTIC_BY_ID',
-                    id: id,
-                    url: url
-                },
-                    response => {
-                        resolve(response.response);
-                    });
-            });
-        });
-    }
 
     ElasticSearch2 = (inputText) => {
         return new Promise((resolve, reject) => {

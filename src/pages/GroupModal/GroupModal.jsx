@@ -115,7 +115,6 @@ class Groups extends React.Component {
             return;
         }
         let emails = this.state.emails.filter(e => e !== this.props.email)
-
         await chrome.runtime.sendMessage({
             msg: 'ADD_NEW_GROUP',
             from: 'content',
