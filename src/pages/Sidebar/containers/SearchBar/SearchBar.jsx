@@ -190,7 +190,6 @@ class SearchBar extends React.Component {
         if (method !== 'click' && method !== 'enter') {
             this.setState({ value: newValue })
         }
-        console.log("newvalue!", newValue, method)
         if (newValue === "") {
             this.setState({ isLoading: true })
         }
@@ -208,7 +207,7 @@ class SearchBar extends React.Component {
                 .then(res => {
                     this.setState({ hits: res.hits, isLoading: false})
                     this.props.searchedSearchCount(res.hit);
-                    this.props.handleSearchBarInputText({ suggestion: res.results, searchState: true })
+                    this.props.handleSearchBarInputText({ suggestion: res.results, searchState: true, hits: res.hits })
                 })
         }
         else if(event.keyCode === 8 && input.value.length > 0){
@@ -368,7 +367,6 @@ class SearchBar extends React.Component {
             onChange: this.onChange
         }
 
-        console.log("inputs", inputProps, this.state)
 
         return (
             <React.Fragment >

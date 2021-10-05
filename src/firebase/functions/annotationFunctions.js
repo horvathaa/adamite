@@ -183,7 +183,6 @@ export const updateAllAnnotations = () => {
 export const getPhotoUrlByAuthId = authIds => {
   return db.collection(DB_COLLECTIONS.USERS)
     .where('uid', 'in', authIds)
-    // .orderBy('photoURL')
 };
 
 // export const updateAllGroups = () => {
