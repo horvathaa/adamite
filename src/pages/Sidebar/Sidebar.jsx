@@ -1,6 +1,5 @@
 import React from 'react';
 import './Sidebar.css';
-import classNames from 'classnames';
 import Title from './containers/Title/Title';
 import Authentication from './containers//Authentication//Authentication';
 import AnnotationList from './containers/AnnotationList/AnnotationList';
@@ -9,7 +8,6 @@ import FilterSummary from './containers/Filter/FilterSummary';
 import SearchBar from './containers/SearchBar/SearchBar';
 import { v4 as uuidv4 } from 'uuid';
 import Annotation from './containers/AnnotationList/Annotation/Annotation';
-import { BiGroup } from 'react-icons/bi';
 import {
   getPathFromUrl,
   containsObject,
@@ -19,7 +17,6 @@ import {
   removeDuplicates,
   checkTimeRange
 } from "./utils"
-import GroupMultiSelect from './containers/Filter/MultiSelect/MultiSelect';
 
 let pjson = require('../../../package.json');
 
@@ -951,7 +948,7 @@ class Sidebar extends React.Component {
     else {
       tempSearchCount = this.returnFilteredAnnotations(renderedAnnotations).length;
     }
-    // const newAnnoId = uuidv4();
+
     return (
 
       <div className="SidebarContainer" >

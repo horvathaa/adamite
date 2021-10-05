@@ -85,22 +85,12 @@ const Annotation = ({ idx, annotation, isNew = false, notifyParentOfPinning, scr
         "Normal",
         <BiComment alt={`${anno.type} type badge`} className="badgeIconSvg" />);
     }
-    // else if (anno.type === 'erased') {
-    //   return renderBadgeInner(
-    //     "Erased",
-    //     <BiEraser alt={`${anno.type} type badge`} className="badgeIconSvg" />);
-    // }
     else {
       return renderBadgeInner(
         "Highlight",
         <FaHighlighter alt={`${anno.type} type badge`} className="badgeIconSvg" />);
     }
   }
-
-
-
-
-
   return (<div>
     <AnnotationContext.Provider
       value={{

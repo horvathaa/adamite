@@ -19,6 +19,7 @@ import { BiComment, BiTask, BiAnchor } from 'react-icons/bi';
 import { AiOutlineQuestionCircle, AiOutlineExclamationCircle } from 'react-icons/ai';
 import { FaHighlighter } from 'react-icons/fa';
 import { string } from 'prop-types';
+import loading from '../../../../assets/img/iframe-background.gif';
 
 const annoTypes = ['default', 'question', 'to-do', 'highlight', 'issue'];
 
@@ -57,19 +58,19 @@ class SearchBar extends React.Component {
             if (node.bold && node.italic && string !== "") {
                 string = `***${string}***`
             }
-            else if(node.bold && string !== "") {
+            else if (node.bold && string !== "") {
                 string = `**${string}**`
             }
-            else if(node.italic && string !== "") {
+            else if (node.italic && string !== "") {
                 string = `*${string}*`
             }
             if (node.code) {
                 string = `\`${string}\``
             }
-            
+
             return string
         }
-        if(!node.children) {
+        if (!node.children) {
             return string;
         }
         const children = node.children.map(n => this.deserializeJsonIntoPlainText(n)).join('');
@@ -90,7 +91,8 @@ class SearchBar extends React.Component {
         value: '',
         suggestions: [],
         dropDownValue: 'Global',
-        hits: 0
+        hits: 0,
+        isLoading: true
     }
     highlightSearchWords = (sentence, baseContent) => {
         sentence = Array.isArray(sentence) ? sentence[0] : sentence;
@@ -104,9 +106,6 @@ class SearchBar extends React.Component {
         )
     }
 
-
-
-
     renderSuggestion = suggestion => {
         var searchAnchorContent = this.state.value.split(" ");
         var anchorContent = suggestion.childAnchor[0].anchor;
@@ -119,10 +118,10 @@ class SearchBar extends React.Component {
                 anchorContent = suggestion.highlight.hasOwnProperty("childAnchor.anchor") ? suggestion.highlight["childAnchor.anchor"][0].replace(new RegExp('(<em>)|(<\/em>)', 'g'), '') : anchorContent;
             }
             if (suggestion.highlight.content !== undefined) {
-                if(isJson(suggestion.highlight.content) && searchContent.includes(JSON.parse(suggestion.highlight.content).language.replace(new RegExp('(<em>)|(<\/em>)', 'g'), ''))) {
+                if (isJson(suggestion.highlight.content) && searchContent.includes(JSON.parse(suggestion.highlight.content).language.replace(new RegExp('(<em>)|(<\/em>)', 'g'), ''))) {
                     content = content;
                 }
-                else if(isJson(suggestion.highlight.content)) {
+                else if (isJson(suggestion.highlight.content)) {
                     searchContent = this.highlightSearchWords(this.deserializeJsonIntoPlainText(suggestion.highlight.content), searchContent);
                     content = content;
                 }
@@ -143,7 +142,7 @@ class SearchBar extends React.Component {
                         <Tooltip title={"Author"} aria-label="Author">
                             <div className="Tag TypeTag TypeAuthor">{suggestion.author}</div>
                         </Tooltip>
-    
+
                         <Tooltip title={"Annotation Type"} aria-label="Annotation Type">
                             <div className="Tag TypeTag">
                                 {suggestion.type}&nbsp;
@@ -191,6 +190,10 @@ class SearchBar extends React.Component {
         if (method !== 'click' && method !== 'enter') {
             this.setState({ value: newValue })
         }
+        console.log("newvalue!", newValue, method)
+        if (newValue === "") {
+            this.setState({ isLoading: true })
+        }
     }
 
     onKeyDown = (event) => {
@@ -200,18 +203,19 @@ class SearchBar extends React.Component {
             event.preventDefault();
             event.stopPropagation();
 
-            // console.log("this was an enter", input.value);
             this.inputRef.current.blur();
             this.ElasticSearch2(input.value)
                 .then(res => {
-                    this.setState({ hits: res.hits })
+                    this.setState({ hits: res.hits, isLoading: false})
                     this.props.searchedSearchCount(res.hit);
                     this.props.handleSearchBarInputText({ suggestion: res.results, searchState: true })
                 })
         }
+        else if(event.keyCode === 8 && input.value.length > 0){
+            this.setState({ isLoading: true})
+        }
         /* Backspace clear search */
         else if (event.keyCode === 8 && input.value.length <= 1) {
-            // console.log("clearing search result")
             this.closeButton();
         }
     };
@@ -251,13 +255,13 @@ class SearchBar extends React.Component {
     onSuggestionsFetchRequested = ({ value }) => {
         this.ElasticSearch2(value)
             .then(res => {
-                this.setState({ suggestions: res.results, hits: res.hits })
+                // this.setState({ suggestions: res.results, hits: res.hits })
+                this.setState({ suggestions: res.results, hits: res.hits, isLoading: false })
             })
     }
 
     onSuggestionsClearRequested = () => {
-        this.setState({ suggestions: [], hits: 0 })
-        //this.props.searchedSearchCount(0);
+        this.setState({ suggestions: [], hits: 0, isLoading: true })
     }
 
     removeSearchCache = () => {
@@ -271,7 +275,7 @@ class SearchBar extends React.Component {
     }
 
     closeButton = () => {
-        this.setState({ suggestions: [], value: '', hits: 0 });
+        this.setState({ suggestions: [], value: '', hits: 0, isLoading: true });
         this.removeSearchCache();
         this.props.resetView();
     }
@@ -281,7 +285,7 @@ class SearchBar extends React.Component {
     }
 
     renderInputComponent = inputProps => {
-        const { value, suggestions, dropDownValue } = this.state
+        const { value, suggestions, dropDownValue, isLoading } = this.state
         let clearButton;
         if (value.length > 0) {
             clearButton = (
@@ -307,7 +311,10 @@ class SearchBar extends React.Component {
             <React.Fragment >
                 <div className={`SearchBarContainer ${suggestions.length === 0 || value.length === 0 ? '' : 'SearchBarContainer--open'}`} >
                     <div>
-                        <AiOutlineSearch />
+                        {isLoading && value !== "" ?
+                            <img className="loading-icon" src={loading} alt="loading..." />
+                            : <AiOutlineSearch />
+                        }
                     </div>
                     <input {...inputProps} />
                     <div className="close-icon-container">
@@ -350,7 +357,7 @@ class SearchBar extends React.Component {
     };
 
     render() {
-        const { value, suggestions } = this.state
+        const { value, suggestions, isLoading } = this.state
 
         const inputProps = {
             ref: this.inputRef,
@@ -360,7 +367,8 @@ class SearchBar extends React.Component {
             onKeyDown: this.onKeyDown,
             onChange: this.onChange
         }
-        var searchCount = this.state.value.length !== 0 && suggestions.length !== 0 ? this.state.hits : this.props.searchCount;
+
+        console.log("inputs", inputProps, this.state)
 
         return (
             <React.Fragment >

@@ -102,10 +102,12 @@ export async function getAnnotationsPageLoad(request, sender, sendResponse) {
 }
 
 export function getGroupAnnotations(request, sender, sendResponse) {
+    
     const { gid } = request.payload;
     fb.getGroupAnnotationsByGroupId(gid).get().then(function (querySnapshot) {
         let groupAnnotations = querySnapshot.empty ? [] : getListFromSnapshots(querySnapshot) // .filter(anno => anno.url.includes(request.payload.url));
         groupAnnotations = groupAnnotations.filter(anno => !anno.deleted)
+        console.log('Getting Groups', groupAnnotations);
         sendResponse(groupAnnotations)
     }).catch(function (error) {
         console.error('Get group annotation error', error)
