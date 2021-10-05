@@ -1,4 +1,4 @@
-import { searchFirebaseFunction } from '../../../firebase/index';
+import { searchFirebaseFunction, getPhotoUrlByAuthId } from '../../../firebase/index';
 
 export async function searchElastic(request, sender, sendResponse) {
     retrieveUrlQuery(request.url).then(async previousResults => {
@@ -52,6 +52,7 @@ function storeQueryForScroll2(userRequest, total, from) {
 export function removeQueryForScroll(url) {
     chrome.storage.local.get([url], function (result) {
         if (typeof result === "undefined" || (Object.keys(result).length === 0 && result.constructor === Object)) {
+            return
         }
         else {
             chrome.storage.local.remove(url)

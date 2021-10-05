@@ -227,6 +227,16 @@
   display: flex;
 }
 
+.loadingScrollWrapper {
+  margin-top: -40px;
+  text-align: center;
+}
+
+.loadingScrollIcon {
+  height: 160px;
+  width: 160px;
+}
+
 .FilterSummary {
   padding: 5px;
   background: white;

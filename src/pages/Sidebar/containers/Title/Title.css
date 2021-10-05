@@ -10,6 +10,8 @@
   background: white;
 }
 
+
+
 .GroupLimitTitle {
   max-width: 150px;
   overflow: scroll;
@@ -182,7 +184,7 @@
 
 .TitleContainer .container .row .btn-primary:focus, .btn:active {
   color:transparent;
-  background-color: transparent;
+  background-color: transparent !important;
   border-color: transparent;
   box-shadow: 0 0 0 0 transparent;
 

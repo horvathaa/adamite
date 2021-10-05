@@ -1,6 +1,5 @@
 import React from 'react';
 import './Sidebar.css';
-import classNames from 'classnames';
 import Title from './containers/Title/Title';
 import Authentication from './containers//Authentication//Authentication';
 import AnnotationList from './containers/AnnotationList/AnnotationList';
@@ -9,7 +8,8 @@ import FilterSummary from './containers/Filter/FilterSummary';
 import SearchBar from './containers/SearchBar/SearchBar';
 import { v4 as uuidv4 } from 'uuid';
 import Annotation from './containers/AnnotationList/Annotation/Annotation';
-import { BiGroup } from 'react-icons/bi';
+import loading from '../../assets/img/512px-Loader.gif';
+import debounce from "debounce";
 import {
   getPathFromUrl,
   containsObject,
@@ -19,9 +19,10 @@ import {
   removeDuplicates,
   checkTimeRange
 } from "./utils"
-import GroupMultiSelect from './containers/Filter/MultiSelect/MultiSelect';
+
 
 let pjson = require('../../../package.json');
+
 
 
 class Sidebar extends React.Component {
@@ -50,6 +51,7 @@ class Sidebar extends React.Component {
     dropdownOpen: false,
     searchBarInputText: '',
     searchState: false,
+    hits: 0,
     showFiltered: true,
     firstTimeUserPrompt: false,
     showPinned: false,
@@ -70,7 +72,8 @@ class Sidebar extends React.Component {
       timeRange: 'all',
       showArchived: false,
       tags: []
-    }
+    },
+    isLoading: false,
   };
 
   setUpAnnotationsListener = (uid, url, tabId) => {
@@ -121,23 +124,28 @@ class Sidebar extends React.Component {
     });
   }
 
-  handleScroll = (event, filterSelection) => {
-    const scrollIsAtTheBottom = (document.documentElement.scrollHeight - window.innerHeight) - 1 <= Math.floor(window.scrollY);
-    if (scrollIsAtTheBottom && this.state.searchState) {
-      this.ElasticSearch("SCROLL_ELASTIC")
-        .then(res => {
-          this.setState({
-            searchedAnnotations: this.state.searchedAnnotations.concat(res.response ? res.response.results: [])
-          })
-        })
-    }
-    else if (scrollIsAtTheBottom && filterSelection.siteScope.includes('acrossWholeSite')) {
-      this.filterAcrossWholeSite(filterSelection);
-    }
+  handleScroll = () => {
+      const scrollIsAtTheBottom = (document.documentElement.scrollHeight - window.innerHeight) - 1 <= Math.floor(window.scrollY);
+      const {hits, searchedAnnotations} = this.state
+
+      if (scrollIsAtTheBottom && this.state.searchState) {
+        if (hits > searchedAnnotations.length) {
+          this.setState({ isLoading: true })
+
+          this.ElasticSearch("SCROLL_ELASTIC")
+            .then(res => {
+              this.setState({
+                hits: res.response ? res.response.hits : 0,
+                searchedAnnotations: this.state.searchedAnnotations.concat(res.response ? res.response.results : []),
+                isLoading: false,
+              })
+            })
+        }
+      }
   }
 
   componentDidMount() {
-    window.addEventListener('scroll', (event) => this.handleScroll(event, this.state.filterSelection));
+    window.addEventListener('scroll', debounce(this.handleScroll, 500));
     chrome.runtime.sendMessage(
       {
         msg: 'GET_CURRENT_USER',
@@ -145,7 +153,6 @@ class Sidebar extends React.Component {
       currentUserData => {
         this.setState({ currentUser: currentUserData.payload.currentUser });
         if (currentUserData.payload.currentUser) {
-          // console.log('in this set up groups listener');
           this.setUpGroupsListener(
             currentUserData.payload.currentUser.uid
           );
@@ -188,7 +195,6 @@ class Sidebar extends React.Component {
     })
 
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-      // console.log('caught this message', request, sender);
       if (
         request.from === 'background' &&
         request.msg === 'USER_AUTH_STATUS_CHANGED'
@@ -208,18 +214,18 @@ class Sidebar extends React.Component {
             'enabled': true
           })
         } else {
-            chrome.runtime.sendMessage({
-              from: 'sidebar',
-              msg: 'UNSUBSCRIBE'
-            })
-            chrome.contextMenus.update('contextMenuBadge', {
-              'enabled': false
-            })
-            this.setState({ annotations: [], filteredAnnotations: [], searchedAnnotations: [], groupAnnotations: [], pinnedAnnos: [], groups: [], activeGroups: [] })
+          chrome.runtime.sendMessage({
+            from: 'sidebar',
+            msg: 'UNSUBSCRIBE'
+          })
+          chrome.contextMenus.update('contextMenuBadge', {
+            'enabled': false
+          })
+          this.setState({ annotations: [], filteredAnnotations: [], searchedAnnotations: [], groupAnnotations: [], pinnedAnnos: [], groups: [], activeGroups: [] })
         }
-      } 
-      else if(
-        request.from === 'background' && 
+      }
+      else if (
+        request.from === 'background' &&
         request.msg === 'PROMPT_FOR_EMAIL_PASS'
       ) {
         this.setState({ firstTimeUserPrompt: true });
@@ -253,10 +259,10 @@ class Sidebar extends React.Component {
         request.msg === 'ANCHOR_UNHOVERED'
       ) {
         const { target } = request.payload;
-        const anchorIds = target.map(id => id.slice(37,73))
+        const anchorIds = target.map(id => id.slice(37, 73))
         anchorIds.forEach((anch, idx) => {
           const anchor = document.getElementById(anch);
-          if(anchor !== null) {
+          if (anchor !== null) {
             anchor.classList.remove("Clicked")
           }
         })
@@ -266,39 +272,39 @@ class Sidebar extends React.Component {
         request.msg === 'ANCHOR_HOVERED'
       ) {
         const { target } = request.payload;
-        const annoIds = target.map(id => id.slice(0,36))
-        const anchorIds = target.map(id => id.slice(37,73))
+        const annoIds = target.map(id => id.slice(0, 36))
+        const anchorIds = target.map(id => id.slice(37, 73))
         const clickedAnnos = this.state.filteredAnnotations.filter(anno => annoIds.includes(anno.id));
         clickedAnnos.forEach((anno, idx) => {
-            const anchor = document.getElementById(anchorIds[idx]);
-            if(anchor !== null) {
-              anchor.classList.add("Clicked")
-            }
-          })
+          const anchor = document.getElementById(anchorIds[idx]);
+          if (anchor !== null) {
+            anchor.classList.add("Clicked")
+          }
+        })
       }
       else if (
         request.from === 'content' &&
         request.msg === 'ANCHOR_CLICKED'
       ) {
         const { target } = request.payload;
-        const annoIds = target.map(id => id.slice(0,36))
-        const anchorIds = target.map(id => id.slice(37,73))
+        const annoIds = target.map(id => id.slice(0, 36))
+        const anchorIds = target.map(id => id.slice(37, 73))
         const clickedAnnos = this.state.filteredAnnotations.filter(anno => annoIds.includes(anno.id));
         clickedAnnos.forEach((anno, idx) => {
-            let annoDiv = document.getElementById(anno.id);
-            annoDiv.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
-            const anchor = document.getElementById(anchorIds[idx]);
-            if(anchor !== null) {
-              anchor.classList.add("Clicked")
+          let annoDiv = document.getElementById(anno.id);
+          annoDiv.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+          const anchor = document.getElementById(anchorIds[idx]);
+          if (anchor !== null) {
+            anchor.classList.add("Clicked")
+          }
+          chrome.tabs.sendMessage(
+            this.state.tabId,
+            {
+              msg: 'ANNOTATION_FOCUS',
+              id: anno.id,
             }
-            chrome.tabs.sendMessage(
-              this.state.tabId,
-              {
-                msg: 'ANNOTATION_FOCUS',
-                id: anno.id,
-              }
-            );
-          })
+          );
+        })
       } else if (
         request.from === 'background' &&
         request.msg === 'TOGGLE_SIDEBAR'
@@ -327,7 +333,7 @@ class Sidebar extends React.Component {
           msg: 'REQUEST_SIDEBAR_STATUS',
           from: 'content'
         }, (sidebarOpen) => {
-          if (sidebarOpen !== undefined && typeof(sidebarOpen) === "boolean" && sidebarOpen) {
+          if (sidebarOpen !== undefined && typeof (sidebarOpen) === "boolean" && sidebarOpen) {
             // REAALLLY hate this so-called "solution" lmao
             chrome.runtime.sendMessage({
               msg: 'REQUEST_TOGGLE_SIDEBAR',
@@ -359,7 +365,7 @@ class Sidebar extends React.Component {
               this.requestFilterUpdate();
             });
           }
-          else if(sidebarOpen === 'annotateOnly') {
+          else if (sidebarOpen === 'annotateOnly') {
             chrome.tabs.sendMessage(request.tabId, {
               msg: 'HIGHLIGHT_ANNOTATIONS',
               payload: request.payload,
@@ -476,7 +482,7 @@ class Sidebar extends React.Component {
   }
 
   openBugForm = () => {
-    const userName = this.state.currentUser.email.substring(0, this.state.currentUser.email.indexOf('@')); 
+    const userName = this.state.currentUser.email.substring(0, this.state.currentUser.email.indexOf('@'));
     chrome.tabs.create({ 'url': 'https://docs.google.com/forms/d/e/1FAIpQLScA3vI8-q5CSJpxDbmuM8tjQuvoCdu9XM6KTTieUrJeHHcGOw/viewform?usp=pp_url&entry.1555642790=' + userName + '&entry.1692277697=' + pjson.version + '&entry.872204213=I+think+I\'m+experiencing+a+bug+with+Adamite&entry.896576682=Your+question+here&entry.1167786342=Your+bug+here' })
   }
 
@@ -501,10 +507,10 @@ class Sidebar extends React.Component {
     }
     options.forEach(group => {
       if (group.value === "onlyme") {
-        this.setState({ filteredAnnotations: this.state.annotations.filter(anno => anno.authorId === uid), groupAnnotations: [], activeGroups: ['Private']})
+        this.setState({ filteredAnnotations: this.state.annotations.filter(anno => anno.authorId === uid), groupAnnotations: [], activeGroups: ['Private'] })
       }
       else if (group.value === "public") {
-        this.setState({ filteredAnnotations: this.state.annotations, groupAnnotations: [], activeGroups: ['Public']})
+        this.setState({ filteredAnnotations: this.state.annotations, groupAnnotations: [], activeGroups: ['Public'] })
       }
       else {
         chrome.runtime.sendMessage({
@@ -612,6 +618,8 @@ class Sidebar extends React.Component {
   resetView = () => {
     this.setState({
       searchState: false,
+      hits: 0,
+      isLoading: false,
       searchedAnnotations: [],
       searchCount: 0
     })
@@ -627,7 +635,8 @@ class Sidebar extends React.Component {
   handleSearchBarInputText = (searchAnnotations) => {
     this.setState({
       searchState: searchAnnotations.searchState,
-      searchedAnnotations: searchAnnotations.suggestion
+      searchedAnnotations: searchAnnotations.suggestion,
+      hits: searchAnnotations.hits
     });
     if (!searchAnnotations.suggestion.length) {
       chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
@@ -711,28 +720,6 @@ class Sidebar extends React.Component {
     return !annotation.archived || (includeArchived && annotation.archived)
   }
 
-  // sendTagToBackground(tag) {
-  //   return new Promise((resolve, reject) => {
-  //     chrome.runtime.sendMessage({
-  //       from: 'content',
-  //       msg: 'SEARCH_BY_TAG',
-  //       payload: { tag: tag }
-  //     },
-  //       response => {
-  //         resolve(response.annotations);
-  //       });
-  //   });
-  // }
-
-  // searchByTag = (tag) => {
-  //   this.sendTagToBackground(tag).then(annotations => {
-  //     //should these annos ignore the currently in place filter? not sure
-  //     // for now, ignoring because of sitewide filters
-  //     this.setState({ filteredAnnotations: annotations });
-  //     this.setState({ annotations: annotations });
-  //   });
-  // }
-
   getFilteredAnnotationListLength = () => {
     return this.state.filteredAnnotations.length;
   }
@@ -770,17 +757,17 @@ class Sidebar extends React.Component {
 
   applyFilter = (filterSelection) => {
     this.setState({ filterSelection: filterSelection });
-      this.setState({
-        filteredAnnotations:
-          this.state.annotations.filter(annotation => {
-            return this.checkSiteScope(annotation, filterSelection.siteScope) &&
-              this.checkUserScope(annotation, filterSelection.userScope) &&
-              this.checkAnnoType(annotation, filterSelection.annoType) &&
-              checkTimeRange(annotation, filterSelection.timeRange) &&
-              this.checkTags(annotation, filterSelection.tags) &&
-              this.checkArchived(annotation, filterSelection.showArchived)
-          })
-      });
+    this.setState({
+      filteredAnnotations:
+        this.state.annotations.filter(annotation => {
+          return this.checkSiteScope(annotation, filterSelection.siteScope) &&
+            this.checkUserScope(annotation, filterSelection.userScope) &&
+            this.checkAnnoType(annotation, filterSelection.annoType) &&
+            checkTimeRange(annotation, filterSelection.timeRange) &&
+            this.checkTags(annotation, filterSelection.tags) &&
+            this.checkArchived(annotation, filterSelection.showArchived)
+        })
+    });
   }
 
   requestFilterUpdate() {
@@ -867,7 +854,7 @@ class Sidebar extends React.Component {
     }
 
     renderedAnnotations.forEach(annotation => {
-      if(annotation.tags !== undefined) {
+      if (annotation.tags !== undefined) {
         annotation.tags.forEach(tag => {
           if (tagSet.hasOwnProperty(tag)) {
             tagSet[tag] += 1;
@@ -877,7 +864,7 @@ class Sidebar extends React.Component {
           }
         });
       }
-      if(annotation.replies !== undefined && annotation.replies.length) {
+      if (annotation.replies !== undefined && annotation.replies.length) {
         const replyTags = annotation.replies.filter(r => r.tags !== undefined && r.tags.length).map(r => r.tags)
         replyTags.forEach(tag => {
           if (tagSet.hasOwnProperty(tag)) {
@@ -898,7 +885,7 @@ class Sidebar extends React.Component {
         }
       })
     })
-      
+
     return tagSet;
   }
 
@@ -910,7 +897,7 @@ class Sidebar extends React.Component {
   }
 
   render() {
-    const { currentUser, filteredAnnotations, searchBarInputText, searchedAnnotations, groupAnnotations, filteredGroupAnnotations, pinnedAnnos, groups, activeGroups, sortBy, pageLocationSort } = this.state;
+    const { currentUser, filteredAnnotations, searchBarInputText, searchedAnnotations, groupAnnotations, filteredGroupAnnotations, pinnedAnnos, groups, activeGroups, sortBy, pageLocationSort, isLoading } = this.state;
     if (currentUser === undefined) {
       return null;
     }
@@ -951,12 +938,12 @@ class Sidebar extends React.Component {
     else {
       tempSearchCount = this.returnFilteredAnnotations(renderedAnnotations).length;
     }
-    // const newAnnoId = uuidv4();
+
     return (
 
       <div className="SidebarContainer" >
 
-        <Title 
+        <Title
           currentUser={currentUser}
           groups={groups}
           handleShowAnnotatePage={this.handleShowAnnotatePage}
@@ -972,87 +959,87 @@ class Sidebar extends React.Component {
         {currentUser === null && <Authentication />}
         {currentUser !== null && (
           <div className="SideBarCardContent">
-          <div className="ControlPanel">
-            <div className="TopRow">
-              <SearchBar
-                searchBarInputText={searchBarInputText}
-                handleSearchBarInputText={this.handleSearchBarInputText}
-                searchCount={this.state.searchCount === 0 ? tempSearchCount : this.state.searchCount}
-                url={this.state.url}
-                resetView={this.resetView}
-                searchedSearchCount={this.searchedSearchCount}
-              />
-            </div>
-            <div>
-              <div className="FilterSummaryContainer">
-                {renderedAnnotations.length || this.state.annotations.length ?
-                  (<FilterSummary
-                    applyFilter={this.applyFilter}
-                    groups={groups}
-                    filter={this.state.filterSelection}
-                    openFilter={this.openFilter}
-                    filterTags={this.filterTags}
-                    uid={currentUser.uid}
-                    tempSearchCount={tempSearchCount}
-                    showingSelectedAnno={this.state.showClearClickedAnnotation}
-                    clearSelectedAnno={this.clearSelectedAnno}
-                    notifySidebarSort={this.notifySidebarSort}
-                    currentSort={this.state.sortBy}
-                    filteredAnnotations={renderedAnnotations}
-                    numArchivedAnnotations={this.state.annotations.filter(anno => anno.archived).length}
-                  />) : (null)
-                }
+            <div className="ControlPanel">
+              <div className="TopRow">
+                <SearchBar
+                  searchBarInputText={searchBarInputText}
+                  handleSearchBarInputText={this.handleSearchBarInputText}
+                  searchCount={this.state.searchCount === 0 ? tempSearchCount : this.state.searchCount}
+                  url={this.state.url}
+                  resetView={this.resetView}
+                  searchedSearchCount={this.searchedSearchCount}
+                />
               </div>
-              {(this.state.firstTimeUserPrompt) && 
-                (
-                  <GetUserEmailPass notifySidebarOfPassword={this.notifySidebarOfPassword} />
-                )
-              }
-              
-              {(this.state.newSelection || this.state.annotatingPage) &&
-                (
-                  <Annotation
-                    key={uuidv4()}
-                    idx={-1}
-                    isNew={true}
-                    annotation={{
-                      id: this.state.newAnnotationId,
-                      type: this.state.newAnnotationType,
-                      content: this.state.newAnnotationContent ?? '',
-                      tags: [],
-                      isPrivate: true,
-                      groups: [],
-                      childAnchor: this.state.annotatingPage ? [
-                        {
-                          id: uuidv4(),
-                          anchor: this.state.pageName,
-                          parentId: this.state.newAnnotationId,
-                          xpath: null,
-                          offsets: null,
-                          url: this.state.url,
-                          tags: []
-                        }
-                      ] : [
-                        {
-                          id: uuidv4(),
-                          anchor: this.state.newSelection,
-                          parentId: this.state.newAnnotationId,
-                          xpath: this.state.xpath,
-                          offsets: this.state.offsets,
-                          url: this.state.url,
-                          tags: []
-                        }
-                      ]
-                    }}
-                    notifyParentOfPinning={this.handlePinnedAnnotation}
-                    userGroups={groups}
-                    currentUrl={this.state.url}
-                    currentUser={currentUser}
-                    resetNewSelection={this.resetNewSelection}
-                    scrollToNewAnnotation={this.scrollToNewAnnotation}
-                  />
-                )}
-            </div>
+              <div>
+                <div className="FilterSummaryContainer">
+                  {renderedAnnotations.length || this.state.annotations.length ?
+                    (<FilterSummary
+                      applyFilter={this.applyFilter}
+                      groups={groups}
+                      filter={this.state.filterSelection}
+                      openFilter={this.openFilter}
+                      filterTags={this.filterTags}
+                      uid={currentUser.uid}
+                      tempSearchCount={tempSearchCount}
+                      showingSelectedAnno={this.state.showClearClickedAnnotation}
+                      clearSelectedAnno={this.clearSelectedAnno}
+                      notifySidebarSort={this.notifySidebarSort}
+                      currentSort={this.state.sortBy}
+                      filteredAnnotations={renderedAnnotations}
+                      numArchivedAnnotations={this.state.annotations.filter(anno => anno.archived).length}
+                    />) : (null)
+                  }
+                </div>
+                {(this.state.firstTimeUserPrompt) &&
+                  (
+                    <GetUserEmailPass notifySidebarOfPassword={this.notifySidebarOfPassword} />
+                  )
+                }
+
+                {(this.state.newSelection || this.state.annotatingPage) &&
+                  (
+                    <Annotation
+                      key={uuidv4()}
+                      idx={-1}
+                      isNew={true}
+                      annotation={{
+                        id: this.state.newAnnotationId,
+                        type: this.state.newAnnotationType,
+                        content: this.state.newAnnotationContent ?? '',
+                        tags: [],
+                        isPrivate: true,
+                        groups: [],
+                        childAnchor: this.state.annotatingPage ? [
+                          {
+                            id: uuidv4(),
+                            anchor: this.state.pageName,
+                            parentId: this.state.newAnnotationId,
+                            xpath: null,
+                            offsets: null,
+                            url: this.state.url,
+                            tags: []
+                          }
+                        ] : [
+                          {
+                            id: uuidv4(),
+                            anchor: this.state.newSelection,
+                            parentId: this.state.newAnnotationId,
+                            xpath: this.state.xpath,
+                            offsets: this.state.offsets,
+                            url: this.state.url,
+                            tags: []
+                          }
+                        ]
+                      }}
+                      notifyParentOfPinning={this.handlePinnedAnnotation}
+                      userGroups={groups}
+                      currentUrl={this.state.url}
+                      currentUser={currentUser}
+                      resetNewSelection={this.resetNewSelection}
+                      scrollToNewAnnotation={this.scrollToNewAnnotation}
+                    />
+                  )}
+              </div>
             </div>
             <div className="userQuestions">
               {pinnedAnnosCopy.length ? (
@@ -1093,30 +1080,38 @@ class Sidebar extends React.Component {
                   There's nothing here! Try searching for an annotation, modifying your groups or filters, or creating a new annotation
                 </div>
               ) : (
-                <AnnotationList annotations={this.returnFilteredAnnotations(renderedAnnotations)}
-                  groups={groups}
-                  currentUser={currentUser}
-                  url={this.state.url}
-                  requestFilterUpdate={this.requestChildAnchorFilterUpdate}
-                  notifyParentOfPinning={this.handlePinnedAnnotation} />
+                <React.Fragment>
+                  <AnnotationList annotations={this.returnFilteredAnnotations(renderedAnnotations)}
+                    groups={groups}
+                    currentUser={currentUser}
+                    url={this.state.url}
+                    requestFilterUpdate={this.requestChildAnchorFilterUpdate}
+                    notifyParentOfPinning={this.handlePinnedAnnotation} />
+
+                  {searchedAnnotations.length > 0 && isLoading &&
+                    <div className="loadingScrollWrapper">
+                      <img className="loadingScrollIcon" src={loading} alt="loading..." />
+                    </div>
+                  }
+                </React.Fragment>
               )}
               {searchedAnnotations.length && filteredAnnotations.length ? (
-                  <div className="userQuestionButtonContainer">
-                    <div className="ModifyFilter userQuestions" onClick={_ => {
-                      this.setState({ showFiltered: !this.state.showFiltered })
-                    }}>
-                      {this.state.showFiltered ? ("Hide " + (filteredAnnotations.length) + " Annotations On Page") : ("Show " + (filteredAnnotations.length) + " Annotations On Page")}
-                    </div>
+                <div className="userQuestionButtonContainer">
+                  <div className="ModifyFilter userQuestions" onClick={_ => {
+                    this.setState({ showFiltered: !this.state.showFiltered })
+                  }}>
+                    {this.state.showFiltered ? ("Hide " + (filteredAnnotations.length) + " Annotations On Page") : ("Show " + (filteredAnnotations.length) + " Annotations On Page")}
                   </div>
+                </div>
 
               ) : (null)}
               {(this.state.showFiltered && searchedAnnotations.length) ?
-              <AnnotationList annotations={filteredAnnotations}
+                <AnnotationList annotations={filteredAnnotations}
                   currentUser={currentUser}
                   url={this.state.url}
                   requestFilterUpdate={this.requestChildAnchorFilterUpdate}
                   notifyParentOfPinning={this.handlePinnedAnnotation} />
-              : (null)}
+                : (null)}
 
 
               {((this.state.url !== '') && (this.state.url.includes("facebook.com") || this.state.url.includes("google.com") || this.state.url.includes("twitter.com"))) && !this.state.url.includes("developer") ? (
@@ -1125,7 +1120,7 @@ class Sidebar extends React.Component {
                 </div>
               ) : (null)}
             </div>
-          
+
           </div>
         )
         }

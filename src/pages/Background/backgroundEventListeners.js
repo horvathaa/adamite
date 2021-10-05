@@ -256,12 +256,9 @@ let commands = {
 
     // elasticSearchWrapper
     'SEARCH_ELASTIC': elastic.searchElastic,
-    // 'GROUP_ELASTIC': elastic.groupElastic,
     'SCROLL_ELASTIC': elastic.searchElastic,
-    // 'SCROLL_ELASTIC': elastic.scrollElastic,
-    // "SEARCH_ELASTIC_BY_ID": elastic.searchElasticById,
-    // "REFRESH_FOR_CONTENT_UPDATED": elastic.refreshContentUpdate,
     'REMOVE_PAGINATION_SEARCH_CACHE': elastic.removePaginationSearchCache,
+
 
 };
 

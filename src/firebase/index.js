@@ -22,10 +22,6 @@ export const getCurrentUserId = () => {
   }
 };
 
-export const getElasticApiKey = () => {
-  return firebase.functions().httpsCallable('elasticApiAuth')({}).then((result) => { return result });
-}
-
 export * from './functions/userFunctions';
 export * from './functions/annotationFunctions';
 export * from './functions/searchFunctions';

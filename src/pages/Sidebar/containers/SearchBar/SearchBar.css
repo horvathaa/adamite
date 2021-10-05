@@ -380,3 +380,9 @@ code {
     border-left: 1px solid #ccc;
   }
   
+  .loading-icon{
+    height: 2em;
+    width: 2em;
+    margin-left: -.5rem;
+  }
+  

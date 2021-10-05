@@ -22,6 +22,7 @@
     "axios": "^0.21.1",
     "bootstrap": "^4.6.0",
     "classnames": "^2.3.1",
+    "debounce": "^1.2.1",
     "draft-js": "^0.11.7",
     "draft-js-code-editor-plugin": "^0.2.1",
     "draft-js-export-markdown": "^1.4.0",
