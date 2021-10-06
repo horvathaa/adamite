@@ -64,7 +64,6 @@ export async function createGroup(request, sender, sendResponse) {
                     transmitMessage({ msg: 'GROUP_CREATE_SUCCESS', sentFrom: 'background', currentTab: true });
                 })
             }
-
         })
     }
     else {

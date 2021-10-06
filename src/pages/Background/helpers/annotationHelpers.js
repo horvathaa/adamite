@@ -602,9 +602,21 @@ function getAllAuthIds(annotations) {
 function injectUserData(annotationsToBroadcast) {
 
     let authIds = [...new Set(getAllAuthIds(annotationsToBroadcast))];
+    // console.log("TESTING FLATT!", authIds, [...new Set(annotationsToBroadcast.flat().map(a => a.authorId))], annotationsToBroadcast.flat())
     return batchSearchFirestore([], authIds, getUserDataFromAuthId).then(authProfiles => {
         let annotationsWithAuthorInfo = annotationsToBroadcast.map(annotation => {
             const authData = authProfiles.find(element => element.uid === annotation.authorId);
+
+                annotation.replies?.forEach(reply => {
+                    let userData = authProfiles.find(e => e.uid === reply.authorId);
+                    reply.photoUrl = "photoUrl" in userData ? userData.photoUrl : "";
+                });
+                // queryResults.results.forEach(e => {
+                //     if (e.authorId === data.uid) {
+                //         e.photoURL = data.photoURL;
+                //     }
+                // });
+
             annotation.replies = annotation.replies?.map(reply => {
                 let authDataReplies = authProfiles.find(element => element.uid === reply.authorId);
                 const injectReply = Object.assign({}, reply, authDataReplies);
@@ -613,6 +625,7 @@ function injectUserData(annotationsToBroadcast) {
             const anno = Object.assign({}, authData, annotation);
             return anno;
         })
+        console.log("AH!", annotationsWithAuthorInfo)
         return (annotationsWithAuthorInfo);
     });
 }
@@ -638,7 +651,11 @@ function getAnnotationsByUrlListener(url, groups, tabId) {
             annotationsToBroadcast = annotationsToBroadcast.filter(anno => {
                 return (!anno.deleted && anno.url.includes(url)) && (!(anno.isPrivate && anno.authorId !== user.uid) || (anno.groups.some(g => groups.includes(g))))
             })
-            injectUserData(annotationsToBroadcast).then(annotationsToBroadcastWithAuthInfo => {
+
+            fb.getPhotoForAnnosFunction(annotationsToBroadcast).then(response => {
+                // console.log("There was a return!", JSON.parse(response.data))
+                let annotationsToBroadcastWithAuthInfo = JSON.parse(response.data).annotations
+            // injectUserData(annotationsToBroadcast).then(annotationsToBroadcastWithAuthInfo => {
                 try {
                     chrome.tabs.query({}, tabs => {
                         const tabsWithUrl = tabs.filter(t => getPathFromUrl(t.url) === url);

@@ -1,9 +1,14 @@
 import { DB_COLLECTIONS, db, getCurrentUserId } from '../index';
 import firebase from '../firebase';
 
+export const getUsersbyID = (uids) => {
+  return db.collection(DB_COLLECTIONS.USERS)
+    .where('uid', 'in', uids)
+}
 
-export const getUserByUserId = uid => {
-  return db.collection(DB_COLLECTIONS.USERS).where('uid', '==', uid);
+export const getUsersByEmails = emails => {
+  return db.collection(DB_COLLECTIONS.USERS)
+    .where('email', 'in', emails)
 };
 
 export const getAllAnnotationsByUserId = uid => {
@@ -26,11 +31,6 @@ export const getPrivateAnnotationsByUrl = (url, uid) => {
 export const getAllUserGroups = uid => {
   return db.collection(DB_COLLECTIONS.GROUPS)
     .where('uids', 'array-contains', uid);
-};
-
-export const getUsersByEmails = emails => {
-  return db.collection(DB_COLLECTIONS.USERS)
-    .where('email', 'in', emails)
 };
 
 export const addNewGroup = async ({
@@ -134,11 +134,6 @@ export const getAnnotationsByUrl = (url) => {
     .where('url', 'array-contains', url)
 }
 
-export const getUsersbyID = (uids) => {
-  return db.collection(DB_COLLECTIONS.USERS)
-    .where('uid', 'in', uids)
-}
-
 export const getAllPrivatePinnedAnnotationsByUserId = (uid) => {
   return db
     .collection(DB_COLLECTIONS.ANNOTATIONS)
@@ -180,10 +175,6 @@ export const updateAllAnnotations = () => {
     });
 }
 
-export const getPhotoUrlByAuthId = authIds => {
-  return db.collection(DB_COLLECTIONS.USERS)
-    .where('uid', 'in', authIds)
-};
 
 // export const updateAllGroups = () => {
 //   db.collection(DB_COLLECTIONS.GROUPS)

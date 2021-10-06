@@ -1,4 +1,4 @@
-import { searchFirebaseFunction, getPhotoUrlByAuthId } from '../../../firebase/index';
+import { searchFirebaseFunction } from '../../../firebase/index';
 
 export async function searchElastic(request, sender, sendResponse) {
     retrieveUrlQuery(request.url).then(async previousResults => {
