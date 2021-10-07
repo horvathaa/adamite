@@ -52,7 +52,6 @@ export let messagesOut = [
     'CREATE_GROUP',
     'REMOVE_HIGHLIGHTS',
     'HIGHLIGHT_ANNOTATIONS',
-    "CONTENT_UPDATED",
     "PINNED_CHANGED",
     // elastic
     "ELASTIC_CONTENT_UPDATED",

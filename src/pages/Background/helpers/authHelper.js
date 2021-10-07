@@ -86,7 +86,6 @@ export function userGoogleSignIn(request, sender, sendResponse) {
   signInWithGoogle()
     .then((result) => {
       /** @type {firebase.auth.OAuthCredential} */
-      var credential = result.credential;
       if(result.additionalUserInfo.isNewUser) {
         chrome.runtime.sendMessage({
           msg: 'PROMPT_FOR_EMAIL_PASS',
@@ -94,15 +93,9 @@ export function userGoogleSignIn(request, sender, sendResponse) {
         })
       }
 
-      // This gives you a Google Access Token. You can use it to access the Google API.
-      var token = credential.accessToken;
       // The signed-in user info.
       var user = result.user;
 
-      let photoURL = null
-      let displayName = null
-      let email = null;
-      // console.log("FINISHED", user, token, credential)
       user.providerData.forEach((profile) => {
         email = profile.email
         photoURL = profile.photoURL;
