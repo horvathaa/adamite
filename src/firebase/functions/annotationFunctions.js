@@ -1,11 +1,6 @@
 import { DB_COLLECTIONS, db, getCurrentUserId } from '../index';
 import firebase from '../firebase';
 
-export const getUsersbyID = (uids) => {
-  return db.collection(DB_COLLECTIONS.USERS)
-    .where('uid', 'in', uids)
-}
-
 export const getUsersByEmails = emails => {
   return db.collection(DB_COLLECTIONS.USERS)
     .where('email', 'in', emails)
@@ -32,6 +27,13 @@ export const getAllUserGroups = uid => {
   return db.collection(DB_COLLECTIONS.GROUPS)
     .where('uids', 'array-contains', uid);
 };
+
+export const groupFromName = (name) => {
+  return db.collection(DB_COLLECTIONS.GROUPS)
+    .where('uids', 'array-contains', getCurrentUserId())
+    .where('owner', '==', getCurrentUserId())
+    .where('name', '==', name);
+}
 
 export const addNewGroup = async ({
   name,

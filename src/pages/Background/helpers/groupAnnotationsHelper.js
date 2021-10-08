@@ -38,62 +38,10 @@ export async function getGroups(request, sender, sendResponse) {
 
 export async function createGroup(request, sender, sendResponse) {
     if (!isContent) return;
-    if (request.group.emails !== undefined && request.group.emails.length) {
-        fb.getUsersByEmails(request.group.emails).get().then(function (snapshot) {
-            const uids = [request.group.owner].concat(getListFromSnapshots(snapshot).map(u => u.uid));
-            if (request.group.gid !== "") {
-                fb.updateGroup({
-                    name: request.group.name,
-                    description: request.group.description,
-                    owner: request.group.owner,
-                    emails: request.group.emails,
-                    uids: uids,
-                    gid: request.group.gid
-                }).then(value => {
-                    transmitMessage({ msg: "GROUP_UPDATE_SUCCESS", sentFrom: 'background', currentTab: true })
-                })
-            }
-            else {
-                fb.addNewGroup({
-                    name: request.group.name,
-                    description: request.group.description,
-                    owner: request.group.owner,
-                    emails: request.group.emails,
-                    uids: uids
-                }).then(value => {
-                    transmitMessage({ msg: 'GROUP_CREATE_SUCCESS', sentFrom: 'background', currentTab: true });
-                })
-            }
-        })
-    }
-    else {
-        if (request.group.gid !== "") {
-            fb.updateGroup({
-                name: request.group.name,
-                description: request.group.description,
-                owner: request.group.owner,
-                emails: request.group.emails,
-                uids: [request.group.owner],
-                gid: request.group.gid
-            }).then(value => {
-                transmitMessage({ msg: "GROUP_UPDATE_SUCCESS", sentFrom: 'background', currentTab: true })
-            })
-        }
-        else {
-            await fb.addNewGroup({
-                name: request.group.name,
-                description: request.group.description,
-                owner: request.group.owner,
-                emails: request.group.emails,
-                uids: [request.group.owner]
-            }).then(value => {
-                transmitMessage({ msg: 'GROUP_CREATE_SUCCESS', sentFrom: 'background', currentTab: true });
-            })
-        }
 
-    }
-
-
+    fb.createGroupFunction(request.group).then(response => {
+        transmitMessage(JSON.parse(response.data))
+    })
 }
 
 
