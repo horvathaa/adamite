@@ -38,6 +38,7 @@ const Reply = ({ idx, reply }) => {
     // const [adopted, setAdopted] = useState(false); // switch to liked - array of objects where each item in the list is an object {id: currentUser.id, liked: true/false}
     let showQuestionAnswerInterface = ctx.anno.type === 'question';
     let photoUrl = reply.photoURL;
+    let displayName = ""
 
     useEffect(() => {
         if (reply !== replyData) {
@@ -104,7 +105,7 @@ const Reply = ({ idx, reply }) => {
         const remainingReplies = ctx.anno.replies.filter(r => r.replyId !== replyData.replyId);
         ctx.updateAnnotation({ ...ctx.anno, replies: remainingReplies });
     }
-
+    console.log("FAILING", replyData)
     return (<React.Fragment>
         {editing ?
             (<ReplyEditor

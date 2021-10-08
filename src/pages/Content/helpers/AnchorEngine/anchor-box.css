@@ -135,15 +135,17 @@
 }
 
 .Toastify__toast{
-    border-radius: 8px;
+    border-radius: 120px;
 }
 
 .Toastify__close-button {
-    margin: .25rem
+    margin: 1rem;
 }
 
 .Toastify__toast-body{
-    margin: .25rem;
+    margin: auto 5rem;
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
 }
 
 .Toastify__toast--warning{
@@ -154,4 +156,5 @@
 .Toastify__toast-container{
     /* color:#777; */
     font-weight: 300;
+    z-index: 9999999999;
 }

@@ -6,29 +6,6 @@ import { getCurrentUserId, getCurrentUser } from '../../../firebase/index';
 import { getPathFromUrl } from '../backgroundEventListeners';
 import { getGroups, groupListener } from './groupAnnotationsHelper';
 
-// from: https://stackoverflow.com/questions/34151834/javascript-array-contains-includes-sub-array
-function hasSubArray(master, sub) {
-    return sub.every((i => v => i = master.indexOf(v, i) + 1)(0));
-}
-
-function removeDuplicates(idArray) {
-    const flags = new Set();
-    const annotations = idArray.filter(highlight => {
-        if (flags.has(highlight.id)) {
-            return false;
-        }
-        flags.add(highlight.id);
-        return true;
-    });
-    return annotations;
-}
-
-function assert(condition, message) {
-    if (!condition) {
-        throw new Error(message || "Assertion failed");
-    }
-}
-
 //let unsubscribeAnnotations = null;
 export let tabAnnotationCollect = [];
 let annotationsAcrossWholeSite = [];
@@ -62,8 +39,8 @@ function broadcastAnnotationsToTab(msg, id, url, tabId) {
 
 export function setPinnedAnnotationListeners(request, sender, sendResponse) {
     if (!isContent(request)) return;
-    getAllPrivatePinnedAnnotationsListener();
-    getAllPublicPinnedAnnotationsListener();
+    pinnedPrivateListener = getPinnedAnnotationsWrapper('private', fb.getAllPrivatePinnedAnnotationsByUserId);
+    pinnedPublicListener = getPinnedAnnotationsWrapper('public', fb.getAllPinnedAnnotationsByUserId);
 }
 
 export async function getAnnotationsPageLoad(request, sender, sendResponse) {
@@ -129,6 +106,10 @@ export function getAnnotationById(request, sender, sendResponse) {
 
 export async function getGoogleResultAnnotations(request, sender, sendResponse) {
     let { urls } = request.payload;
+    if(urls.length === 0 ){
+        sendResponse([]);
+        return;
+    }
     const uid = fb.getCurrentUser().uid;
     let annos = [];
     urls = urls.slice(0, 10);
@@ -491,18 +472,11 @@ export function containsObjectWithUrl(url, list) {
 function updateList(list, url, annotations, isPrivate) {
     let obj = list.filter(obj => url === obj.tabUrl);
     let objToUpdate = obj[0];
-    // if (isPrivate) {
-    //     let newList = objToUpdate.annotations.filter(anno => anno.isPrivate !== true && !anno.deleted && anno.url.includes(url)) // removed anno.private check - if things break, well...
-    //     objToUpdate.annotations = newList.concat(annotations);
-    // }
-    // else {
-    //     let newList = objToUpdate.annotations.filter(anno => anno.isPrivate === true && !anno.deleted && anno.url.includes(url))
-    //     objToUpdate.annotations = newList.concat(annotations);
-    // }
+
     objToUpdate.annotations = annotations;
     let temp2 = list.filter(obj => obj.tabUrl !== url);
     temp2.push(objToUpdate);
-    // temp2 = removeDuplicates(temp2);
+    
     return temp2;
 }
 
@@ -516,107 +490,24 @@ function getListFromSnapshots(snapshots) {
     return out;
 }
 
-function getAllPrivatePinnedAnnotationsListener() {
+function getPinnedAnnotationsWrapper(type, typeFunc){
     const user = fb.getCurrentUser();
     if (user !== null) {
-        pinnedPrivateListener = fb.getAllPrivatePinnedAnnotationsByUserId(fb.getCurrentUserId()).onSnapshot(annotationsSnapshot => {
-            let tempPrivatePinnedAnnotations = getListFromSnapshots(annotationsSnapshot);
-            injectUserData(tempPrivatePinnedAnnotations).then(tempPrivatePinnedAnnotationsWithAuthInfo => {
-                pinnedAnnotations = tempPrivatePinnedAnnotationsWithAuthInfo.concat(publicPinnedAnnotations);
-                privatePinnedAnnotations = tempPrivatePinnedAnnotationsWithAuthInfo;
-                broadcastAnnotationsUpdated("PINNED_CHANGED", pinnedAnnotations);
-            });
+        return typeFunc(user.uid).onSnapshot(annotationsSnapshot => {
+            pinnedInner(annotationsSnapshot, type)
         });
     }
 }
 
-
-function getAllPublicPinnedAnnotationsListener() {
-    const user = fb.getCurrentUser();
-    if (user !== null) {
-        pinnedPublicListener = fb.getAllPinnedAnnotationsByUserId(user.uid).onSnapshot(annotationsSnapshot => {
-            let tempPublicPinnedAnnotations = getListFromSnapshots(annotationsSnapshot);
-            injectUserData(tempPublicPinnedAnnotations).then(tempPublicPinnedAnnotationsWithAuthInfo => {
-                pinnedAnnotations = tempPublicPinnedAnnotationsWithAuthInfo.concat(privatePinnedAnnotations);
-                publicPinnedAnnotations = tempPublicPinnedAnnotationsWithAuthInfo;
-                broadcastAnnotationsUpdated("PINNED_CHANGED", pinnedAnnotations);
-            });
-        });
-    }
-}
-
-
-function batchSearchFirestore(returnArray, searchArray, queryFunction) {
-    return new Promise((resolve, reject) => {
-        if (searchArray.length === 0) {
-            resolve(returnArray);
-        }
-        else if (searchArray.length > 0) {
-            var batchedSearch = searchArray.length > 10 ? searchArray.slice(0, 10) : searchArray;
-            var arrayRecurSearch = searchArray.length > 10 ? searchArray.slice(10, searchArray.length) : [];
-            resolve(queryFunction(batchedSearch)).then(e => {
-                return batchSearchFirestore(returnArray.concat(e), arrayRecurSearch, queryFunction);
-            })
-                .catch(err => {
-                    console.log('Error getting batchSearchFirestore', err);
-                    reject(err);
-                });
-        }
-        resolve(returnArray);
+function pinnedInner(annotationsSnapshot, concatType){
+    let tempPinnedAnno = getListFromSnapshots(annotationsSnapshot);
+    fb.getPhotoForAnnosFunction(tempPinnedAnno).then(response => {
+        let tempPinnedAnno = JSON.parse(response.data).annotations
+        pinnedAnnotations = tempPinnedAnno.concat(concatType === "private" ? publicPinnedAnnotations : privatePinnedAnnotations);
+        concatType === "private" ? privatePinnedAnnotations = tempPinnedAnno : publicPinnedAnnotations = tempPinnedAnno
+        broadcastAnnotationsUpdated("PINNED_CHANGED", pinnedAnnotations);
     });
 }
-
-function getUserDataFromAuthId(authIds) {
-    return fb.getUsersbyID(authIds).get()
-        .then(queryResult => {
-            var tempArray = []
-            if (!queryResult.empty) {
-                queryResult.forEach(docs => {
-                    tempArray.push({
-                        id: docs.id,
-                        ...docs.data(),
-                    });
-                });
-                return tempArray;
-            }
-            return [];
-        })
-        .catch(err => {
-            console.log('Error getting user Profiles', err);
-            throw err;
-        });
-}
-
-function getAllAuthIds(annotations) {
-    let authors = []
-    annotations.forEach(annotation => {
-        authors.push(annotation.authorId);
-        annotation.replies?.forEach(replies => {
-            authors.push(replies.authorId)
-        })
-    })
-    return authors;
-}
-
-// TODO: add error checking for if the annotation list and/or auth lists are empty
-function injectUserData(annotationsToBroadcast) {
-
-    let authIds = [...new Set(getAllAuthIds(annotationsToBroadcast))];
-    return batchSearchFirestore([], authIds, getUserDataFromAuthId).then(authProfiles => {
-        let annotationsWithAuthorInfo = annotationsToBroadcast.map(annotation => {
-            const authData = authProfiles.find(element => element.uid === annotation.authorId);
-            annotation.replies = annotation.replies?.map(reply => {
-                let authDataReplies = authProfiles.find(element => element.uid === reply.authorId);
-                const injectReply = Object.assign({}, reply, authDataReplies);
-                return injectReply;
-            });
-            const anno = Object.assign({}, authData, annotation);
-            return anno;
-        })
-        return (annotationsWithAuthorInfo);
-    });
-}
-
 
 function getAnnotationsByUrlListener(url, groups, tabId) {
     const user = fb.getCurrentUser();
@@ -633,12 +524,14 @@ function getAnnotationsByUrlListener(url, groups, tabId) {
         })
     }
     if (user !== null) {
-        publicListener = fb.getAnnotationsByUrl(url).onSnapshot(async annotationsSnapshot => {
+        publicListener = fb.getAnnotationsByUrl(url).onSnapshot( annotationsSnapshot => {
             let annotationsToBroadcast = getListFromSnapshots(annotationsSnapshot);
             annotationsToBroadcast = annotationsToBroadcast.filter(anno => {
                 return (!anno.deleted && anno.url.includes(url)) && (!(anno.isPrivate && anno.authorId !== user.uid) || (anno.groups.some(g => groups.includes(g))))
             })
-            injectUserData(annotationsToBroadcast).then(annotationsToBroadcastWithAuthInfo => {
+
+            fb.getPhotoForAnnosFunction(annotationsToBroadcast).then(response => {
+                let annotationsToBroadcastWithAuthInfo = JSON.parse(response.data).annotations
                 try {
                     chrome.tabs.query({}, tabs => {
                         const tabsWithUrl = tabs.filter(t => getPathFromUrl(t.url) === url);
@@ -646,7 +539,7 @@ function getAnnotationsByUrlListener(url, groups, tabId) {
                             tabAnnotationCollect = updateList(tabAnnotationCollect, url, annotationsToBroadcastWithAuthInfo, false);
                         }
                         else {
-                            tabAnnotationCollect.push({ tabUrl: url, annotations: annotationsToBroadcast });
+                            tabAnnotationCollect.push({ tabUrl: url, annotations: annotationsToBroadcastWithAuthInfo });
                         }
                         let newList = tabAnnotationCollect.filter(obj => obj.tabUrl === url);
                         tabsWithUrl.forEach(t => {

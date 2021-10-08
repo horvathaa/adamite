@@ -1,147 +1,72 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './groupModal.css';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer, toast, Slide } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
+function toastRenderWrapper(message, closeModal=false) {
+    chrome.storage.sync.get(['sidebarOnLeft'], result => {
+        if (result.sidebarOnLeft) {
+            positionString = "top-right";
+        }
+        else {
+            positionString = "top-left";
+        }
+        toast.warning(message, {
+            position: "top-center",
+            autoClose: false,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: false,
+            progress: undefined,
+        });
+        let modal = document.createElement("div");
+        modal.classList.add("success-notif-div");
+        document.body.appendChild(modal);
+        const toastModal = <ToastContainer
+            position="top-center"
+            autoClose={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            transition={Slide}
+            pauseOnFocusLoss
+            draggable={false}
+        />;
+        ReactDOM.render(toastModal, modal);
+    });
+    console.log("RENDERING")
+
+    if(closeModal){
+
+        chrome.runtime.sendMessage({
+            msg: 'GROUP_MODAL_CLOSED',
+            from: 'helper'
+        });
+
+        const dialogEl = document.getElementById('adamite-group-modal');
+        dialogEl.classList.remove("new-group-modal-shown")
+        dialogEl.classList.add('new-group-modal-hidden');
+        dialogEl.close();
+    }
+}
 
 chrome.runtime.onMessage.addListener((request) => {
     if (request.msg === 'CREATE_GROUP' && request.from === 'background') { renderModal(request.owner); }
     else if (request.msg === 'SHOW_GROUP' && request.from === 'background') { showModal(); }
     else if (request.msg === 'HIDE_GROUP' && request.from === 'background') { hideModal(); }
     else if (request.msg === 'GROUP_CREATE_SUCCESS' && request.from === 'background') {
-        let positionString = "";
-        chrome.storage.sync.get(['sidebarOnLeft'], result => {
-            if (result.sidebarOnLeft) {
-                positionString = "top-right";
-            }
-            else {
-                positionString = "top-left";
-            }
-            toast.success('Successfully created group!', {
-                position: positionString,
-                autoClose: 3000,
-                hideProgressBar: true,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-            });
-            let modal = document.createElement("div");
-            modal.classList.add("success-notif-div");
-            document.body.appendChild(modal);
-            const toastModal = <ToastContainer
-                position={positionString}
-                autoClose={3000}
-                hideProgressBar
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-            />;
-            ReactDOM.render(toastModal, modal);
-        });
-        // removeClickListener()
-        // element.classList.add('w3-animate-show');
-        chrome.runtime.sendMessage({
-            msg: 'GROUP_MODAL_CLOSED',
-            from: 'helper'
-        });
-        const dialogEl = document.getElementById('group-modal');
-        dialogEl.classList.remove("new-group-modal-shown")
-        dialogEl.classList.add('new-group-modal-hidden');
-        dialogEl.close();
+        toastRenderWrapper('Successfully created group!', true);
     }
     else if (request.msg === 'GROUP_UPDATE_SUCCESS' && request.from === 'background') {
-        let positionString = "";
-        chrome.storage.sync.get(['sidebarOnLeft'], result => {
-            if (result.sidebarOnLeft) {
-                positionString = "top-right";
-            }
-            else {
-                positionString = "top-left";
-            }
-            toast.success('Successfully updated group!', {
-                position: positionString,
-                autoClose: 3000,
-                hideProgressBar: true,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-            });
-            let modal = document.createElement("div");
-            modal.classList.add("success-notif-div");
-            document.body.appendChild(modal);
-            const toastModal = <ToastContainer
-                position={positionString}
-                autoClose={3000}
-                hideProgressBar
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-            />;
-            ReactDOM.render(toastModal, modal);
-        });
-        // removeClickListener()
-        // element.classList.add('w3-animate-show');
-        chrome.runtime.sendMessage({
-            msg: 'GROUP_MODAL_CLOSED',
-            from: 'helper'
-        });
-        const dialogEl = document.getElementById('group-modal');
-        dialogEl.classList.remove("new-group-modal-shown")
-        dialogEl.classList.add('new-group-modal-hidden');
-        dialogEl.close();
+        toastRenderWrapper('Successfully updated group!', true);
     }
     else if (request.msg === 'GROUP_DELETE_SUCCESS' && request.from === 'background') {
-        let positionString = "";
-        chrome.storage.sync.get(['sidebarOnLeft'], result => {
-            if (result.sidebarOnLeft) {
-                positionString = "top-right";
-            }
-            else {
-                positionString = "top-left";
-            }
-            toast.info('Deleted group', {
-                position: positionString,
-                autoClose: 3000,
-                hideProgressBar: true,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-            });
-            let modal = document.createElement("div");
-            modal.classList.add("success-notif-div");
-            document.body.appendChild(modal);
-            const toastModal = <ToastContainer
-                position={positionString}
-                autoClose={3000}
-                hideProgressBar
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-            />;
-            ReactDOM.render(toastModal, modal);
-        });
-        // removeClickListener()
-        // element.classList.add('w3-animate-show');
-        chrome.runtime.sendMessage({
-            msg: 'GROUP_MODAL_CLOSED',
-            from: 'helper'
-        });
-        const dialogEl = document.getElementById('group-modal');
-        dialogEl.classList.remove("new-group-modal-shown")
-        dialogEl.classList.add('new-group-modal-hidden');
-        dialogEl.close();
+        toastRenderWrapper('Deleted group', true);
+    }
+    else if (request.msg === 'GROUP_CREATE_DUPLICATE' && request.from === 'background') {
+        toastRenderWrapper('DUPLICATE!!!!')
     }
 });
 
@@ -157,22 +82,15 @@ function hideOnClickOutside(element) {
                 from: 'helper'
             });
         }
-        // else {
-        //     console.log("outsides", event, event.target, isVisible(element), element.contains(event.target))
-        // }
     }
-    // const removeAnimations = () => {
-    //     document.removeEventListener('animationend', outsideClickListener)
-    // }
 
     const removeClickListener = () => {
         document.removeEventListener('click', outsideClickListener)
     }
-    // console.log("adding element", element)
+
     document.addEventListener('click', outsideClickListener)
     element.addEventListener('animationend', function () {
         if (this.classList.contains('w3-animate-show')) {
-            // this.style.display = 'none';
             this.classList.remove('w3-animate-show')
             element.close()
         }
@@ -203,16 +121,16 @@ const hideModal = () => {
 }
 
 const renderModal = (owner) => {
-    if(!document.getElementById('adamite-group-modal')) {
+    if (!document.getElementById('adamite-group-modal')) {
         let modal = document.createElement("dialog");
         modal.classList.add("new-group-modal-hidden");
         document.body.appendChild(modal);
         modal.setAttribute('id', 'adamite-group-modal');
         const App = (
             <React.Fragment>
-    
+
                 <iframe className="iframe-modal-wrapper"
-    
+
                     src={chrome.extension.getURL('groupmodal.html')
                         + "?uid=" + owner.uid
                         + "&email=" + owner.email
@@ -220,7 +138,7 @@ const renderModal = (owner) => {
                     }
                 />
             </React.Fragment>
-    
+
         );
         ReactDOM.render(App, modal);
     }

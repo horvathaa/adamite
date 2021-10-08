@@ -125,23 +125,23 @@ class Sidebar extends React.Component {
   }
 
   handleScroll = () => {
-      const scrollIsAtTheBottom = (document.documentElement.scrollHeight - window.innerHeight) - 1 <= Math.floor(window.scrollY);
-      const {hits, searchedAnnotations} = this.state
+    const scrollIsAtTheBottom = (document.documentElement.scrollHeight - window.innerHeight) - 1 <= Math.floor(window.scrollY);
+    const { hits, searchedAnnotations } = this.state
 
-      if (scrollIsAtTheBottom && this.state.searchState) {
-        if (hits > searchedAnnotations.length) {
-          this.setState({ isLoading: true })
+    if (scrollIsAtTheBottom && this.state.searchState) {
+      if (hits > searchedAnnotations.length) {
+        this.setState({ isLoading: true })
 
-          this.ElasticSearch("SCROLL_ELASTIC")
-            .then(res => {
-              this.setState({
-                hits: res.response ? res.response.hits : 0,
-                searchedAnnotations: this.state.searchedAnnotations.concat(res.response ? res.response.results : []),
-                isLoading: false,
-              })
+        this.ElasticSearch("SCROLL_ELASTIC")
+          .then(res => {
+            this.setState({
+              hits: res.response ? res.response.hits : 0,
+              searchedAnnotations: this.state.searchedAnnotations.concat(res.response ? res.response.results : []),
+              isLoading: false,
             })
-        }
+          })
       }
+    }
   }
 
   componentDidMount() {
@@ -322,13 +322,15 @@ class Sidebar extends React.Component {
       else if (
         request.from === 'background' &&
         request.msg === 'CONTENT_UPDATED'
-      ) {
+      ){
+        console.log("REQUEST", request)
         if (request === undefined || chrome.runtime.lastError) {
           console.error(chrome.runtime.lastError)
           return;
         }
         let annotations = request.payload;
-        if (request.url !== undefined) this.setState({ url: request.url });
+        if (request.url !== undefined)
+          this.setState({ url: request.url });
         chrome.runtime.sendMessage({
           msg: 'REQUEST_SIDEBAR_STATUS',
           from: 'content'

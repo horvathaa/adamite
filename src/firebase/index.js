@@ -24,4 +24,4 @@ export const getCurrentUserId = () => {
 
 export * from './functions/userFunctions';
 export * from './functions/annotationFunctions';
-export * from './functions/searchFunctions';
+export * from './functions/cloudFunctions';

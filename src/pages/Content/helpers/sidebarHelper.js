@@ -278,21 +278,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       ReactDOM.render(toastModal, modal);
     })
   }
-
-  // else if (
-  //   request.from === 'background' &&
-  //   request.msg === 'CONTENT_UPDATED') {
-  //   chrome.runtime.sendMessage(
-  //     {
-  //       from: 'content',
-  //       msg: 'CONTENT_UPDATED',
-  //       payload: { annotations: request.payload, tabId: request.tabId, url: request.url }
-  //     }
-  //   )
-  // }
-
-  // return true;
-
 });
 
 const checkSidebarStatus = () => {
