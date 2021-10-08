@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import Frame from '../modules/frame/frame';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer, toast, Slide } from 'react-toastify';
 import './annoRec.css';
+import 'react-toastify/dist/ReactToastify.css';
 import CardWrapper from '../../Sidebar/containers/CardWrapper/CardWrapper';
 import Adamite from '../../../assets/img/Adamite.png';
 
@@ -112,14 +113,14 @@ const AnnoPreview = ({ annoList }) => {
 
   const AnchorObject = ({ anchorText }) => {
     return (
-        <div className="AnchorTextContainerExpanded">
-          {anchorText}
-        </div>
+      <div className="AnchorTextContainerExpanded">
+        {anchorText}
+      </div>
     )
   }
 
   const Anno = ({ anno }) => {
-    const anchorText = anno.childAnchor.map(a => { if(anno.url.includes(a.url)) { return a.anchor} })
+    const anchorText = anno.childAnchor.map(a => { if (anno.url.includes(a.url)) { return a.anchor } })
     return (
       <div className="AnnotationContainer">
         {anchorText.map(anch => <AnchorObject anchorText={anch} />)}
@@ -127,24 +128,51 @@ const AnnoPreview = ({ annoList }) => {
       </div>
     )
   }
-  
-  
+
+
   return (
     <React.Fragment>
       <div className="anno-rec-descrip" onClick={() => setShow(!show)}>
         <div className="img-container">
-            <img src={chrome.extension.getURL(Adamite)} className="adamite-logo" />
+          <img src={chrome.extension.getURL(Adamite)} className="adamite-logo" />
         </div>
         {descrip}
       </div>
-      {show && 
+      {show &&
         <div className="anno-rec-container">
           {annoList.map(a => <Anno anno={a} />)}
         </div>
       }
     </React.Fragment>
   )
-  
+}
+
+const toastRenderWrapper = (message) => {
+  console.log("warning!")
+  toast.warning(message, {
+    position: "top-center",
+    autoClose: true,
+    hideProgressBar: true,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: false,
+    progress: undefined
+  });
+  let modal = document.createElement("div");
+  modal.classList.add("success-notif-div");
+  document.body.appendChild(modal);
+  const toastModal = <ToastContainer
+    position="top-center"
+    autoClose={3000}
+    newestOnTop={false}
+    closeOnClick
+    rtl={false}
+    transition={Slide}
+    pauseOnFocusLoss
+    icon={true} 
+    draggable={false}
+  />;
+  ReactDOM.render(toastModal, modal);
 }
 
 
@@ -157,7 +185,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (Frame.isReady()) {
       Frame.toggle(request.toStatus);
     }
-  } else if(
+  } else if (
     request.from === 'background' &&
     request.msg === 'GOOGLE_SEARCH'
   ) {
@@ -172,22 +200,22 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         urls: links
       }
     }, response => {
-      if(response && response.length) {
+      if (response && response.length) {
         const as = document.querySelectorAll('div.yuRUbf > a');
         const matchedUrls = [...new Set(response.flatMap(a => a.url))];
         let nodeAnnoPairs = [];
         as.forEach(a => {
           let href = a.href;
-          if(href.includes("developer.mozilla.org/en/")) {
+          if (href.includes("developer.mozilla.org/en/")) {
             let arr = href.split("/en/")
             href = arr[0] + '/en-US/' + arr[1]
           }
-          if(matchedUrls.includes(href)) {
-            nodeAnnoPairs.push({node: a.parentNode, anno: response.filter(anno => anno.url.includes(href))});
+          if (matchedUrls.includes(href)) {
+            nodeAnnoPairs.push({ node: a.parentNode, anno: response.filter(anno => anno.url.includes(href)) });
           }
         });
-        
-        
+
+
         nodeAnnoPairs.forEach((p) => {
           const parentDiv = document.createElement('div');
           p.node.appendChild(parentDiv);
@@ -213,70 +241,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     Frame.shrinkBody();
 
   } else if (request.from === 'sidebar' && request.msg === 'RENDER_NO_SEARCH_RESULTS') {
-    let positionString = "";
-    chrome.storage.sync.get(['sidebarOnLeft'], result => {
-      if (result.sidebarOnLeft) {
-        positionString = "top-right";
-      }
-      else { positionString = "top-left"; }
-      toast.warning('No results!', {
-        position: positionString,
-        autoClose: 4000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
-      let modal = document.createElement("div");
-      modal.classList.add("success-notif-div");
-      document.body.appendChild(modal);
-      const toastModal = <ToastContainer
-        position={positionString}
-        autoClose={4000}
-        hideProgressBar
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />;
-      ReactDOM.render(toastModal, modal);
-    })
+    toastRenderWrapper('No results!');
   }
   else if (request.from === 'sidebar' && request.msg === 'SHOW_NO_GROUP_ANNOTATIONS') {
-    let positionString = "";
-    chrome.storage.sync.get(['sidebarOnLeft'], result => {
-      if (result.sidebarOnLeft) {
-        positionString = "top-right";
-      }
-      else { positionString = "top-left"; }
-      toast.warning('No annotations in this group - try making some!', {
-        position: positionString,
-        autoClose: 4000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
-      let modal = document.createElement("div");
-      modal.classList.add("success-notif-div");
-      document.body.appendChild(modal);
-      const toastModal = <ToastContainer
-        position={positionString}
-        autoClose={4000}
-        hideProgressBar
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />;
-      ReactDOM.render(toastModal, modal);
-    })
+    toastRenderWrapper('No annotations in this group - try making some!');
   }
 });
 
@@ -287,7 +255,7 @@ const checkSidebarStatus = () => {
       msg: 'REQUEST_SIDEBAR_STATUS',
     },
     (response) => {
-      if(response !== 'annotateOnly') {
+      if (response !== 'annotateOnly') {
         let sidebarOpen = response;
         if (Frame.isReady()) {
           Frame.toggle(sidebarOpen);

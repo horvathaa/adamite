@@ -4,41 +4,35 @@ import './groupModal.css';
 import { ToastContainer, toast, Slide } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-function toastRenderWrapper(message, closeModal=false) {
-    chrome.storage.sync.get(['sidebarOnLeft'], result => {
-        if (result.sidebarOnLeft) {
-            positionString = "top-right";
-        }
-        else {
-            positionString = "top-left";
-        }
-        toast.warning(message, {
-            position: "top-center",
-            autoClose: false,
-            hideProgressBar: true,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: false,
-            progress: undefined,
-        });
-        let modal = document.createElement("div");
-        modal.classList.add("success-notif-div");
-        document.body.appendChild(modal);
-        const toastModal = <ToastContainer
-            position="top-center"
-            autoClose={false}
-            newestOnTop={false}
-            closeOnClick
-            rtl={false}
-            transition={Slide}
-            pauseOnFocusLoss
-            draggable={false}
-        />;
-        ReactDOM.render(toastModal, modal);
+function toastRenderWrapper(message, closeModal = false) {
+
+    toast.warning(message, {
+        position: "top-center",
+        autoClose: true,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: false,
+        progress: undefined,
     });
+    let modal = document.createElement("div");
+    modal.classList.add("success-notif-div");
+    document.body.appendChild(modal);
+    const toastModal = <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        transition={Slide}
+        pauseOnFocusLoss
+        draggable={false}
+    />;
+    ReactDOM.render(toastModal, modal);
+
     console.log("RENDERING")
 
-    if(closeModal){
+    if (closeModal) {
 
         chrome.runtime.sendMessage({
             msg: 'GROUP_MODAL_CLOSED',

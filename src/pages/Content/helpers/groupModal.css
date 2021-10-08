@@ -32,15 +32,11 @@
     height: 90%;
     width: 40%;
     border: none;
-    /* top: 5%; */
-    /* padding: 1em; */
     margin: auto;
     margin: 8rem auto;
-    /* border-radius: 20px; */
     background-color: transparent;
     overflow: hidden !important;
     position: fixed;
-    /* box-shadow: 0px 12px 48px rgb(29 5 64 / 32%); */
     display: inline-block;
 }
 
