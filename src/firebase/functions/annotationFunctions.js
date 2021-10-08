@@ -1,11 +1,6 @@
 import { DB_COLLECTIONS, db, getCurrentUserId } from '../index';
 import firebase from '../firebase';
 
-export const getUsersByEmails = emails => {
-  return db.collection(DB_COLLECTIONS.USERS)
-    .where('email', 'in', emails)
-};
-
 export const getAllAnnotationsByUserId = uid => {
   return db.collection(DB_COLLECTIONS.ANNOTATIONS).where('authorId', '==', uid);
 };

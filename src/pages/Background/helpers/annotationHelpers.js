@@ -6,29 +6,6 @@ import { getCurrentUserId, getCurrentUser } from '../../../firebase/index';
 import { getPathFromUrl } from '../backgroundEventListeners';
 import { getGroups, groupListener } from './groupAnnotationsHelper';
 
-// from: https://stackoverflow.com/questions/34151834/javascript-array-contains-includes-sub-array
-function hasSubArray(master, sub) {
-    return sub.every((i => v => i = master.indexOf(v, i) + 1)(0));
-}
-
-function removeDuplicates(idArray) {
-    const flags = new Set();
-    const annotations = idArray.filter(highlight => {
-        if (flags.has(highlight.id)) {
-            return false;
-        }
-        flags.add(highlight.id);
-        return true;
-    });
-    return annotations;
-}
-
-function assert(condition, message) {
-    if (!condition) {
-        throw new Error(message || "Assertion failed");
-    }
-}
-
 //let unsubscribeAnnotations = null;
 export let tabAnnotationCollect = [];
 let annotationsAcrossWholeSite = [];

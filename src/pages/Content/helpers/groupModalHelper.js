@@ -5,7 +5,6 @@ import { ToastContainer, toast, Slide } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 function toastRenderWrapper(message, closeModal=false) {
-    let positionString = "";
     chrome.storage.sync.get(['sidebarOnLeft'], result => {
         if (result.sidebarOnLeft) {
             positionString = "top-right";
@@ -83,22 +82,15 @@ function hideOnClickOutside(element) {
                 from: 'helper'
             });
         }
-        // else {
-        //     console.log("outsides", event, event.target, isVisible(element), element.contains(event.target))
-        // }
     }
-    // const removeAnimations = () => {
-    //     document.removeEventListener('animationend', outsideClickListener)
-    // }
 
     const removeClickListener = () => {
         document.removeEventListener('click', outsideClickListener)
     }
-    // console.log("adding element", element)
+
     document.addEventListener('click', outsideClickListener)
     element.addEventListener('animationend', function () {
         if (this.classList.contains('w3-animate-show')) {
-            // this.style.display = 'none';
             this.classList.remove('w3-animate-show')
             element.close()
         }
