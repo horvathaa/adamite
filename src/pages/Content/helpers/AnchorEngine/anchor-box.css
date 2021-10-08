@@ -135,7 +135,7 @@
 }
 
 .Toastify__toast{
-    border-radius: 120px;
+    border-radius: 8px;
 }
 
 .Toastify__close-button {
@@ -143,14 +143,9 @@
 }
 
 .Toastify__toast-body{
-    margin: auto 5rem;
+    font-family: 'Google Sans';
     -ms-flex: 1 1 auto;
     flex: 1 1 auto;
-}
-
-.Toastify__toast--warning{
-    background: rgb(0 0 0) !important;
-    font-family: sans-serif;
 }
 
 .Toastify__toast-container{
