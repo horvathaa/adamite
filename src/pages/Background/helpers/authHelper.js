@@ -1,12 +1,13 @@
 import {
   emailAuthProvider,
+  githubProvider,
   getCurrentUser as fbGetCurrentUser,
   auth,
   signUpWithEmailAndPassword,
   signInWithEmailAndPassword,
   signInWithGoogle,
   signInWithGithub,
-  signOut,
+  signOut
 } from '../../../firebase/index';
 
 let currentUser = null;
@@ -56,7 +57,14 @@ export function handleLinkingAccounts(request, sender, sendResponse) {
       console.error('Unable to link accounts', error);
     })
   }
-  
+}
+
+export function handleLinkingGithub(request, sender, sendResponse) {
+  auth.currentUser.linkWithPopup(githubProvider).then((result) => {
+    console.log('success', result);
+  }).catch((error) => {
+    console.error(error);
+  })
 }
 
 export function getUser() {
@@ -129,6 +137,7 @@ export function githubUserSignIn(request, sender, sendResponse) {
 
       // This gives you a Google Access Token. You can use it to access the Google API.
       var token = credential.accessToken;
+      console.log(result);
       // The signed-in user info.
       var user = result.user;
       // ...

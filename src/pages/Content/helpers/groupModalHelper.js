@@ -4,6 +4,22 @@ import './groupModal.css';
 import { ToastContainer, toast, Slide } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+const setModalToVisible = (dialog) => {
+    if (dialog.classList.contains('new-group-modal-hidden'))
+    dialog.classList.remove("new-group-modal-hidden");
+    dialog.classList.add('new-group-modal-shown');
+    dialog.style['display'] = 'block';
+    dialog.showModal();
+}
+
+const setModalToHidden = (dialog) => {
+    if(dialog.classList.contains('new-group-modal-shown'))
+    dialog.classList.remove("new-group-modal-shown")
+    dialog.classList.add('new-group-modal-hidden');
+    dialog.style['display'] = 'none';
+    dialog.close();
+}
+
 function toastRenderWrapper(message, closeModal = false) {
 
     toast.warning(message, {
@@ -40,9 +56,7 @@ function toastRenderWrapper(message, closeModal = false) {
         });
 
         const dialogEl = document.getElementById('adamite-group-modal');
-        dialogEl.classList.remove("new-group-modal-shown")
-        dialogEl.classList.add('new-group-modal-hidden');
-        dialogEl.close();
+        setModalToHidden(dialogEl);
     }
 }
 
@@ -60,7 +74,7 @@ chrome.runtime.onMessage.addListener((request) => {
         toastRenderWrapper('Deleted group', true);
     }
     else if (request.msg === 'GROUP_CREATE_DUPLICATE' && request.from === 'background') {
-        toastRenderWrapper('DUPLICATE!!!!')
+        toastRenderWrapper('Group already exists', false);
     }
 });
 
@@ -68,9 +82,11 @@ const isVisible = elem => !!elem && !!(elem.offsetWidth || elem.offsetHeight || 
 
 function hideOnClickOutside(element) {
     const outsideClickListener = event => {
+        // console.log('element', element);
         if (element.contains(event.target) && isVisible(element)) {
             removeClickListener()
-            element.classList.add('w3-animate-show');
+            // element.classList.add('w3-animate-show');
+            setModalToHidden(element);
             chrome.runtime.sendMessage({
                 msg: 'GROUP_MODAL_CLOSED',
                 from: 'helper'
@@ -83,31 +99,23 @@ function hideOnClickOutside(element) {
     }
 
     document.addEventListener('click', outsideClickListener)
-    element.addEventListener('animationend', function () {
-        if (this.classList.contains('w3-animate-show')) {
-            this.classList.remove('w3-animate-show')
-            element.close()
-        }
-    });
+    // element.addEventListener('animationend', function () {
+    //     console.log('close?')
+    //     if (this.classList.contains('w3-animate-show')) {
+    //         this.classList.remove('w3-animate-show')
+    //         // element.close()
+    //     }
+    // });
 }
 const showModal = () => {
     const dialog = document.getElementById("adamite-group-modal");
-    if (dialog.classList.contains('new-group-modal-hidden')) {
-        dialog.classList.remove("new-group-modal-hidden")
-        dialog.classList.add('new-group-modal-shown');
-    }
-    dialog.showModal();
-
+    setModalToVisible(dialog);
     hideOnClickOutside(dialog);
 }
 
 const hideModal = () => {
-    const dialog = document.getElementById('group-modal');
-    if (dialog.classList.contains('new-group-modal-shown')) {
-        dialog.classList.remove("new-group-modal-shown")
-        dialog.classList.add('new-group-modal-hidden');
-    }
-    dialog.close();
+    const dialog = document.getElementById('adamite-group-modal');
+    setModalToHidden(dialog);
     chrome.runtime.sendMessage({
         msg: 'GROUP_MODAL_CLOSED',
         from: 'helper'
@@ -118,6 +126,7 @@ const renderModal = (owner) => {
     if (!document.getElementById('adamite-group-modal')) {
         let modal = document.createElement("dialog");
         modal.classList.add("new-group-modal-hidden");
+        modal.style['display'] = 'none';
         document.body.appendChild(modal);
         modal.setAttribute('id', 'adamite-group-modal');
         const App = (

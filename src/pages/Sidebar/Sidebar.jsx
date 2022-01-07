@@ -323,7 +323,6 @@ class Sidebar extends React.Component {
         request.from === 'background' &&
         request.msg === 'CONTENT_UPDATED'
       ){
-        console.log("REQUEST", request)
         if (request === undefined || chrome.runtime.lastError) {
           console.error(chrome.runtime.lastError)
           return;
