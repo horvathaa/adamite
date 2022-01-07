@@ -73,10 +73,10 @@ const Authentication = props => {
         msg: 'USER_SIGNINGOOGLE',
       },
       response => {
-        console.log(response);
-        if (response !== undefined && response.error) {
-          alert('Unable to log in');
-        }
+        // console.log(response);
+        // if (response !== undefined && response.error) {
+        //   alert('Unable to log in');
+        // }
       }
     );
   };
@@ -88,10 +88,10 @@ const Authentication = props => {
         msg: 'USER_SIGNINGITHUB',
       },
       response => {
-        console.log(response);
-        if (response !== undefined && response.error) {
-          alert('Unable to log in');
-        }
+        // console.log(response);
+        // if (response !== undefined && response.error) {
+        //   alert('Unable to log in');
+        // }
       }
     );
   };

@@ -5,6 +5,7 @@ import firebase from '../../../firebase/firebase';
 import { getCurrentUserId, getCurrentUser } from '../../../firebase/index';
 import { getPathFromUrl } from '../backgroundEventListeners';
 import { getGroups, groupListener } from './groupAnnotationsHelper';
+import { handleLinkingGithub } from './authHelper';
 
 //let unsubscribeAnnotations = null;
 export let tabAnnotationCollect = [];

@@ -28,16 +28,3 @@ export const signInWithGithub = () => {
 export const signOut = () => {
   return auth.signOut();
 };
-
-export const updateUserProfile = (user = getCurrentUser()) => {
-  db.collection(DB_COLLECTIONS.USERS)
-    .doc(user.uid)
-    .set(
-      { uid: user.uid, 
-        email: user.email, 
-        githubProfileLink: '', 
-        photoURL: user.photoURL, 
-        displayName: user.displayName },
-      { merge: true }
-    );
-};

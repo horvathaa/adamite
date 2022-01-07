@@ -25,4 +25,5 @@ const App = () => {
 };
 
 // console.log("PARENT", window.location);
-render(<App />, window.document.querySelector('#app-container'));
+if(!window.document.querySelector('#group-container').hasChildNodes())
+render(<App />, window.document.querySelector('#group-container'));
