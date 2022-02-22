@@ -12,3 +12,8 @@ export const getPhotoForAnnosFunction = (annotations) => {
 export const createGroupFunction = (group) => {
   return firebase.functions().httpsCallable('createGroup')({ group }).then((result) => { return result });
 }
+
+export const setUserGithubData = async (accessToken, githubUid, uid) => {
+  const result = await firebase.functions().httpsCallable('setUserGithubData')({ accessToken, githubUid, uid });
+  return result;
+}

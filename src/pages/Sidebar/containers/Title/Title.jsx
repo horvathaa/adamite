@@ -4,7 +4,7 @@ import { APP_NAME_FULL } from '../../../../shared/constants';
 import ADAMITE from '../../../../assets/img/Adamite.png';
 import { GiHamburgerMenu } from 'react-icons/gi';
 import { BiFileBlank, BiWindowAlt, BiHorizontalCenter, BiBookBookmark, BiCog, BiExit, BiGroup, BiUserPlus, BiBug } from 'react-icons/bi';
-import { AiOutlineCheck, AiOutlineUser } from 'react-icons/ai';
+import { AiOutlineCheck, AiOutlineUser, AiFillGithub } from 'react-icons/ai';
 import './Title.css';
 
 let pjson = require('../../../../../package.json');
@@ -81,6 +81,10 @@ export default class Title extends React.Component {
     e.preventDefault();
     chrome.runtime.sendMessage({ msg: 'USER_SIGNOUT' });
   };
+
+  linkGithubHandler = (e) => {
+    chrome.runtime.sendMessage({ msg: 'USER_LINK_GITHUB' });
+  }
 
   createDropDown = (args) => {
     const listItems = args.items.map((option, idx) => {
@@ -214,6 +218,10 @@ export default class Title extends React.Component {
                           <Dropdown.Item onClick={this.props.openBugForm} className="DropdownItemOverwrite">
                             <div className="DropdownIconsWrapper"><BiBug className="DropdownIcons" /></div>
                             Submit a Bug
+                          </Dropdown.Item>
+                          <Dropdown.Item onClick={this.linkGithubHandler} className="DropdownItemOverwrite">
+                            <div className="DropdownIconsWrapper"><AiFillGithub className="DropdownIcons" /></div>
+                            Link GitHub Account
                           </Dropdown.Item>
                           <Dropdown.Item onClick={this.signOutClickedHandler} className="DropdownItemOverwrite">
                             <div className="DropdownIconsWrapper"><BiExit className="DropdownIcons" /></div>

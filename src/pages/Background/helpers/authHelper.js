@@ -3,6 +3,7 @@ import {
   githubProvider,
   getCurrentUser as fbGetCurrentUser,
   auth,
+  setUserGithubData,
   signUpWithEmailAndPassword,
   signInWithEmailAndPassword,
   signInWithGoogle,
@@ -62,6 +63,9 @@ export function handleLinkingAccounts(request, sender, sendResponse) {
 export function handleLinkingGithub(request, sender, sendResponse) {
   auth.currentUser.linkWithPopup(githubProvider).then((result) => {
     console.log('success', result);
+    const { accessToken } = result.credential;
+    const { uid } = result.user.providerData.filter((p) => p.providerId === 'github.com')[0];
+    setUserGithubData(accessToken, uid, result.user.uid);
   }).catch((error) => {
     console.error(error);
   })
