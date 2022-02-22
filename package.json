@@ -1,6 +1,6 @@
 {
-  "name": "Adamite",
-  "version": "0.76.16",
+  "name": "adamite",
+  "version": "0.76.17",
   "description": "A documentation annotator to help software developers learn from one another",
   "license": "MIT",
   "scripts": {
