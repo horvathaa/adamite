@@ -24,6 +24,7 @@ let commands = {
     'USER_SIGNINGOOGLE': authHelper.userGoogleSignIn,
     'USER_SIGNINGITHUB': authHelper.githubUserSignIn,
     'USER_LINK_GITHUB': authHelper.handleLinkingGithub,
+    'USER_UNLINK_GITHUB': authHelper.handleUnlinkingGithub,
     'USER_SIGNOUT': authHelper.userSignOut,
     'USER_FORGET_PWD': authHelper.userForgotPwd,
     'USER_PASS_RECEIVED': authHelper.handleLinkingAccounts,

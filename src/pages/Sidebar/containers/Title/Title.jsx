@@ -6,6 +6,7 @@ import { GiHamburgerMenu } from 'react-icons/gi';
 import { BiFileBlank, BiWindowAlt, BiHorizontalCenter, BiBookBookmark, BiCog, BiExit, BiGroup, BiUserPlus, BiBug } from 'react-icons/bi';
 import { AiOutlineCheck, AiOutlineUser, AiFillGithub } from 'react-icons/ai';
 import './Title.css';
+import { getCurrentUser } from '../../../../firebase/index';
 
 let pjson = require('../../../../../package.json');
 
@@ -86,6 +87,10 @@ export default class Title extends React.Component {
     chrome.runtime.sendMessage({ msg: 'USER_LINK_GITHUB' });
   }
 
+  unlinkGithubHandler = (e) => {
+    chrome.runtime.sendMessage({ msg: 'USER_UNLINK_GITHUB' });
+  }
+
   createDropDown = (args) => {
     const listItems = args.items.map((option, idx) => {
       const currentGroup = Array.isArray(args.activeFilter) ? args.activeFilter[0] : args.activeFilter;
@@ -114,6 +119,9 @@ export default class Title extends React.Component {
   render() {
     const { currentUser, groups } = this.props;
     let userName = "";
+
+    const showUnLinkGithub = getCurrentUser()?.providerData.map(p => p.providerId).includes('github.com');
+
     if (currentUser === null) {
       // to be clear, this shouldn't ever occur as the user should not be able to see the dropdown
       // if they are not logged in
@@ -219,10 +227,17 @@ export default class Title extends React.Component {
                             <div className="DropdownIconsWrapper"><BiBug className="DropdownIcons" /></div>
                             Submit a Bug
                           </Dropdown.Item>
-                          <Dropdown.Item onClick={this.linkGithubHandler} className="DropdownItemOverwrite">
-                            <div className="DropdownIconsWrapper"><AiFillGithub className="DropdownIcons" /></div>
-                            Link GitHub Account
-                          </Dropdown.Item>
+                          {showUnLinkGithub ? 
+                            <Dropdown.Item onClick={this.unlinkGithubHandler} className="DropdownItemOverwrite">
+                              <div className="DropdownIconsWrapper"><AiFillGithub className="DropdownIcons" /></div>
+                              Un-Link GitHub Account
+                            </Dropdown.Item>
+                            : 
+                            <Dropdown.Item onClick={this.linkGithubHandler} className="DropdownItemOverwrite">
+                              <div className="DropdownIconsWrapper"><AiFillGithub className="DropdownIcons" /></div>
+                              Link GitHub Account
+                            </Dropdown.Item>
+                          }
                           <Dropdown.Item onClick={this.signOutClickedHandler} className="DropdownItemOverwrite">
                             <div className="DropdownIconsWrapper"><BiExit className="DropdownIcons" /></div>
                             Sign Out

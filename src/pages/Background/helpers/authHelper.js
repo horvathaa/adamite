@@ -71,6 +71,12 @@ export function handleLinkingGithub(request, sender, sendResponse) {
   })
 }
 
+export async function handleUnlinkingGithub(request, sender, sendResponse) {
+  return auth.currentUser.unlink(githubProvider.providerId).then((result) => {
+      // console.log('unlinked', result);
+  });
+}
+
 export function getUser() {
   return currentUser;
 }
