@@ -128,7 +128,7 @@ const Authentication = props => {
           <h3>Login</h3> <hr />
         </div>
       </div>
-      <div className="InputFieldContainer row">
+      {/* <div className="InputFieldContainer row">
         <input
           type="email"
           value={email}
@@ -147,10 +147,10 @@ const Authentication = props => {
             setPassword(e.target.value);
           }}
         />
-      </div>
+      </div> */}
       <div className="InputFieldContainer row">
-        <button onClick={signInClickedHandler}><div>Sign in</div></button>
-        <button onClick={signUpClickedHandler}><div>Sign up</div></button>
+        {/* <button onClick={signInClickedHandler}><div>Sign in</div></button>
+        <button onClick={signUpClickedHandler}><div>Sign up</div></button> */}
         <button className="AuthSignInContainer" onClick={signInGoogleClickedHandler}>
           <div>
             <img className="authIcon" alt="Google sign-in" src={Google} />
