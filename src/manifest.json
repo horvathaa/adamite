@@ -14,7 +14,6 @@
     "default_title": "ADAMITE"
   },
   "permissions": [
-    "chrome://favicon/",
     "tabs",
     "storage",
     "contextMenus"
