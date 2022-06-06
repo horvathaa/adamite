@@ -2,7 +2,10 @@
   "description": "A documentation annotator to help software developers learn from one another",
   "version": "0.76.19",
   "name": "ADAMITE",
-  "options_page": "options.html",
+  "options_ui": {
+   "page": "options.html",
+   "open_in_tab": true
+  },
   "background": {
     "page": "background.html",
     "persistent": false
