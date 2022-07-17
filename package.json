@@ -1,8 +1,9 @@
 {
   "name": "adamite",
-  "version": "0.76.27",
+  "version": "0.76.30",
   "description": "A documentation annotator to help software developers learn from one another",
   "license": "MIT",
+  
   "scripts": {
     "build": "node utils/build.js",
     "start": "node utils/webserver.js",
