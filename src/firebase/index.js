@@ -4,7 +4,8 @@ require("firebase/functions")
 export const DB_COLLECTIONS = {
   USERS: 'users',
   ANNOTATIONS: 'annotations',
-  GROUPS: 'groups'
+  GROUPS: 'groups',
+  SEARCH: 'search-events'
 };
 
 export let emailAuthProvider = firebase.auth.EmailAuthProvider;

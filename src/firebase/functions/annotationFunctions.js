@@ -190,3 +190,6 @@ export const createAnnotation = async (newAnno) => {
   return db.collection(DB_COLLECTIONS.ANNOTATIONS).doc(newAnno.id).set(newAnno);
 };
 
+export const createSearchEvent = (search) => {
+  return db.collection(DB_COLLECTIONS.SEARCH).doc(search.id).set({ ...search, createdTimestamp: new Date().getTime() });
+}

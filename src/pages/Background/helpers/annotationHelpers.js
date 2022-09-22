@@ -2,10 +2,11 @@ import * as fb from '../../../firebase/index';
 import { transmitMessage, transmitUpdateAnnotationMessage } from '../backgroundTransmitter';
 import { clean } from './objectCleaner';
 import firebase from '../../../firebase/firebase';
-import { getCurrentUserId, getCurrentUser } from '../../../firebase/index';
+import { getCurrentUserId, getCurrentUser, createSearchEvent } from '../../../firebase/index';
 import { getPathFromUrl } from '../backgroundEventListeners';
 import { getGroups, groupListener } from './groupAnnotationsHelper';
 import { handleLinkingGithub } from './authHelper';
+import { v4 as uuidv4 } from 'uuid';
 
 //let unsubscribeAnnotations = null;
 export let tabAnnotationCollect = [];
@@ -510,6 +511,8 @@ function pinnedInner(annotationsSnapshot, concatType){
     });
 }
 
+const whiteList = ['https://www.stackoverflow.com/']
+
 function getAnnotationsByUrlListener(url, groups, tabId) {
     const user = fb.getCurrentUser();
     // idk if this is really where this should go lol...
@@ -519,11 +522,26 @@ function getAnnotationsByUrlListener(url, groups, tabId) {
             msg: 'GOOGLE_SEARCH',
             from: 'background'
         }, response => {
-            if(response && response !== "undefined") chrome.storage.local.set({
-                'search': response
-            });
+            if(response && response !== "undefined") {
+                chrome.storage.local.set({
+                'search' : {
+                'search': response, 'tabId': tabId, urls: []
+            }});
+            createSearchEvent({ id: uuidv4(), uid: user.uid, search: response, urls: [] })
+        }
         })
     }
+    else if(url !== chrome.storage.local.get(['search'], (res) => {
+        console.log('hewwo?', res)
+        if(res && res.tabId === tabId && whiteList.includes(url)) {
+            chrome.storage.local.set({'search': {
+                ...res, urls: res.urls.concat(url)
+            }})
+            createSearchEvent({ ...{
+                ...res, urls: res.urls.concat(url)
+            }, id: uuidv4(), uid: user.uid })
+        }
+    }))
     if (user !== null) {
         publicListener = fb.getAnnotationsByUrl(url).onSnapshot( annotationsSnapshot => {
             let annotationsToBroadcast = getListFromSnapshots(annotationsSnapshot);
