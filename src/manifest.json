@@ -3,8 +3,8 @@
   "version": "0.76.19",
   "name": "ADAMITE",
   "options_ui": {
-   "page": "options.html",
-   "open_in_tab": true
+    "page": "options.html",
+    "open_in_tab": true
   },
   "background": {
     "page": "background.html",
@@ -13,11 +13,7 @@
   "browser_action": {
     "default_title": "ADAMITE"
   },
-  "permissions": [
-    "tabs",
-    "storage",
-    "contextMenus"
-  ],
+  "permissions": ["tabs", "storage", "contextMenus", "history"],
   "oauth2": {
     "client_id": "644799342321-k92na2bh4htvbkpi4hqor8cq6t5896pg.apps.googleusercontent.com",
     "scopes": [
@@ -31,17 +27,9 @@
   },
   "content_scripts": [
     {
-      "matches": [
-        "http://*/*",
-        "https://*/*",
-        "<all_urls>"
-      ],
-      "js": [
-        "contentScript.bundle.js"
-      ],
-      "css": [
-        "content.styles.css"
-      ],
+      "matches": ["http://*/*", "https://*/*", "<all_urls>"],
+      "js": ["contentScript.bundle.js"],
+      "css": ["content.styles.css"],
       "all_frames": false
     }
   ],

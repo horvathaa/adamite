@@ -1,324 +1,462 @@
-import { transmitMessage } from "./backgroundTransmitter";
-import * as anno from "./helpers/annotationHelpers";
-import * as authHelper from "./helpers/authHelper";
+import { transmitMessage } from './backgroundTransmitter';
+import * as anno from './helpers/annotationHelpers';
+import * as authHelper from './helpers/authHelper';
 import * as groups from './helpers/groupAnnotationsHelper';
 import * as sidebar from './helpers/sidebarHelper';
 import * as elastic from './helpers/elasticSearchWrapper';
 import { toggleSidebar } from './helpers/sidebarHelper';
+import { createSearchEvent, getCurrentUser } from '../../firebase';
+import { v4 as uuidv4 } from 'uuid';
 
 // helper method from
 // https://stackoverflow.com/questions/2540969/remove-querystring-from-url
 export function getPathFromUrl(url) {
-    return url.split(/[?#]/)[0];
+  return url.split(/[?#]/)[0];
 }
 
-const isContent = (res) => res.from === 'content';
+const isContent = res => res.from === 'content';
 export let sidebarStatus = [];
 let tabToUrl = {};
 
 let commands = {
-    //authHelper
-    'GET_CURRENT_USER': authHelper.getCurrentUser,
-    'USER_SIGNUP': authHelper.userSignUp,
-    'USER_SIGNIN': authHelper.userSignIn,
-    'USER_SIGNINGOOGLE': authHelper.userGoogleSignIn,
-    'USER_SIGNINGITHUB': authHelper.githubUserSignIn,
-    'USER_LINK_GITHUB': authHelper.handleLinkingGithub,
-    'USER_UNLINK_GITHUB': authHelper.handleUnlinkingGithub,
-    'USER_SIGNOUT': authHelper.userSignOut,
-    'USER_FORGET_PWD': authHelper.userForgotPwd,
-    'USER_PASS_RECEIVED': authHelper.handleLinkingAccounts,
-    //background
-    'CONTENT_SELECTED': (request, sender, sendResponse) =>
-        isContent(request) ? transmitMessage({
-            msg: 'CONTENT_SELECTED',
-            data: { "senderId": sender.tab.id, "payload": request.payload, },
-            currentTab: true
-        }) : false,
-    'CONTENT_NOT_SELECTED': (request, sender, sendResponse) =>
-        isContent(request) ? transmitMessage({
-            msg: 'CONTENT_NOT_SELECTED',
-            data: { "senderId": sender.tab.id, "payload": request.payload, },
-            currentTab: true
-        }) : false,
-
-    // ANNOTATION HELPERS
-    'GET_ANNOTATIONS_PAGE_LOAD': anno.getAnnotationsPageLoad,
-    'GET_ANNOTATION_BY_ID': anno.getAnnotationById,
-    'GET_PINNED_ANNOTATIONS': anno.getPinnedAnnotations,
-    'SET_UP_PIN': anno.setPinnedAnnotationListeners,
-
-    //'SAVE_ANNOTATED_TEXT': anno.createAnnotation,
-    'CREATE_ANNOTATION': anno.createAnnotation,
-    //  'SAVE_HIGHLIGHT': anno.createAnnotation,
-    'ADD_NEW_REPLY': anno.createAnnotationReply,
-    'SAVE_NEW_ANCHOR': anno.createAnnotation,
-    // anno.createAnnotationChildAnchor,
-    // 'SAVE_NEW_ANCHOR': anno.createAnnotationChildAnchor,
-
-    'ANNOTATION_UPDATED': anno.updateAnnotation,
-    'REQUEST_ADOPTED_UPDATE': anno.updateAnnotationAdopted,
-    'GET_GOOGLE_RESULT_ANNOTATIONS': anno.getGoogleResultAnnotations,
-
-    'REQUEST_PIN_UPDATE': anno.updateAnnotationPinned,
-    'UPDATE_QUESTION': anno.updateAnnotationQuestion,
-    'UPDATE_ANNOTATIONS_ON_TAB_ACTIVATED': anno.updateAnnotationsOnTabActivated,
-    'FINISH_TODO': anno.updateAnnotationTodoFinished,
-    'UPDATE_XPATH_BY_IDS': anno.updateAnnotationXPath,
-    'UPDATE_REPLIES': anno.updateAnnotationReplies,
-    'UPDATE_READ_COUNT': anno.updateAnnotationReadCount,
-    'UNARCHIVE': anno.updateAnnotationUnarchive,
-    'GET_GROUP_ANNOTATIONS': anno.getGroupAnnotations,
-
-    'FILTER_BY_TAG': anno.filterAnnotationsByTag,
-    'SEARCH_BY_TAG': anno.searchAnnotationsByTag,
-
-    'ANNOTATION_DELETED': anno.deleteAnnotation,
-    'UNSUBSCRIBE': anno.unsubscribeAnnotations,
-
-    'REQUEST_TAB_INFO': (request, sender, sendResponse) => {
-        const cleanUrl = getPathFromUrl(sender.tab.url);
-        const tabId = sender.tab.id;
-        sendResponse({ url: cleanUrl, tabId });
-    },
-
-    'LOAD_EXTERNAL_ANCHOR': async (request, sender, sendResponse) => {
-        await chrome.tabs.create({ url: request.payload });
-    },
-
-
-
-    // GROUP HELPERS
-    'SHOW_GROUP': groups.showGroup,
-    'HIDE_GROUP': groups.hideGroup,
-    "DELETE_GROUP": groups.deleteGroup,
-    'ADD_NEW_GROUP': groups.createGroup,
-    'GET_GROUPS_PAGE_LOAD': groups.getGroups,
-
-    // LOCAL COMMANDS
-
-    'HANDLE_BROWSER_ACTION_CLICK': () => {
-        try {
-            chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-                chrome.storage.local.get(['sidebarStatus'], sidebarStatus => {
-                    sidebarStatus = sidebarStatus.sidebarStatus;
-                    sidebarStatus = sidebarStatus !== undefined && sidebarStatus.length ? sidebarStatus : [];
-                    const index = sidebarStatus.length ? sidebarStatus.findIndex(side => side.id === tabs[0].id) : -1;
-                    let opening;
-                    if (index > -1) {
-                        opening = false;
-                        sidebarStatus = sidebarStatus.length ? sidebarStatus.filter(side => side.id !== tabs[0].id) : [];
-                    }
-                    else if (getPathFromUrl(tabs[0].url) !== "" && !getPathFromUrl(tabs[0].url).includes("chrome://")) {
-                        opening = true;
-                        sidebarStatus.push({ id: tabs[0].id, open: true, windowId: tabs[0].windowId })
-                    }
-                    toggleSidebar(opening);
-                    chrome.storage.local.set({ sidebarStatus }, function () {
-                        if (chrome.runtime.lastError) {
-                            chrome.storage.local.clear();
-                        }
-                    })
-                    if (opening) {
-                        chrome.storage.local.get(['annotateOnly'], (annotateOnly) => {
-                            if(annotateOnly) {
-                                chrome.storage.local.set({
-                                    'annotateOnly': false
-                                }, function () {
-                                    if (chrome.runtime.lastError) {
-                                        chrome.storage.local.clear();
-                                    }
-                                })
-                                chrome.contextMenus.update('contextMenuBadge', {
-                                    'checked': false
-                                })
-                            } // maybe have highlight and sorting as else clause since, in theory, annos should already be highlighted??
-                        })
-                        
-                        if (anno.containsObjectWithUrl(getPathFromUrl(tabs[0].url), anno.tabAnnotationCollect)) {
-                            const tabInfo = anno.tabAnnotationCollect.filter(obj => obj.tabUrl === getPathFromUrl(tabs[0].url));
-                            chrome.tabs.sendMessage(tabs[0].id, {
-                                msg: 'HIGHLIGHT_ANNOTATIONS',
-                                payload: tabInfo[0].annotations,
-                                url: getPathFromUrl(tabs[0].url)
-                            }, response => {
-                                chrome.runtime.sendMessage({
-                                    msg: 'SORT_LIST',
-                                    from: 'background',
-                                    payload: response
-                                })
-                            })
-                        }
-                        anno.getAnnotationsPageLoad({url: tabs[0].url});
-                    }
-                    else {
-                        chrome.tabs.sendMessage(tabs[0].id, {
-                            msg: 'REMOVE_HIGHLIGHTS'
-                        })
-                        anno.unsubscribeAnnotations();
-                    }
-                })
-            })
-        }
-        catch (error) {
-            console.error('couldnt query tabs', error);
-        }
-
-    },
-    'HANDLE_TAB_URL_UPDATE': (tabId, changeInfo, tab) => {
-        if ("url" in changeInfo) {
-            anno.handleTabUpdate(getPathFromUrl(changeInfo.url), tabId);
-        }
-    },
-    'HANDLE_TAB_REMOVED': (tab, url) => {
-        console.log("tab!", url)
-        anno.unsubscribeAnnotations();
-        elastic.removeQueryForScroll(url)
-        chrome.storage.local.get(['sidebarStatus'], sidebarStatus => {
-            sidebarStatus = sidebarStatus.sidebarStatus;
-            const newSidebarStatus = sidebarStatus !== undefined && sidebarStatus.length ? sidebarStatus.filter(side => side.id !== tab) : [];
-                chrome.storage.local.set({ sidebarStatus: newSidebarStatus }, function () {
-                    if (chrome.runtime.lastError) {
-                        chrome.storage.local.clear();
-                    }
-                })
-            
+  //authHelper
+  GET_CURRENT_USER: authHelper.getCurrentUser,
+  USER_SIGNUP: authHelper.userSignUp,
+  USER_SIGNIN: authHelper.userSignIn,
+  USER_SIGNINGOOGLE: authHelper.userGoogleSignIn,
+  USER_SIGNINGITHUB: authHelper.githubUserSignIn,
+  USER_LINK_GITHUB: authHelper.handleLinkingGithub,
+  USER_UNLINK_GITHUB: authHelper.handleUnlinkingGithub,
+  USER_SIGNOUT: authHelper.userSignOut,
+  USER_FORGET_PWD: authHelper.userForgotPwd,
+  USER_PASS_RECEIVED: authHelper.handleLinkingAccounts,
+  //background
+  CONTENT_SELECTED: (request, sender, sendResponse) =>
+    isContent(request)
+      ? transmitMessage({
+          msg: 'CONTENT_SELECTED',
+          data: { senderId: sender.tab.id, payload: request.payload },
+          currentTab: true,
         })
-    },
-
-    'HANDLE_WINDOW_REMOVED' : (windowId) => {
-        anno.unsubscribeAnnotations();
-        chrome.storage.local.get(['sidebarStatus'], sidebarStatus => {
-            sidebarStatus = sidebarStatus.sidebarStatus;
-            sidebarStatus = sidebarStatus !== undefined && sidebarStatus.length ? sidebarStatus.filter(s => s.windowId !== windowId) : [];
-            chrome.storage.local.set({ sidebarStatus }, function () {
-                if (chrome.runtime.lastError) {
-                    chrome.storage.local.clear();
-                }
-            })
+      : false,
+  CONTENT_NOT_SELECTED: (request, sender, sendResponse) =>
+    isContent(request)
+      ? transmitMessage({
+          msg: 'CONTENT_NOT_SELECTED',
+          data: { senderId: sender.tab.id, payload: request.payload },
+          currentTab: true,
         })
-        
-    },
-    'HANDLE_CONTEXT_MENU_CLICK': (info) => {
-        const { checked } = info;
-        chrome.storage.local.set({
-            'annotateOnly': checked
-        });
-        // close sidebar and begin quick operating mode
-        if(checked) {
-            toggleSidebar(false);
-            chrome.storage.local.set({ sidebarStatus: [] });
-            chrome.tabs.query({ active: true, currentWindow: true}, tabs => {
-                const tabInfo = anno.tabAnnotationCollect.filter(obj => obj.tabUrl === getPathFromUrl(tabs[0].url));
-                if(tabInfo && tabInfo.length) // are there annotations on this page?
-                    chrome.tabs.sendMessage(tabs[0].id, {
-                        msg: 'HIGHLIGHT_ANNOTATIONS',
-                        payload: tabInfo[0].annotations,
-                        url: getPathFromUrl(tabs[0].url)
-                    })
-            })
-        }
-        // when done with this mode, remove any highlights
-        else {
-            chrome.tabs.query({ active: true, currentWindow: true}, tabs => {
-                chrome.tabs.sendMessage(tabs[0].id, {
-                    msg: 'REMOVE_HIGHLIGHTS'
-                })
-            })
-            anno.unsubscribeAnnotations(); 
-        }
-    },
-    'CREATE_CONTEXT_MENU':() => {
-        const contextMenuOptions = {
-            'type': 'checkbox',
-            'checked': false,
-            'title': 'Run In Annotate-Only Mode',
-            'contexts': ['browser_action'],
-            'id': "contextMenuBadge"
-        }
-        const id = chrome.contextMenus.create(contextMenuOptions, () => {
-            if(authHelper.getUser() != null) {
-                chrome.storage.local.set({
-                    'annotateOnly': false
-                })
-            } else {
-                chrome.contextMenus.update('contextMenuBadge', {
-                    'enabled': false
-                })
+      : false,
+
+  COPY_EVENT: anno.handleCopyEvent,
+  // ANNOTATION HELPERS
+  GET_ANNOTATIONS_PAGE_LOAD: anno.getAnnotationsPageLoad,
+  GET_ANNOTATION_BY_ID: anno.getAnnotationById,
+  GET_PINNED_ANNOTATIONS: anno.getPinnedAnnotations,
+  SET_UP_PIN: anno.setPinnedAnnotationListeners,
+
+  //'SAVE_ANNOTATED_TEXT': anno.createAnnotation,
+  CREATE_ANNOTATION: anno.createAnnotation,
+  //  'SAVE_HIGHLIGHT': anno.createAnnotation,
+  ADD_NEW_REPLY: anno.createAnnotationReply,
+  SAVE_NEW_ANCHOR: anno.createAnnotation,
+  // anno.createAnnotationChildAnchor,
+  // 'SAVE_NEW_ANCHOR': anno.createAnnotationChildAnchor,
+
+  ANNOTATION_UPDATED: anno.updateAnnotation,
+  REQUEST_ADOPTED_UPDATE: anno.updateAnnotationAdopted,
+  GET_GOOGLE_RESULT_ANNOTATIONS: anno.getGoogleResultAnnotations,
+
+  REQUEST_PIN_UPDATE: anno.updateAnnotationPinned,
+  UPDATE_QUESTION: anno.updateAnnotationQuestion,
+  UPDATE_ANNOTATIONS_ON_TAB_ACTIVATED: anno.updateAnnotationsOnTabActivated,
+  FINISH_TODO: anno.updateAnnotationTodoFinished,
+  UPDATE_XPATH_BY_IDS: anno.updateAnnotationXPath,
+  UPDATE_REPLIES: anno.updateAnnotationReplies,
+  UPDATE_READ_COUNT: anno.updateAnnotationReadCount,
+  UNARCHIVE: anno.updateAnnotationUnarchive,
+  GET_GROUP_ANNOTATIONS: anno.getGroupAnnotations,
+
+  FILTER_BY_TAG: anno.filterAnnotationsByTag,
+  SEARCH_BY_TAG: anno.searchAnnotationsByTag,
+
+  ANNOTATION_DELETED: anno.deleteAnnotation,
+  UNSUBSCRIBE: anno.unsubscribeAnnotations,
+
+  REQUEST_TAB_INFO: (request, sender, sendResponse) => {
+    const cleanUrl = getPathFromUrl(sender.tab.url);
+    const tabId = sender.tab.id;
+    sendResponse({ url: cleanUrl, tabId });
+  },
+
+  LOAD_EXTERNAL_ANCHOR: async (request, sender, sendResponse) => {
+    await chrome.tabs.create({ url: request.payload });
+  },
+
+  // GROUP HELPERS
+  SHOW_GROUP: groups.showGroup,
+  HIDE_GROUP: groups.hideGroup,
+  DELETE_GROUP: groups.deleteGroup,
+  ADD_NEW_GROUP: groups.createGroup,
+  GET_GROUPS_PAGE_LOAD: groups.getGroups,
+
+  // LOCAL COMMANDS
+
+  HANDLE_BROWSER_ACTION_CLICK: () => {
+    try {
+      chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+        chrome.storage.local.get(['sidebarStatus'], sidebarStatus => {
+          sidebarStatus = sidebarStatus.sidebarStatus;
+          sidebarStatus =
+            sidebarStatus !== undefined && sidebarStatus.length
+              ? sidebarStatus
+              : [];
+          const index = sidebarStatus.length
+            ? sidebarStatus.findIndex(side => side.id === tabs[0].id)
+            : -1;
+          let opening;
+          if (index > -1) {
+            opening = false;
+            sidebarStatus = sidebarStatus.length
+              ? sidebarStatus.filter(side => side.id !== tabs[0].id)
+              : [];
+          } else if (
+            getPathFromUrl(tabs[0].url) !== '' &&
+            !getPathFromUrl(tabs[0].url).includes('chrome://')
+          ) {
+            opening = true;
+            sidebarStatus.push({
+              id: tabs[0].id,
+              open: true,
+              windowId: tabs[0].windowId,
+            });
+          }
+          toggleSidebar(opening);
+          chrome.storage.local.set({ sidebarStatus }, function () {
+            if (chrome.runtime.lastError) {
+              chrome.storage.local.clear();
             }
-            
+          });
+          if (opening) {
+            chrome.storage.local.get(['annotateOnly'], annotateOnly => {
+              if (annotateOnly) {
+                chrome.storage.local.set(
+                  {
+                    annotateOnly: false,
+                  },
+                  function () {
+                    if (chrome.runtime.lastError) {
+                      chrome.storage.local.clear();
+                    }
+                  }
+                );
+                chrome.contextMenus.update('contextMenuBadge', {
+                  checked: false,
+                });
+              } // maybe have highlight and sorting as else clause since, in theory, annos should already be highlighted??
+            });
+
+            if (
+              anno.containsObjectWithUrl(
+                getPathFromUrl(tabs[0].url),
+                anno.tabAnnotationCollect
+              )
+            ) {
+              const tabInfo = anno.tabAnnotationCollect.filter(
+                obj => obj.tabUrl === getPathFromUrl(tabs[0].url)
+              );
+              chrome.tabs.sendMessage(
+                tabs[0].id,
+                {
+                  msg: 'HIGHLIGHT_ANNOTATIONS',
+                  payload: tabInfo[0].annotations,
+                  url: getPathFromUrl(tabs[0].url),
+                },
+                response => {
+                  chrome.runtime.sendMessage({
+                    msg: 'SORT_LIST',
+                    from: 'background',
+                    payload: response,
+                  });
+                }
+              );
+            }
+            anno.getAnnotationsPageLoad({ url: tabs[0].url });
+          } else {
+            chrome.tabs.sendMessage(tabs[0].id, {
+              msg: 'REMOVE_HIGHLIGHTS',
+            });
+            anno.unsubscribeAnnotations();
+          }
         });
-    },
+      });
+    } catch (error) {
+      console.error('couldnt query tabs', error);
+    }
+  },
+  HANDLE_TAB_URL_UPDATE: (tabId, changeInfo, tab) => {
+    if ('url' in changeInfo) {
+      anno.handleTabUpdate(getPathFromUrl(changeInfo.url), tabId);
+    }
+  },
+  HANDLE_TAB_CREATED: tab => {
+    if (tab.openerTabId) {
+      chrome.storage.local.get(['search'], res => {
+        console.log('tab?', tab);
+        if (Object.keys(res).length === 0 || !res) return;
+        if (res['search'][tab.openerTabId]) {
+          const obj = res['search'][tab.openerTabId];
+          chrome.storage.local.set({
+            search: {
+              ...res['search'],
+              [tab.openerTabId]: {
+                ...obj,
+                children: tab.id ? obj.children.concat(tab.id) : obj.children,
+              },
+            },
+          });
+        } else {
+          for (let key in res['search']) {
+            console.log('key in res', key, 'resolved', res['search'][key]);
+            if (res['search'][key].children.includes(tab.openerTabId)) {
+              const obj = res['search'][key];
+              chrome.storage.local.set({
+                search: {
+                  ...res['search'],
+                  [key]: {
+                    ...obj,
+                    children: tab.id
+                      ? obj.children.concat(tab.id)
+                      : obj.children,
+                  },
+                },
+              });
+            }
+          }
+        }
+      });
+    }
+  },
+  HANDLE_TAB_REMOVED: (tab, url) => {
+    console.log('tab!', url);
+    anno.unsubscribeAnnotations();
+    elastic.removeQueryForScroll(url);
+    chrome.storage.local.get(['sidebarStatus'], sidebarStatus => {
+      sidebarStatus = sidebarStatus.sidebarStatus;
+      const newSidebarStatus =
+        sidebarStatus !== undefined && sidebarStatus.length
+          ? sidebarStatus.filter(side => side.id !== tab)
+          : [];
+      chrome.storage.local.set(
+        { sidebarStatus: newSidebarStatus },
+        function () {
+          if (chrome.runtime.lastError) {
+            chrome.storage.local.clear();
+          }
+        }
+      );
+    });
+    chrome.storage.local.get('search', res => {
+      if (!res || Object.keys(res).length === 0) return;
+      console.log('bye', res['search'][tab]);
+      if (res['search'][tab]) {
+        const obj = res['search'][tab];
+        console.log('obj', obj);
+        chrome.history.search(
+          { startTime: obj.startTime, text: '' },
+          historyRes => {
+            // console.log('handle history for parent tab');
+            const urlsToTransmit = anno.handleHistory(historyRes);
+            const copyUrlPairs = anno.zipCopyAndUrl(obj);
+            const { children, copyData, ...rest } = obj;
+            // console.log('writing this to firestore...', {
+            //   ...rest,
+            //   urls: urlsToTransmit,
+            //   copyData: copyUrlPairs,
+            //   uid: getCurrentUser().uid,
+            //   id: uuidv4(),
+            // });
+            // console.log('tabHistory parent', res['search'][tab]);
+            // should probably filter out irrelevant search queries too
+            // heuristic idea: store query + URL opened immediately after -- if URL is deemed irrelevant, so is query
+            createSearchEvent({
+              ...rest,
+              urls: urlsToTransmit,
+              copyData: copyUrlPairs,
+              uid: getCurrentUser().uid,
+              id: uuidv4(),
+            });
+            delete res['search'][tab];
 
-    //sidebarHelper
-    'REQUEST_SIDEBAR_STATUS': sidebar.requestSidebarStatus,
-    'REQUEST_TOGGLE_SIDEBAR': sidebar.requestToggleSidebar,
-    'USER_CHANGE_SIDEBAR_LOCATION': sidebar.userChangeSidebarLocation,
-    'USER_CHANGE_SIDEBAR_SHOULD_SHRINK_BODY': sidebar.userChangeSidebarShouldShrink,
+            chrome.storage.local.set(res);
+          }
+        );
+      } else {
+        for (let key in res['search']) {
+          if (res['search'][key].children.includes(tab)) {
+            const obj = res['search'][key];
+            // console.log('deleting you', obj);
+            delete res['search'][key];
+            const copy = {
+              ...obj,
+              children: obj.children.filter(id => id !== tab),
+            };
+            chrome.storage.local.set({
+              search: {
+                ...res['search'],
+                [key]: copy,
+              },
+            });
+            // console.log('new', {
+            //   search: {
+            //     ...res['search'],
+            //     [key]: copy,
+            //   },
+            // });
+          }
+        }
+      }
+    });
+  },
 
-    // elasticSearchWrapper
-    'SEARCH_ELASTIC': elastic.searchElastic,
-    'SCROLL_ELASTIC': elastic.searchElastic,
-    'REMOVE_PAGINATION_SEARCH_CACHE': elastic.removePaginationSearchCache,
+  HANDLE_WINDOW_REMOVED: windowId => {
+    anno.unsubscribeAnnotations();
+    chrome.storage.local.get(['sidebarStatus'], sidebarStatus => {
+      sidebarStatus = sidebarStatus.sidebarStatus;
+      sidebarStatus =
+        sidebarStatus !== undefined && sidebarStatus.length
+          ? sidebarStatus.filter(s => s.windowId !== windowId)
+          : [];
+      chrome.storage.local.set({ sidebarStatus }, function () {
+        if (chrome.runtime.lastError) {
+          chrome.storage.local.clear();
+        }
+      });
+    });
+  },
+  HANDLE_CONTEXT_MENU_CLICK: info => {
+    const { checked } = info;
+    chrome.storage.local.set({
+      annotateOnly: checked,
+    });
+    // close sidebar and begin quick operating mode
+    if (checked) {
+      toggleSidebar(false);
+      chrome.storage.local.set({ sidebarStatus: [] });
+      chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+        const tabInfo = anno.tabAnnotationCollect.filter(
+          obj => obj.tabUrl === getPathFromUrl(tabs[0].url)
+        );
+        if (tabInfo && tabInfo.length)
+          // are there annotations on this page?
+          chrome.tabs.sendMessage(tabs[0].id, {
+            msg: 'HIGHLIGHT_ANNOTATIONS',
+            payload: tabInfo[0].annotations,
+            url: getPathFromUrl(tabs[0].url),
+          });
+      });
+    }
+    // when done with this mode, remove any highlights
+    else {
+      chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          msg: 'REMOVE_HIGHLIGHTS',
+        });
+      });
+      anno.unsubscribeAnnotations();
+    }
+  },
+  CREATE_CONTEXT_MENU: () => {
+    const contextMenuOptions = {
+      type: 'checkbox',
+      checked: false,
+      title: 'Run In Annotate-Only Mode',
+      contexts: ['browser_action'],
+      id: 'contextMenuBadge',
+    };
+    const id = chrome.contextMenus.create(contextMenuOptions, () => {
+      if (authHelper.getUser() != null) {
+        chrome.storage.local.set({
+          annotateOnly: false,
+        });
+      } else {
+        chrome.contextMenus.update('contextMenuBadge', {
+          enabled: false,
+        });
+      }
+    });
+  },
 
+  //sidebarHelper
+  REQUEST_SIDEBAR_STATUS: sidebar.requestSidebarStatus,
+  REQUEST_TOGGLE_SIDEBAR: sidebar.requestToggleSidebar,
+  USER_CHANGE_SIDEBAR_LOCATION: sidebar.userChangeSidebarLocation,
+  USER_CHANGE_SIDEBAR_SHOULD_SHRINK_BODY: sidebar.userChangeSidebarShouldShrink,
 
+  // elasticSearchWrapper
+  SEARCH_ELASTIC: elastic.searchElastic,
+  SCROLL_ELASTIC: elastic.searchElastic,
+  REMOVE_PAGINATION_SEARCH_CACHE: elastic.removePaginationSearchCache,
 };
 
 if (!chrome.runtime.onMessage.hasListeners()) {
-    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-        if (request.msg in commands) {
-            commands[request.msg](request, sender, sendResponse);
-        } else {
-            // console.log("Unknown Command", request.msg);
-        }
-        return true;
-    });
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.msg in commands) {
+      commands[request.msg](request, sender, sendResponse);
+    } else {
+      // console.log("Unknown Command", request.msg);
+    }
+    return true;
+  });
 }
 
-
-
 chrome.tabs.onActivated.addListener(function (activeInfo) {
-    commands['UPDATE_ANNOTATIONS_ON_TAB_ACTIVATED'](activeInfo);
-    return true;
+  commands['UPDATE_ANNOTATIONS_ON_TAB_ACTIVATED'](activeInfo);
+  return true;
 });
 
 chrome.browserAction.onClicked.addListener(function () {
-    commands['HANDLE_BROWSER_ACTION_CLICK']();
-    return true;
+  commands['HANDLE_BROWSER_ACTION_CLICK']();
+  return true;
 });
 
-chrome.contextMenus.onClicked.addListener((info) => {
-    commands['HANDLE_CONTEXT_MENU_CLICK'](info);
-    return true;
+chrome.contextMenus.onClicked.addListener(info => {
+  commands['HANDLE_CONTEXT_MENU_CLICK'](info);
+  return true;
 });
 
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
-    tabToUrl[tabId] = tab.url;
-    commands['HANDLE_TAB_URL_UPDATE'](tabId, changeInfo, tab);
-    return true;
+  tabToUrl[tabId] = tab.url;
+  commands['HANDLE_TAB_URL_UPDATE'](tabId, changeInfo, tab);
+  return true;
+});
+
+chrome.tabs.onCreated.addListener(function (tab) {
+  commands['HANDLE_TAB_CREATED'](tab);
+  return true;
 });
 
 chrome.tabs.onRemoved.addListener(function (tab) {
-    commands['HANDLE_TAB_REMOVED'](tab, tabToUrl[tab]);
+  commands['HANDLE_TAB_REMOVED'](tab, tabToUrl[tab]);
 
-    // Remove information for non-existent tab
-    delete tabToUrl[tab];
-    return true;
+  // Remove information for non-existent tab
+  delete tabToUrl[tab];
+  return true;
 });
 
 chrome.windows.onRemoved.addListener(function (tab) {
-    commands['HANDLE_WINDOW_REMOVED'](tab);
-    return true;
+  commands['HANDLE_WINDOW_REMOVED'](tab);
+  return true;
 });
 
-chrome.runtime.onInstalled.addListener(function() {
-    commands['CREATE_CONTEXT_MENU']();
-    return true;
-  });
+chrome.runtime.onInstalled.addListener(function () {
+  commands['CREATE_CONTEXT_MENU']();
+  return true;
+});
 
 chrome.runtime.onSuspend.addListener(function () {
-    console.log('legit... does this ever get called........');
-    // chrome.contextMenus.remove('contextMenuBadge');
-    anno.unsubscribeAnnotations();
-    // chrome.runtime.Port.disconnect();
-})
+  console.log('legit... does this ever get called........');
+  // chrome.contextMenus.remove('contextMenuBadge');
+  anno.unsubscribeAnnotations();
+  // chrome.runtime.Port.disconnect();
+});

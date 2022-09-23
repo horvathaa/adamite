@@ -7,17 +7,15 @@ import 'react-toastify/dist/ReactToastify.css';
 import CardWrapper from '../../Sidebar/containers/CardWrapper/CardWrapper';
 import Adamite from '../../../assets/img/Adamite.png';
 
-
 let shouldShrinkBody = true;
 let sidebarLocation = 'right';
 let sidebarWidth = 280;
 
-
-const setSidebarWidth = (width) => {
+const setSidebarWidth = width => {
   sidebarWidth = width;
 };
 
-chrome.storage.sync.get(['doc-annotator-sidebar-width'], (result) => {
+chrome.storage.sync.get(['doc-annotator-sidebar-width'], result => {
   let widthObj = result['doc-annotator-sidebar-width'];
   if (widthObj !== undefined) {
     sidebarWidth = JSON.parse(widthObj).width;
@@ -93,13 +91,13 @@ function unmountSidebar() {
   }
 }
 
-chrome.storage.sync.get(['shouldShrinkBody'], (result) => {
+chrome.storage.sync.get(['shouldShrinkBody'], result => {
   if (result.shouldShrinkBody !== undefined) {
     shouldShrinkBody = result.shouldShrinkBody === true;
   }
 });
 
-chrome.storage.sync.get(['sidebarOnLeft'], (result) => {
+chrome.storage.sync.get(['sidebarOnLeft'], result => {
   if (result.sidebarOnLeft !== undefined) {
     sidebarLocation = result.sidebarOnLeft === true ? 'left' : 'right';
   }
@@ -107,122 +105,136 @@ chrome.storage.sync.get(['sidebarOnLeft'], (result) => {
 });
 
 const AnnoPreview = ({ annoList }) => {
-
   const [show, setShow] = useState(false);
-  const descrip = annoList.length === 1 ? `There is ${annoList.length} annotation on this page` : `There are ${annoList.length} annotations on this page`;
+  const descrip =
+    annoList.length === 1
+      ? `There is ${annoList.length} annotation on this page`
+      : `There are ${annoList.length} annotations on this page`;
 
   const AnchorObject = ({ anchorText }) => {
-    return (
-      <div className="AnchorTextContainerExpanded">
-        {anchorText}
-      </div>
-    )
-  }
+    return <div className="AnchorTextContainerExpanded">{anchorText}</div>;
+  };
 
   const Anno = ({ anno }) => {
-    const anchorText = anno.childAnchor.map(a => { if (anno.url.includes(a.url)) { return a.anchor } })
+    const anchorText = anno.childAnchor.map(a => {
+      if (anno.url.includes(a.url)) {
+        return a.anchor;
+      }
+    });
     return (
       <div className="AnnotationContainer">
-        {anchorText.map(anch => <AnchorObject anchorText={anch} />)}
+        {anchorText.map(anch => (
+          <AnchorObject anchorText={anch} />
+        ))}
         <CardWrapper anno={anno} />
       </div>
-    )
-  }
-
+    );
+  };
 
   return (
     <React.Fragment>
       <div className="anno-rec-descrip" onClick={() => setShow(!show)}>
         <div className="img-container">
-          <img src={chrome.extension.getURL(Adamite)} className="adamite-logo" />
+          <img
+            src={chrome.extension.getURL(Adamite)}
+            className="adamite-logo"
+          />
         </div>
         {descrip}
       </div>
-      {show &&
+      {show && (
         <div className="anno-rec-container">
-          {annoList.map(a => <Anno anno={a} />)}
+          {annoList.map(a => (
+            <Anno anno={a} />
+          ))}
         </div>
-      }
+      )}
     </React.Fragment>
-  )
-}
+  );
+};
 
-const toastRenderWrapper = (message) => {
-  console.log("warning!")
+const toastRenderWrapper = message => {
+  console.log('warning!');
   toast.warning(message, {
-    position: "top-center",
+    position: 'top-center',
     autoClose: true,
     hideProgressBar: true,
     closeOnClick: true,
     pauseOnHover: true,
     draggable: false,
-    progress: undefined
+    progress: undefined,
   });
-  let modal = document.createElement("div");
-  modal.classList.add("success-notif-div");
+  let modal = document.createElement('div');
+  modal.classList.add('success-notif-div');
   document.body.appendChild(modal);
-  const toastModal = <ToastContainer
-    position="top-center"
-    autoClose={3000}
-    newestOnTop={false}
-    closeOnClick
-    rtl={false}
-    transition={Slide}
-    pauseOnFocusLoss
-    icon={true} 
-    draggable={false}
-  />;
+  const toastModal = (
+    <ToastContainer
+      position="top-center"
+      autoClose={3000}
+      newestOnTop={false}
+      closeOnClick
+      rtl={false}
+      transition={Slide}
+      pauseOnFocusLoss
+      icon={true}
+      draggable={false}
+    />
+  );
   ReactDOM.render(toastModal, modal);
-}
-
+};
 
 /**
  * Chrome runtime event listener
  */
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-
   if (request.from === 'background' && request.msg === 'TOGGLE_SIDEBAR') {
     if (Frame.isReady()) {
       Frame.toggle(request.toStatus);
     }
-  } else if (
-    request.from === 'background' &&
-    request.msg === 'GOOGLE_SEARCH'
-  ) {
-    const inputField = document.querySelectorAll("input.gLFyf.gsfi")[0];
-    inputField.value ? sendResponse(inputField.value) : sendResponse("undefined");
+  } else if (request.from === 'background' && request.msg === 'GOOGLE_SEARCH') {
+    const inputField = document.querySelectorAll('input.gLFyf.gsfi')[0];
+    inputField.value
+      ? sendResponse(inputField.value)
+      : sendResponse('undefined');
     const links = [];
-    document.querySelectorAll('div.yuRUbf > a').forEach(a => links.push(a.href));
-    chrome.runtime.sendMessage({
-      msg: 'GET_GOOGLE_RESULT_ANNOTATIONS',
-      from: 'content',
-      payload: {
-        urls: links
-      }
-    }, response => {
-      if (response && response.length) {
-        const as = document.querySelectorAll('div.yuRUbf > a');
-        const matchedUrls = [...new Set(response.flatMap(a => a.url))];
-        let nodeAnnoPairs = [];
-        as.forEach(a => {
-          let href = a.href;
-          if (href.includes("developer.mozilla.org/en/")) {
-            let arr = href.split("/en/")
-            href = arr[0] + '/en-US/' + arr[1]
-          }
-          if (matchedUrls.includes(href)) {
-            nodeAnnoPairs.push({ node: a.parentNode, anno: response.filter(anno => anno.url.includes(href)) });
-          }
-        });
+    document
+      .querySelectorAll('div.yuRUbf > a')
+      .forEach(a => links.push(a.href));
+    chrome.runtime.sendMessage(
+      {
+        msg: 'GET_GOOGLE_RESULT_ANNOTATIONS',
+        from: 'content',
+        payload: {
+          urls: links,
+        },
+      },
+      response => {
+        if (response && response.length) {
+          const as = document.querySelectorAll('div.yuRUbf > a');
+          const matchedUrls = [...new Set(response.flatMap(a => a.url))];
+          let nodeAnnoPairs = [];
+          as.forEach(a => {
+            let href = a.href;
+            if (href.includes('developer.mozilla.org/en/')) {
+              let arr = href.split('/en/');
+              href = arr[0] + '/en-US/' + arr[1];
+            }
+            if (matchedUrls.includes(href)) {
+              nodeAnnoPairs.push({
+                node: a.parentNode,
+                anno: response.filter(anno => anno.url.includes(href)),
+              });
+            }
+          });
 
-
-        nodeAnnoPairs.forEach((p) => {
-          const parentDiv = document.createElement('div');
-          p.node.appendChild(parentDiv);
-          ReactDOM.render(<AnnoPreview annoList={p.anno} />, parentDiv);
-        })
+          nodeAnnoPairs.forEach(p => {
+            const parentDiv = document.createElement('div');
+            p.node.appendChild(parentDiv);
+            ReactDOM.render(<AnnoPreview annoList={p.anno} />, parentDiv);
+          });
+        }
       }
-    });
+    );
   } else if (
     request.from === 'background' &&
     request.msg === 'UPDATE_SIDEBAR_ON_LEFT_STATUS'
@@ -239,11 +251,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     const { toStatus } = request;
     shouldShrinkBody = toStatus;
     Frame.shrinkBody();
-
-  } else if (request.from === 'sidebar' && request.msg === 'RENDER_NO_SEARCH_RESULTS') {
+  } else if (
+    request.from === 'sidebar' &&
+    request.msg === 'RENDER_NO_SEARCH_RESULTS'
+  ) {
     toastRenderWrapper('No results!');
-  }
-  else if (request.from === 'sidebar' && request.msg === 'SHOW_NO_GROUP_ANNOTATIONS') {
+  } else if (
+    request.from === 'sidebar' &&
+    request.msg === 'SHOW_NO_GROUP_ANNOTATIONS'
+  ) {
     toastRenderWrapper('No annotations in this group - try making some!');
   }
 });
@@ -254,7 +270,7 @@ const checkSidebarStatus = () => {
       from: 'content',
       msg: 'REQUEST_SIDEBAR_STATUS',
     },
-    (response) => {
+    response => {
       if (response !== 'annotateOnly') {
         let sidebarOpen = response;
         if (Frame.isReady()) {
@@ -267,7 +283,7 @@ const checkSidebarStatus = () => {
 
 // checkSidebarStatus();
 
-window.addEventListener('keydown', (event) => {
+window.addEventListener('keydown', event => {
   // use 'Ctrl/Command + Esc' or 'Ctrl + `' to toggle sidebar
   if (
     (event.ctrlKey && event.key === '`') ||
@@ -281,4 +297,14 @@ window.addEventListener('keydown', (event) => {
       msg: 'REQUEST_TOGGLE_SIDEBAR',
     });
   }
+});
+
+window.addEventListener('copy', async event => {
+  chrome.runtime.sendMessage({
+    from: 'content',
+    msg: 'COPY_EVENT',
+    payload: {
+      copy: document.getSelection().toString(),
+    },
+  });
 });
