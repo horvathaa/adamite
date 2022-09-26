@@ -299,6 +299,22 @@ window.addEventListener('keydown', event => {
   }
 });
 
+window.addEventListener('keydown', event => {
+  // use 'Ctrl/Command + Esc' or 'Ctrl + `' to toggle sidebar
+  if (
+    (event.ctrlKey && event.key === 'C') ||
+    (event.metaKey && event.key === 'C')
+  ) {
+    chrome.runtime.sendMessage({
+      from: 'content',
+      msg: 'COPY_EVENT',
+      payload: {
+        copy: document.getSelection().toString(),
+      },
+    });
+  }
+});
+
 window.addEventListener('copy', async event => {
   chrome.runtime.sendMessage({
     from: 'content',

@@ -614,8 +614,7 @@ export const cleanUrl = url => {
 
 export const filterUrl = url => {
   return (
-    whiteList.includes(cleanUrl(url)) ||
-    programmingLanguages.some(l => url.includes(l))
+    whiteList.includes(cleanUrl(url)) || keywords.some(l => url.includes(l))
   );
 };
 
@@ -630,6 +629,7 @@ export const handleHistory = historyRes => {
 export const zipCopyAndUrl = obj => {
   const { copyData, urls, ...other } = obj;
   let zipped = {};
+  if (!copyData || !copyData.length) return;
   copyData.forEach(c => {
     zipped[c.url] = zipped[c.url]
       ? [...zipped[c.url], c.copyText]
@@ -692,9 +692,12 @@ const whiteList = [
   'https://medium.com',
   'https://geeksforgeeks.com',
   'https://developer.mozilla.org',
+  'https://hackernoon.com',
+  'https://w3schools.com',
+  'https://',
 ];
 
-const programmingLanguages = [
+const keywords = [
   'javascript',
   'js',
   'typescript',
@@ -707,9 +710,12 @@ const programmingLanguages = [
   'cplusplus',
   'java',
   'csharp',
+  'developer',
+  '/api/',
+  'firebase',
 ];
 
-function getAnnotationsByUrlListener(url, groups, tabId) {
+async function getAnnotationsByUrlListener(url, groups, tabId) {
   const user = fb.getCurrentUser();
   // idk if this is really where this should go lol...
   if (url === 'https://www.google.com/search') {
@@ -725,14 +731,20 @@ function getAnnotationsByUrlListener(url, groups, tabId) {
         if (response && response !== 'undefined') {
           chrome.storage.local.get('search', res => {
             let searchInfo;
-            console.log('wtf', res);
+            const time = new Date().getTime();
             if (!res || Object.keys(res).length === 0) {
-              console.log('making new obj');
               chrome.storage.local.set({
                 search: {
                   [tabId]: {
-                    startTime: new Date().getTime(),
-                    search: [response],
+                    startTime: time,
+                    search: [
+                      {
+                        search: response,
+                        valid: false,
+                        checked: false,
+                        searchTime: time,
+                      },
+                    ],
                     children: [],
                   },
                 },
@@ -748,7 +760,12 @@ function getAnnotationsByUrlListener(url, groups, tabId) {
               //   );
               searchInfo = {
                 ...res['search'][tabId],
-                search: res['search'][tabId].search.concat(response),
+                search: res['search'][tabId].search.concat({
+                  search: response,
+                  valid: false,
+                  checked: false,
+                  searchTime: time,
+                }),
                 // children: []
               };
             } else {
@@ -757,7 +774,12 @@ function getAnnotationsByUrlListener(url, groups, tabId) {
                   console.log('breaking here??', res['search'][key]);
                   searchInfo = {
                     ...res['search'][key],
-                    search: res['search'][key].search.concat(response),
+                    search: res['search'][key].search.concat({
+                      search: response,
+                      valid: false,
+                      checked: false,
+                      searchTime: time,
+                    }),
                     // children: []
                   };
                 }
@@ -767,7 +789,14 @@ function getAnnotationsByUrlListener(url, groups, tabId) {
               console.log('nothing');
               searchInfo = {
                 startTime: new Date().getTime(),
-                search: [response],
+                search: [
+                  {
+                    search: response,
+                    valid: false,
+                    checked: false,
+                    searchTime: time,
+                  },
+                ],
                 children: [],
               };
             }
@@ -804,6 +833,51 @@ function getAnnotationsByUrlListener(url, groups, tabId) {
   }
 
   if (user !== null) {
+    let check = await checkIfTabIdInSearch(tabId);
+    console.log('check!', check);
+    if (check) {
+      chrome.storage.local.get('search', res => {
+        if (Object.keys(res).length === 0) return;
+        const tabToCheck = typeof check === 'boolean' ? tabId : check.tabId;
+        const doesHavePendingSearch = res['search'][tabToCheck]?.search.find(
+          s => !s.checked
+        );
+        if (!doesHavePendingSearch) return;
+        const updatedSearchValue = {
+          ...doesHavePendingSearch,
+          checked: true,
+          valid: filterUrl(url),
+        };
+        console.log('setting this about search query', {
+          search: {
+            ...res['search'],
+            [tabToCheck]: {
+              ...res['search'][tabToCheck],
+              search: res['search'][tabToCheck].search.map(s =>
+                s.search === updatedSearchValue.search &&
+                s.time === updatedSearchValue.time
+                  ? updatedSearchValue
+                  : s
+              ),
+            },
+          },
+        });
+        chrome.storage.local.set({
+          search: {
+            ...res['search'],
+            [tabToCheck]: {
+              ...res['search'][tabToCheck],
+              search: res['search'][tabToCheck].search.map(s =>
+                s.search === updatedSearchValue.search &&
+                s.time === updatedSearchValue.time
+                  ? updatedSearchValue
+                  : s
+              ),
+            },
+          },
+        });
+      });
+    }
     publicListener = fb
       .getAnnotationsByUrl(url)
       .onSnapshot(annotationsSnapshot => {
@@ -863,6 +937,23 @@ function getAnnotationsByUrlListener(url, groups, tabId) {
       });
   }
 }
+
+const checkIfTabIdInSearch = async tabId => {
+  return new Promise((resolve, reject) => {
+    chrome.storage.local.get('search', res => {
+      if (res['search'][tabId]) {
+        resolve(true);
+      } else {
+        for (let key in res['search']) {
+          if (res['search'][key].children.includes(tabId)) {
+            resolve({ tabId: key });
+          }
+        }
+      }
+      resolve(false);
+    });
+  });
+};
 
 function setLastUsedTags(tags) {
   chrome.storage.local.get(['lastUsedTags'], ({ lastUsedTags }) => {

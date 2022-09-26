@@ -262,35 +262,44 @@ let commands = {
       if (res['search'][tab]) {
         const obj = res['search'][tab];
         console.log('obj', obj);
-        chrome.history.search(
-          { startTime: obj.startTime, text: '' },
-          historyRes => {
-            // console.log('handle history for parent tab');
-            const urlsToTransmit = anno.handleHistory(historyRes);
-            const copyUrlPairs = anno.zipCopyAndUrl(obj);
-            const { children, copyData, ...rest } = obj;
-            // console.log('writing this to firestore...', {
-            //   ...rest,
-            //   urls: urlsToTransmit,
-            //   copyData: copyUrlPairs,
-            //   uid: getCurrentUser().uid,
-            //   id: uuidv4(),
-            // });
-            // console.log('tabHistory parent', res['search'][tab]);
-            // should probably filter out irrelevant search queries too
-            // heuristic idea: store query + URL opened immediately after -- if URL is deemed irrelevant, so is query
-            createSearchEvent({
-              ...rest,
-              urls: urlsToTransmit,
-              copyData: copyUrlPairs,
-              uid: getCurrentUser().uid,
-              id: uuidv4(),
-            });
-            delete res['search'][tab];
+        if (obj.search.some(s => s.valid)) {
+          chrome.history.search(
+            { startTime: obj.startTime, text: '' },
+            historyRes => {
+              console.log('historyRes', historyRes);
+              // console.log('handle history for parent tab');
+              const urlsToTransmit = anno.handleHistory(historyRes);
+              const copyUrlPairs = anno.zipCopyAndUrl(obj);
+              const { children, copyData, search, ...rest } = obj;
+              console.log('writing this to firestore...', {
+                ...rest,
+                urls: urlsToTransmit,
+                copyData: copyUrlPairs ?? {},
+                uid: getCurrentUser().uid,
+                id: uuidv4(),
+              });
+              // console.log('tabHistory parent', res['search'][tab]);
+              // should probably filter out irrelevant search queries too
+              // heuristic idea: store query + URL opened immediately after -- if URL is deemed irrelevant, so is query
+              createSearchEvent({
+                ...rest,
+                search: search
+                  .filter(s => s.valid)
+                  .map(s => {
+                    const { checked, valid, ...restSearch } = s;
+                    return restSearch;
+                  }),
+                urls: urlsToTransmit,
+                copyData: copyUrlPairs ?? {},
+                uid: getCurrentUser().uid,
+                id: uuidv4(),
+              });
+              delete res['search'][tab];
 
-            chrome.storage.local.set(res);
-          }
-        );
+              chrome.storage.local.set(res);
+            }
+          );
+        }
       } else {
         for (let key in res['search']) {
           if (res['search'][key].children.includes(tab)) {
